@@ -542,6 +542,59 @@
     .dp-soon { font-size: 11px; font-weight: 600; color: var(--text-lt); text-align: center; padding-top: 10px; border-top: 1px solid var(--border); }
 
     /* ════════════════════════════════
+       FIXED EXPENSES — EDIT
+    ════════════════════════════════ */
+    .fix-header-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+    .fix-add-btn { font-size:12px; font-weight:700; padding:6px 12px; background:var(--primary); color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:inherit; }
+    .fix-add-btn:active { opacity:.8; }
+    .fix-act-btn { background:none; border:none; cursor:pointer; padding:4px 5px; font-size:13px; color:var(--text-lt); border-radius:5px; transition:color .15s; line-height:1; flex-shrink:0; }
+    .fix-act-btn:hover { color:var(--primary-dk); background:var(--bg); }
+    .fix-del-btn:hover { color:var(--red) !important; }
+    .fix-edit-form { background:var(--bg); border-radius:var(--r-sm); padding:12px; margin:6px 0; border:1.5px solid var(--primary-lt); }
+    .fix-edit-row { display:flex; gap:8px; margin-bottom:8px; }
+    .fix-edit-btns { display:flex; gap:8px; }
+    .fix-btn-save { flex:1; padding:9px; border:none; border-radius:8px; background:var(--primary); color:#fff; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; }
+    .fix-btn-cancel { flex:1; padding:9px; border:1.5px solid var(--border); border-radius:8px; background:none; color:var(--text-lt); font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; }
+
+    /* ════════════════════════════════
+       AGENDA / CALENDAR
+    ════════════════════════════════ */
+    .cal-card { background:var(--white); border-radius:var(--r); padding:16px; margin-bottom:14px; box-shadow:var(--sh); border:1px solid rgba(226,216,239,.4); }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+    .cal-head { text-align:center; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-lt); padding:6px 0 8px; }
+    .cal-cell { min-height:38px; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:4px 2px; }
+    .cal-day { cursor:pointer; transition:background .15s; }
+    .cal-day:hover { background:var(--bg); }
+    .cal-day-num { font-size:13px; font-weight:500; color:var(--text-dk); line-height:1; }
+    .cal-today .cal-day-num { background:var(--primary); color:#fff; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; }
+    .cal-sel { background:rgba(98,72,160,.10); border:1.5px solid var(--primary-lt); }
+    .cal-dot { font-size:9px; font-weight:700; color:var(--primary-dk); background:#EDE4F5; border-radius:10px; padding:1px 5px; margin-top:2px; line-height:1.3; }
+    .agd-day-panel { background:var(--white); border-radius:var(--r); padding:16px; box-shadow:var(--sh); border:1px solid rgba(226,216,239,.4); }
+    .agd-day-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .agd-day-label { font-family:'Playfair Display',serif; font-size:16px; font-weight:700; color:var(--primary-dk); }
+    .agd-add-btn { font-size:12px; font-weight:700; padding:7px 12px; background:var(--primary); color:#fff; border:none; border-radius:8px; cursor:pointer; font-family:inherit; }
+    .agd-add-btn:active { opacity:.8; }
+    .agd-empty { font-size:13px; color:var(--text-lt); padding:14px 0; }
+    .agd-appt-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid rgba(226,216,239,.5); }
+    .agd-appt-item:last-child { border-bottom:none; }
+    .agd-appt-time { font-size:12px; font-weight:700; color:var(--primary-dk); min-width:38px; flex-shrink:0; }
+    .agd-appt-info { flex:1; min-width:0; }
+    .agd-appt-name { font-size:13px; font-weight:700; color:var(--text-dk); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .agd-appt-sub { font-size:11px; color:var(--text-lt); margin-top:2px; }
+    .agd-appt-right { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+    .agd-appt-btns { display:flex; gap:2px; }
+    .agd-act-btn { background:none; border:none; cursor:pointer; padding:3px 5px; font-size:13px; color:var(--text-lt); border-radius:5px; transition:color .15s; line-height:1; }
+    .agd-act-btn:hover { color:var(--primary-dk); background:var(--bg); }
+    .agd-done-btn:hover { color:var(--green-dk) !important; }
+    .agd-del-btn:hover { color:var(--red) !important; }
+    .cs-realizado { background:#D6F5EA; color:#1E7A52; }
+    .agd-sts-row { display:flex; gap:8px; }
+    .agd-sts-btn { flex:1; padding:10px 4px; border:2px solid var(--border); border-radius:var(--r-sm); font-size:12px; font-weight:700; font-family:inherit; cursor:pointer; background:var(--white); color:var(--text-lt); transition:all .18s; }
+    .agd-sts-confirm { border-color:var(--green);  background:var(--green-bg);  color:var(--green-dk); }
+    .agd-sts-await   { border-color:var(--amber);  background:var(--amber-bg);  color:var(--amber-dk); }
+    .agd-sts-pend    { border-color:var(--red);    background:var(--red-bg);    color:var(--red-dk); }
+
+    /* ════════════════════════════════
        FILTER TABS
     ════════════════════════════════ */
     .filter-tabs {
@@ -819,9 +872,8 @@
       </button>
 
       <div class="sn-section">Em Breve</div>
-      <button class="sn-btn sn-soon" onclick="showSoon('Agenda')">
+      <button class="sn-btn" data-nav="agenda" onclick="go('agenda')">
         <span class="sn-ico">📅</span><span class="sn-label">Agenda</span>
-        <span class="sn-badge">Breve</span>
       </button>
       <button class="sn-btn sn-soon" onclick="showSoon('WhatsApp')">
         <span class="sn-ico">📲</span><span class="sn-label">WhatsApp</span>
@@ -875,6 +927,7 @@
     <div class="screen" id="screen-revenue"></div>
     <div class="screen" id="screen-expense"></div>
     <div class="screen" id="screen-history"></div>
+    <div class="screen" id="screen-agenda"></div>
 
     <!-- Mobile bottom nav -->
     <nav class="bottom-nav">
@@ -890,6 +943,9 @@
       <button class="nav-btn" data-nav="history" onclick="go('history')">
         <span class="nav-icon">📋</span><span class="nav-label">Histórico</span>
       </button>
+      <button class="nav-btn" data-nav="agenda" onclick="go('agenda')">
+        <span class="nav-icon">📅</span><span class="nav-label">Agenda</span>
+      </button>
     </nav>
 
   </div><!-- /main-wrap -->
@@ -901,7 +957,7 @@
 const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                 'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-const FIXED = [
+const FIXED_DEFAULT = [
   { desc:'Aluguel',     cat:'Moradia',    val:1200 },
   { desc:'Secretária',  cat:'Pessoal',    val:800  },
   { desc:'Combustível', cat:'Transporte', val:300  },
@@ -911,12 +967,15 @@ const FIXED = [
   { desc:'Tecnologia',  cat:'Tecnologia', val:100  },
 ];
 
+const AGD_TYPES  = ['Consulta','Avaliação','Retorno','Domiciliar','Amamentação','Disfagia'];
+const AGD_DUR    = ['30 min','45 min','1h','1h30','2h'];
+const DAYS_SHORT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
 const REV_TYPES  = ['Avaliação','Retorno','Domiciliar','Amamentação','Disfagia'];
 const PAY_MODES  = ['Pix','Dinheiro','Cartão Débito','Cartão Crédito','Plano de Saúde'];
 const EXP_CATS   = ['Moradia','Pessoal','Transporte','Materiais','Comunicação',
                      'Serviços','Tecnologia','Marketing','Saúde','Outros'];
-const TAX        = 0.06;
-const FIXED_TOTAL= FIXED.reduce((s,e) => s + e.val, 0);
+const TAX = 0.06;
 
 const COMING_SOON = [
   { icon:'📲', name:'WhatsApp',        desc:'Mensagens automáticas'        },
@@ -924,12 +983,6 @@ const COMING_SOON = [
   { icon:'📋', name:'Rel. Contador',   desc:'Exportar para contabilidade'  },
 ];
 
-const COMPROMISSOS_HOJE = [
-  { time: '09:00', name: 'Maria Silva',   status: 'Confirmado' },
-  { time: '10:30', name: 'João Pereira',  status: 'Aguardando' },
-  { time: '14:00', name: 'Ana Lima',      status: 'Confirmado' },
-  { time: '15:30', name: 'Carlos Mendes', status: 'Pendente'   },
-];
 
 const DOCK_ITEMS = [
   {
@@ -959,20 +1012,26 @@ const DOCK_ITEMS = [
 ];
 
 /* ── STATE ── */
-let vMonth  = new Date().getMonth();
-let vYear   = new Date().getFullYear();
-let curScr  = 'dashboard';
-let hFilter = 'all';
-let rStatus = 'Pago';
+let vMonth    = new Date().getMonth();
+let vYear     = new Date().getFullYear();
+let curScr    = 'dashboard';
+let hFilter   = 'all';
+let rStatus   = 'Pago';
+let agdSelDay = null;
+let agdStatus = 'Confirmado';
 
 /* ── DB ── */
 const DB = {
-  revs : () => JSON.parse(localStorage.getItem('cc_rev')  || '[]'),
-  exps : () => JSON.parse(localStorage.getItem('cc_exp')  || '[]'),
-  inits: () => JSON.parse(localStorage.getItem('cc_init') || '[]'),
-  saveR: d  => localStorage.setItem('cc_rev',  JSON.stringify(d)),
-  saveE: d  => localStorage.setItem('cc_exp',  JSON.stringify(d)),
-  saveI: d  => localStorage.setItem('cc_init', JSON.stringify(d)),
+  revs:      () => JSON.parse(localStorage.getItem('cc_rev')    || '[]'),
+  exps:      () => JSON.parse(localStorage.getItem('cc_exp')    || '[]'),
+  inits:     () => JSON.parse(localStorage.getItem('cc_init')   || '[]'),
+  fixed:     () => JSON.parse(localStorage.getItem('cc_fixed')  || 'null') || FIXED_DEFAULT.map(f => ({...f})),
+  agenda:    () => JSON.parse(localStorage.getItem('cc_agenda') || '[]'),
+  saveR:     d  => localStorage.setItem('cc_rev',    JSON.stringify(d)),
+  saveE:     d  => localStorage.setItem('cc_exp',    JSON.stringify(d)),
+  saveI:     d  => localStorage.setItem('cc_init',   JSON.stringify(d)),
+  saveFixed: d  => localStorage.setItem('cc_fixed',  JSON.stringify(d)),
+  saveAgenda:d  => localStorage.setItem('cc_agenda', JSON.stringify(d)),
 };
 
 /* ── UTILS ── */
@@ -996,7 +1055,7 @@ function maybeInit() {
   if (list.includes(key)) return;
   const exps = DB.exps();
   const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
-  FIXED.forEach(f => exps.push({
+  DB.fixed().forEach(f => exps.push({
     id:uid(), date, description:f.desc, category:f.cat,
     value:f.val, isFixed:true, createdAt:new Date().toISOString()
   }));
@@ -1061,7 +1120,7 @@ function go(screen) {
 
   const screenTitles = {
     dashboard: 'Painel', revenue: 'Lançar Receita',
-    expense: 'Lançar Despesa', history: 'Histórico'
+    expense: 'Lançar Despesa', history: 'Histórico', agenda: 'Agenda'
   };
 
   /* mobile header */
@@ -1075,14 +1134,14 @@ function go(screen) {
   } else {
     appname.style.display = 'none'; greeting.style.display = 'none';
     title.textContent = screenTitles[screen]; title.style.display = 'block';
-    mnav.style.display = screen === 'history' ? 'flex' : 'none';
+    mnav.style.display = (screen === 'history' || screen === 'agenda') ? 'flex' : 'none';
   }
 
   /* desktop topbar */
   document.getElementById('desk-title').textContent = screenTitles[screen] || '';
   document.getElementById('desk-greeting').style.display = screen === 'dashboard' ? 'block' : 'none';
   document.getElementById('desk-month-nav').style.display =
-    (screen === 'dashboard' || screen === 'history') ? 'flex' : 'none';
+    (screen === 'dashboard' || screen === 'history' || screen === 'agenda') ? 'flex' : 'none';
 
   setMonthLabel(`${MONTHS[vMonth]} ${vYear}`);
   render(screen);
@@ -1092,6 +1151,7 @@ function navMonth(dir) {
   vMonth += dir;
   if (vMonth > 11) { vMonth = 0; vYear++; }
   if (vMonth < 0)  { vMonth = 11; vYear--; }
+  agdSelDay = null;
   setMonthLabel(`${MONTHS[vMonth]} ${vYear}`);
   render(curScr);
 }
@@ -1101,6 +1161,7 @@ function render(s) {
   else if (s === 'history') renderHistory();
   else if (s === 'revenue') renderRevForm();
   else if (s === 'expense') renderExpForm();
+  else if (s === 'agenda') renderAgenda();
 }
 
 /* ── HISTORY ITEM HTML ── */
@@ -1174,12 +1235,14 @@ function renderDash() {
        </div>`
     : recent.map(e => itemHtml(e, false)).join('');
 
-  const compromissosHtml = COMPROMISSOS_HOJE.length === 0
+  const todayISO = new Date().toISOString().split('T')[0];
+  const todayAppts = DB.agenda().filter(a => a.date === todayISO).sort((a,b) => a.time.localeCompare(b.time));
+  const compromissosHtml = todayAppts.length === 0
     ? `<div class="comp-empty"><span class="comp-empty-ico">📅</span>Nenhum compromisso hoje</div>`
-    : COMPROMISSOS_HOJE.map(c => `
-      <div class="comp-item">
+    : todayAppts.map(c => `
+      <div class="comp-item" style="cursor:pointer" onclick="go('agenda')">
         <span class="comp-time">${c.time}</span>
-        <span class="comp-name">${esc(c.name)}</span>
+        <span class="comp-name">${esc(c.patient)}</span>
         <span class="comp-status cs-${c.status.toLowerCase()}">${c.status}</span>
       </div>`).join('');
 
@@ -1238,7 +1301,10 @@ function renderDash() {
       </div>
 
       <div class="dash-col">
-        <div class="sec-title"><span>Compromissos de Hoje 📅</span></div>
+        <div class="sec-title">
+          <span>Compromissos de Hoje 📅</span>
+          <button class="sec-link" onclick="go('agenda')">Agenda →</button>
+        </div>
         ${compromissosHtml}
       </div>
     </div>
@@ -1312,6 +1378,63 @@ function saveRev() {
 }
 
 /* ── EXPENSE FORM ── */
+function fixedCardHTML(editIdx = -1, showNew = false) {
+  const fixed = DB.fixed();
+  const total = fixed.reduce((s,f) => s + f.val, 0);
+  const items = fixed.map((f, idx) => {
+    if (editIdx === idx) return `
+      <div class="fix-edit-form">
+        <div class="fix-edit-row">
+          <input class="finput" id="fe-desc" value="${esc(f.desc)}" placeholder="Descrição" style="flex:2;font-size:13px;padding:9px 10px">
+          <div class="sel-wrap" style="flex:1"><select class="fselect" id="fe-cat" style="font-size:13px;padding:9px 10px">
+            ${EXP_CATS.map(c => `<option${c===f.cat?' selected':''}>${c}</option>`).join('')}
+          </select></div>
+        </div>
+        <div class="fix-edit-row">
+          <input class="finput" id="fe-val" type="number" value="${f.val}" placeholder="Valor" style="font-size:13px;padding:9px 10px">
+        </div>
+        <div class="fix-edit-btns">
+          <button class="fix-btn-save" onclick="saveEditFixed(${idx})">✓ Salvar</button>
+          <button class="fix-btn-cancel" onclick="refreshFixCard()">Cancelar</button>
+        </div>
+      </div>`;
+    return `
+      <div class="fix-item">
+        <div class="fix-ico">${CAT_ICON[f.cat] || '📌'}</div>
+        <span class="fix-label">${esc(f.desc)}<br><small style="color:var(--text-lt);font-size:10px">${f.cat}</small></span>
+        <span class="fix-val">${fmt(f.val)}</span>
+        <button class="fix-act-btn" onclick="editFixed(${idx})" title="Editar">✏️</button>
+        <button class="fix-act-btn fix-del-btn" onclick="deleteFixed(${idx})" title="Excluir">✕</button>
+      </div>`;
+  }).join('');
+  const newForm = showNew ? `
+    <div class="fix-edit-form">
+      <div class="fix-edit-row">
+        <input class="finput" id="fn-desc" placeholder="Descrição" style="flex:2;font-size:13px;padding:9px 10px">
+        <div class="sel-wrap" style="flex:1"><select class="fselect" id="fn-cat" style="font-size:13px;padding:9px 10px">
+          ${EXP_CATS.map(c => `<option>${c}</option>`).join('')}
+        </select></div>
+      </div>
+      <div class="fix-edit-row">
+        <input class="finput" id="fn-val" type="number" placeholder="Valor R$" style="font-size:13px;padding:9px 10px">
+      </div>
+      <div class="fix-edit-btns">
+        <button class="fix-btn-save" onclick="saveNewFixed()">✓ Adicionar</button>
+        <button class="fix-btn-cancel" onclick="refreshFixCard()">Cancelar</button>
+      </div>
+    </div>` : '';
+  return `
+    <div class="fix-header-row">
+      <div class="fix-header" style="margin-bottom:0">📌 Despesas Fixas</div>
+      ${!showNew && editIdx < 0 ? `<button class="fix-add-btn" onclick="showNewFixedForm()">+ Adicionar</button>` : ''}
+    </div>
+    ${items}${newForm}
+    <div class="fix-total">
+      <span class="fix-total-lbl">Total Fixo</span>
+      <span class="fix-total-val">${fmt(total)}</span>
+    </div>`;
+}
+
 function renderExpForm() {
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('screen-expense').innerHTML = `
@@ -1339,20 +1462,38 @@ function renderExpForm() {
       </div>
       <button class="btn-primary" onclick="saveExp()" style="margin-top:8px;">Salvar Despesa</button>
     </div>
+    <div class="form-card" id="fix-card">${fixedCardHTML()}</div>`;
+}
 
-    <div class="form-card">
-      <div class="fix-header">📌 Despesas Fixas do Mês</div>
-      ${FIXED.map(f => `
-        <div class="fix-item">
-          <div class="fix-ico">${CAT_ICON[f.cat] || '📌'}</div>
-          <span class="fix-label">${f.desc}</span>
-          <span class="fix-val">${fmt(f.val)}</span>
-        </div>`).join('')}
-      <div class="fix-total">
-        <span class="fix-total-lbl">Total Fixo</span>
-        <span class="fix-total-val">${fmt(FIXED_TOTAL)}</span>
-      </div>
-    </div>`;
+function refreshFixCard(editIdx = -1, showNew = false) {
+  const card = document.getElementById('fix-card');
+  if (card) card.innerHTML = fixedCardHTML(editIdx, showNew);
+}
+function editFixed(idx)       { refreshFixCard(idx); }
+function showNewFixedForm()   { refreshFixCard(-1, true); }
+
+function saveEditFixed(idx) {
+  const desc = document.getElementById('fe-desc').value.trim();
+  const cat  = document.getElementById('fe-cat').value;
+  const val  = parseFloat(document.getElementById('fe-val').value);
+  if (!desc || !val || val <= 0) { toast('⚠️ Preencha todos os campos!'); return; }
+  const fixed = DB.fixed(); fixed[idx] = { desc, cat, val }; DB.saveFixed(fixed);
+  refreshFixCard(); toast('✅ Despesa fixa atualizada!');
+}
+
+function deleteFixed(idx) {
+  if (!confirm('Excluir esta despesa fixa?')) return;
+  const fixed = DB.fixed(); fixed.splice(idx, 1); DB.saveFixed(fixed);
+  refreshFixCard(); toast('🗑️ Despesa fixa removida');
+}
+
+function saveNewFixed() {
+  const desc = document.getElementById('fn-desc').value.trim();
+  const cat  = document.getElementById('fn-cat').value;
+  const val  = parseFloat(document.getElementById('fn-val').value);
+  if (!desc || !val || val <= 0) { toast('⚠️ Preencha todos os campos!'); return; }
+  const fixed = DB.fixed(); fixed.push({ desc, cat, val }); DB.saveFixed(fixed);
+  refreshFixCard(); toast('✅ Despesa fixa adicionada!');
 }
 
 function saveExp() {
@@ -1428,6 +1569,175 @@ function openNewLancamento() {
       <button class="nlm-close" onclick="this.closest('.nlm-overlay').remove()">Cancelar</button>
     </div>`;
   document.body.appendChild(el);
+}
+
+/* ── AGENDA ── */
+function renderAgenda() {
+  const firstDay    = new Date(vYear, vMonth, 1).getDay();
+  const daysInMonth = new Date(vYear, vMonth + 1, 0).getDate();
+  const agenda      = DB.agenda();
+  const todayISO    = new Date().toISOString().split('T')[0];
+
+  const dayMap = {};
+  agenda.forEach(a => {
+    const d = new Date(a.date + 'T00:00:00');
+    if (d.getFullYear() === vYear && d.getMonth() === vMonth)
+      dayMap[d.getDate()] = (dayMap[d.getDate()] || 0) + 1;
+  });
+
+  let cells = DAYS_SHORT.map(d => `<div class="cal-head">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) cells += '<div class="cal-cell"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds  = `${vYear}-${String(vMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cnt = dayMap[d] || 0;
+    const cls = ['cal-cell','cal-day', ds===todayISO?'cal-today':'', agdSelDay===ds?'cal-sel':''].filter(Boolean).join(' ');
+    cells += `<div class="${cls}" onclick="selectAgdDay('${ds}')">
+      <span class="cal-day-num">${d}</span>
+      ${cnt > 0 ? `<span class="cal-dot">${cnt > 9 ? '9+' : cnt}</span>` : ''}
+    </div>`;
+  }
+
+  let dayDetail = '';
+  if (agdSelDay) {
+    const [y,m,dd] = agdSelDay.split('-');
+    const appts = agenda.filter(a => a.date === agdSelDay).sort((a,b) => a.time.localeCompare(b.time));
+    const apptItems = appts.length === 0
+      ? `<div class="agd-empty">Nenhum compromisso · <button class="sec-link" onclick="openApptForm('${agdSelDay}')">Adicionar →</button></div>`
+      : appts.map(a => agdApptHTML(a)).join('');
+    dayDetail = `
+      <div class="agd-day-panel">
+        <div class="agd-day-hdr">
+          <span class="agd-day-label">${dd}/${m} — ${DAYS_SHORT[new Date(agdSelDay+'T00:00:00').getDay()]}</span>
+          <button class="agd-add-btn" onclick="openApptForm('${agdSelDay}')">+ Compromisso</button>
+        </div>
+        ${apptItems}
+      </div>`;
+  }
+
+  document.getElementById('screen-agenda').innerHTML = `
+    <div class="cal-card"><div class="cal-grid">${cells}</div></div>
+    ${dayDetail}`;
+}
+
+function agdApptHTML(a) {
+  const sc = {Confirmado:'cs-confirmado',Aguardando:'cs-aguardando',Realizado:'cs-realizado'}[a.status] || 'cs-pendente';
+  return `
+    <div class="agd-appt-item">
+      <div class="agd-appt-time">${a.time}</div>
+      <div class="agd-appt-info">
+        <div class="agd-appt-name">${esc(a.patient)}</div>
+        <div class="agd-appt-sub">${esc(a.type)}${a.duration?' · '+a.duration:''}${a.value?' · '+fmt(a.value):''}</div>
+      </div>
+      <div class="agd-appt-right">
+        <span class="comp-status ${sc}">${a.status}</span>
+        <div class="agd-appt-btns">
+          ${a.status!=='Realizado'?`<button class="agd-act-btn agd-done-btn" onclick="markApptDone('${a.id}')" title="Realizado">✓</button>`:''}
+          <button class="agd-act-btn" onclick="openApptForm('${a.date}','${a.id}')" title="Editar">✏️</button>
+          <button class="agd-act-btn agd-del-btn" onclick="deleteAppt('${a.id}')" title="Excluir">✕</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function selectAgdDay(ds) { agdSelDay = agdSelDay === ds ? null : ds; renderAgenda(); }
+
+function openApptForm(dateStr, editId = null) {
+  const e = editId ? (DB.agenda().find(a => a.id === editId) || {}) : {};
+  agdStatus = e.status || 'Confirmado';
+
+  const mkStsBtn = s => {
+    const active = {Confirmado:'agd-sts-confirm',Aguardando:'agd-sts-await',Pendente:'agd-sts-pend'}[s] || '';
+    return `<button class="agd-sts-btn${agdStatus===s?' '+active:''}" id="agd-sts-${s}" onclick="setAgdStatus('${s}')">${s}</button>`;
+  };
+
+  const ol = document.createElement('div');
+  ol.className = 'nlm-overlay'; ol.id = 'appt-overlay';
+  ol.onclick = ev => { if (ev.target === ol) ol.remove(); };
+  ol.innerHTML = `
+    <div class="nlm-modal" style="max-height:90vh;overflow-y:auto;padding-bottom:32px">
+      <div class="nlm-handle"></div>
+      <div class="nlm-title">${editId ? 'Editar' : 'Novo'} Compromisso</div>
+      <div class="fg"><label class="flabel">Data</label>
+        <input type="date" class="finput" id="appt-date" value="${e.date||dateStr}"></div>
+      <div class="fg"><label class="flabel">Horário</label>
+        <input type="time" class="finput" id="appt-time" value="${e.time||'09:00'}"></div>
+      <div class="fg"><label class="flabel">Paciente</label>
+        <input type="text" class="finput" id="appt-patient" placeholder="Nome do paciente" value="${esc(e.patient||'')}" autocomplete="off"></div>
+      <div class="fg"><label class="flabel">Tipo</label>
+        <div class="sel-wrap"><select class="fselect" id="appt-type">
+          ${AGD_TYPES.map(t=>`<option${t===(e.type||'Consulta')?' selected':''}>${t}</option>`).join('')}
+        </select></div></div>
+      <div class="fg"><label class="flabel">Duração</label>
+        <div class="sel-wrap"><select class="fselect" id="appt-dur">
+          ${AGD_DUR.map(d=>`<option${d===(e.duration||'1h')?' selected':''}>${d}</option>`).join('')}
+        </select></div></div>
+      <div class="fg"><label class="flabel">Status</label>
+        <div class="agd-sts-row">${['Confirmado','Aguardando','Pendente'].map(mkStsBtn).join('')}</div></div>
+      <div class="fg"><label class="flabel">Valor da Consulta (R$)</label>
+        <input type="number" class="finput" id="appt-val" placeholder="0,00" value="${e.value||''}" min="0" step="0.01"></div>
+      <button class="btn-primary" onclick="saveAppt('${editId||''}')" style="margin-top:4px">
+        ${editId ? 'Salvar Alterações' : 'Adicionar Compromisso'}</button>
+      <button class="nlm-close" style="margin-top:8px" onclick="document.getElementById('appt-overlay').remove()">Cancelar</button>
+    </div>`;
+  document.body.appendChild(ol);
+}
+
+function setAgdStatus(s) {
+  agdStatus = s;
+  const map = {Confirmado:'agd-sts-confirm',Aguardando:'agd-sts-await',Pendente:'agd-sts-pend'};
+  ['Confirmado','Aguardando','Pendente'].forEach(st => {
+    const btn = document.getElementById(`agd-sts-${st}`);
+    if (btn) btn.className = 'agd-sts-btn' + (s===st ? ' '+map[st] : '');
+  });
+}
+
+function saveAppt(editId) {
+  const date    = document.getElementById('appt-date').value;
+  const time    = document.getElementById('appt-time').value;
+  const patient = document.getElementById('appt-patient').value.trim();
+  const type    = document.getElementById('appt-type').value;
+  const duration= document.getElementById('appt-dur').value;
+  const valRaw  = document.getElementById('appt-val').value;
+  const value   = valRaw ? parseFloat(valRaw) : null;
+  if (!date || !time || !patient) { toast('⚠️ Data, horário e paciente são obrigatórios!'); return; }
+
+  const agenda = DB.agenda();
+  if (editId) {
+    const idx = agenda.findIndex(a => a.id === editId);
+    if (idx >= 0) agenda[idx] = { ...agenda[idx], date, time, patient, type, duration, status:agdStatus, value, updatedAt:new Date().toISOString() };
+  } else {
+    agenda.push({ id:uid(), date, time, patient, type, duration, status:agdStatus, value, createdAt:new Date().toISOString() });
+  }
+  DB.saveAgenda(agenda);
+  document.getElementById('appt-overlay')?.remove();
+  agdSelDay = date;
+  toast(editId ? '✅ Compromisso atualizado!' : '✅ Compromisso adicionado!');
+  renderAgenda();
+}
+
+function deleteAppt(id) {
+  if (!confirm('Excluir este compromisso?')) return;
+  DB.saveAgenda(DB.agenda().filter(a => a.id !== id));
+  toast('🗑️ Compromisso excluído');
+  renderAgenda();
+}
+
+function markApptDone(id) {
+  const agenda = DB.agenda();
+  const a = agenda.find(a => a.id === id);
+  if (!a) return;
+  a.status = 'Realizado';
+  DB.saveAgenda(agenda);
+  const launch = a.value ? confirm(`Compromisso realizado! Deseja lançar ${fmt(a.value)} como receita?`) : false;
+  if (launch) {
+    const revs = DB.revs();
+    revs.push({ id:uid(), date:a.date, patient:a.patient, type:a.type, value:a.value, payment:'Pix', status:'Pago', createdAt:new Date().toISOString() });
+    DB.saveR(revs);
+    toast('✅ Realizado e receita lançada!');
+  } else {
+    toast('✅ Marcado como realizado!');
+  }
+  renderAgenda();
 }
 
 /* ── DOCK ── */
