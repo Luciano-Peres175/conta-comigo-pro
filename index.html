@@ -113,7 +113,7 @@
     /* ════════════════════════════════
        SCREENS
     ════════════════════════════════ */
-    .screen { display: none; padding: 16px 15px calc(var(--nav-h) + 20px); }
+    .screen { display: none; padding: 16px 15px calc(var(--nav-h) + 96px); }
     .screen.active { display: block; }
 
     /* ════════════════════════════════
@@ -139,7 +139,7 @@
     /* Hero */
     .card-hero {
       background: linear-gradient(148deg, #6248A0 0%, #3A1F60 55%, #2A1048 100%);
-      border-radius: var(--r); padding: 26px 22px 22px;
+      border-radius: var(--r); padding: 13px 20px 10px;
       margin-bottom: 10px; color: #fff;
       position: relative; overflow: hidden;
       box-shadow: 0 10px 36px rgba(42,16,72,.48);
@@ -165,8 +165,8 @@
     }
     .hero-value {
       font-family: 'Playfair Display', serif;
-      font-size: 42px; font-weight: 700; line-height: 1;
-      margin-bottom: 20px; position: relative; z-index: 1; letter-spacing: -.5px;
+      font-size: 34px; font-weight: 700; line-height: 1;
+      margin-bottom: 8px; position: relative; z-index: 1; letter-spacing: -.5px;
     }
     .hero-value.neg { color: #FFB3C8; }
     .hero-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; position: relative; z-index: 1; }
@@ -197,6 +197,85 @@
     .card-mini.cm-green  .cm-label, .card-mini.cm-green  .cm-value { color: var(--green-dk); }
     .card-mini.cm-amber  .cm-label, .card-mini.cm-amber  .cm-value { color: var(--amber-dk); }
     .card-mini.cm-red    .cm-label, .card-mini.cm-red    .cm-value { color: var(--red-dk); }
+
+    /* Hero stats row */
+    .hero-stats-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .hero-stat { flex: 1; }
+    .hero-stat-lbl { font-size: 10px; opacity: .58; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 3px; }
+    .hero-stat-val { font-size: 15px; font-weight: 700; }
+    .hero-stat-val.grn { color: #8EEEC4; }
+    .hero-stat-val.red { color: #FFB3C8; }
+    .hero-stat-div { width: 1px; height: 30px; background: rgba(255,255,255,.18); flex-shrink: 0; }
+    .hero-saldo-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; opacity: .50; margin-bottom: 2px; }
+    .hero-tax { font-size: 11px; opacity: .55; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+    .hero-tax strong { opacity: .85; font-size: 12px; }
+
+    /* Mini KPIs */
+    .mini-kpis {
+      display: flex; background: var(--white); border-radius: var(--r-sm);
+      padding: 12px 6px; margin-bottom: 10px;
+      box-shadow: var(--sh-sm); border: 1px solid rgba(226,216,239,.4);
+    }
+    .mkpi { flex: 1; text-align: center; }
+    .mkpi-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--text-lt); margin-bottom: 4px; }
+    .mkpi-val { font-size: 13px; font-weight: 700; }
+    .mkpi-val.grn { color: var(--green-dk); }
+    .mkpi-val.amb { color: var(--amber-dk); }
+    .mkpi-val.red { color: var(--red-dk); }
+    .mkpi-sep { width: 1px; background: var(--border); margin: 0 4px; align-self: stretch; }
+
+    /* Quick Actions */
+    .quick-actions { display: flex; gap: 8px; margin-bottom: 18px; }
+    .qa-btn {
+      flex: 1; padding: 11px 6px; border: none; border-radius: var(--r-sm);
+      font-size: 12px; font-weight: 700; font-family: 'DM Sans', inherit;
+      cursor: pointer; transition: all .18s; line-height: 1.2; letter-spacing: .05px;
+    }
+    .qa-primary {
+      flex: 1.5;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dk));
+      color: #fff; box-shadow: 0 4px 14px rgba(98,72,160,.35);
+    }
+    .qa-secondary {
+      background: var(--white); color: var(--primary-dk);
+      border: 1.5px solid var(--border); box-shadow: var(--sh-sm);
+    }
+    .qa-btn:active { transform: scale(.96); opacity: .86; }
+
+    /* New Lancamento modal */
+    .nlm-overlay {
+      position: fixed; inset: 0; background: rgba(38,24,64,.45);
+      backdrop-filter: blur(4px); z-index: 500;
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .nlm-modal {
+      background: var(--white); border-radius: 24px 24px 0 0;
+      padding: 20px 20px 36px; width: 100%; max-width: 480px;
+      animation: slideUpNlm .26s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes slideUpNlm {
+      from { transform: translateY(100%); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    .nlm-handle { width: 40px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 18px; }
+    .nlm-title {
+      font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700;
+      color: var(--primary-dk); text-align: center; margin-bottom: 18px;
+    }
+    .nlm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .nlm-btn {
+      padding: 20px 12px; border: none; border-radius: var(--r-sm);
+      font-size: 15px; font-weight: 700; font-family: 'DM Sans', inherit;
+      cursor: pointer; text-align: center; line-height: 1.5; transition: opacity .15s;
+    }
+    .nlm-btn:active { opacity: .80; }
+    .nlm-rev { background: var(--green-bg); color: var(--green-dk); border: 1.5px solid rgba(61,175,138,.3); }
+    .nlm-exp { background: var(--red-bg);   color: var(--red-dk);   border: 1.5px solid rgba(224,92,114,.3); }
+    .nlm-close {
+      width: 100%; padding: 12px; border: 1.5px solid var(--border);
+      border-radius: var(--r-sm); background: none; font-size: 14px; font-weight: 600;
+      color: var(--text-lt); cursor: pointer; font-family: 'DM Sans', inherit;
+    }
 
     /* ════════════════════════════════
        DASH TWO COLUMNS (mobile: stacked)
@@ -374,6 +453,93 @@
       letter-spacing: .4px; text-transform: uppercase; padding: 3px 8px;
       border-radius: 20px; background: #EDE4F5; color: var(--primary-dk); width: fit-content;
     }
+
+    /* ════════════════════════════════
+       PRÓXIMOS COMPROMISSOS
+    ════════════════════════════════ */
+    .comp-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; background: var(--white);
+      border-radius: var(--r-sm); margin-bottom: 7px;
+      box-shadow: var(--sh-sm); border: 1px solid rgba(226,216,239,.35);
+    }
+    .comp-time { font-size: 12px; font-weight: 700; color: var(--primary-dk); min-width: 38px; flex-shrink: 0; }
+    .comp-name { flex: 1; font-size: 13px; font-weight: 600; color: var(--text-dk); }
+    .comp-status { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+    .cs-confirmado { background: #D6F5EA; color: #1E7A52; }
+    .cs-aguardando { background: #FFF3CC; color: #966010; }
+    .cs-pendente   { background: #FFE0E5; color: #B03040; }
+    .comp-empty { text-align: center; padding: 22px 10px; color: var(--text-lt); font-size: 13px; font-weight: 500; }
+    .comp-empty-ico { font-size: 28px; display: block; margin-bottom: 6px; }
+
+    /* ════════════════════════════════
+       macOS DOCK
+    ════════════════════════════════ */
+    .macos-dock {
+      position: fixed;
+      bottom: calc(var(--nav-h) + 10px);
+      left: 50%; transform: translateX(-50%);
+      background: rgba(255,255,255,.18);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255,255,255,.30);
+      border-radius: 22px; padding: 10px 14px 8px;
+      display: flex; gap: 12px; z-index: 150;
+      box-shadow: 0 8px 32px rgba(42,16,72,.20), inset 0 1px 0 rgba(255,255,255,.35);
+    }
+    .dock-item {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      cursor: pointer; padding: 0 2px;
+      transition: transform .2s cubic-bezier(.34,1.56,.64,1);
+    }
+    .dock-item:active { transform: scale(.88); }
+    .dock-item-active .dock-icon {
+      box-shadow: 0 0 0 2.5px var(--primary), 0 4px 12px rgba(98,72,160,.35);
+    }
+    .dock-icon {
+      width: 46px; height: 46px; border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; background: var(--white);
+      box-shadow: 0 2px 10px rgba(42,16,72,.18); transition: box-shadow .2s;
+    }
+    .dock-label {
+      font-size: 9px; font-weight: 700; color: var(--text-dk);
+      text-align: center; max-width: 52px; letter-spacing: .15px; line-height: 1.2;
+    }
+
+    /* Dock Preview */
+    .dock-preview {
+      position: fixed;
+      bottom: calc(var(--nav-h) + 84px);
+      left: 50%; transform: translateX(-50%);
+      background: var(--white); border-radius: var(--r);
+      padding: 18px 20px 16px;
+      width: calc(100% - 32px); max-width: 360px;
+      box-shadow: var(--sh-md), 0 0 0 1px rgba(226,216,239,.5);
+      z-index: 160;
+      animation: dpSlideUp .22s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes dpSlideUp {
+      from { opacity:0; transform:translateX(-50%) translateY(14px); }
+      to   { opacity:1; transform:translateX(-50%) translateY(0); }
+    }
+    .dp-close {
+      position: absolute; top: 12px; right: 14px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--bg); display: flex; align-items: center; justify-content: center;
+      font-size: 15px; color: var(--text-lt); cursor: pointer; font-weight: 700; line-height: 1;
+    }
+    .dp-close:active { background: var(--border); }
+    .dp-icon { font-size: 28px; margin-bottom: 6px; }
+    .dp-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px; font-weight: 700; color: var(--primary-dk); margin-bottom: 4px;
+    }
+    .dp-tagline { font-size: 12px; color: var(--text-md); margin-bottom: 12px; line-height: 1.4; }
+    .dp-benefits { list-style: none; display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+    .dp-benefits li { font-size: 12px; color: var(--text-dk); display: flex; align-items: flex-start; gap: 7px; }
+    .dp-benefits li::before { content: '✓'; color: var(--green); font-weight: 700; font-size: 12px; flex-shrink: 0; }
+    .dp-soon { font-size: 11px; font-weight: 600; color: var(--text-lt); text-align: center; padding-top: 10px; border-top: 1px solid var(--border); }
 
     /* ════════════════════════════════
        FILTER TABS
@@ -580,27 +746,14 @@
       .bottom-nav { display: none; }
 
       /* ── Screen padding ── */
-      .screen { padding: 28px 32px 40px; }
+      .screen { padding: 28px 32px 120px; }
 
-      /* ── Dashboard top: hero left + mini cards right ── */
-      .dash-top {
-        display: grid;
-        grid-template-columns: 2.2fr 1fr;
-        gap: 18px;
-        align-items: stretch;
-        margin-bottom: 24px;
-      }
-      .card-hero { margin-bottom: 0; }
-      .cards-row {
-        display: flex; flex-direction: column;
-        gap: 10px; margin-bottom: 0;
-      }
-      .card-mini {
-        flex: 1; display: flex; flex-direction: column; justify-content: center;
-        padding: 16px 14px;
-      }
-      .cm-value { font-size: 16px; }
-      .cm-icon  { font-size: 22px; margin-bottom: 6px; }
+      /* ── Dashboard top ── */
+      .dash-top { display: block; margin-bottom: 24px; }
+      .card-hero { margin-bottom: 12px; }
+      .mini-kpis { margin-bottom: 10px; }
+      .mkpi-val { font-size: 15px; }
+      .qa-btn { font-size: 13px; padding: 12px 8px; }
 
       /* ── Dashboard two columns ── */
       .dash-two-col {
@@ -611,6 +764,10 @@
 
       /* ── Soon grid: keep 2x2 inside right col ── */
       .soon-grid { gap: 10px; }
+
+      /* ── Dock ── */
+      .macos-dock { left: calc(var(--sb-w) + (100vw - var(--sb-w)) / 2); bottom: 24px; }
+      .dock-preview { left: calc(var(--sb-w) + (100vw - var(--sb-w)) / 2); bottom: 112px; }
 
       /* ── Toast repositioned ── */
       .toast {
@@ -762,10 +919,43 @@ const TAX        = 0.06;
 const FIXED_TOTAL= FIXED.reduce((s,e) => s + e.val, 0);
 
 const COMING_SOON = [
-  { icon:'📅', name:'Agenda',          desc:'Gerencie suas consultas'     },
   { icon:'📲', name:'WhatsApp',        desc:'Mensagens automáticas'        },
   { icon:'🧠', name:'Segundo Cérebro', desc:'Notas e protocolos'           },
   { icon:'📋', name:'Rel. Contador',   desc:'Exportar para contabilidade'  },
+];
+
+const COMPROMISSOS_HOJE = [
+  { time: '09:00', name: 'Maria Silva',   status: 'Confirmado' },
+  { time: '10:30', name: 'João Pereira',  status: 'Aguardando' },
+  { time: '14:00', name: 'Ana Lima',      status: 'Confirmado' },
+  { time: '15:30', name: 'Carlos Mendes', status: 'Pendente'   },
+];
+
+const DOCK_ITEMS = [
+  {
+    icon: '📲', label: 'WhatsApp',
+    name: 'WhatsApp Business',
+    tagline: 'Mantenha seus pacientes sempre informados',
+    benefits: ['Confirmações automáticas de consulta', 'Lembretes personalizados por paciente', 'Comunicação profissional e ágil'],
+  },
+  {
+    icon: '🧾', label: 'Emissão NF',
+    name: 'Emissão de Nota Fiscal',
+    tagline: 'Automatize sua NF com um clique',
+    benefits: ['Emissão automática após atendimento', 'Integração com sistemas fiscais', 'Histórico organizado por competência'],
+  },
+  {
+    icon: '📊', label: 'Rel. Contador',
+    name: 'Relatório Contador',
+    tagline: 'Seu contador sempre atualizado',
+    benefits: ['Relatórios mensais prontos para envio', 'Exportação em PDF e Excel', 'Classificação por categoria fiscal'],
+  },
+  {
+    icon: '🧠', label: '2° Cérebro',
+    name: 'Segundo Cérebro',
+    tagline: 'Seu conhecimento clínico organizado',
+    benefits: ['Protocolos e anotações por paciente', 'Base de conhecimento pesquisável', 'Sincronização entre dispositivos'],
+  },
 ];
 
 /* ── STATE ── */
@@ -955,6 +1145,7 @@ function renderDash() {
 
   const paid      = revs.filter(r => r.status === 'Pago').reduce((s,r) => s + r.value, 0);
   const pending   = revs.filter(r => r.status === 'Pendente').reduce((s,r) => s + r.value, 0);
+  const totalRev  = paid + pending;
   const expTot    = exps.reduce((s,e) => s + e.value, 0);
   const tax       = paid * TAX;
   const result    = paid - expTot - tax;
@@ -983,49 +1174,57 @@ function renderDash() {
        </div>`
     : recent.map(e => itemHtml(e, false)).join('');
 
-  const soonHtml = COMING_SOON.map(f => `
-    <div class="soon-card" onclick="showSoon('${esc(f.name)}')">
-      <span class="soon-icon">${f.icon}</span>
-      <div class="soon-name">${f.name}</div>
-      <div class="soon-desc">${f.desc}</div>
-      <span class="soon-badge">Em breve</span>
-    </div>`).join('');
+  const compromissosHtml = COMPROMISSOS_HOJE.length === 0
+    ? `<div class="comp-empty"><span class="comp-empty-ico">📅</span>Nenhum compromisso hoje</div>`
+    : COMPROMISSOS_HOJE.map(c => `
+      <div class="comp-item">
+        <span class="comp-time">${c.time}</span>
+        <span class="comp-name">${esc(c.name)}</span>
+        <span class="comp-status cs-${c.status.toLowerCase()}">${c.status}</span>
+      </div>`).join('');
 
   document.getElementById('screen-dashboard').innerHTML = `
     ${alertHtml}
 
     <div class="dash-top">
       <div class="card-hero">
-        <div class="hero-eyebrow"><span></span>Resultado Líquido do Mês</div>
+        <div class="hero-stats-row">
+          <div class="hero-stat">
+            <div class="hero-stat-lbl">Receita do mês</div>
+            <div class="hero-stat-val grn">${fmt(totalRev)}</div>
+          </div>
+          <div class="hero-stat-div"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-lbl">Despesas</div>
+            <div class="hero-stat-val red">${fmt(expTot)}</div>
+          </div>
+        </div>
+        <div class="hero-saldo-lbl">Saldo</div>
         <div class="hero-value${result < 0 ? ' neg' : ''}">${fmt(result)}</div>
-        <div class="hero-row">
-          <div class="hero-pill">
-            <div class="hero-pill-lbl">Imposto est.</div>
-            <div class="hero-pill-val">${fmt(tax)}</div>
-          </div>
-          <div class="hero-pill">
-            <div class="hero-pill-lbl">Simples Nacional</div>
-            <div class="hero-pill-val">6% da receita</div>
-          </div>
+        <div class="hero-tax">💡 Imposto est. 6% · <strong>${fmt(tax)}</strong></div>
+      </div>
+
+      <div class="mini-kpis">
+        <div class="mkpi">
+          <div class="mkpi-lbl">Receita recebida</div>
+          <div class="mkpi-val grn">${fmt(paid)}</div>
+        </div>
+        <div class="mkpi-sep"></div>
+        <div class="mkpi">
+          <div class="mkpi-lbl">A receber</div>
+          <div class="mkpi-val amb">${fmt(pending)}</div>
+        </div>
+        <div class="mkpi-sep"></div>
+        <div class="mkpi">
+          <div class="mkpi-lbl">Total despesas</div>
+          <div class="mkpi-val red">${fmt(expTot)}</div>
         </div>
       </div>
 
-      <div class="cards-row">
-        <div class="card-mini cm-green">
-          <div class="cm-icon">💚</div>
-          <div class="cm-label">Receita Paga</div>
-          <div class="cm-value">${fmt(paid)}</div>
-        </div>
-        <div class="card-mini cm-red">
-          <div class="cm-icon">💸</div>
-          <div class="cm-label">Despesas</div>
-          <div class="cm-value">${fmt(expTot)}</div>
-        </div>
-        <div class="card-mini cm-amber">
-          <div class="cm-icon">⏳</div>
-          <div class="cm-label">A Receber</div>
-          <div class="cm-value">${fmt(pending)}</div>
-        </div>
+      <div class="quick-actions">
+        <button class="qa-btn qa-primary" onclick="openNewLancamento()">+ Novo Lançamento</button>
+        <button class="qa-btn qa-secondary" onclick="go('revenue')">+ Receita</button>
+        <button class="qa-btn qa-secondary" onclick="go('expense')">+ Despesa</button>
       </div>
     </div>
 
@@ -1039,8 +1238,8 @@ function renderDash() {
       </div>
 
       <div class="dash-col">
-        <div class="sec-title"><span>Em Breve 🚀</span></div>
-        <div class="soon-grid">${soonHtml}</div>
+        <div class="sec-title"><span>Compromissos de Hoje 📅</span></div>
+        ${compromissosHtml}
       </div>
     </div>
   `;
@@ -1209,8 +1408,82 @@ function markPaid(id) {
   if (r) { r.status = 'Pago'; DB.saveR(revs); toast('✅ Marcado como pago!'); render(curScr); }
 }
 
+/* ── NEW LANCAMENTO MODAL ── */
+function openNewLancamento() {
+  const el = document.createElement('div');
+  el.className = 'nlm-overlay';
+  el.onclick = e => { if (e.target === el) el.remove(); };
+  el.innerHTML = `
+    <div class="nlm-modal">
+      <div class="nlm-handle"></div>
+      <div class="nlm-title">Novo Lançamento</div>
+      <div class="nlm-grid">
+        <button class="nlm-btn nlm-rev" onclick="this.closest('.nlm-overlay').remove();go('revenue')">
+          💰<br>Receita
+        </button>
+        <button class="nlm-btn nlm-exp" onclick="this.closest('.nlm-overlay').remove();go('expense')">
+          💸<br>Despesa
+        </button>
+      </div>
+      <button class="nlm-close" onclick="this.closest('.nlm-overlay').remove()">Cancelar</button>
+    </div>`;
+  document.body.appendChild(el);
+}
+
+/* ── DOCK ── */
+let activeDockIdx = null;
+
+function initDock() {
+  const dock = document.createElement('div');
+  dock.className = 'macos-dock';
+  dock.innerHTML = DOCK_ITEMS.map((it, i) => `
+    <div class="dock-item" id="dock-item-${i}" onclick="toggleDockPreview(${i})">
+      <div class="dock-icon">${it.icon}</div>
+      <div class="dock-label">${it.label}</div>
+    </div>`).join('');
+  document.body.appendChild(dock);
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.macos-dock') && !e.target.closest('.dock-preview')) {
+      closeDockPreview();
+    }
+  });
+}
+
+function toggleDockPreview(i) {
+  if (activeDockIdx === i) { closeDockPreview(); return; }
+  activeDockIdx = i;
+  document.querySelectorAll('.dock-item').forEach((el, idx) =>
+    el.classList.toggle('dock-item-active', idx === i));
+
+  const prev = document.querySelector('.dock-preview');
+  if (prev) prev.remove();
+
+  const it = DOCK_ITEMS[i];
+  const panel = document.createElement('div');
+  panel.className = 'dock-preview';
+  panel.innerHTML = `
+    <div class="dp-close" onclick="closeDockPreview()">×</div>
+    <div class="dp-icon">${it.icon}</div>
+    <div class="dp-name">${it.name}</div>
+    <div class="dp-tagline">${it.tagline}</div>
+    <ul class="dp-benefits">
+      ${it.benefits.map(b => `<li>${b}</li>`).join('')}
+    </ul>
+    <div class="dp-soon">🔜 Em breve no Conta Comigo Pro</div>`;
+  document.body.appendChild(panel);
+}
+
+function closeDockPreview() {
+  const p = document.querySelector('.dock-preview');
+  if (p) p.remove();
+  document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('dock-item-active'));
+  activeDockIdx = null;
+}
+
 /* ── START ── */
 maybeInit();
+initDock();
 go('dashboard');
 </script>
 </body>
