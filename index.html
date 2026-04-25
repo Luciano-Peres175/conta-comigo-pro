@@ -1200,6 +1200,61 @@
       #drawer-overlay { display: none !important; }
       #sidebar { transform: none !important; }
     }
+
+    /* ── Toast ──────────────────────────────────────────────────── */
+    .toast-container {
+      position: fixed;
+      bottom: calc(var(--bottom-nav-h) + 14px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+    }
+    @media (min-width: 768px) {
+      .toast-container { bottom: 90px; }
+    }
+    .toast {
+      background: #444;
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,.22);
+      animation: toastIn .22s ease, toastOut .22s ease 2.78s both;
+    }
+    .toast.success { background: #1D9E75; }
+    .toast.error   { background: #C85A5A; }
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(8px); }
+    }
+
+    /* ── Mobile save bar ─────────────────────────────────────────── */
+    .mobile-save-bar { display: none; }
+    @media (max-width: 767px) {
+      .mobile-save-bar.visivel {
+        display: block;
+        position: fixed;
+        bottom: var(--bottom-nav-h);
+        left: 0; right: 0;
+        padding: 10px 16px;
+        background: var(--branco);
+        border-top: 1px solid var(--lilas-bg);
+        z-index: 190;
+        box-shadow: 0 -2px 12px rgba(155,114,176,.10);
+      }
+      .btn-salvar-inline { display: none; }
+      #screen-receitas,
+      #screen-despesas {
+        padding-bottom: calc(var(--bottom-nav-h) + 70px);
+      }
+    }
   </style>
 </head>
 <body>
@@ -1248,10 +1303,10 @@
         <span class="nav-icon">📅</span> Agenda
       </button>
       <button class="nav-item" id="nav-receitas" onclick="go('receitas')">
-        <span class="nav-icon">💚</span> Receitas
+        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" width="1em" height="1em" style="vertical-align:-.12em;display:inline-block"><circle cx="11" cy="11" r="11" fill="#1D9E75"/><path d="M11 15V8M8 11l3-3 3 3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Receitas
       </button>
       <button class="nav-item" id="nav-despesas" onclick="go('despesas')">
-        <span class="nav-icon">❤️</span> Despesas
+        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" width="1em" height="1em" style="vertical-align:-.12em;display:inline-block"><circle cx="11" cy="11" r="11" fill="#C85A5A"/><path d="M11 7V14M8 11l3 3 3-3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Despesas
       </button>
       <button class="nav-item" id="nav-historico" onclick="go('historico')">
         <span class="nav-icon">📊</span> Histórico
@@ -1449,7 +1504,7 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="field-label">Valor (R$)</label>
-                <input type="number" id="c-valor" class="field-input" placeholder="0,00" min="0" step="0.01">
+                <input type="text" inputmode="decimal" id="c-valor" class="field-input" placeholder="0,00">
               </div>
               <div class="form-group">
                 <label class="field-label">Status</label>
@@ -1501,7 +1556,7 @@
               </div>
               <div class="form-group">
                 <label class="field-label">Valor (R$)</label>
-                <input type="number" id="r-valor" class="field-input" placeholder="0,00" min="0" step="0.01">
+                <input type="text" inputmode="decimal" id="r-valor" class="field-input" placeholder="0,00">
               </div>
             </div>
             <div class="form-row">
@@ -1523,7 +1578,7 @@
                 </select>
               </div>
             </div>
-            <button class="btn-primary" style="width:100%;margin-top:4px" onclick="salvarReceita()">Salvar Receita</button>
+            <button class="btn-primary btn-salvar-inline" style="width:100%;margin-top:4px" onclick="salvarReceita()">Salvar Receita</button>
           </div>
         </div>
 
@@ -1564,7 +1619,7 @@
             </div>
             <div class="form-group" style="margin-bottom:0">
               <label class="field-label">Valor (R$)</label>
-              <input type="number" id="nf-valor" class="field-input" placeholder="0,00" min="0">
+              <input type="text" inputmode="decimal" id="nf-valor" class="field-input" placeholder="0,00">
             </div>
           </div>
           <div style="display:flex;gap:8px">
@@ -1615,9 +1670,9 @@
             </div>
             <div class="form-group">
               <label class="field-label">Valor (R$)</label>
-              <input type="number" id="d-valor" class="field-input" placeholder="0,00" min="0" step="0.01">
+              <input type="text" inputmode="decimal" id="d-valor" class="field-input" placeholder="0,00">
             </div>
-            <button class="btn-outline" style="width:100%;margin-top:4px" onclick="salvarDespesa()">Salvar Despesa</button>
+            <button class="btn-outline btn-salvar-inline" style="width:100%;margin-top:4px" onclick="salvarDespesa()">Salvar Despesa</button>
           </div>
         </div>
         <div class="list-card">
@@ -1730,14 +1785,22 @@
     <span>Agenda</span>
   </button>
   <button class="bottom-nav-item" id="bn-receitas" onclick="go('receitas')">
-    <span class="bn-icon">💚</span>
+    <span class="bn-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" width="1em" height="1em" style="vertical-align:-.12em;display:inline-block"><circle cx="11" cy="11" r="11" fill="#1D9E75"/><path d="M11 15V8M8 11l3-3 3 3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     <span>Receitas</span>
   </button>
   <button class="bottom-nav-item" id="bn-despesas" onclick="go('despesas')">
-    <span class="bn-icon">❤️</span>
+    <span class="bn-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" width="1em" height="1em" style="vertical-align:-.12em;display:inline-block"><circle cx="11" cy="11" r="11" fill="#C85A5A"/><path d="M11 7V14M8 11l3 3 3-3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     <span>Despesas</span>
   </button>
 </nav>
+
+<!-- MOBILE FIXED SAVE BAR -->
+<div class="mobile-save-bar" id="mobile-save-bar">
+  <button class="btn-primary" id="mobile-save-btn" style="width:100%">Salvar</button>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
 
 <!-- ═══════════════════════════════════════════════════════════════
      DOCK macOS
@@ -1805,6 +1868,52 @@
 ═══════════════════════════════════════════════════════════════ -->
 <script>
   /* ── Utilitários ────────────────────────────────────────────── */
+
+  function toast(msg, tipo) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = 'toast' + (tipo ? ' ' + tipo : '');
+    el.textContent = msg;
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 3100);
+  }
+
+  function parseValor(v) {
+    if (typeof v === 'number') return v;
+    const s = String(v).trim().replace(/\s/g, '');
+    const commas = (s.match(/,/g) || []).length;
+    const dots   = (s.match(/\./g) || []).length;
+    let normalized;
+    if (commas === 1 && dots === 0) {
+      normalized = s.replace(',', '.');
+    } else if (dots === 1 && commas === 0) {
+      normalized = s;
+    } else {
+      normalized = s.replace(/\./g, '').replace(',', '.');
+    }
+    return parseFloat(normalized) || 0;
+  }
+
+  function updateMobileSaveBar(tela) {
+    const bar = document.getElementById('mobile-save-bar');
+    const btn = document.getElementById('mobile-save-btn');
+    if (!bar || !btn) return;
+    if (tela === 'receitas') {
+      btn.textContent = 'Salvar Receita';
+      btn.className   = 'btn-primary';
+      btn.onclick     = salvarReceita;
+      bar.classList.add('visivel');
+    } else if (tela === 'despesas') {
+      btn.textContent = 'Salvar Despesa';
+      btn.className   = 'btn-primary';
+      btn.onclick     = salvarDespesa;
+      bar.classList.add('visivel');
+    } else {
+      bar.classList.remove('visivel');
+    }
+  }
+
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
   }
@@ -1863,6 +1972,8 @@
     });
 
     history.replaceState(null, '', '#' + tela);
+
+    updateMobileSaveBar(tela);
 
     if (tela === 'receitas')  renderListaReceitas();
     if (tela === 'despesas')  { renderDespesasFixas(); renderListaDespesas(); }
@@ -2215,10 +2326,13 @@
     const data  = document.getElementById('r-data').value;
     const nome  = document.getElementById('r-nome').value.trim();
     const tipo  = document.getElementById('r-tipo').value;
-    const valor = Number(document.getElementById('r-valor').value);
+    const valor = parseValor(document.getElementById('r-valor').value);
     const forma = document.getElementById('r-pagamento').value;
     const status = document.getElementById('r-status').value;
-    if (!data || !nome || !valor) { alert('Preencha data, nome e valor.'); return; }
+    if (!data || !nome || !valor) {
+      toast('Preencha data, nome e valor.', 'error');
+      return;
+    }
     const lista = JSON.parse(localStorage.getItem('receitas') || '[]');
     lista.push({ id: uid(), data, nome, tipo, valor, formaPagamento: forma, status, categoria: tipo });
     localStorage.setItem('receitas', JSON.stringify(lista));
@@ -2226,6 +2340,7 @@
     document.getElementById('r-valor').value = '';
     renderListaReceitas();
     atualizarHome();
+    toast('Receita salva com sucesso!', 'success');
   }
 
   function excluirReceita(id) {
@@ -2280,8 +2395,8 @@
   function salvarNovaFixa() {
     const desc = document.getElementById('nf-descricao').value.trim();
     const cat  = document.getElementById('nf-categoria').value.trim() || 'Outros';
-    const val  = Number(document.getElementById('nf-valor').value);
-    if (!desc || !val) { alert('Preencha descrição e valor.'); return; }
+    const val  = parseValor(document.getElementById('nf-valor').value);
+    if (!desc || !val) { toast('Preencha descrição e valor.', 'error'); return; }
     const lista = JSON.parse(localStorage.getItem('despesasFixas') || '[]');
     lista.push({ id: uid(), descricao: desc, categoria: cat, valor: val });
     localStorage.setItem('despesasFixas', JSON.stringify(lista));
@@ -2310,8 +2425,8 @@
     if (idx < 0) return;
     const desc = document.getElementById('ef-desc-'+id).value.trim();
     const cat  = document.getElementById('ef-cat-'+id).value.trim();
-    const val  = Number(document.getElementById('ef-val-'+id).value);
-    if (!desc || !val) { alert('Preencha os campos.'); return; }
+    const val  = parseValor(document.getElementById('ef-val-'+id).value);
+    if (!desc || !val) { toast('Preencha os campos.', 'error'); return; }
     lista[idx] = { ...lista[idx], descricao: desc, categoria: cat, valor: val };
     localStorage.setItem('despesasFixas', JSON.stringify(lista));
     renderDespesasFixas();
@@ -2339,7 +2454,7 @@
         <div class="edit-inline" id="edit-fixa-${d.id}">
           <input id="ef-desc-${d.id}" value="${escHtml(d.descricao)}" placeholder="Descrição">
           <input id="ef-cat-${d.id}"  value="${escHtml(d.categoria)}"  placeholder="Categoria">
-          <input id="ef-val-${d.id}"  type="number" value="${d.valor}" placeholder="Valor" min="0">
+          <input id="ef-val-${d.id}"  type="text" inputmode="decimal" value="${String(d.valor).replace('.', ',')}" placeholder="Valor">
           <button class="btn-primary" style="font-size:12px;padding:5px 12px;flex:0" onclick="salvarEdicaoFixa('${d.id}')">Salvar</button>
         </div>
       </div>`).join('');
@@ -2348,8 +2463,11 @@
     const data  = document.getElementById('d-data').value;
     const desc  = document.getElementById('d-descricao').value.trim();
     const cat   = document.getElementById('d-categoria').value;
-    const valor = Number(document.getElementById('d-valor').value);
-    if (!data || !desc || !valor) { alert('Preencha todos os campos.'); return; }
+    const valor = parseValor(document.getElementById('d-valor').value);
+    if (!data || !desc || !valor) {
+      toast('Preencha todos os campos.', 'error');
+      return;
+    }
     const lista = JSON.parse(localStorage.getItem('despesas') || '[]');
     lista.push({ id: uid(), data, descricao: desc, nome: desc, categoria: cat, valor });
     localStorage.setItem('despesas', JSON.stringify(lista));
@@ -2357,6 +2475,7 @@
     document.getElementById('d-valor').value = '';
     renderListaDespesas();
     atualizarHome();
+    toast('Despesa salva com sucesso!', 'success');
   }
   function excluirDespesa(id) {
     if (!confirm('Excluir esta despesa?')) return;
@@ -2470,9 +2589,9 @@
     const nome   = document.getElementById('c-nome').value.trim();
     const tipo   = document.getElementById('c-tipo').value;
     const dur    = Number(document.getElementById('c-duracao').value);
-    const valor  = Number(document.getElementById('c-valor').value) || 0;
+    const valor  = parseValor(document.getElementById('c-valor').value);
     const status = document.getElementById('c-status').value;
-    if (!data || !nome) { alert('Preencha data e nome.'); return; }
+    if (!data || !nome) { toast('Preencha data e nome.', 'error'); return; }
     const lista = JSON.parse(localStorage.getItem('compromissos') || '[]');
     lista.push({ id: uid(), data, hora, nome, descricao: nome, tipo, duracao: dur, valor, status, realizado: false });
     localStorage.setItem('compromissos', JSON.stringify(lista));
