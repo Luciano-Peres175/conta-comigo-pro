@@ -1160,6 +1160,93 @@
       to   { opacity: 0; transform: translateY(-8px); }
     }
 
+    /* ── Botão Voltar ─────────────────────────────────────────────── */
+    .btn-voltar {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #9B72B0;
+      font-family: var(--font-body);
+      font-weight: 500;
+      padding: 0 0 10px 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: opacity .15s;
+      line-height: 1;
+    }
+    .btn-voltar:hover { opacity: 0.7; }
+
+    /* ── Quick Access Grid ─────────────────────────────────────────── */
+    .quick-access-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .qa-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 8px 12px;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--texto);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      transition: transform .15s, box-shadow .15s;
+      min-width: 0;
+    }
+    .qa-btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.12); }
+    .qa-btn:active { transform: scale(0.97); }
+    .qa-btn-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Botão Início ─────────────────────────────────────────────── */
+    .btn-inicio {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #EDE7F6;
+      border: none;
+      border-radius: 20px;
+      padding: 16px 18px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 4px 12px rgba(126,87,194,0.12);
+      transition: transform .15s, box-shadow .15s;
+      font-family: var(--font-body);
+      margin-bottom: 20px;
+      text-decoration: none;
+    }
+    .btn-inicio:hover  { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(126,87,194,0.18); }
+    .btn-inicio:active { transform: scale(0.97); }
+    .btn-inicio-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: rgba(126,87,194,0.15);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .btn-inicio-texto { flex: 1; text-align: left; }
+    .btn-inicio-titulo { font-size: 18px; font-weight: 600; color: #4B3F72; display: block; }
+    .btn-inicio-sub    { font-size: 13px; color: #7A7295; display: block; margin-top: 2px; }
+    .btn-inicio-arrow  {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: #7E57C2;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
     /* ── Mobile save bar ─────────────────────────────────────────── */
     .mobile-save-bar { display: none; }
     @media (max-width: 767px) {
@@ -1243,6 +1330,10 @@
       <button class="nav-item" id="nav-cerebro" onclick="go('cerebro')">
         <span class="nav-icon">🧠</span> Segundo Cérebro
       </button>
+
+      <div class="nav-separator"></div>
+      <div class="nav-label">Em Breve</div>
+
       <button class="nav-item" onclick="abrirModalEmBreve('WhatsApp')">
         <span class="nav-icon">📱</span> WhatsApp
         <span class="nav-badge">Em breve</span>
@@ -1253,6 +1344,10 @@
       </button>
       <button class="nav-item" onclick="abrirModalEmBreve('Rel. Contador')">
         <span class="nav-icon">📊</span> Rel. Contador
+        <span class="nav-badge">Em breve</span>
+      </button>
+      <button class="nav-item" onclick="abrirModalEmBreve('2º Cérebro')">
+        <span class="nav-icon">🧠</span> 2º Cérebro
         <span class="nav-badge">Em breve</span>
       </button>
     </nav>
@@ -1327,10 +1422,79 @@
         <!-- Coluna esquerda: financeiro -->
         <div class="home-col" id="col-financeiro">
 
-          <!-- Botões de ação -->
-          <div class="action-buttons">
-            <button class="btn-primary" onclick="go('receitas')">+ Receita</button>
-            <button class="btn-outline" onclick="go('despesas')">+ Despesa</button>
+          <!-- Acesso rápido -->
+          <div class="quick-access-grid">
+            <button class="qa-btn" style="background:#E6F4EA" onclick="go('receitas')">
+              <div class="qa-btn-icon" style="background:#E6F4EA">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <circle cx="17" cy="17" r="8" stroke="#4CAF50" stroke-width="1.8"/>
+                  <path d="M15 17h4M17 15v4" stroke="#4CAF50" stroke-width="1.8" stroke-linecap="round"/>
+                  <path d="M7 13l3.5-5 3.5 5" stroke="#4CAF50" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                  <line x1="10.5" y1="8" x2="10.5" y2="14" stroke="#4CAF50" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span>Receitas</span>
+            </button>
+            <button class="qa-btn" style="background:#FCE8E6" onclick="go('despesas')">
+              <div class="qa-btn-icon" style="background:#FCE8E6">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <circle cx="17" cy="17" r="8" stroke="#E57373" stroke-width="1.8"/>
+                  <path d="M15 17h4M17 15v4" stroke="#E57373" stroke-width="1.8" stroke-linecap="round"/>
+                  <path d="M7 8l3.5 5 3.5-5" stroke="#E57373" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                  <line x1="10.5" y1="8" x2="10.5" y2="14" stroke="#E57373" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span>Despesas</span>
+            </button>
+            <button class="qa-btn" style="background:#EDE7F6" onclick="go('agenda')">
+              <div class="qa-btn-icon" style="background:#EDE7F6">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <rect x="3" y="6" width="22" height="18" rx="3" stroke="#7E57C2" stroke-width="1.8"/>
+                  <line x1="3" y1="12" x2="25" y2="12" stroke="#7E57C2" stroke-width="1.8"/>
+                  <line x1="9" y1="3" x2="9" y2="9" stroke="#7E57C2" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="19" y1="3" x2="19" y2="9" stroke="#7E57C2" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M8 19.5l3.5 3.5 7-7" stroke="#7E57C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+              </div>
+              <span>Agenda</span>
+            </button>
+            <button class="qa-btn" style="background:#E5E7EB" onclick="go('historico')">
+              <div class="qa-btn-icon" style="background:#E5E7EB">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <path d="M6 3h12l7 7v18H6V3z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+                  <path d="M18 3v7h7" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+                  <line x1="10" y1="15" x2="19" y2="15" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round"/>
+                  <line x1="10" y1="19" x2="19" y2="19" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round"/>
+                  <path d="M14 13v1.5M14 20v1.5" stroke="#6B7280" stroke-width="1.4" stroke-linecap="round"/>
+                  <path d="M11.5 16a2.5 2.5 0 005 0 2.5 2.5 0 00-5 0z" stroke="#6B7280" stroke-width="1.4" fill="none"/>
+                </svg>
+              </div>
+              <span>Fiscal</span>
+            </button>
+            <button class="qa-btn" style="background:#E6F4EA" onclick="abrirModalEmBreve('WhatsApp')">
+              <div class="qa-btn-icon" style="background:#E6F4EA">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <path d="M14 3C7.9 3 3 7.5 3 13c0 2.8 1.2 5.3 3.1 7.1L4.5 25l5.2-1.6C10.9 23.8 12.4 24 14 24c6.1 0 11-4.5 11-11S20.1 3 14 3z" stroke="#25D366" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+                  <path d="M9 13h10M9 17h6" stroke="#25D366" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span>WhatsApp</span>
+            </button>
+            <button class="qa-btn" style="background:#EDE7F6" onclick="go('cerebro')">
+              <div class="qa-btn-icon" style="background:#EDE7F6">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <path d="M14 7c-1.5 0-2.8.8-3.5 2-1-.8-2.5-.8-3.5 0-1.5 1.2-1.5 3 0 4.2.5.4 1.1.7 1.8.8" stroke="#7E57C2" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+                  <path d="M14 7c1.5 0 2.8.8 3.5 2 1-.8 2.5-.8 3.5 0 1.5 1.2 1.5 3 0 4.2-.5.4-1.1.7-1.8.8" stroke="#7E57C2" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+                  <path d="M8.5 14c0 3.5 2.5 6 5.5 6s5.5-2.5 5.5-6" stroke="#7E57C2" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+                  <line x1="14" y1="20" x2="14" y2="22.5" stroke="#7E57C2" stroke-width="1.4" stroke-linecap="round"/>
+                  <circle cx="11" cy="23" r="1.2" fill="#7E57C2"/>
+                  <circle cx="14" cy="23" r="1.2" fill="#7E57C2"/>
+                  <circle cx="17" cy="23" r="1.2" fill="#7E57C2"/>
+                  <line x1="11" y1="23" x2="17" y2="23" stroke="#7E57C2" stroke-width="1"/>
+                </svg>
+              </div>
+              <span>2º Cérebro</span>
+            </button>
           </div>
 
           <!-- Lançamentos recentes -->
@@ -1371,6 +1535,22 @@
 
     <!-- AGENDA -->
     <section class="screen" id="screen-agenda">
+      <button class="btn-inicio" onclick="go('home')">
+        <div class="btn-inicio-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M4 14L14 5L24 14V25H18V18H10V25H4V14Z" stroke="#7E57C2" stroke-width="2" stroke-linejoin="round" fill="rgba(126,87,194,0.12)"/>
+          </svg>
+        </div>
+        <div class="btn-inicio-texto">
+          <span class="btn-inicio-titulo">Início</span>
+          <span class="btn-inicio-sub">Ir para a tela inicial</span>
+        </div>
+        <div class="btn-inicio-arrow">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M6.5 4.5L12 9L6.5 13.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </button>
       <div class="screen-header">
         <h2>Agenda</h2>
         <p>Gerencie seus compromissos</p>
@@ -1422,10 +1602,10 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="field-label">Tipo</label>
-                <select id="c-tipo" class="field-select">
-                  <option>Atendimento</option>
-                  <option>Reunião</option>
-                  <option>Pessoal</option>
+                <select id="c-tipo" class="field-select" onchange="toggleValorAgenda()">
+                  <option value="Atendimento">Atendimento</option>
+                  <option value="Compromisso Profissional">Compromisso Profissional</option>
+                  <option value="Compromisso Pessoal">Compromisso Pessoal</option>
                 </select>
               </div>
               <div class="form-group">
@@ -1439,7 +1619,7 @@
               </div>
             </div>
             <div class="form-row">
-              <div class="form-group">
+              <div class="form-group" id="c-valor-group">
                 <label class="field-label">Valor (R$)</label>
                 <input type="text" inputmode="decimal" id="c-valor" class="field-input" placeholder="0,00">
               </div>
@@ -1461,6 +1641,7 @@
 
     <!-- RECEITAS -->
     <section class="screen" id="screen-receitas">
+      <button class="btn-voltar" onclick="go('home')">← Voltar</button>
       <div class="screen-header">
         <h2>Receitas</h2>
         <p>Registre e acompanhe seus atendimentos</p>
@@ -1533,6 +1714,7 @@
 
     <!-- DESPESAS -->
     <section class="screen" id="screen-despesas">
+      <button class="btn-voltar" onclick="go('home')">← Voltar</button>
       <div class="screen-header">
         <h2>Despesas</h2>
         <p>Gerencie gastos fixos e variáveis</p>
@@ -1624,6 +1806,22 @@
 
     <!-- HISTÓRICO -->
     <section class="screen" id="screen-historico">
+      <button class="btn-inicio" onclick="go('home')">
+        <div class="btn-inicio-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M4 14L14 5L24 14V25H18V18H10V25H4V14Z" stroke="#7E57C2" stroke-width="2" stroke-linejoin="round" fill="rgba(126,87,194,0.12)"/>
+          </svg>
+        </div>
+        <div class="btn-inicio-texto">
+          <span class="btn-inicio-titulo">Início</span>
+          <span class="btn-inicio-sub">Ir para a tela inicial</span>
+        </div>
+        <div class="btn-inicio-arrow">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M6.5 4.5L12 9L6.5 13.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </button>
       <div class="screen-header">
         <h2>Histórico</h2>
         <p>Todos os seus lançamentos</p>
@@ -1655,6 +1853,22 @@
 
     <!-- SEGUNDO CÉREBRO -->
     <section class="screen" id="screen-cerebro">
+      <button class="btn-inicio" onclick="go('home')">
+        <div class="btn-inicio-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M4 14L14 5L24 14V25H18V18H10V25H4V14Z" stroke="#7E57C2" stroke-width="2" stroke-linejoin="round" fill="rgba(126,87,194,0.12)"/>
+          </svg>
+        </div>
+        <div class="btn-inicio-texto">
+          <span class="btn-inicio-titulo">Início</span>
+          <span class="btn-inicio-sub">Ir para a tela inicial</span>
+        </div>
+        <div class="btn-inicio-arrow">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M6.5 4.5L12 9L6.5 13.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </button>
       <div class="screen-header">
         <h2>Segundo Cérebro 🧠</h2>
         <p>Sua enciclopédia profissional pessoal</p>
@@ -1805,14 +2019,25 @@
   function parseValor(v) {
     if (typeof v === 'number') return v;
     const s = String(v).trim().replace(/\s/g, '');
+    if (!s) return 0;
     const commas = (s.match(/,/g) || []).length;
     const dots   = (s.match(/\./g) || []).length;
     let normalized;
-    if (commas === 1 && dots === 0) {
+    if (commas === 0 && dots === 0) {
+      // "300" → 300, "1500" → 1500
+      normalized = s;
+    } else if (commas >= 1 && dots >= 1) {
+      // "3.830,40" → comma é decimal, ponto é milhar
+      normalized = s.replace(/\./g, '').replace(',', '.');
+    } else if (commas === 1 && dots === 0) {
+      // "3830,40" ou "1500,00" → vírgula é decimal
       normalized = s.replace(',', '.');
     } else if (dots === 1 && commas === 0) {
-      normalized = s;
+      // "3830.40" (decimal) ou "1.500" (milhar)
+      const afterDot = s.split('.')[1] || '';
+      normalized = afterDot.length === 3 ? s.replace('.', '') : s;
     } else {
+      // múltiplos pontos: "1.000.000" → milhar
       normalized = s.replace(/\./g, '').replace(',', '.');
     }
     return parseFloat(normalized) || 0;
@@ -2132,9 +2357,9 @@
   function corBarraTipo(tipo) {
     if (!tipo) return '#9B72B0';
     const t = tipo.toLowerCase();
-    if (t.includes('profissional') || t.includes('trabalho') || t.includes('reunião')) return '#7AB8D4';
-    if (t.includes('pessoal') || t.includes('personal') || t.includes('lazer')) return '#E8C4D4';
-    return '#9B72B0'; // consulta / atendimento
+    if (t.includes('profissional')) return '#7B9BC8';
+    if (t.includes('pessoal'))      return '#C4B8D4';
+    return '#9B72B0'; // Atendimento (padrão)
   }
 
   function badgeClass(status) {
@@ -2161,19 +2386,21 @@
     }
 
     el.innerHTML = doDia.map(c => {
-      const cor   = corBarraTipo(c.tipo);
-      const hora  = escHtml(c.hora || '--:--');
-      const nome  = escHtml(c.descricao || c.nome || c.paciente || 'Compromisso');
-      const tipo  = escHtml(c.tipo || 'Atendimento');
+      const cor    = corBarraTipo(c.tipo);
+      const hora   = escHtml(c.hora || '--:--');
+      const nome   = escHtml(c.descricao || c.nome || c.paciente || 'Compromisso');
+      const tipo   = escHtml(c.tipo || 'Atendimento');
       const bClass = badgeClass(c.status);
       const status = escHtml(c.status || 'Pendente');
+      const valorTxt = (c.tipo === 'Atendimento' && Number(c.valor) > 0)
+        ? `<span style="font-size:11px;font-weight:700;color:#7E57C2;margin-left:4px">${brl(c.valor)}</span>` : '';
 
       return `<div class="comp-item">
         <div class="comp-barra" style="background:${cor}"></div>
         <div class="comp-hora">${hora}</div>
         <div class="comp-info">
           <div class="comp-nome">${nome}</div>
-          <div class="comp-tipo">${tipo}</div>
+          <div class="comp-tipo">${tipo}${valorTxt}</div>
         </div>
         <span class="comp-badge ${bClass}">${status}</span>
       </div>`;
@@ -2252,8 +2479,8 @@
     const valor = parseValor(document.getElementById('r-valor').value);
     const forma = document.getElementById('r-pagamento').value;
     const status = document.getElementById('r-status').value;
-    if (!data || !nome || !valor) {
-      toast('Preencha data, nome e valor.', 'error');
+    if (!data || !nome) {
+      toast('Preencha data e nome do paciente.', 'error');
       return;
     }
     const lista = JSON.parse(localStorage.getItem('receitas') || '[]');
@@ -2491,6 +2718,8 @@
     if (!doDia.length) { el.innerHTML = '<div class="lanc-vazio">Nenhum compromisso neste dia</div>'; return; }
     el.innerHTML = doDia.map(c => {
       const cor = corBarraTipo(c.tipo), bc = badgeClass(c.status);
+      const valorTxt = (c.tipo === 'Atendimento' && Number(c.valor) > 0)
+        ? `<span style="font-size:11px;font-weight:700;color:#7E57C2;margin-left:4px">${brl(c.valor)}</span>` : '';
       const rlzBtn = c.realizado ? '' :
         `<button class="btn-icon" onclick="marcarRealizado('${c.id}')" title="Marcar realizado">✅</button>`;
       return `<div class="comp-item">
@@ -2498,7 +2727,7 @@
         <div class="comp-hora">${escHtml(c.hora||'--:--')}</div>
         <div class="comp-info">
           <div class="comp-nome">${escHtml(c.nome||c.descricao||'Compromisso')}</div>
-          <div class="comp-tipo">${escHtml(c.tipo||'Atendimento')}${c.duracao?' · '+c.duracao+' min':''}</div>
+          <div class="comp-tipo">${escHtml(c.tipo||'Atendimento')}${c.duracao?' · '+c.duracao+' min':''}${valorTxt}</div>
         </div>
         <span class="comp-badge ${bc}">${escHtml(c.status||'Pendente')}</span>
         ${rlzBtn}
@@ -2521,9 +2750,11 @@
     document.getElementById('c-nome').value  = '';
     document.getElementById('c-valor').value = '';
     document.getElementById('c-hora').value  = '';
+    calDiaSel = data;
     renderCalendario();
-    if (calDiaSel === data) renderListaDiaAgenda(data);
+    renderListaDiaAgenda(data);
     atualizarHome();
+    toast('Compromisso salvo!', 'success');
   }
   function excluirCompromisso(id) {
     if (!confirm('Excluir este compromisso?')) return;
@@ -2651,6 +2882,13 @@
     atualizarHome();
   }
 
+  /* ── Agenda: mostrar/ocultar campo valor por tipo ─────────────── */
+  function toggleValorAgenda() {
+    const tipo  = document.getElementById('c-tipo')?.value || '';
+    const grupo = document.getElementById('c-valor-group');
+    if (grupo) grupo.style.display = tipo === 'Atendimento' ? '' : 'none';
+  }
+
   /* ── Modal Em breve ────────────────────────────────────────────── */
   function abrirModalEmBreve(nome) {
     document.getElementById('modal-em-breve-titulo').textContent = nome;
@@ -2698,6 +2936,7 @@
     renderLancamentos();
     renderAgendaHome();
     renderCalendario();
+    toggleValorAgenda();
     const hash = location.hash.replace('#', '');
     if (TELAS.includes(hash)) go(hash);
   }
