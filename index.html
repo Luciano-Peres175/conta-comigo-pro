@@ -587,7 +587,7 @@
     .mini-agenda-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      padding: 10px 4px 12px;
+      padding: 8px 4px 12px;
       gap: 2px;
     }
     .mini-dia {
@@ -637,6 +637,47 @@
       width: 9px; height: 9px;
       border-radius: 50%;
       flex-shrink: 0;
+    }
+
+    /* ── Mini cards home (Compromissos de hoje) ─────────────────── */
+    .home-comp-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 10px 12px 14px;
+    }
+    .home-comp-card {
+      border-radius: 8px;
+      padding: 7px 10px;
+      border-left: 3px solid;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .home-comp-card-top {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .home-comp-hora {
+      font-weight: 700;
+      font-size: 10px;
+      opacity: .72;
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .home-comp-nome {
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      min-width: 0;
+    }
+    .home-comp-tipo {
+      font-size: 10px;
+      opacity: .6;
+      margin-top: 2px;
     }
 
     /* ── Layout telas internas ───────────────────────────────── */
@@ -1556,21 +1597,26 @@
         <!-- Coluna direita: agenda -->
         <div class="home-col" id="col-agenda">
 
-          <!-- Lista de compromissos do dia -->
+          <!-- Painel unificado de agenda -->
           <div class="agenda-card">
+            <!-- Cabeçalho -->
             <div class="agenda-header">
-              <span class="lancamentos-titulo" id="agenda-dia-titulo">Compromissos de hoje</span>
-              <button class="link-btn" onclick="go('agenda')">Ver agenda completa →</button>
+              <span class="lancamentos-titulo">📅 Agenda</span>
+              <button class="link-btn" onclick="go('agenda')">Ver completa →</button>
+            </div>
+
+            <!-- Seção: Hoje -->
+            <div style="padding:10px 14px 4px;border-bottom:1px solid var(--fundo)">
+              <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--lilas-light)" id="agenda-dia-titulo">Hoje</span>
             </div>
             <div id="lista-compromissos-hoje"></div>
-          </div>
 
-          <!-- Mini agenda semanal -->
-          <div class="mini-agenda-card">
-            <div class="mini-agenda-header">
-              <span class="lancamentos-titulo">Esta semana</span>
+            <!-- Seção: Esta semana -->
+            <div style="padding:10px 14px 4px;border-top:1px solid var(--fundo);border-bottom:1px solid var(--fundo)">
+              <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--lilas-light)">Esta semana</span>
             </div>
             <div class="mini-agenda-grid" id="mini-agenda-grid"></div>
+
           </div>
 
         </div><!-- /col-agenda -->
@@ -2403,6 +2449,18 @@
       .filter(c => c.data === dateStr)
       .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''));
 
+    // Atualiza subtítulo com data formatada
+    const tituloEl = document.getElementById('agenda-dia-titulo');
+    if (tituloEl) {
+      const hojeStr = toDateStr(new Date());
+      if (dateStr === hojeStr) {
+        tituloEl.textContent = 'Hoje';
+      } else {
+        const d = new Date(dateStr + 'T00:00:00');
+        tituloEl.textContent = d.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' });
+      }
+    }
+
     const el = document.getElementById('lista-compromissos-hoje');
     if (!el) return;
 
@@ -2411,26 +2469,25 @@
       return;
     }
 
-    el.innerHTML = doDia.map(c => {
-      const cor    = corBarraTipo(c.tipo);
-      const hora   = escHtml(c.hora || '--:--');
-      const nome   = escHtml(c.descricao || c.nome || c.paciente || 'Compromisso');
-      const tipo   = escHtml(c.tipo || 'Atendimento');
-      const bClass = badgeClass(c.status);
-      const status = escHtml(c.status || 'Pendente');
-      const valorTxt = (c.tipo === 'Atendimento' && Number(c.valor) > 0)
-        ? `<span style="font-size:11px;font-weight:700;color:#7E57C2;margin-left:4px">${brl(c.valor)}</span>` : '';
+    el.innerHTML = '<div class="home-comp-list">' + doDia.map(c => {
+      const cor     = corBarraTipo(c.tipo);
+      const bg      = cor === '#9B72B0' ? '#E8D5F5' :
+                      cor === '#7B9BC8' ? '#D5E8F5' : '#EBEBEB';
+      const txtCor  = cor === '#999' ? '#555' : cor;
+      const hora    = escHtml(c.hora || '--:--');
+      const nome    = escHtml(c.descricao || c.nome || c.paciente || 'Compromisso');
+      const tipo    = escHtml(c.tipo || 'Atendimento');
+      const valStr  = (c.tipo === 'Atendimento' && Number(c.valor) > 0)
+        ? ` · ${brl(c.valor)}` : '';
 
-      return `<div class="comp-item">
-        <div class="comp-dot" style="background:${cor}"></div>
-        <div class="comp-hora">${hora}</div>
-        <div class="comp-info">
-          <div class="comp-nome">${nome}</div>
-          <div class="comp-tipo">${tipo}${valorTxt}</div>
+      return `<div class="home-comp-card" style="background:${bg};border-color:${cor};color:${txtCor}">
+        <div class="home-comp-card-top">
+          <span class="home-comp-hora">${hora}</span>
+          <span class="home-comp-nome">${nome}</span>
         </div>
-        <span class="comp-badge ${bClass}">${status}</span>
+        <div class="home-comp-tipo">${tipo}${escHtml(valStr)}</div>
       </div>`;
-    }).join('');
+    }).join('') + '</div>';
   }
 
   function renderMiniAgenda() {
