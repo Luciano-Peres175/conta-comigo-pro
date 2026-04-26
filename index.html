@@ -1598,7 +1598,9 @@
         <div class="home-col" id="col-agenda">
 
           <!-- Botão Agendar -->
-          <button class="btn-primary" style="width:100%;margin-bottom:0" onclick="abrirModalNovoComp()">+ Agendar Compromisso</button>
+          <div class="action-buttons">
+            <button class="btn-primary" onclick="abrirModalNovoComp()">+ Agendar Compromisso</button>
+          </div>
 
           <!-- Card Agenda -->
           <div class="agenda-card">
@@ -2572,47 +2574,50 @@
     if (!el) return;
     const compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
     const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const hojeStr = toDateStr(hoje);
     const dom = new Date(hoje);
     dom.setDate(hoje.getDate() - hoje.getDay());
-    const fim = new Date(dom); fim.setDate(dom.getDate() + 6);
-    const domStr = toDateStr(dom), fimStr = toDateStr(fim);
 
-    const daSemana = compromissos
-      .filter(c => c.data >= domStr && c.data <= fimStr)
-      .sort((a,b) => a.data.localeCompare(b.data) || (a.hora||'').localeCompare(b.hora||''));
+    const NOMES = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
 
-    if (!daSemana.length) {
-      el.innerHTML = '<div class="lanc-vazio">Nenhum compromisso esta semana</div>';
-      return;
-    }
+    const colunas = NOMES.map((nome, i) => {
+      const d = new Date(dom); d.setDate(dom.getDate() + i);
+      const ds = toDateStr(d);
+      const isHoje = ds === hojeStr;
+      const doDia = compromissos
+        .filter(c => c.data === ds)
+        .sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
 
-    const DIAS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-    const grupos = {};
-    daSemana.forEach(c => { if (!grupos[c.data]) grupos[c.data] = []; grupos[c.data].push(c); });
+      const headerBg  = isHoje ? '#F0E8F8' : '#fff';
+      const headerBor = isHoje ? '1.5px solid #9B72B0' : '1px solid #eee';
+      const numColor  = isHoje ? '#9B72B0' : '#333';
+      const nomColor  = isHoje ? '#9B72B0' : '#aaa';
 
-    const html = Object.keys(grupos).sort().map(ds => {
-      const d = new Date(ds + 'T00:00:00');
-      const label = DIAS[d.getDay()].toUpperCase() + ' ' + d.getDate();
-      const cards = grupos[ds].map(c => {
-        const cor    = corBarraTipo(c.tipo);
-        const bg     = cor === '#9B72B0' ? '#F0E8F8' : cor === '#7B9BC8' ? '#E8F0F8' : '#F0F0F0';
-        const borda  = cor === '#9B72B0' ? '#9B72B0' : cor === '#7B9BC8' ? '#7B9BC8' : '#999999';
-        const txtCor = cor === '#999' ? '#555' : cor;
-        return `<div style="background:${bg};border-left:3px solid ${borda};border-radius:6px;padding:6px 10px;color:${txtCor}">
-          <div style="display:flex;gap:6px;align-items:baseline;min-width:0">
-            <span style="font-size:10px;font-weight:700;opacity:.75;white-space:nowrap;flex-shrink:0">${escHtml(c.hora||'--:--')}</span>
-            <span style="font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0">${escHtml(c.nome||c.descricao||'Compromisso')}</span>
-          </div>
-          <div style="font-size:10px;opacity:.6;margin-top:1px">${escHtml(c.tipo||'Atendimento')}</div>
+      const miniCards = doDia.map(c => {
+        const cor   = corBarraTipo(c.tipo);
+        const bg    = cor === '#9B72B0' ? '#F0E8F8' : cor === '#7B9BC8' ? '#E8F0F8' : '#F0F0F0';
+        const borda = cor === '#9B72B0' ? '#9B72B0' : cor === '#7B9BC8' ? '#7B9BC8' : '#999999';
+        const txt   = cor === '#999' ? '#555' : cor;
+        return `<div style="background:${bg};border-left:3px solid ${borda};border-radius:4px;padding:4px 5px;color:${txt};min-width:0">
+          <div style="font-size:9px;font-weight:700;opacity:.72;white-space:nowrap">${escHtml(c.hora||'--:--')}</div>
+          <div style="font-size:9px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(c.nome||c.descricao||'Compromisso')}</div>
         </div>`;
       }).join('');
-      return `<div>
-        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--lilas-light);margin-bottom:5px;padding-left:2px">${label}</div>
-        <div style="display:flex;flex-direction:column;gap:4px">${cards}</div>
+
+      return `<div style="background:#fff;border-radius:8px;border:${headerBor};overflow:hidden;min-width:0">
+        <div style="padding:5px 4px;text-align:center;background:${headerBg};border-bottom:${headerBor}">
+          <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${nomColor}">${nome}</div>
+          <div style="font-size:13px;font-weight:700;color:${numColor};line-height:1.3">${d.getDate()}</div>
+        </div>
+        <div style="padding:4px;display:flex;flex-direction:column;gap:3px">${miniCards}</div>
       </div>`;
     }).join('');
 
-    el.innerHTML = `<div style="padding:4px 12px 14px;display:flex;flex-direction:column;gap:10px">${html}</div>`;
+    el.innerHTML = `<div style="overflow-x:auto;padding:4px 8px 14px">
+      <div style="display:grid;grid-template-columns:repeat(7,minmax(76px,1fr));gap:4px">
+        ${colunas}
+      </div>
+    </div>`;
   }
 
   function renderAgendaHome() {
