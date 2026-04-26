@@ -586,9 +586,9 @@
     }
     .mini-agenda-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      padding: 10px 8px 12px;
-      gap: 4px;
+      grid-template-columns: repeat(7, 1fr);
+      padding: 10px 4px 12px;
+      gap: 2px;
     }
     .mini-dia {
       display: flex;
@@ -628,6 +628,13 @@
     }
     .mini-dot {
       width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* dot colorido na lista de compromissos da home */
+    .comp-dot {
+      width: 9px; height: 9px;
       border-radius: 50%;
       flex-shrink: 0;
     }
@@ -1160,6 +1167,113 @@
       to   { opacity: 0; transform: translateY(-8px); }
     }
 
+    /* ── Nav icon box (sidebar) ────────────────────────────────────── */
+    .nav-icon-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    /* ── Bottom nav icon box ─────────────────────────────────────── */
+    .bn-icon-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      margin: 0 auto 1px;
+    }
+    .bottom-nav-item.active .bn-icon-box { opacity: 1; }
+
+    /* ── Agenda Semanal ─────────────────────────────────────────── */
+    .agenda-nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .agenda-nav-week {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .agenda-semana-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--texto);
+      min-width: 180px;
+      text-align: center;
+    }
+    .agenda-semanal {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      flex: 1;
+      min-height: 0;
+      overflow-x: auto;
+    }
+    @media (max-width: 900px) {
+      .agenda-semanal { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .agenda-semanal { grid-template-columns: repeat(2, 1fr); }
+    }
+    .agenda-col-dia {
+      background: var(--branco);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      min-height: 300px;
+      overflow: hidden;
+    }
+    .agenda-col-header {
+      padding: 10px 8px;
+      text-align: center;
+      border-bottom: 1px solid var(--fundo);
+    }
+    .agenda-col-nome {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--texto-muted);
+    }
+    .agenda-col-num {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--texto);
+      line-height: 1.2;
+      margin-top: 2px;
+    }
+    .agenda-col-dia.hoje-col { border: 1.5px solid var(--lilas); }
+    .agenda-col-dia.hoje-col .agenda-col-header { background: #F0E8F8; }
+    .agenda-col-dia.hoje-col .agenda-col-nome,
+    .agenda-col-dia.hoje-col .agenda-col-num   { color: var(--lilas); }
+    .agenda-col-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .agenda-comp-card {
+      border-radius: 7px;
+      padding: 6px 8px;
+      font-size: 11px;
+      border-left: 3px solid;
+      cursor: default;
+    }
+    .agenda-comp-hora { font-weight: 700; font-size: 10px; opacity: .75; }
+    .agenda-comp-nome { font-weight: 600; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .agenda-comp-tipo { font-size: 10px; opacity: .65; margin-top: 1px; }
+
     /* ── Botão Voltar ─────────────────────────────────────────────── */
     .btn-voltar {
       background: none;
@@ -1309,45 +1423,45 @@
 
     <nav class="sidebar-nav">
       <button class="nav-item active" id="nav-home" onclick="go('home')">
-        <span class="nav-icon">🏠</span> Início
+        <span class="nav-icon"><span class="nav-icon-box" style="background:#EDE7F6"><svg width="14" height="14" viewBox="0 0 28 28" fill="none"><path d="M4 14L14 5L24 14V25H18V18H10V25H4V14Z" stroke="#7E57C2" stroke-width="2.5" stroke-linejoin="round" fill="rgba(126,87,194,.12)"/></svg></span></span> Início
       </button>
       <button class="nav-item" id="nav-agenda" onclick="go('agenda')">
-        <span class="nav-icon">📅</span> Agenda
+        <span class="nav-icon"><span class="nav-icon-box" style="background:#EDE7F6"><svg width="14" height="14" viewBox="0 0 28 28" fill="none"><rect x="3" y="6" width="22" height="18" rx="3" stroke="#7E57C2" stroke-width="2"/><line x1="3" y1="12" x2="25" y2="12" stroke="#7E57C2" stroke-width="2"/><line x1="9" y1="3" x2="9" y2="9" stroke="#7E57C2" stroke-width="2.2" stroke-linecap="round"/><line x1="19" y1="3" x2="19" y2="9" stroke="#7E57C2" stroke-width="2.2" stroke-linecap="round"/><path d="M8 19.5l3.5 3.5 7-7" stroke="#7E57C2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span></span> Agenda
       </button>
       <button class="nav-item" id="nav-receitas" onclick="go('receitas')">
-        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" width="1em" height="1em" style="vertical-align:-.12em;display:inline-block"><circle cx="11" cy="11" r="11" fill="#1D9E75"/><path d="M11 15V8M8 11l3-3 3 3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Receitas
+        <span class="nav-icon"><span class="nav-icon-box" style="background:#E6F4EA"><svg width="14" height="14" viewBox="0 0 28 28" fill="none"><circle cx="17" cy="17" r="8" stroke="#4CAF50" stroke-width="2"/><path d="M15 17h4M17 15v4" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/><path d="M7 13l3.5-5 3.5 5" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="10.5" y1="8" x2="10.5" y2="14" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/></svg></span></span> Receitas
       </button>
       <button class="nav-item" id="nav-despesas" onclick="go('despesas')">
-        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" width="1em" height="1em" style="vertical-align:-.12em;display:inline-block"><circle cx="11" cy="11" r="11" fill="#C85A5A"/><path d="M11 7V14M8 11l3 3 3-3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Despesas
+        <span class="nav-icon"><span class="nav-icon-box" style="background:#FCE8E6"><svg width="14" height="14" viewBox="0 0 28 28" fill="none"><circle cx="17" cy="17" r="8" stroke="#E57373" stroke-width="2"/><path d="M15 17h4M17 15v4" stroke="#E57373" stroke-width="2" stroke-linecap="round"/><path d="M7 8l3.5 5 3.5-5" stroke="#E57373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="10.5" y1="8" x2="10.5" y2="14" stroke="#E57373" stroke-width="2" stroke-linecap="round"/></svg></span></span> Despesas
       </button>
       <button class="nav-item" id="nav-historico" onclick="go('historico')">
-        <span class="nav-icon">📊</span> Histórico
+        <span class="nav-icon"><span class="nav-icon-box" style="background:#E5E7EB"><svg width="14" height="14" viewBox="0 0 28 28" fill="none"><path d="M6 3h12l7 7v18H6V3z" stroke="#6B7280" stroke-width="2" stroke-linejoin="round" fill="none"/><path d="M18 3v7h7" stroke="#6B7280" stroke-width="2" stroke-linejoin="round" fill="none"/><line x1="10" y1="15" x2="19" y2="15" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/><line x1="10" y1="19" x2="19" y2="19" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/></svg></span></span> Histórico
       </button>
 
       <div class="nav-separator"></div>
       <div class="nav-label">Ferramentas</div>
 
       <button class="nav-item" id="nav-cerebro" onclick="go('cerebro')">
-        <span class="nav-icon">🧠</span> Segundo Cérebro
+        <span class="nav-icon"><span class="nav-icon-box" style="background:#EDE7F6"><svg width="14" height="14" viewBox="0 0 28 28" fill="none"><path d="M14 7c-1.5 0-2.8.8-3.5 2-1-.8-2.5-.8-3.5 0-1.5 1.2-1.5 3 0 4.2.5.4 1.1.7 1.8.8" stroke="#7E57C2" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M14 7c1.5 0 2.8.8 3.5 2 1-.8 2.5-.8 3.5 0 1.5 1.2 1.5 3 0 4.2-.5.4-1.1.7-1.8.8" stroke="#7E57C2" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M8.5 14c0 3.5 2.5 6 5.5 6s5.5-2.5 5.5-6" stroke="#7E57C2" stroke-width="1.8" stroke-linecap="round" fill="none"/><line x1="14" y1="20" x2="14" y2="22.5" stroke="#7E57C2" stroke-width="1.6" stroke-linecap="round"/><circle cx="11" cy="23" r="1.2" fill="#7E57C2"/><circle cx="14" cy="23" r="1.2" fill="#7E57C2"/><circle cx="17" cy="23" r="1.2" fill="#7E57C2"/><line x1="11" y1="23" x2="17" y2="23" stroke="#7E57C2" stroke-width="1"/></svg></span></span> Segundo Cérebro
       </button>
 
       <div class="nav-separator"></div>
       <div class="nav-label">Em Breve</div>
 
       <button class="nav-item" onclick="abrirModalEmBreve('WhatsApp')">
-        <span class="nav-icon">📱</span> WhatsApp
+        <span class="nav-icon"><span class="nav-icon-box" style="background:#E6F4EA"><svg width="14" height="14" viewBox="0 0 28 28" fill="none"><path d="M14 3C7.9 3 3 7.5 3 13c0 2.8 1.2 5.3 3.1 7.1L4.5 25l5.2-1.6C10.9 23.8 12.4 24 14 24c6.1 0 11-4.5 11-11S20.1 3 14 3z" stroke="#25D366" stroke-width="2" stroke-linejoin="round" fill="none"/><path d="M9 13h10M9 17h6" stroke="#25D366" stroke-width="2" stroke-linecap="round"/></svg></span></span> WhatsApp
         <span class="nav-badge">Em breve</span>
       </button>
       <button class="nav-item" onclick="abrirModalEmBreve('Emissão NF')">
-        <span class="nav-icon">📄</span> Emissão NF
+        <span class="nav-icon"><span class="nav-icon-box" style="background:#E5E7EB"><svg width="14" height="14" viewBox="0 0 28 28" fill="none"><path d="M6 3h12l7 7v18H6V3z" stroke="#6B7280" stroke-width="2" stroke-linejoin="round" fill="none"/><path d="M18 3v7h7" stroke="#6B7280" stroke-width="2" stroke-linejoin="round" fill="none"/><line x1="10" y1="14" x2="19" y2="14" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/><line x1="10" y1="18" x2="19" y2="18" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/><line x1="10" y1="22" x2="15" y2="22" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/></svg></span></span> Emissão NF
         <span class="nav-badge">Em breve</span>
       </button>
       <button class="nav-item" onclick="abrirModalEmBreve('Rel. Contador')">
-        <span class="nav-icon">📊</span> Rel. Contador
+        <span class="nav-icon"><span class="nav-icon-box" style="background:#EDE7F6"><svg width="14" height="14" viewBox="0 0 28 28" fill="none"><rect x="4" y="16" width="4" height="8" rx="1" fill="#7E57C2"/><rect x="12" y="10" width="4" height="14" rx="1" fill="#7E57C2"/><rect x="20" y="5" width="4" height="19" rx="1" fill="#7E57C2"/><path d="M6 10l6-6 6 5 6-6" stroke="#7E57C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span></span> Rel. Contador
         <span class="nav-badge">Em breve</span>
       </button>
       <button class="nav-item" onclick="abrirModalEmBreve('2º Cérebro')">
-        <span class="nav-icon">🧠</span> 2º Cérebro
+        <span class="nav-icon"><span class="nav-icon-box" style="background:#EDE7F6"><svg width="14" height="14" viewBox="0 0 28 28" fill="none"><path d="M14 7c-1.5 0-2.8.8-3.5 2-1-.8-2.5-.8-3.5 0-1.5 1.2-1.5 3 0 4.2.5.4 1.1.7 1.8.8" stroke="#7E57C2" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M14 7c1.5 0 2.8.8 3.5 2 1-.8 2.5-.8 3.5 0 1.5 1.2 1.5 3 0 4.2-.5.4-1.1.7-1.8.8" stroke="#7E57C2" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M8.5 14c0 3.5 2.5 6 5.5 6s5.5-2.5 5.5-6" stroke="#7E57C2" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></span></span> 2º Cérebro
         <span class="nav-badge">Em breve</span>
       </button>
     </nav>
@@ -1422,79 +1536,10 @@
         <!-- Coluna esquerda: financeiro -->
         <div class="home-col" id="col-financeiro">
 
-          <!-- Acesso rápido -->
-          <div class="quick-access-grid">
-            <button class="qa-btn" style="background:#E6F4EA" onclick="go('receitas')">
-              <div class="qa-btn-icon" style="background:#E6F4EA">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <circle cx="17" cy="17" r="8" stroke="#4CAF50" stroke-width="1.8"/>
-                  <path d="M15 17h4M17 15v4" stroke="#4CAF50" stroke-width="1.8" stroke-linecap="round"/>
-                  <path d="M7 13l3.5-5 3.5 5" stroke="#4CAF50" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                  <line x1="10.5" y1="8" x2="10.5" y2="14" stroke="#4CAF50" stroke-width="1.8" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <span>Receitas</span>
-            </button>
-            <button class="qa-btn" style="background:#FCE8E6" onclick="go('despesas')">
-              <div class="qa-btn-icon" style="background:#FCE8E6">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <circle cx="17" cy="17" r="8" stroke="#E57373" stroke-width="1.8"/>
-                  <path d="M15 17h4M17 15v4" stroke="#E57373" stroke-width="1.8" stroke-linecap="round"/>
-                  <path d="M7 8l3.5 5 3.5-5" stroke="#E57373" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                  <line x1="10.5" y1="8" x2="10.5" y2="14" stroke="#E57373" stroke-width="1.8" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <span>Despesas</span>
-            </button>
-            <button class="qa-btn" style="background:#EDE7F6" onclick="go('agenda')">
-              <div class="qa-btn-icon" style="background:#EDE7F6">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <rect x="3" y="6" width="22" height="18" rx="3" stroke="#7E57C2" stroke-width="1.8"/>
-                  <line x1="3" y1="12" x2="25" y2="12" stroke="#7E57C2" stroke-width="1.8"/>
-                  <line x1="9" y1="3" x2="9" y2="9" stroke="#7E57C2" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="19" y1="3" x2="19" y2="9" stroke="#7E57C2" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M8 19.5l3.5 3.5 7-7" stroke="#7E57C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                </svg>
-              </div>
-              <span>Agenda</span>
-            </button>
-            <button class="qa-btn" style="background:#E5E7EB" onclick="go('historico')">
-              <div class="qa-btn-icon" style="background:#E5E7EB">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <path d="M6 3h12l7 7v18H6V3z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
-                  <path d="M18 3v7h7" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
-                  <line x1="10" y1="15" x2="19" y2="15" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round"/>
-                  <line x1="10" y1="19" x2="19" y2="19" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round"/>
-                  <path d="M14 13v1.5M14 20v1.5" stroke="#6B7280" stroke-width="1.4" stroke-linecap="round"/>
-                  <path d="M11.5 16a2.5 2.5 0 005 0 2.5 2.5 0 00-5 0z" stroke="#6B7280" stroke-width="1.4" fill="none"/>
-                </svg>
-              </div>
-              <span>Fiscal</span>
-            </button>
-            <button class="qa-btn" style="background:#E6F4EA" onclick="abrirModalEmBreve('WhatsApp')">
-              <div class="qa-btn-icon" style="background:#E6F4EA">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <path d="M14 3C7.9 3 3 7.5 3 13c0 2.8 1.2 5.3 3.1 7.1L4.5 25l5.2-1.6C10.9 23.8 12.4 24 14 24c6.1 0 11-4.5 11-11S20.1 3 14 3z" stroke="#25D366" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
-                  <path d="M9 13h10M9 17h6" stroke="#25D366" stroke-width="1.8" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <span>WhatsApp</span>
-            </button>
-            <button class="qa-btn" style="background:#EDE7F6" onclick="go('cerebro')">
-              <div class="qa-btn-icon" style="background:#EDE7F6">
-                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                  <path d="M14 7c-1.5 0-2.8.8-3.5 2-1-.8-2.5-.8-3.5 0-1.5 1.2-1.5 3 0 4.2.5.4 1.1.7 1.8.8" stroke="#7E57C2" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-                  <path d="M14 7c1.5 0 2.8.8 3.5 2 1-.8 2.5-.8 3.5 0 1.5 1.2 1.5 3 0 4.2-.5.4-1.1.7-1.8.8" stroke="#7E57C2" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-                  <path d="M8.5 14c0 3.5 2.5 6 5.5 6s5.5-2.5 5.5-6" stroke="#7E57C2" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-                  <line x1="14" y1="20" x2="14" y2="22.5" stroke="#7E57C2" stroke-width="1.4" stroke-linecap="round"/>
-                  <circle cx="11" cy="23" r="1.2" fill="#7E57C2"/>
-                  <circle cx="14" cy="23" r="1.2" fill="#7E57C2"/>
-                  <circle cx="17" cy="23" r="1.2" fill="#7E57C2"/>
-                  <line x1="11" y1="23" x2="17" y2="23" stroke="#7E57C2" stroke-width="1"/>
-                </svg>
-              </div>
-              <span>2º Cérebro</span>
-            </button>
+          <!-- Botões de ação -->
+          <div class="action-buttons">
+            <button class="btn-primary" style="background:#4CAF50;border-color:#4CAF50" onclick="go('receitas')">＋ Lançar Receita</button>
+            <button class="btn-primary" style="background:#E57373;border-color:#E57373" onclick="go('despesas')">＋ Lançar Despesa</button>
           </div>
 
           <!-- Lançamentos recentes -->
@@ -1551,92 +1596,17 @@
           </svg>
         </div>
       </button>
-      <div class="screen-header">
-        <h2>Agenda</h2>
-        <p>Gerencie seus compromissos</p>
-      </div>
-      <div class="tela-layout col-equal">
 
-        <!-- Calendário + lista do dia -->
-        <div style="display:flex;flex-direction:column;gap:16px">
-          <div class="form-card">
-            <div class="cal-wrapper">
-              <div class="cal-nav">
-                <button class="cal-btn" onclick="calNavegar(-1)">‹</button>
-                <span class="cal-mes" id="cal-mes-titulo"></span>
-                <button class="cal-btn" onclick="calNavegar(1)">›</button>
-              </div>
-              <div class="cal-grid-header">
-                <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span>
-                <span>Qui</span><span>Sex</span><span>Sáb</span>
-              </div>
-              <div class="cal-grid" id="cal-grid"></div>
-            </div>
-          </div>
-          <div class="list-card">
-            <div class="card-header">
-              <span class="card-title" id="cal-dia-titulo">Selecione um dia</span>
-            </div>
-            <div id="lista-agenda-dia"></div>
-          </div>
+      <div class="agenda-nav-bar">
+        <div class="agenda-nav-week">
+          <button class="cal-btn" onclick="agNavegar(-1)" style="font-size:13px;padding:6px 12px;display:flex;align-items:center;gap:4px">‹ Semana anterior</button>
+          <span class="agenda-semana-label" id="ag-semana-label"></span>
+          <button class="cal-btn" onclick="agNavegar(1)" style="font-size:13px;padding:6px 12px;display:flex;align-items:center;gap:4px">Próxima semana ›</button>
         </div>
-
-        <!-- Formulário novo compromisso -->
-        <div class="form-card">
-          <div class="card-header"><span class="card-title">Novo Compromisso</span></div>
-          <div class="card-body">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="field-label">Data</label>
-                <input type="date" id="c-data" class="field-input">
-              </div>
-              <div class="form-group">
-                <label class="field-label">Horário</label>
-                <input type="time" id="c-hora" class="field-input">
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="field-label">Nome do Paciente / Descrição</label>
-              <input type="text" id="c-nome" class="field-input" placeholder="Ex: Maria Silva">
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="field-label">Tipo</label>
-                <select id="c-tipo" class="field-select" onchange="toggleValorAgenda()">
-                  <option value="Atendimento">Atendimento</option>
-                  <option value="Compromisso Profissional">Compromisso Profissional</option>
-                  <option value="Compromisso Pessoal">Compromisso Pessoal</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="field-label">Duração</label>
-                <select id="c-duracao" class="field-select">
-                  <option value="30">30 min</option>
-                  <option value="45" selected>45 min</option>
-                  <option value="60">60 min</option>
-                  <option value="90">90 min</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group" id="c-valor-group">
-                <label class="field-label">Valor (R$)</label>
-                <input type="text" inputmode="decimal" id="c-valor" class="field-input" placeholder="0,00">
-              </div>
-              <div class="form-group">
-                <label class="field-label">Status</label>
-                <select id="c-status" class="field-select">
-                  <option>Confirmado</option>
-                  <option>Aguardando</option>
-                  <option>Pendente</option>
-                </select>
-              </div>
-            </div>
-            <button class="btn-primary" style="width:100%;margin-top:4px" onclick="salvarCompromisso()">Salvar Compromisso</button>
-          </div>
-        </div>
-
+        <button class="btn-primary" style="white-space:nowrap" onclick="abrirModalNovoComp()">+ Novo Compromisso</button>
       </div>
+
+      <div class="agenda-semanal" id="agenda-grid-semanal"></div>
     </section>
 
     <!-- RECEITAS -->
@@ -1928,19 +1898,19 @@
 ═══════════════════════════════════════════════════════════════ -->
 <nav id="bottom-nav">
   <button class="bottom-nav-item active" id="bn-home" onclick="go('home')">
-    <span class="bn-icon">🏠</span>
+    <span class="bn-icon"><span class="bn-icon-box" style="background:#EDE7F6"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><path d="M4 14L14 5L24 14V25H18V18H10V25H4V14Z" stroke="#7E57C2" stroke-width="2.5" stroke-linejoin="round" fill="rgba(126,87,194,.12)"/></svg></span></span>
     <span>Início</span>
   </button>
   <button class="bottom-nav-item" id="bn-agenda" onclick="go('agenda')">
-    <span class="bn-icon">📅</span>
+    <span class="bn-icon"><span class="bn-icon-box" style="background:#EDE7F6"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><rect x="3" y="6" width="22" height="18" rx="3" stroke="#7E57C2" stroke-width="2"/><line x1="3" y1="12" x2="25" y2="12" stroke="#7E57C2" stroke-width="2"/><line x1="9" y1="3" x2="9" y2="9" stroke="#7E57C2" stroke-width="2.2" stroke-linecap="round"/><line x1="19" y1="3" x2="19" y2="9" stroke="#7E57C2" stroke-width="2.2" stroke-linecap="round"/><path d="M8 19.5l3.5 3.5 7-7" stroke="#7E57C2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span></span>
     <span>Agenda</span>
   </button>
   <button class="bottom-nav-item" id="bn-receitas" onclick="go('receitas')">
-    <span class="bn-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" width="1em" height="1em" style="vertical-align:-.12em;display:inline-block"><circle cx="11" cy="11" r="11" fill="#1D9E75"/><path d="M11 15V8M8 11l3-3 3 3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="bn-icon"><span class="bn-icon-box" style="background:#E6F4EA"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><circle cx="17" cy="17" r="8" stroke="#4CAF50" stroke-width="2"/><path d="M15 17h4M17 15v4" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/><path d="M7 13l3.5-5 3.5 5" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="10.5" y1="8" x2="10.5" y2="14" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"/></svg></span></span>
     <span>Receitas</span>
   </button>
   <button class="bottom-nav-item" id="bn-despesas" onclick="go('despesas')">
-    <span class="bn-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" width="1em" height="1em" style="vertical-align:-.12em;display:inline-block"><circle cx="11" cy="11" r="11" fill="#C85A5A"/><path d="M11 7V14M8 11l3 3 3-3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="bn-icon"><span class="bn-icon-box" style="background:#FCE8E6"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><circle cx="17" cy="17" r="8" stroke="#E57373" stroke-width="2"/><path d="M15 17h4M17 15v4" stroke="#E57373" stroke-width="2" stroke-linecap="round"/><path d="M7 8l3.5 5 3.5-5" stroke="#E57373" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="10.5" y1="8" x2="10.5" y2="14" stroke="#E57373" stroke-width="2" stroke-linecap="round"/></svg></span></span>
     <span>Despesas</span>
   </button>
 </nav>
@@ -1952,6 +1922,62 @@
 
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toast-container"></div>
+
+<!-- MODAL NOVO COMPROMISSO -->
+<div id="modal-novo-comp" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.45);z-index:500;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:18px;padding:24px 22px;max-width:460px;width:92%;box-shadow:0 20px 60px rgba(107,63,138,.22);position:relative;max-height:90vh;overflow-y:auto">
+    <button onclick="fecharModalNovoComp()" style="position:absolute;top:14px;right:16px;border:none;background:none;font-size:18px;cursor:pointer;color:#888">✕</button>
+    <h3 style="font-family:var(--font-title);font-size:18px;font-weight:600;color:var(--lilas);margin-bottom:16px">Novo Compromisso</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="field-label">Data</label>
+        <input type="date" id="c-data" class="field-input">
+      </div>
+      <div class="form-group">
+        <label class="field-label">Horário</label>
+        <input type="time" id="c-hora" class="field-input">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="field-label">Nome do Paciente / Descrição</label>
+      <input type="text" id="c-nome" class="field-input" placeholder="Ex: Maria Silva">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="field-label">Tipo</label>
+        <select id="c-tipo" class="field-select" onchange="toggleValorAgenda()">
+          <option value="Atendimento">Atendimento</option>
+          <option value="Compromisso Profissional">Compromisso Profissional</option>
+          <option value="Compromisso Pessoal">Compromisso Pessoal</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="field-label">Duração</label>
+        <select id="c-duracao" class="field-select">
+          <option value="30">30 min</option>
+          <option value="45" selected>45 min</option>
+          <option value="60">60 min</option>
+          <option value="90">90 min</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" id="c-valor-group">
+        <label class="field-label">Valor (R$)</label>
+        <input type="text" inputmode="decimal" id="c-valor" class="field-input" placeholder="0,00">
+      </div>
+      <div class="form-group">
+        <label class="field-label">Status</label>
+        <select id="c-status" class="field-select">
+          <option>Confirmado</option>
+          <option>Aguardando</option>
+          <option>Pendente</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-primary" style="width:100%;margin-top:4px" onclick="salvarCompromisso()">Salvar Compromisso</button>
+  </div>
+</div>
 
 <!-- MODAL EM BREVE -->
 <div id="modal-em-breve" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.45);z-index:500;align-items:center;justify-content:center">
@@ -2125,7 +2151,7 @@
 
     if (tela === 'receitas')  renderListaReceitas();
     if (tela === 'despesas')  { renderDespesasFixas(); renderListaDespesas(); }
-    if (tela === 'agenda')    renderCalendario();
+    if (tela === 'agenda')    renderAgendaSemanal();
     if (tela === 'historico') { populaSelectMes(); renderHistorico(); }
   }
 
@@ -2358,7 +2384,7 @@
     if (!tipo) return '#9B72B0';
     const t = tipo.toLowerCase();
     if (t.includes('profissional')) return '#7B9BC8';
-    if (t.includes('pessoal'))      return '#C4B8D4';
+    if (t.includes('pessoal'))      return '#999';
     return '#9B72B0'; // Atendimento (padrão)
   }
 
@@ -2396,7 +2422,7 @@
         ? `<span style="font-size:11px;font-weight:700;color:#7E57C2;margin-left:4px">${brl(c.valor)}</span>` : '';
 
       return `<div class="comp-item">
-        <div class="comp-barra" style="background:${cor}"></div>
+        <div class="comp-dot" style="background:${cor}"></div>
         <div class="comp-hora">${hora}</div>
         <div class="comp-info">
           <div class="comp-nome">${nome}</div>
@@ -2412,31 +2438,28 @@
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     const hojeStr = toDateStr(hoje);
 
-    const diaSemana = hoje.getDay();
-    const diffToMon = diaSemana === 0 ? -6 : 1 - diaSemana;
-    const seg = new Date(hoje);
-    seg.setDate(hoje.getDate() + diffToMon);
+    // Domingo da semana atual
+    const dom = new Date(hoje);
+    dom.setDate(hoje.getDate() - hoje.getDay());
 
-    const NOMES = ['Seg','Ter','Qua','Qui','Sex'];
+    const NOMES = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
     const grid = document.getElementById('mini-agenda-grid');
     if (!grid) return;
 
     grid.innerHTML = NOMES.map((nome, i) => {
-      const d = new Date(seg);
-      d.setDate(seg.getDate() + i);
+      const d = new Date(dom);
+      d.setDate(dom.getDate() + i);
       const dateStr  = toDateStr(d);
       const isHoje   = dateStr === hojeStr;
-      const isAtivo  = dateStr === agendaDiaSelecionado;
       const doDia    = compromissos.filter(c => c.data === dateStr);
 
-      const classes = ['mini-dia', isHoje ? 'hoje' : '', isAtivo ? 'ativo' : '']
-        .filter(Boolean).join(' ');
+      const classes = ['mini-dia', isHoje ? 'hoje' : ''].filter(Boolean).join(' ');
 
       const dots = doDia.slice(0, 3).map(c =>
         `<div class="mini-dot" style="background:${corBarraTipo(c.tipo)}"></div>`
       ).join('') || '<div style="height:7px"></div>';
 
-      return `<div class="${classes}" onclick="selecionarDia('${dateStr}')">
+      return `<div class="${classes}" onclick="irParaAgendaDia('${dateStr}')">
         <div class="mini-dia-nome">${nome}</div>
         <div class="mini-dia-num">${d.getDate()}</div>
         <div class="mini-dia-dots">${dots}</div>
@@ -2444,29 +2467,21 @@
     }).join('');
   }
 
-  function selecionarDia(dateStr) {
-    agendaDiaSelecionado = dateStr;
-
-    const el = document.getElementById('agenda-dia-titulo');
-    if (el) {
-      const hoje = new Date(); hoje.setHours(0,0,0,0);
-      const hojeStr = toDateStr(hoje);
-      if (dateStr === hojeStr) {
-        el.textContent = 'Compromissos de hoje';
-      } else {
-        const d = new Date(dateStr + 'T00:00:00');
-        el.textContent = 'Compromissos de ' +
-          d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric' });
-      }
-    }
-
-    renderAgendaDia(dateStr);
-    renderMiniAgenda();
+  function irParaAgendaDia(dateStr) {
+    // Calcula o offset de semana para exibir a semana que contém dateStr
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const domHoje = new Date(hoje);
+    domHoje.setDate(hoje.getDate() - hoje.getDay());
+    const domAlvo = new Date(dateStr + 'T00:00:00');
+    domAlvo.setDate(domAlvo.getDate() - domAlvo.getDay());
+    const diffMs = domAlvo - domHoje;
+    agSemanaOffset = Math.round(diffMs / (7 * 24 * 3600 * 1000));
+    go('agenda');
   }
 
   function renderAgendaHome() {
     const hoje = new Date(); hoje.setHours(0,0,0,0);
-    if (!agendaDiaSelecionado) agendaDiaSelecionado = toDateStr(hoje);
+    agendaDiaSelecionado = toDateStr(hoje);
     renderAgendaDia(agendaDiaSelecionado);
     renderMiniAgenda();
   }
@@ -2750,9 +2765,8 @@
     document.getElementById('c-nome').value  = '';
     document.getElementById('c-valor').value = '';
     document.getElementById('c-hora').value  = '';
-    calDiaSel = data;
-    renderCalendario();
-    renderListaDiaAgenda(data);
+    fecharModalNovoComp();
+    renderAgendaSemanal();
     atualizarHome();
     toast('Compromisso salvo!', 'success');
   }
@@ -2761,8 +2775,7 @@
     localStorage.setItem('compromissos', JSON.stringify(
       JSON.parse(localStorage.getItem('compromissos') || '[]').filter(c => c.id !== id)
     ));
-    if (calDiaSel) renderListaDiaAgenda(calDiaSel);
-    renderCalendario();
+    renderAgendaSemanal();
     atualizarHome();
   }
   function marcarRealizado(id) {
@@ -2779,7 +2792,7 @@
     }
     lista[idx] = { ...comp, status: 'Confirmado', realizado: true };
     localStorage.setItem('compromissos', JSON.stringify(lista));
-    if (calDiaSel) renderListaDiaAgenda(calDiaSel);
+    renderAgendaSemanal();
     atualizarHome();
   }
 
@@ -2889,6 +2902,75 @@
     if (grupo) grupo.style.display = tipo === 'Atendimento' ? '' : 'none';
   }
 
+  /* ── Agenda semanal ─────────────────────────────────────────────── */
+  let agSemanaOffset = 0;
+
+  function agNavegar(delta) {
+    agSemanaOffset += delta;
+    renderAgendaSemanal();
+  }
+
+  function renderAgendaSemanal() {
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const hojeStr = toDateStr(hoje);
+    const compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
+
+    const dom = new Date(hoje);
+    dom.setDate(hoje.getDate() - hoje.getDay() + agSemanaOffset * 7);
+    const fim = new Date(dom); fim.setDate(dom.getDate() + 6);
+
+    const lbl = document.getElementById('ag-semana-label');
+    if (lbl) lbl.textContent =
+      dom.toLocaleDateString('pt-BR', {day:'numeric', month:'short'}) + ' – ' +
+      fim.toLocaleDateString('pt-BR', {day:'numeric', month:'short', year:'numeric'});
+
+    const DIAS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const grid = document.getElementById('agenda-grid-semanal');
+    if (!grid) return;
+
+    grid.innerHTML = DIAS.map((nome, i) => {
+      const d = new Date(dom);
+      d.setDate(dom.getDate() + i);
+      const ds = toDateStr(d);
+      const isHoje = ds === hojeStr;
+      const doDia = compromissos
+        .filter(c => c.data === ds)
+        .sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
+
+      const cards = doDia.map(c => {
+        const cor = corBarraTipo(c.tipo);
+        const bg  = cor === '#9B72B0' ? '#E8D5F5' :
+                    cor === '#7B9BC8' ? '#D5E8F5' : '#EBEBEB';
+        const txtCor = cor === '#999' ? '#555' : cor;
+        const valorTxt = (c.tipo === 'Atendimento' && Number(c.valor) > 0)
+          ? `<div class="agenda-comp-tipo" style="font-weight:700;opacity:1">${brl(c.valor)}</div>` : '';
+        return `<div class="agenda-comp-card" style="background:${bg};border-color:${cor};color:${txtCor}">
+          <div class="agenda-comp-hora">${escHtml(c.hora||'--:--')}</div>
+          <div class="agenda-comp-nome">${escHtml(c.nome||c.descricao||'Compromisso')}</div>
+          <div class="agenda-comp-tipo">${escHtml(c.tipo||'Atendimento')}</div>
+          ${valorTxt}
+        </div>`;
+      }).join('');
+
+      return `<div class="agenda-col-dia${isHoje?' hoje-col':''}">
+        <div class="agenda-col-header">
+          <div class="agenda-col-nome">${nome}</div>
+          <div class="agenda-col-num">${d.getDate()}</div>
+        </div>
+        <div class="agenda-col-body">${cards}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function abrirModalNovoComp() {
+    const m = document.getElementById('modal-novo-comp');
+    if (m) { m.style.display = 'flex'; toggleValorAgenda(); }
+  }
+  function fecharModalNovoComp() {
+    const m = document.getElementById('modal-novo-comp');
+    if (m) m.style.display = 'none';
+  }
+
   /* ── Modal Em breve ────────────────────────────────────────────── */
   function abrirModalEmBreve(nome) {
     document.getElementById('modal-em-breve-titulo').textContent = nome;
@@ -2935,7 +3017,7 @@
     renderCardAgenda();
     renderLancamentos();
     renderAgendaHome();
-    renderCalendario();
+    renderAgendaSemanal();
     toggleValorAgenda();
     const hash = location.hash.replace('#', '');
     if (TELAS.includes(hash)) go(hash);
