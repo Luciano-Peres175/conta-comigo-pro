@@ -3163,6 +3163,46 @@
   }
 
   boot();
+
+// ============================================
+// COMANDO DE VOZ — Conta Comigo Pro
+// ============================================
+
+const ANTHROPIC_API_KEY = window.__ENV__?.ANTHROPIC_API_KEY || "";
+const VOICE_CONFIG = {
+  model: "claude-haiku-4-5-20251001",
+  maxTokens: 500
+};
+
+function coletarContexto() {
+  const receitas = JSON.parse(localStorage.getItem('receitas') || '[]');
+  const despesas = JSON.parse(localStorage.getItem('despesas') || '[]');
+  const agendamentos = JSON.parse(localStorage.getItem('agendamentos') || '[]');
+  const hoje = new Date().toISOString().split('T')[0];
+  const agendaHoje = agendamentos.filter(a => a.data === hoje);
+  const totalHoje = receitas.filter(r => r.data === hoje).reduce((s,r) => s + parseFloat(r.valor||0), 0);
+  const totalMes = receitas.reduce((s,r) => s + parseFloat(r.valor||0), 0);
+  const totalDespesas = despesas.reduce((s,d) => s + parseFloat(d.valor||0), 0);
+  return JSON.stringify({ hoje, agendaHoje, totalReceitasHoje: totalHoje, totalReceitasMes: totalMes, totalDespesasMes: totalDespesas });
+}
+
+async function consultarClaude(pergunta) {
+  const contexto = coletarContexto();
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "anthropic-dangerous-direct-browser-access": "true", "x-api-key": ANTHROPIC_API_KEY },
+      body: JSON.stringify({
+        model: VOICE_CONFIG.model,
+        max_tokens: VOICE_CONFIG.maxTokens,
+        system: `Você é a assistente do app Conta Comigo Pro. Responda de forma curta e direta, como se estivesse falando com o profissional. Contexto atual: ${contexto}`,
+        messages: [{ role: "user", content: pergunta }]
+      })
+    });
+    const data = await response.json();
+    return data.conte
+
+
 </script>
 </body>
 </html>
