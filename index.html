@@ -1476,6 +1476,69 @@
       }
     }
 
+    /* ── Botao "Perguntar a IA" (gradiente lilás especial) ──── */
+    .btn-ia {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #9B72B0 0%, #7B52C0 100%);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(155,114,176,.32);
+      transition: transform .12s, box-shadow .15s;
+    }
+    .btn-ia:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(155,114,176,.42);
+    }
+    .btn-ia:active { transform: scale(.97); }
+    .btn-ia [data-lucide] {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2.5;
+    }
+    .btn-ia:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── Sugestoes rapidas (chips clicaveis) ─────────────────── */
+    .ia-sugestao {
+      background: #F0E8F8;
+      color: #6B3F8A;
+      border: 1px solid #D6BFE5;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .ia-sugestao:hover { background: #E5D5F0; }
+
+    /* ── Loading dots da IA ──────────────────────────────────── */
+    .ia-pulse-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--lilas);
+      margin: 0 3px;
+      animation: iaPulse 1.2s infinite ease-in-out;
+    }
+    .ia-pulse-dot:nth-child(2) { animation-delay: .15s; }
+    .ia-pulse-dot:nth-child(3) { animation-delay: .3s; }
+    @keyframes iaPulse {
+      0%, 80%, 100% { transform: scale(.7); opacity: .5; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
     /* ── Segundo Cerebro — categorias clicaveis e cards de nota ─── */
     .cerebro-cat {
       transition: transform .12s, border-color .12s, box-shadow .12s;
@@ -2158,9 +2221,13 @@
         <p>Sua enciclopédia profissional pessoal</p>
       </div>
 
-      <!-- Busca + nova nota -->
+      <!-- Busca + acoes -->
       <div class="cerebro-search">
         <input type="text" id="cerebro-busca" class="field-input" placeholder="Buscar em suas anotações..." style="flex:1" oninput="setBuscaCerebro(this.value)">
+        <button class="btn-ia" style="white-space:nowrap" onclick="abrirModalIA()">
+          <i data-lucide="sparkles"></i>
+          <span>Perguntar à IA</span>
+        </button>
         <button class="btn-primary" style="white-space:nowrap" onclick="abrirModalNota()">+ Nova Nota</button>
       </div>
 
@@ -2264,6 +2331,71 @@
 </div>
 
 <!-- MODAL EM BREVE -->
+<!-- MODAL — Perguntar a IA (Segundo Cerebro com Claude Haiku 4.5) -->
+<div id="modal-ia" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.45);z-index:500;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:18px;padding:24px 24px 20px;max-width:580px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(107,63,138,.22);position:relative">
+    <button onclick="fecharModalIA()" style="position:absolute;top:14px;right:16px;border:none;background:none;cursor:pointer;color:#888;display:flex;align-items:center;justify-content:center;width:28px;height:28px"><i data-lucide="x"></i></button>
+
+    <h3 style="font-family:var(--font-title);font-size:20px;font-weight:600;color:var(--lilas);margin-bottom:6px;display:flex;align-items:center;gap:8px"><i data-lucide="sparkles"></i>Perguntar à IA</h3>
+    <p style="font-size:12px;color:var(--texto-muted);margin-bottom:14px">A IA lê <strong>apenas suas notas</strong> do Segundo Cérebro e responde com base nelas. <span id="ia-restantes" style="color:var(--lilas);font-weight:600"></span></p>
+
+    <div id="ia-pergunta-area">
+      <!-- Sugestoes rapidas -->
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Perguntas rápidas</div>
+        <div id="ia-sugestoes" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="field-label">Sua pergunta</label>
+        <textarea id="ia-input" class="field-input" rows="3" maxlength="500" style="resize:vertical;font-family:inherit;line-height:1.5" placeholder="Ex: Já atendi algum caso de fissura palatina? Quais técnicas usei?" oninput="atualizarCharCountIA()"></textarea>
+        <div id="ia-char-count" style="font-size:11px;color:var(--texto-muted);text-align:right;margin-top:4px">0 / 500</div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn-secondary" onclick="fecharModalIA()" style="background:#f3f3f3;color:#555;border:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Fechar</button>
+        <button id="ia-btn-perguntar" class="btn-primary" onclick="perguntarIA()" style="padding:10px 22px;display:flex;align-items:center;gap:6px">
+          <i data-lucide="send"></i>
+          <span>Perguntar</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="ia-loading" style="display:none;text-align:center;padding:30px 0">
+      <div style="font-size:14px;color:var(--lilas);font-weight:600;margin-bottom:6px">A IA está consultando suas notas...</div>
+      <div style="font-size:12px;color:var(--texto-muted)">Pode levar até 10 segundos</div>
+      <div style="margin-top:16px"><div class="ia-pulse-dot"></div><div class="ia-pulse-dot"></div><div class="ia-pulse-dot"></div></div>
+    </div>
+
+    <!-- Resposta -->
+    <div id="ia-resposta-area" style="display:none">
+      <div style="background:#F7F2FA;border-left:3px solid var(--lilas);border-radius:8px;padding:14px 16px;margin-bottom:6px">
+        <div style="font-size:11px;font-weight:700;color:var(--lilas);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i data-lucide="brain" style="width:13px;height:13px"></i>Sua pergunta</div>
+        <div id="ia-pergunta-eco" style="font-size:13px;color:#444;line-height:1.5"></div>
+      </div>
+      <div style="background:#fff;border:1px solid #e8e2ee;border-radius:8px;padding:16px 18px">
+        <div style="font-size:11px;font-weight:700;color:#2E7D32;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:6px"><i data-lucide="sparkles" style="width:13px;height:13px"></i>Resposta da IA</div>
+        <div id="ia-resposta-texto" style="font-size:14px;color:var(--texto);line-height:1.6;white-space:pre-wrap"></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+        <button class="btn-secondary" onclick="fecharModalIA()" style="background:#f3f3f3;color:#555;border:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Fechar</button>
+        <button class="btn-primary" onclick="resetarPerguntaIA()" style="padding:10px 22px;display:flex;align-items:center;gap:6px">
+          <i data-lucide="rotate-ccw"></i>
+          <span>Nova pergunta</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Erro -->
+    <div id="ia-erro-area" style="display:none;background:#FFEBEE;border:1px solid #FFCDD2;border-radius:8px;padding:14px 16px;color:#C62828;font-size:13px;margin-top:6px">
+      <div style="font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px"><i data-lucide="alert-circle" style="width:14px;height:14px"></i>Ops, deu um problema</div>
+      <div id="ia-erro-texto"></div>
+      <button onclick="resetarPerguntaIA()" style="margin-top:10px;background:#fff;color:#C62828;border:1px solid #FFCDD2;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Tentar novamente</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL — Nova/Editar Nota do Segundo Cerebro -->
 <div id="modal-nota" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.45);z-index:500;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:18px;padding:26px 26px 22px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(107,63,138,.22);position:relative">
@@ -3626,6 +3758,163 @@
     renderAgendaSemanal();
     atualizarHome();
   }
+  /* ── Segundo Cerebro — Modal "Perguntar a IA" ────────────────── */
+  const IA_LIMITE_DIA = 5;
+  const IA_SUGESTOES = [
+    'Resuma meus 3 cases mais recentes',
+    'Sobre o que tenho mais material para palestrar?',
+    'Que técnicas usei para problemas de pega?',
+    'Quais protocolos eu já criei?',
+    'Tem algum padrão entre meus cases?'
+  ];
+
+  function getIAUsoHoje() {
+    const hojeStr = new Date().toISOString().slice(0, 10);
+    const raw = localStorage.getItem('ccp_ia_uso');
+    let obj = {};
+    try { obj = raw ? JSON.parse(raw) : {}; } catch (e) { obj = {}; }
+    return obj[hojeStr] || 0;
+  }
+  function incrementarIAUso() {
+    const hojeStr = new Date().toISOString().slice(0, 10);
+    const raw = localStorage.getItem('ccp_ia_uso');
+    let obj = {};
+    try { obj = raw ? JSON.parse(raw) : {}; } catch (e) { obj = {}; }
+    obj[hojeStr] = (obj[hojeStr] || 0) + 1;
+    // Limpa entradas antigas (>7 dias) para nao poluir localStorage
+    const corte = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    Object.keys(obj).forEach(k => { if (k < corte) delete obj[k]; });
+    localStorage.setItem('ccp_ia_uso', JSON.stringify(obj));
+  }
+  function atualizarRestantesIA() {
+    const usados = getIAUsoHoje();
+    const restantes = Math.max(0, IA_LIMITE_DIA - usados);
+    const el = document.getElementById('ia-restantes');
+    if (el) {
+      el.textContent = restantes + ' de ' + IA_LIMITE_DIA + ' perguntas restantes hoje';
+      if (restantes === 0) el.style.color = '#C62828';
+    }
+    return restantes;
+  }
+
+  function abrirModalIA() {
+    const m = document.getElementById('modal-ia');
+    if (!m) return;
+    // Reset visual
+    document.getElementById('ia-pergunta-area').style.display = 'block';
+    document.getElementById('ia-loading').style.display = 'none';
+    document.getElementById('ia-resposta-area').style.display = 'none';
+    document.getElementById('ia-erro-area').style.display = 'none';
+    document.getElementById('ia-input').value = '';
+    document.getElementById('ia-char-count').textContent = '0 / 500';
+    // Sugestoes (re-renderizadas a cada abertura caso queira variar no futuro)
+    const sugEl = document.getElementById('ia-sugestoes');
+    if (sugEl) {
+      sugEl.innerHTML = IA_SUGESTOES.map(s =>
+        `<button class="ia-sugestao" onclick="usarSugestaoIA(this.textContent)">${escHtml(s)}</button>`
+      ).join('');
+    }
+    // Atualiza contador de uso
+    const restantes = atualizarRestantesIA();
+    const btn = document.getElementById('ia-btn-perguntar');
+    if (btn) btn.disabled = restantes === 0;
+    m.style.display = 'flex';
+    setTimeout(() => document.getElementById('ia-input').focus(), 50);
+    renderIcons();
+  }
+  function fecharModalIA() {
+    const m = document.getElementById('modal-ia');
+    if (m) m.style.display = 'none';
+  }
+  function usarSugestaoIA(texto) {
+    const inp = document.getElementById('ia-input');
+    if (inp) {
+      inp.value = texto;
+      inp.focus();
+      atualizarCharCountIA();
+    }
+  }
+  function atualizarCharCountIA() {
+    const inp = document.getElementById('ia-input');
+    const cnt = document.getElementById('ia-char-count');
+    if (inp && cnt) cnt.textContent = inp.value.length + ' / 500';
+  }
+  function resetarPerguntaIA() {
+    document.getElementById('ia-pergunta-area').style.display = 'block';
+    document.getElementById('ia-loading').style.display = 'none';
+    document.getElementById('ia-resposta-area').style.display = 'none';
+    document.getElementById('ia-erro-area').style.display = 'none';
+    document.getElementById('ia-input').value = '';
+    atualizarCharCountIA();
+    atualizarRestantesIA();
+    setTimeout(() => document.getElementById('ia-input').focus(), 50);
+  }
+
+  async function perguntarIA() {
+    const inp = document.getElementById('ia-input');
+    const pergunta = (inp ? inp.value : '').trim();
+    if (pergunta.length < 3) {
+      toast('Digite uma pergunta com pelo menos 3 caracteres.', 'error');
+      return;
+    }
+    // Rate limit
+    if (getIAUsoHoje() >= IA_LIMITE_DIA) {
+      toast('Voce atingiu o limite de ' + IA_LIMITE_DIA + ' perguntas por dia. Volta amanha.', 'error', { duration: 4000 });
+      return;
+    }
+    // Coleta notas (todas, ate 30 — limite no backend tambem)
+    const notas = getNotas();
+    // Mostra loading
+    document.getElementById('ia-pergunta-area').style.display = 'none';
+    document.getElementById('ia-loading').style.display = 'block';
+    document.getElementById('ia-resposta-area').style.display = 'none';
+    document.getElementById('ia-erro-area').style.display = 'none';
+
+    try {
+      const resp = await fetch('/api/ask-cerebro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: pergunta, notes: notas })
+      });
+      const data = await resp.json();
+
+      if (!resp.ok || data.error) {
+        throw new Error(data.error || 'Erro inesperado');
+      }
+      if (!data.answer) {
+        throw new Error('Resposta vazia da IA');
+      }
+
+      // Sucesso — incrementa uso, mostra resposta
+      incrementarIAUso();
+      document.getElementById('ia-pergunta-eco').textContent = pergunta;
+      // Renderizacao simples de **negrito** -> <strong>
+      const html = escHtml(data.answer)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      document.getElementById('ia-resposta-texto').innerHTML = html;
+      document.getElementById('ia-loading').style.display = 'none';
+      document.getElementById('ia-resposta-area').style.display = 'block';
+      renderIcons();
+      atualizarRestantesIA();
+    } catch (err) {
+      console.error('[perguntarIA]', err);
+      const msgErro = String(err && err.message || 'Erro desconhecido');
+      let msgUser = msgErro;
+      // Mensagens amigaveis para casos comuns
+      if (msgErro.includes('configurada') || msgErro.includes('500')) {
+        msgUser = 'A API ainda nao esta configurada no servidor. Avise o administrador (Luciano) para adicionar a ANTHROPIC_API_KEY no Vercel.';
+      } else if (msgErro.includes('temporario') || msgErro.includes('502')) {
+        msgUser = 'A IA esta temporariamente indisponivel. Tente em alguns segundos.';
+      } else if (msgErro.includes('Failed to fetch') || msgErro.includes('NetworkError')) {
+        msgUser = 'Sem conexao com o servidor. Verifique sua internet.';
+      }
+      document.getElementById('ia-erro-texto').textContent = msgUser;
+      document.getElementById('ia-loading').style.display = 'none';
+      document.getElementById('ia-erro-area').style.display = 'block';
+      renderIcons();
+    }
+  }
+
   /* ── Segundo Cerebro — Modal Nova/Editar Nota ────────────────── */
   function abrirModalNota(id) {
     const m = document.getElementById('modal-nota');
