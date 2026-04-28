@@ -3759,7 +3759,9 @@
     atualizarHome();
   }
   /* ── Segundo Cerebro — Modal "Perguntar a IA" ────────────────── */
-  const IA_LIMITE_DIA = 5;
+  // 50/dia durante fase de teste interno (Luciano + Le + Barbara).
+  // Para beta amplo (10+ usuarias), reduzir para 5-10.
+  const IA_LIMITE_DIA = 50;
   const IA_SUGESTOES = [
     'Resuma meus 3 cases mais recentes',
     'Sobre o que tenho mais material para palestrar?',
