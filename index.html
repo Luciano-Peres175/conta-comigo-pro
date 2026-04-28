@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Conta Comigo Pro</title>
+  <title>Conta Comigo AI Pro</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons (linha-fina, moderno) — jsDelivr CDN (mais confiavel) -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"
+          onload="window.__lucideReady=true; if(typeof renderIcons==='function') renderIcons();"
+          onerror="console.error('[Lucide] CDN principal falhou, tentando fallback'); var s=document.createElement('script'); s.src='https://unpkg.com/lucide@latest/dist/umd/lucide.js'; s.onload=function(){window.__lucideReady=true; if(typeof renderIcons==='function') renderIcons();}; document.head.appendChild(s);"></script>
   <style>
     /* ── Reset & tokens ─────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -269,6 +273,37 @@
     .hc-saldo.positivo { color: #B6F0DC; }
     .hc-saldo.negativo { color: #F4AAAA; }
 
+    /* Bloco HOJE — destaque diário */
+    .hc-hoje {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: rgba(255,255,255,.10);
+      border-left: 3px solid #B6F0DC;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 14px;
+    }
+    .hc-hoje-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      opacity: .82;
+    }
+    .hc-hoje-valor {
+      font-family: var(--font-title);
+      font-size: 20px;
+      font-weight: 700;
+      color: #B6F0DC;
+      line-height: 1;
+    }
+    .hc-hoje-atend {
+      font-size: 12px;
+      opacity: .82;
+    }
+
     .hc-row {
       display: flex;
       gap: 18px;
@@ -314,19 +349,19 @@
       transition: width .6s ease;
     }
 
-    /* Número grande agenda */
+    /* Número grande agenda — alinhado ao .hc-saldo */
     .hc-main-num {
       font-family: var(--font-title);
-      font-size: 44px;
+      font-size: 30px;
       font-weight: 700;
-      line-height: 1;
-      letter-spacing: -.02em;
-      margin-bottom: 2px;
+      line-height: 1.1;
+      letter-spacing: -.01em;
+      margin-bottom: 6px;
     }
     .hc-main-unit {
       font-size: 12px;
-      opacity: .7;
-      margin-bottom: 16px;
+      opacity: .82;
+      margin-bottom: 14px;
     }
 
     /* Rodapé imposto */
@@ -1195,10 +1230,28 @@
       font-weight: 500;
       white-space: nowrap;
       box-shadow: 0 4px 16px rgba(0,0,0,.22);
-      animation: toastIn .22s ease, toastOut .22s ease 2.78s both;
+      animation: toastIn .22s ease;
+      transition: opacity .22s, transform .22s;
     }
+    .toast.fade-out { opacity: 0; transform: translateY(-8px); }
     .toast.success { background: #1D9E75; }
     .toast.error   { background: #C85A5A; }
+    /* Toast com botao de acao (ex: Desfazer) */
+    .toast .toast-msg { display: inline; }
+    .toast .toast-action {
+      margin-left: 14px;
+      padding: 4px 12px;
+      background: rgba(255,255,255,.22);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .03em;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .toast .toast-action:hover { background: rgba(255,255,255,.34); }
     @keyframes toastIn {
       from { opacity: 0; transform: translateY(-8px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -1422,6 +1475,195 @@
         padding-bottom: calc(var(--bottom-nav-h) + 70px);
       }
     }
+
+    /* ── Segundo Cerebro — categorias clicaveis e cards de nota ─── */
+    .cerebro-cat {
+      transition: transform .12s, border-color .12s, box-shadow .12s;
+    }
+    .cerebro-cat:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(155,114,176,.12);
+    }
+    .cerebro-cat-ativa {
+      box-shadow: 0 4px 14px rgba(155,114,176,.18);
+    }
+
+    .nota-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .nota-card {
+      background: #fff;
+      border: 1px solid #e8e2ee;
+      border-radius: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: transform .12s, box-shadow .12s, border-color .12s;
+    }
+    .nota-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(107,63,138,.10);
+      border-color: var(--lilas);
+    }
+    .nota-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .nota-card-titulo {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--texto);
+      flex: 1;
+      line-height: 1.35;
+    }
+    .nota-card-cat {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .nota-card-snippet {
+      font-size: 12.5px;
+      color: var(--texto-muted);
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .nota-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--texto-muted);
+    }
+    .nota-tags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .nota-tag {
+      background: #f0e9f5;
+      color: #6B3F8A;
+      padding: 2px 7px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* ── Botao "Realizado" (1-toque) e badge "Recebido" ──────── */
+    .btn-realizado {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(76,175,80,.25);
+      transition: background .15s, transform .1s;
+    }
+    .btn-realizado:hover { background: #43A047; }
+    .btn-realizado:active { transform: scale(.96); }
+    .btn-realizado [data-lucide] {
+      width: 13px;
+      height: 13px;
+      stroke-width: 2.5;
+    }
+
+    .badge-realizado {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(76,175,80,.15);
+      color: #2E7D32;
+      padding: 5px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .badge-realizado [data-lucide] {
+      width: 13px;
+      height: 13px;
+      stroke-width: 2.4;
+    }
+
+    /* ── Lucide Icons — tamanhos por contexto ────────────────── */
+    [data-lucide] {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2;
+      vertical-align: -3px;
+      flex-shrink: 0;
+    }
+    /* Icones em mini-labels (cards) */
+    .hc-mini-label [data-lucide],
+    .hc-hoje-atend [data-lucide] {
+      width: 14px;
+      height: 14px;
+      vertical-align: -2px;
+      margin-right: 4px;
+    }
+    /* Icones em headings */
+    h1 [data-lucide], h2 [data-lucide], h3 [data-lucide] {
+      width: 22px;
+      height: 22px;
+      vertical-align: -3px;
+    }
+    /* Icones em botoes pequenos (excluir/editar) */
+    .btn-icon [data-lucide] {
+      width: 16px;
+      height: 16px;
+      vertical-align: 0;
+      stroke-width: 2;
+    }
+    /* Icones grandes em empty states */
+    .icon-xl {
+      width: 52px !important;
+      height: 52px !important;
+      stroke-width: 1.5;
+      opacity: .55;
+    }
+    .icon-lg {
+      width: 36px !important;
+      height: 36px !important;
+      stroke-width: 1.6;
+    }
+    /* Icones em categorias do segundo cerebro */
+    .cerebro-cat-icon [data-lucide] {
+      width: 28px;
+      height: 28px;
+      stroke-width: 1.6;
+    }
+    /* Icones em sidebar (botao Nossa historia) */
+    .sidebar-micro-btn [data-lucide] {
+      width: 14px;
+      height: 14px;
+      margin-right: 4px;
+    }
+    /* Icone do imposto (lapis pequeno) */
+    .hc-footer [data-lucide] {
+      width: 12px;
+      height: 12px;
+      opacity: .6;
+      vertical-align: -2px;
+      margin-left: 4px;
+    }
   </style>
 </head>
 <body>
@@ -1430,7 +1672,7 @@
      MOBILE: header fixo
 ═══════════════════════════════════════════════════════════════ -->
 <header id="mobile-header">
-  <span class="mobile-logo">Conta Comigo Pro</span>
+  <span class="mobile-logo">Conta Comigo AI Pro</span>
   <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleDrawer()">
     <span></span><span></span><span></span>
   </button>
@@ -1450,7 +1692,7 @@
   <aside id="sidebar">
 
     <div class="sidebar-logo">
-      <h1>Conta Comigo Pro</h1>
+      <h1>Conta Comigo AI Pro</h1>
       <span>Gestão pessoal</span>
     </div>
 
@@ -1509,7 +1751,8 @@
 
     <div class="sidebar-footer">
       <span style="color:var(--lilas-light);font-size:11px">v1.0</span>
-      <button class="sidebar-micro-btn" onclick="abrirStory()">✨ Nossa história</button>
+      <button class="sidebar-micro-btn" onclick="abrirConfig()"><i data-lucide="settings"></i> Configurações</button>
+      <button class="sidebar-micro-btn" onclick="abrirStory()"><i data-lucide="sparkles"></i> Nossa história</button>
       <button class="sidebar-micro-btn" onclick="resetarDados()">↺ Resetar demo</button>
     </div>
   </aside>
@@ -1527,45 +1770,66 @@
       <!-- Tarja superior: dois cards lado a lado, mesma altura -->
       <div class="home-hero-row">
 
-        <!-- Card Financeiro -->
-        <div class="hero-card hero-card--fin">
-          <div class="hc-label" id="fin-titulo">Resultado de —</div>
-          <div class="hc-saldo" id="fin-saldo">R$ 0,00</div>
-          <div class="hc-row">
-            <span id="fin-entrou">↑ Entrou R$ 0,00</span>
-            <span id="fin-saiu">↓ Saiu R$ 0,00</span>
-          </div>
-          <div class="hc-mini-cards">
-            <div class="hc-mini-card">
-              <span class="hc-mini-label">⏳ Faltando receber</span>
-              <span class="hc-mini-val" id="fin-pendente">R$ 0,00</span>
-            </div>
-            <div class="hc-mini-card">
-              <span class="hc-mini-label">📅 Previsão de entradas</span>
-              <span class="hc-mini-val" id="fin-previsao">R$ 0,00</span>
-            </div>
-          </div>
-          <div class="hc-footer">
-            Imposto est. 6%: <span id="fin-imposto">R$ 0,00</span>
-          </div>
-        </div>
-
-        <!-- Card Agenda -->
+        <!-- Card Agenda (esquerda — agenda é o motor diário do app) -->
         <div class="hero-card hero-card--ag">
           <div class="hc-label">Semana atual</div>
           <div class="hc-main-num" id="ag-semana">0</div>
           <div class="hc-main-unit">atendimentos esta semana</div>
+
+          <!-- Bloco HOJE -->
+          <div class="hc-hoje">
+            <span class="hc-hoje-label">Hoje</span>
+            <span class="hc-hoje-valor" id="ag-hoje-atend">0</span>
+            <span class="hc-hoje-atend" id="ag-hoje-valor"><i data-lucide="wallet"></i>R$ 0,00 previstos</span>
+          </div>
           <div class="hc-mini-cards">
             <div class="hc-mini-card">
-              <span class="hc-mini-label">📊 Semana anterior</span>
+              <span class="hc-mini-label"><i data-lucide="bar-chart-3"></i>Semana anterior</span>
               <span class="hc-mini-val" id="ag-anterior">0 atendimentos</span>
             </div>
             <div class="hc-mini-card">
-              <span class="hc-mini-label">🎯 Ocupação</span>
+              <span class="hc-mini-label"><i data-lucide="target"></i>Ocupação</span>
               <span class="hc-mini-val" id="ag-ocupacao">0%
                 <small style="font-size:10px;font-weight:400;opacity:.7"> de 40 slots</small>
               </span>
             </div>
+          </div>
+
+          <!-- Footer (alinha com o footer do card Financeiro) -->
+          <div class="hc-footer" id="ag-footer">
+            Previsão do mês: <span id="ag-prev-mes">R$ 0,00</span>
+          </div>
+        </div>
+
+        <!-- Card Financeiro (direita — resultado do ciclo) -->
+        <div class="hero-card hero-card--fin">
+          <div class="hc-label" id="fin-titulo">Você já fez em —</div>
+          <div class="hc-saldo" id="fin-saldo">R$ 0,00</div>
+
+          <div class="hc-row">
+            <span id="fin-entrou">↑ Entrou R$ 0,00</span>
+            <span id="fin-saiu">↓ Saiu R$ 0,00</span>
+          </div>
+
+          <!-- Bloco HOJE (mesma posição do bloco HOJE do card Agenda) -->
+          <div class="hc-hoje" id="fin-hoje-box">
+            <span class="hc-hoje-label">Hoje</span>
+            <span class="hc-hoje-valor" id="fin-hoje-valor">+R$ 0,00</span>
+            <span class="hc-hoje-atend" id="fin-hoje-atend">0 atendimentos</span>
+          </div>
+          <div class="hc-mini-cards">
+            <div class="hc-mini-card">
+              <span class="hc-mini-label">⏳ Você ainda pode receber</span>
+              <span class="hc-mini-val" id="fin-pendente">R$ 0,00</span>
+            </div>
+            <div class="hc-mini-card">
+              <span class="hc-mini-label"><i data-lucide="calendar"></i>Entradas previstas</span>
+              <span class="hc-mini-val" id="fin-previsao">R$ 0,00</span>
+            </div>
+          </div>
+          <div class="hc-footer" id="fin-imposto-box" onclick="editarImpostoPct()" style="cursor:pointer" title="Clique para ajustar a %. A estimativa é apenas uma referência — confirme com seu contador.">
+            Imposto est. <span id="fin-imposto-pct">6</span>%: <span id="fin-imposto">R$ 0,00</span>
+            <i data-lucide="pencil"></i>
           </div>
         </div>
 
@@ -1574,27 +1838,7 @@
       <!-- Colunas de conteúdo abaixo da tarja -->
       <div class="home-cols">
 
-        <!-- Coluna esquerda: financeiro -->
-        <div class="home-col" id="col-financeiro">
-
-          <!-- Botões de ação -->
-          <div class="action-buttons">
-            <button class="btn-primary" style="background:#4CAF50;border-color:#4CAF50" onclick="go('receitas')">＋ Lançar Receita</button>
-            <button class="btn-primary" style="background:#E57373;border-color:#E57373" onclick="go('despesas')">＋ Lançar Despesa</button>
-          </div>
-
-          <!-- Lançamentos recentes -->
-          <div class="lancamentos-card">
-            <div class="lancamentos-header">
-              <span class="lancamentos-titulo">Lançamentos recentes</span>
-              <button class="link-btn" onclick="go('receitas')">Ver todos →</button>
-            </div>
-            <div id="lista-lancamentos"></div>
-          </div>
-
-        </div><!-- /col-financeiro -->
-
-        <!-- Coluna direita: agenda -->
+        <!-- Coluna esquerda: agenda (alinhada com hero-card de agenda à esquerda) -->
         <div class="home-col" id="col-agenda">
 
           <!-- Botão Agendar -->
@@ -1624,6 +1868,26 @@
           </div>
 
         </div><!-- /col-agenda -->
+
+        <!-- Coluna direita: financeiro (alinhada com hero-card financeiro à direita) -->
+        <div class="home-col" id="col-financeiro">
+
+          <!-- Botões de ação -->
+          <div class="action-buttons">
+            <button class="btn-primary" style="background:#4CAF50;border-color:#4CAF50" onclick="go('receitas')">＋ Registrar atendimento</button>
+            <button class="btn-primary" style="background:#E57373;border-color:#E57373" onclick="go('despesas')">＋ Registrar despesa</button>
+          </div>
+
+          <!-- Lançamentos recentes -->
+          <div class="lancamentos-card">
+            <div class="lancamentos-header">
+              <span class="lancamentos-titulo">Lançamentos recentes</span>
+              <button class="link-btn" onclick="go('receitas')">Ver todos →</button>
+            </div>
+            <div id="lista-lancamentos"></div>
+          </div>
+
+        </div><!-- /col-financeiro -->
 
       </div><!-- /home-cols -->
     </section>
@@ -1890,54 +2154,24 @@
         </div>
       </button>
       <div class="screen-header">
-        <h2>Segundo Cérebro 🧠</h2>
+        <h2>Segundo Cérebro <i data-lucide="brain"></i></h2>
         <p>Sua enciclopédia profissional pessoal</p>
       </div>
 
       <!-- Busca + nova nota -->
       <div class="cerebro-search">
-        <input type="text" class="field-input" placeholder="🔍 Buscar em suas anotações..." style="flex:1">
-        <button class="btn-primary" style="white-space:nowrap" onclick="alert('Em breve! Funcionalidade em desenvolvimento.')">+ Nova Nota</button>
+        <input type="text" id="cerebro-busca" class="field-input" placeholder="Buscar em suas anotações..." style="flex:1" oninput="setBuscaCerebro(this.value)">
+        <button class="btn-primary" style="white-space:nowrap" onclick="abrirModalNota()">+ Nova Nota</button>
       </div>
 
-      <!-- Categorias -->
-      <div class="cerebro-categorias">
-        <div class="cerebro-cat">
-          <div class="cerebro-cat-icon">📋</div>
-          <div class="cerebro-cat-nome">Cases Clínicos</div>
-          <div class="cerebro-cat-count">0 notas</div>
-        </div>
-        <div class="cerebro-cat">
-          <div class="cerebro-cat-icon">📌</div>
-          <div class="cerebro-cat-nome">Protocolos</div>
-          <div class="cerebro-cat-count">0 notas</div>
-        </div>
-        <div class="cerebro-cat">
-          <div class="cerebro-cat-icon">📰</div>
-          <div class="cerebro-cat-nome">Artigos</div>
-          <div class="cerebro-cat-count">0 notas</div>
-        </div>
-        <div class="cerebro-cat">
-          <div class="cerebro-cat-icon">💡</div>
-          <div class="cerebro-cat-nome">Técnicas</div>
-          <div class="cerebro-cat-count">0 notas</div>
-        </div>
-        <div class="cerebro-cat">
-          <div class="cerebro-cat-icon">🎤</div>
-          <div class="cerebro-cat-nome">Palestras</div>
-          <div class="cerebro-cat-count">0 notas</div>
-        </div>
-      </div>
+      <!-- Categorias (clicaveis, com contagem dinamica) -->
+      <div class="cerebro-categorias" id="cerebro-categorias-grid"></div>
 
-      <!-- Estado vazio -->
-      <div class="cerebro-empty">
-        <div style="font-size:52px;margin-bottom:14px">📝</div>
-        <p style="font-size:15px;font-weight:600;color:var(--texto);margin-bottom:8px">Nenhuma anotação ainda</p>
-        <p style="font-size:13px;color:var(--texto-muted);max-width:380px;margin:0 auto;line-height:1.6">
-          Suas anotações clínicas aparecerão aqui. Comece registrando um caso ou protocolo.
-        </p>
-        <div class="cerebro-badge">Em breve — funcionalidade completa chegando</div>
-      </div>
+      <!-- Filtro ativo (aparece quando ha filtro de categoria ou busca) -->
+      <div id="cerebro-filtros-ativos" style="display:none;margin:10px 0;font-size:12px;color:var(--texto-muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap"></div>
+
+      <!-- Lista de notas (dinamica — substitui empty state quando ha notas) -->
+      <div id="cerebro-conteudo"></div>
     </section>
 
   </main>
@@ -1976,7 +2210,7 @@
 <!-- MODAL NOVO COMPROMISSO -->
 <div id="modal-novo-comp" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.45);z-index:500;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:18px;padding:24px 22px;max-width:460px;width:92%;box-shadow:0 20px 60px rgba(107,63,138,.22);position:relative;max-height:90vh;overflow-y:auto">
-    <button onclick="fecharModalNovoComp()" style="position:absolute;top:14px;right:16px;border:none;background:none;font-size:18px;cursor:pointer;color:#888">✕</button>
+    <button onclick="fecharModalNovoComp()" style="position:absolute;top:14px;right:16px;border:none;background:none;cursor:pointer;color:#888;display:flex;align-items:center;justify-content:center;width:28px;height:28px"><i data-lucide="x"></i></button>
     <h3 style="font-family:var(--font-title);font-size:18px;font-weight:600;color:var(--lilas);margin-bottom:16px">Novo Compromisso</h3>
     <div class="form-row">
       <div class="form-group">
@@ -2030,10 +2264,120 @@
 </div>
 
 <!-- MODAL EM BREVE -->
+<!-- MODAL — Nova/Editar Nota do Segundo Cerebro -->
+<div id="modal-nota" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.45);z-index:500;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:18px;padding:26px 26px 22px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(107,63,138,.22);position:relative">
+    <button onclick="fecharModalNota()" style="position:absolute;top:14px;right:16px;border:none;background:none;cursor:pointer;color:#888;display:flex;align-items:center;justify-content:center;width:28px;height:28px"><i data-lucide="x"></i></button>
+    <h3 id="nota-titulo-modal" style="font-family:var(--font-title);font-size:20px;font-weight:600;color:var(--lilas);margin-bottom:16px;display:flex;align-items:center;gap:8px"><i data-lucide="brain"></i>Nova Nota</h3>
+
+    <input type="hidden" id="nota-id">
+
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="field-label">Título</label>
+      <input type="text" id="nota-input-titulo" class="field-input" placeholder="Ex: Caso Maria — 6 meses, dificuldade de pega" maxlength="120">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="field-label">Categoria</label>
+        <select id="nota-input-categoria" class="field-input">
+          <option value="casos">Cases Clínicos</option>
+          <option value="protocolos">Protocolos</option>
+          <option value="artigos">Artigos</option>
+          <option value="tecnicas">Técnicas</option>
+          <option value="palestras">Palestras</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="field-label">Paciente <span style="font-weight:400;opacity:.6">(opcional)</span></label>
+        <input type="text" id="nota-input-paciente" class="field-input" placeholder="Ex: Maria Silva" maxlength="60">
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="field-label">Conteúdo</label>
+      <textarea id="nota-input-conteudo" class="field-input" rows="6" style="resize:vertical;font-family:inherit;line-height:1.5" placeholder="Descreva o caso, protocolo, técnica, aprendizado..."></textarea>
+    </div>
+
+    <div class="form-group" style="margin-bottom:18px">
+      <label class="field-label">Tags <span style="font-weight:400;opacity:.6">(separadas por vírgula)</span></label>
+      <input type="text" id="nota-input-tags" class="field-input" placeholder="Ex: amamentacao, frenulo, primeiro-trimestre" maxlength="200">
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:space-between;align-items:center">
+      <button type="button" id="nota-btn-excluir" onclick="excluirNotaDoModal()" style="background:none;color:#C85A5A;border:none;padding:10px 0;font-size:13px;font-weight:600;cursor:pointer;display:none">Excluir nota</button>
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button class="btn-secondary" onclick="fecharModalNota()" style="background:#f3f3f3;color:#555;border:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Cancelar</button>
+        <button class="btn-primary" onclick="salvarNota()" style="padding:10px 22px">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL — Configuracoes (forma de pagamento + imposto) -->
+<div id="modal-config" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.45);z-index:500;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:18px;padding:28px 26px 24px;max-width:400px;width:92%;box-shadow:0 20px 60px rgba(107,63,138,.22);position:relative">
+    <button onclick="fecharConfig()" style="position:absolute;top:14px;right:16px;border:none;background:none;cursor:pointer;color:#888;display:flex;align-items:center;justify-content:center;width:28px;height:28px"><i data-lucide="x"></i></button>
+    <h3 style="font-family:var(--font-title);font-size:20px;font-weight:600;color:var(--lilas);margin-bottom:6px;display:flex;align-items:center;gap:8px"><i data-lucide="settings"></i>Configurações</h3>
+    <p style="font-size:12px;color:var(--texto-muted);margin-bottom:20px">Ajustes que se aplicam ao app inteiro.</p>
+
+    <div class="form-group" style="margin-bottom:18px">
+      <label class="field-label">Forma de pagamento padrão</label>
+      <select id="cfg-forma" class="field-input">
+        <option value="Pix">Pix</option>
+        <option value="Dinheiro">Dinheiro</option>
+        <option value="Cartão de débito">Cartão de débito</option>
+        <option value="Cartão de crédito">Cartão de crédito</option>
+        <option value="Transferência">Transferência</option>
+      </select>
+      <p style="font-size:11px;color:var(--texto-muted);margin-top:6px;line-height:1.4">Usada quando você marca um atendimento como realizado com 1 toque. Pode editar a receita depois se receber em outra forma.</p>
+    </div>
+
+    <div class="form-group" style="margin-bottom:22px">
+      <label class="field-label">% de imposto sobre receitas</label>
+      <input type="text" id="cfg-imposto" class="field-input" inputmode="decimal" placeholder="Ex: 6">
+      <p style="font-size:11px;color:var(--texto-muted);margin-top:6px;line-height:1.4">Estimativa baseada no % que você configurar. <strong>Confirme sempre com seu contador.</strong><br>MEI: 6% · Simples Nacional Anexo III: 6% a 15,5%</p>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:24px">
+      <button class="btn-secondary" onclick="fecharConfig()" style="background:#f3f3f3;color:#555;border:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Cancelar</button>
+      <button class="btn-primary" onclick="salvarConfig()" style="padding:10px 22px">Salvar</button>
+    </div>
+
+    <!-- Zona de gerenciamento de dados -->
+    <div style="border-top:1px solid #eee;padding-top:18px">
+      <div style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Gerenciar dados</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button onclick="carregarDemo()" style="background:#F0E8F8;color:#6B3F8A;border:1px solid #D6BFE5;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px">
+          <i data-lucide="sprout" style="width:16px;height:16px;flex-shrink:0"></i>
+          <div style="flex:1">
+            <div>Carregar notas de exemplo</div>
+            <div style="font-size:11px;font-weight:400;color:#6B3F8A;opacity:.75;margin-top:2px">Adiciona 10 cases/protocolos/artigos de fonoaudiologia (sem apagar o que ja existe)</div>
+          </div>
+        </button>
+        <button onclick="resetarComDemo()" style="background:#FFF3E0;color:#A06200;border:1px solid #FFCC80;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px">
+          <i data-lucide="refresh-cw" style="width:16px;height:16px;flex-shrink:0"></i>
+          <div style="flex:1">
+            <div>Resetar com notas de exemplo</div>
+            <div style="font-size:11px;font-weight:400;color:#A06200;opacity:.85;margin-top:2px">Apaga todas as notas atuais e recarrega so as 10 demos</div>
+          </div>
+        </button>
+        <button onclick="limparTudo()" style="background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px">
+          <i data-lucide="trash-2" style="width:16px;height:16px;flex-shrink:0"></i>
+          <div style="flex:1">
+            <div>Limpar todos os dados</div>
+            <div style="font-size:11px;font-weight:400;color:#C62828;opacity:.85;margin-top:2px">Apaga notas, receitas, despesas e agenda. Fixas e configuracoes mantidas.</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="modal-em-breve" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.45);z-index:500;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:18px;padding:32px 28px;max-width:320px;width:90%;box-shadow:0 20px 60px rgba(107,63,138,.22);text-align:center;position:relative">
-    <button onclick="fecharModalEmBreve()" style="position:absolute;top:14px;right:16px;border:none;background:none;font-size:18px;cursor:pointer;color:#888">✕</button>
-    <div style="font-size:36px;margin-bottom:12px">🚀</div>
+    <button onclick="fecharModalEmBreve()" style="position:absolute;top:14px;right:16px;border:none;background:none;cursor:pointer;color:#888;display:flex;align-items:center;justify-content:center;width:28px;height:28px"><i data-lucide="x"></i></button>
+    <div style="margin-bottom:12px"><i data-lucide="rocket" class="icon-lg"></i></div>
     <div style="font-family:var(--font-title);font-size:18px;font-weight:600;color:var(--texto);margin-bottom:8px" id="modal-em-breve-titulo"></div>
     <p style="font-size:13px;color:var(--texto-muted);line-height:1.6;margin-bottom:20px">Esta funcionalidade está em desenvolvimento e em breve estará disponível para você.</p>
     <span style="display:inline-block;background:var(--lilas-bg);color:var(--lilas);font-size:11px;font-weight:700;padding:5px 14px;border-radius:12px;letter-spacing:.05em;text-transform:uppercase">Em breve</span>
@@ -2046,9 +2390,9 @@
 <div id="story-screen">
   <div class="story-inner">
     <button class="story-back" onclick="fecharStory()">← Voltar</button>
-    <h1 class="story-titulo">A história do<br>Conta Comigo Pro</h1>
+    <h1 class="story-titulo">A história do<br>Conta Comigo AI Pro</h1>
     <div class="story-texto">
-      <p class="story-abertura">O Conta Comigo Pro começou com uma pergunta simples.</p>
+      <p class="story-abertura">O Conta Comigo AI Pro começou com uma pergunta simples.</p>
       <p class="story-destaque">"Como está sua parte financeira, Lê?"</p>
       <p>A resposta veio com um sorriso envergonhado. Receitas misturadas com conta pessoal. Despesas sem registro. Imposto uma surpresa todo mês. Contador sem dados para trabalhar. E uma agenda de cabeça que às vezes falhava.</p>
       <p>Não era descuido. Era excesso.</p>
@@ -2066,7 +2410,7 @@
       <p>Médicos, psicólogos, nutricionistas, dentistas, fisioterapeutas, veterinários — mais de um milhão de profissionais no Brasil que constroem carreiras brilhantes e ainda assim chegam ao final do mês sem saber exatamente quanto ganharam, quanto devem de imposto, ou quanto sobrou para investir na própria vida.</p>
       <p>E com a reforma tributária chegando, esse problema ficou urgente.</p>
       <p>O Brasil está mudando as regras do jogo para autônomos. Quem não estiver organizado vai pagar mais, errar mais e descobrir mais tarde.</p>
-      <p class="story-destaque">O Conta Comigo Pro é a resposta para isso.</p>
+      <p class="story-destaque">O Conta Comigo AI Pro é a resposta para isso.</p>
       <p>Financeiro claro. Agenda integrada. Relatório para o contador sem enrolação. WhatsApp automatizado para não perder paciente. E um Segundo Cérebro para guardar o conhecimento que você acumula ao longo dos anos — e transformar em palestras, artigos, protocolos.</p>
       <p>Tudo num lugar só. Simples de usar. Feito para quem cuida de pessoas, não de planilhas.</p>
       <p class="story-destaque">Começou como um presente para a Lê.</p>
@@ -2080,16 +2424,62 @@
      SCRIPTS
 ═══════════════════════════════════════════════════════════════ -->
 <script>
+  /* ── Lucide — render icones (idempotente, com retry se lib ainda nao carregou) ── */
+  function renderIcons() {
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      try { window.lucide.createIcons(); } catch (e) { console.warn('[Lucide] erro:', e); }
+    } else if (!window.__lucideRetryScheduled) {
+      // Lib ainda nao carregou — agendar retries em 100ms, 300ms, 800ms, 2s
+      window.__lucideRetryScheduled = true;
+      [100, 300, 800, 2000].forEach(delay => {
+        setTimeout(() => {
+          if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            try { window.lucide.createIcons(); } catch (e) {}
+          }
+        }, delay);
+      });
+    }
+  }
+
   /* ── Utilitários ────────────────────────────────────────────── */
 
-  function toast(msg, tipo) {
+  /**
+   * Toast com suporte a acao (botao Desfazer).
+   * - msg: texto a mostrar
+   * - tipo: 'success' | 'error' | undefined
+   * - opcoes: { actionText, onAction, duration } (opcional)
+   *   Se actionText for definido, exibe um botao clicavel.
+   *   onAction e chamado se o usuario clicar antes do timeout.
+   */
+  function toast(msg, tipo, opcoes) {
     const container = document.getElementById('toast-container');
     if (!container) return;
     const el = document.createElement('div');
     el.className = 'toast' + (tipo ? ' ' + tipo : '');
-    el.textContent = msg;
+
+    const duration = (opcoes && opcoes.duration) || 3100;
+
+    if (opcoes && opcoes.actionText && typeof opcoes.onAction === 'function') {
+      // Toast com acao: usa innerHTML para inserir botao
+      el.innerHTML = '<span class="toast-msg"></span>' +
+        '<button class="toast-action" type="button">' + opcoes.actionText + '</button>';
+      el.querySelector('.toast-msg').textContent = msg;
+      const btn = el.querySelector('.toast-action');
+      let consumed = false;
+      btn.addEventListener('click', function() {
+        if (consumed) return;
+        consumed = true;
+        try { opcoes.onAction(); } catch (e) { console.warn('[toast] onAction err:', e); }
+        el.remove();
+      });
+    } else {
+      el.textContent = msg;
+    }
+
     container.appendChild(el);
-    setTimeout(() => el.remove(), 3100);
+    // Fade-out programatico antes de remover
+    setTimeout(() => { if (el.parentNode) el.classList.add('fade-out'); }, Math.max(0, duration - 220));
+    setTimeout(() => { if (el.parentNode) el.remove(); }, duration);
   }
 
   function parseValor(v) {
@@ -2149,6 +2539,7 @@
     renderCardAgenda();
     renderLancamentos();
     renderAgendaHome();
+    renderIcons();
   }
 
   /* ── Inicialização de dados ─────────────────────────────────── */
@@ -2163,12 +2554,19 @@
   ];
 
   function maybeInit() {
-    if (!localStorage.getItem('ccp_initialized')) {
+    const primeiraVez = !localStorage.getItem('ccp_initialized');
+    if (primeiraVez) {
       localStorage.setItem('receitas',      JSON.stringify([]));
       localStorage.setItem('despesas',      JSON.stringify([]));
       localStorage.setItem('compromissos',  JSON.stringify([]));
       localStorage.setItem('despesasFixas', JSON.stringify(FIXAS_DEFAULT));
+      // Auto-load: 10 notas demo de fonoaudiologia na primeira vez
+      localStorage.setItem('notas_cerebro', JSON.stringify(getNotasDemo()));
       localStorage.setItem('ccp_initialized', '1');
+    }
+    // Garante array de notas mesmo em app inicializado antes de existir
+    if (!localStorage.getItem('notas_cerebro')) {
+      localStorage.setItem('notas_cerebro', JSON.stringify([]));
     }
     // Garante fixas mesmo em app já inicializado mas vazio
     const fixas = JSON.parse(localStorage.getItem('despesasFixas') || '[]');
@@ -2203,6 +2601,8 @@
     if (tela === 'despesas')  { renderDespesasFixas(); renderListaDespesas(); }
     if (tela === 'agenda')    renderAgendaSemanal();
     if (tela === 'historico') { populaSelectMes(); renderHistorico(); }
+    if (tela === 'cerebro')   renderCerebro();
+    renderIcons();
   }
 
   /* ── Drawer mobile ──────────────────────────────────────────── */
@@ -2235,6 +2635,224 @@
   /* ── Helpers ────────────────────────────────────────────────── */
   function brl(v) {
     return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  /* ── Segundo Cerebro — categorias e estado ──────────────────── */
+  const CEREBRO_CATEGORIAS = [
+    { id: 'casos',      nome: 'Cases Clínicos', icone: 'clipboard-list', cor: '#9B72B0' },
+    { id: 'protocolos', nome: 'Protocolos',     icone: 'pin',            cor: '#7B9BC8' },
+    { id: 'artigos',    nome: 'Artigos',        icone: 'newspaper',      cor: '#7EC8B8' },
+    { id: 'tecnicas',   nome: 'Técnicas',       icone: 'lightbulb',      cor: '#E8C4A0' },
+    { id: 'palestras',  nome: 'Palestras',      icone: 'mic',            cor: '#E8B4D4' }
+  ];
+  let cerebroFiltroCategoria = null; // null = todas
+  let cerebroFiltroBusca = '';
+
+  function getNotas() {
+    return JSON.parse(localStorage.getItem('notas_cerebro') || '[]');
+  }
+  function setNotas(arr) {
+    localStorage.setItem('notas_cerebro', JSON.stringify(arr));
+  }
+  function getCategoria(id) {
+    return CEREBRO_CATEGORIAS.find(c => c.id === id) || CEREBRO_CATEGORIAS[0];
+  }
+
+  /**
+   * 10 notas demo curadas — Fonoaudiologia (amamentação, frênulo, desenvolvimento).
+   * Pacientes anonimizados (iniciais fictícias). Conteúdo em PT-BR no estilo profissional.
+   * IDs prefixados 'demo-' para permitir identificação.
+   */
+  function getNotasDemo() {
+    // Datas espalhadas entre fev/2026 e abr/2026 para parecer histórico real
+    const d = (offset) => new Date(Date.now() - offset * 24 * 60 * 60 * 1000).toISOString();
+    return [
+      // ── 3 CASES CLÍNICOS ──
+      {
+        id: 'demo-caso-ms',
+        titulo: 'Caso M.S. — 6 meses, dificuldade de pega após uso de bico',
+        categoria: 'casos',
+        paciente: 'M.S. (6 meses)',
+        tags: ['amamentacao', 'pega-incorreta', 'bico-artificial'],
+        conteudo: 'Bebê de 6 meses encaminhado pela pediatra. Mãe relata uso intensivo de bico desde a 3ª semana. Queixa: bebê morde o mamilo, mãe com fissuras recorrentes.\n\nAvaliação: postura de língua plana adequada, mas movimentação mandibular alterada. Boca pouco aberta na pega. Sucção curta e ineficiente.\n\nConduta: 4 sessões de reorganização do padrão de sucção. Suspensão progressiva do bico. Orientação à mãe sobre posicionamento (rugby para mama esquerda).\n\nResultado: 3ª sessão já mostrou pega ampla. Mãe sem dor na 4ª. Caso fechado em 1 mês. Sucesso.',
+        data: d(35), dataModificacao: d(35)
+      },
+      {
+        id: 'demo-caso-lb',
+        titulo: 'Caso L.B. — 4 meses, fissura palatina pós-cirurgia',
+        categoria: 'casos',
+        paciente: 'L.B. (4 meses)',
+        tags: ['fissura-palatina', 'pos-cirurgico', 'transicao-alimentar'],
+        conteudo: 'Bebê com fissura palatina unilateral, pós-correção cirúrgica há 2 semanas. Mãe ansiosa, alimentação via copinho desde o nascimento.\n\nAvaliação inicial: tonicidade orofacial reduzida. Reflexo de sucção presente mas desorganizado. Selamento oral parcial.\n\nProtocolo: estimulação intra-oral progressiva, exercícios de vedamento labial, transição gradual copinho → seio com placa palatina removível.\n\nEvolução em 8 semanas: amamentação parcial estabelecida (40% das mamadas). Família satisfeita. Continua acompanhamento mensal.',
+        data: d(21), dataModificacao: d(21)
+      },
+      {
+        id: 'demo-caso-ak',
+        titulo: 'Caso A.K. — 8 meses, recusa de transição para sólidos',
+        categoria: 'casos',
+        paciente: 'A.K. (8 meses)',
+        tags: ['transicao-alimentar', 'introducao-alimentar', 'recusa'],
+        conteudo: 'Bebê de 8 meses com recusa total de pastoso e sólido. Aceita apenas leite materno. Pediatra preocupada com peso.\n\nHistórico: introdução alimentar tardia (iniciada aos 7 meses). Família tentou várias texturas sem sucesso. Bebê chora ao ver colher.\n\nAvaliação: hiper-reatividade oral. Reflexo de gag muito anteriorizado. Aversão a texturas.\n\nConduta: 6 sessões de dessensibilização oral, brincadeiras com texturas (sem alimento), depois introdução gradual com colher de silicone macio.\n\nResultado: aceita 4 colheres de fruta na 4ª sessão. Mãe filmou primeiro pastoso aceito — momento de muita emoção. Continua progredindo.',
+        data: d(10), dataModificacao: d(10)
+      },
+
+      // ── 2 PROTOCOLOS ──
+      {
+        id: 'demo-prot-amamentacao',
+        titulo: 'Protocolo: Avaliação inicial de amamentação',
+        categoria: 'protocolos',
+        paciente: '',
+        tags: ['protocolo', 'avaliacao', 'primeira-consulta'],
+        conteudo: 'Roteiro padrão para primeira consulta de amamentação (aproximadamente 60 min):\n\n1. ANAMNESE (15 min)\n- Tipo de parto, peso ao nascer, idade gestacional\n- Tempo de amamentação atual, queixas da mãe\n- Uso de bicos, mamadeiras, complementação\n- Dor ao amamentar (de 0 a 10)\n- Histórico clínico do bebê e da mãe\n\n2. AVALIAÇÃO ANATÔMICA (10 min)\n- Frênulo lingual e labial (Protocolo Bristol)\n- Conformação de palato e mamilo\n- Tônus muscular orofacial\n\n3. OBSERVAÇÃO DA MAMADA (20 min)\n- Posicionamento da díade (UNICEF)\n- Pega: boca aberta, lábios evertidos, queixo na mama\n- Sucção: ritmo, profundidade, deglutição audível\n- Sinais de fadiga, esforço de bochecha\n\n4. DEVOLUTIVA (15 min)\n- Achados clínicos\n- Conduta proposta\n- Quantidade de sessões estimada\n- Materiais educativos\n\n5. ENTREGA: relatório por WhatsApp em 24h.',
+        data: d(56), dataModificacao: d(56)
+      },
+      {
+        id: 'demo-prot-frenotomia',
+        titulo: 'Protocolo: Orientação pré e pós-frenotomia',
+        categoria: 'protocolos',
+        paciente: '',
+        tags: ['frenotomia', 'protocolo', 'pre-cirurgico', 'pos-cirurgico'],
+        conteudo: 'Aplicado em conjunto com a dentista pediátrica do consultório.\n\nPRÉ-CIRÚRGICO (consulta única, 30 min)\n- Confirmação da indicação (Protocolo Bristol modificado)\n- Foto/vídeo da pega antes\n- Orientação à mãe sobre o procedimento (cirurgia leve, anestesia tópica)\n- Expectativas realistas: pega pode melhorar em horas, mas em alguns casos leva semanas\n\nPÓS-CIRÚRGICO IMEDIATO (mesmo dia, 15 min após o procedimento)\n- Mamada supervisionada logo após (a Lê entra na sala)\n- Posicionamento facilitado (rugby ou cavaleiro)\n- Ajuste fino de pega — bebê em geral retorna ao seio em 3-5 minutos\n\nACOMPANHAMENTO\n- Sessão D+3: avaliar cicatrização e ajustar pega\n- Sessão D+10: confirmar evolução, observar se há reaprendizado\n- Exercícios de mobilidade lingual diária pela mãe (3x/dia)\n\nIndicadores de sucesso: pega ampla, mãe sem dor em 7 dias, ganho de peso adequado em 2 semanas.',
+        data: d(48), dataModificacao: d(48)
+      },
+
+      // ── 2 ARTIGOS (resumos curados dos artigos do vault) ──
+      {
+        id: 'demo-art-snn',
+        titulo: 'Sucção não-nutritiva e desempenho na mamada (Medeiros et al., 2019)',
+        categoria: 'artigos',
+        paciente: '',
+        tags: ['artigo', 'snn', 'mamada', 'pesquisa'],
+        conteudo: 'Estudo descritivo com 50 díades mãe-RN, comparando avaliação de sucção não-nutritiva (SNN) com desempenho na mamada.\n\nPRINCIPAIS ACHADOS:\n- Movimentação mandibular alterada na SNN se correlaciona com:\n  · "boca do bebê pouco aberta" (p=0,005)\n  · "esforço de bochecha durante mamada" (p<0,001)\n  · "bebê com pescoço/tronco torcidos" (p=0,041)\n  · "mama apoiada com dedos na aréola" (p=0,041)\n\nCONCLUSÃO: Avaliar SNN antes da mamada pode predizer dificuldades. Útil como triagem rápida na primeira consulta.\n\nAPLICAÇÃO NO CONSULTÓRIO: incluir avaliação de SNN no protocolo inicial. Bebês com mandíbula alterada precisam de mais tempo de orientação postural.\n\nFonte: Rev. Bras. Saúde Mater. Infant., Recife, 19(3), 2019. doi: 10.1590/1806-93042019000300008',
+        data: d(70), dataModificacao: d(70)
+      },
+      {
+        id: 'demo-art-frenulo',
+        titulo: 'Frênulo lingual e aleitamento — estudo descritivo (SciELO)',
+        categoria: 'artigos',
+        paciente: '',
+        tags: ['artigo', 'frenulo', 'aleitamento', 'pesquisa'],
+        conteudo: 'Estudo descritivo sobre alterações do frênulo lingual e impacto no aleitamento materno exclusivo.\n\nPRINCIPAIS PONTOS:\n- Anquiloglossia presente em ~5% dos RNs avaliados\n- Frênulo curto/anterior aumenta significativamente o risco de:\n  · Pega superficial e dor mamária persistente\n  · Ganho de peso insuficiente nas primeiras semanas\n  · Desmame precoce (antes de 3 meses)\n- Protocolo Bristol é instrumento confiável para triagem clínica\n- Frenotomia precoce (até 3 semanas) tem melhores resultados\n\nIMPLICAÇÕES PRÁTICAS:\n- Avaliar frênulo em TODA primeira consulta de amamentação\n- Trabalho em conjunto com dentista pediátrica é diferencial\n- Orientação pós-cirúrgica imediata é tão importante quanto a cirurgia\n\nFonte: Audiology - Communication Research / SciELO, 2021',
+        data: d(63), dataModificacao: d(63)
+      },
+
+      // ── 2 TÉCNICAS ──
+      {
+        id: 'demo-tec-posicionamento',
+        titulo: 'Técnica: Posicionamento para pega correta — passo a passo',
+        categoria: 'tecnicas',
+        paciente: '',
+        tags: ['tecnica', 'posicionamento', 'pega', 'orientacao-mae'],
+        conteudo: 'Passo a passo que ensino para toda mãe na primeira consulta:\n\n1. MÃE confortável: costas apoiadas, ombros relaxados. Almofada no colo se sentada.\n\n2. BEBÊ alinhado: orelha-ombro-quadril em linha reta. Não pode ter torção do tronco.\n\n3. BARRIGA com BARRIGA: corpo do bebê totalmente voltado para o da mãe.\n\n4. NARIZ na altura do MAMILO: se mais alto, bebê levanta cabeça. Se mais baixo, perde a pega.\n\n5. ESPERAR boca BEM aberta antes de aproximar (estimular com mamilo no lábio inferior).\n\n6. APROXIMAR rápido: queixo toca primeiro, mamilo aponta para o céu da boca.\n\n7. CONFIRMAR pega:\n   - Queixo encostado na mama\n   - Lábio inferior virado para fora\n   - Aréola mais visível por cima\n   - Sucção lenta e profunda, com pausas\n   - Sem dor para a mãe\n\nDICA FINAL: se doer, retirar com cuidado (dedo na comissura) e reiniciar. Não é dor "de costume" — é sinal de pega errada.',
+        data: d(28), dataModificacao: d(28)
+      },
+      {
+        id: 'demo-tec-estimulacao',
+        titulo: 'Técnica: Estimulação oral em RN com Apgar baixo',
+        categoria: 'tecnicas',
+        paciente: '',
+        tags: ['tecnica', 'recem-nascido', 'apgar', 'uti-neonatal'],
+        conteudo: 'Sequência usada em UTI Neonatal e em consultas precoces (até 1ª semana de vida).\n\nINDICAÇÃO: RN com prontidão oral reduzida, prematuros tardios, Apgar 5min < 7.\n\nMATERIAL: dedo enluvado (látex hipoalergênico), seringa pequena (se necessário oferecer leite materno ordenhado).\n\nSEQUÊNCIA (5-7 minutos por sessão, 3x/dia):\n\n1. ESTÍMULO PERIORAL (1 min)\n   - Toque suave na bochecha, lábios, queixo\n   - Observa busca direcionada\n\n2. ESTÍMULO LABIAL (1 min)\n   - Pressão alternada superior/inferior\n   - Estimula reflexo de busca\n\n3. ESTÍMULO INTRA-ORAL (2-3 min)\n   - Dedo enluvado, palma para baixo\n   - Pressão suave no palato duro\n   - Observa canolamento de língua e ondulação\n\n4. SUCÇÃO NÃO-NUTRITIVA (2 min)\n   - Bebê suga o dedo\n   - Avaliar ritmo, pausas, força\n   - Cronometrar 1 minuto e contar bursts\n\n5. TRANSIÇÃO PARA MAMA (quando RN organizado)\n   - Após 30 segundos de SNN organizada, transferir para mama\n   - Mãe presente, posicionamento rugby\n\nCRITÉRIOS DE ALTA: 5 dias consecutivos com pega ampla, ganho de peso > 20g/dia, sem suplementação.',
+        data: d(42), dataModificacao: d(42)
+      },
+
+      // ── 1 PALESTRA ──
+      {
+        id: 'demo-pal-50-cases',
+        titulo: 'Roteiro de palestra: O que aprendi em 50 atendimentos de amamentação',
+        categoria: 'palestras',
+        paciente: '',
+        tags: ['palestra', 'roteiro', 'experiencia-clinica'],
+        conteudo: 'Roteiro para palestra de 30 minutos em conselho regional. Audiência: fonoaudiólogas iniciantes + pediatras parceiras.\n\nESTRUTURA:\n\n1. ABERTURA (3 min)\n   - Quem sou eu, formação, área de atuação\n   - "50 atendimentos depois, o que mudou na minha cabeça"\n\n2. TOP 3 CAUSAS DE DOR NA MAMA — não é o que eu pensava (8 min)\n   - Pega errada: 60% dos casos (esperado)\n   - Frênulo + posicionamento errado: 25% (era subestimado)\n   - Mama ingurgitada por horários rígidos: 15% (subestimado também)\n   - Cases ilustrativos\n\n3. O QUE NINGUÉM ENSINOU NA FACULDADE (10 min)\n   - Mãe vem mais ansiosa que o bebê — atender a mãe primeiro\n   - 80% dos casos resolve em 2-3 sessões\n   - Trabalhar com dentista pediátrica vira diferencial\n   - WhatsApp pós-consulta sustenta o aprendizado\n   - Vídeo da mãe filmando a próxima mamada vale mais que 1h de orientação\n\n4. O QUE EU MUDARIA SE COMEÇASSE HOJE (5 min)\n   - Investir em consultoria à beira do leito\n   - Construir rede com pediatras (não com mães)\n   - Documentar TODOS os casos (Segundo Cérebro)\n\n5. PERGUNTAS (4 min)\n\nDADOS A INCLUIR: estatísticas dos meus 50 cases, gráficos simples, fotos com autorização.',
+        data: d(7), dataModificacao: d(7)
+      }
+    ];
+  }
+
+  /** Carrega notas demo (sem duplicar — verifica IDs existentes). */
+  function carregarDemo() {
+    const atuais = getNotas();
+    const idsExistentes = new Set(atuais.map(n => n.id));
+    const novas = getNotasDemo().filter(n => !idsExistentes.has(n.id));
+    if (!novas.length) {
+      toast('As notas demo já estão carregadas.', null, { duration: 2400 });
+      return;
+    }
+    setNotas([...atuais, ...novas]);
+    fecharConfig();
+    renderCerebro();
+    atualizarHome();
+    toast(novas.length + ' notas de exemplo adicionadas.', 'success', { duration: 3500 });
+  }
+
+  /** Apaga TODAS as notas e recarrega só as 10 demos. */
+  function resetarComDemo() {
+    if (!confirm('Isso vai APAGAR TODAS as suas notas atuais e carregar apenas as 10 notas de exemplo. Continuar?')) return;
+    setNotas(getNotasDemo());
+    fecharConfig();
+    renderCerebro();
+    atualizarHome();
+    toast('Resetado com 10 notas de exemplo.', 'success', { duration: 3500 });
+  }
+
+  /** Apaga TUDO (todas as notas + receitas + despesas + compromissos). Despesas fixas mantidas. */
+  function limparTudo() {
+    if (!confirm('Isso vai APAGAR TODOS os dados do app:\n\n• Todas as notas do Segundo Cérebro\n• Todas as receitas\n• Todas as despesas\n• Todos os compromissos\n\nDespesas fixas e configurações serão mantidas.\n\nEsta ação NÃO PODE ser desfeita. Continuar?')) return;
+    if (!confirm('Tem certeza? Esta é sua última chance.')) return;
+    setNotas([]);
+    localStorage.setItem('receitas', JSON.stringify([]));
+    localStorage.setItem('despesas', JSON.stringify([]));
+    localStorage.setItem('compromissos', JSON.stringify([]));
+    fecharConfig();
+    renderCerebro();
+    atualizarHome();
+    toast('Todos os dados foram apagados. Comece do zero.', 'success', { duration: 4000 });
+  }
+
+  /* ── Configuracoes do app — % imposto + forma de pagamento ─── */
+  const FORMAS_PAGAMENTO = ['Pix', 'Dinheiro', 'Cartão de débito', 'Cartão de crédito', 'Transferência'];
+
+  function getImpostoPct() {
+    const v = parseFloat(localStorage.getItem('ccp_imposto_pct'));
+    return (isFinite(v) && v >= 0 && v <= 100) ? v : 6;
+  }
+  function getFormaPagamentoDefault() {
+    const v = localStorage.getItem('ccp_forma_pagamento');
+    return FORMAS_PAGAMENTO.includes(v) ? v : 'Pix';
+  }
+  function editarImpostoPct() {
+    abrirConfig(); // agora redireciona para o modal unificado
+  }
+
+  function abrirConfig() {
+    const m = document.getElementById('modal-config');
+    if (!m) return;
+    document.getElementById('cfg-imposto').value = String(getImpostoPct()).replace('.', ',');
+    document.getElementById('cfg-forma').value = getFormaPagamentoDefault();
+    m.style.display = 'flex';
+    renderIcons();
+  }
+  function fecharConfig() {
+    const m = document.getElementById('modal-config');
+    if (m) m.style.display = 'none';
+  }
+  function salvarConfig() {
+    const impStr = document.getElementById('cfg-imposto').value;
+    const imp = parseFloat(String(impStr).replace(',', '.'));
+    if (!isFinite(imp) || imp < 0 || imp > 100) {
+      toast('% de imposto inválido. Digite um número entre 0 e 100.', 'error');
+      return;
+    }
+    const forma = document.getElementById('cfg-forma').value;
+    if (!FORMAS_PAGAMENTO.includes(forma)) {
+      toast('Forma de pagamento inválida.', 'error');
+      return;
+    }
+    localStorage.setItem('ccp_imposto_pct', String(imp));
+    localStorage.setItem('ccp_forma_pagamento', forma);
+    fecharConfig();
+    atualizarHome();
+    toast('Configurações salvas. Confirme o imposto sempre com seu contador.', 'success', { duration: 3500 });
   }
 
   function mesNome() {
@@ -2287,7 +2905,7 @@
       .filter(c => new Date(c.data + 'T00:00:00') >= hoje && Number(c.valor) > 0)
       .reduce((s, c) => s + (Number(c.valor) || 0), 0);
 
-    document.getElementById('fin-titulo').textContent = 'Resultado de ' + mesNome();
+    document.getElementById('fin-titulo').textContent = 'Você já fez em ' + mesNome();
 
     const elSaldo = document.getElementById('fin-saldo');
     elSaldo.textContent = brl(saldo);
@@ -2297,7 +2915,17 @@
     document.getElementById('fin-saiu').textContent    = '↓ Saiu '   + brl(totalSaiu);
     document.getElementById('fin-pendente').textContent = brl(totalPendente);
     document.getElementById('fin-previsao').textContent = brl(totalPrevisao);
-    document.getElementById('fin-imposto').textContent  = brl(totalEntrou * 0.06);
+    const impPct = getImpostoPct();
+    document.getElementById('fin-imposto-pct').textContent = String(impPct).replace('.', ',');
+    document.getElementById('fin-imposto').textContent  = brl(totalEntrou * (impPct / 100));
+
+    // Bloco HOJE — valores do dia atual
+    const hojeStr = toDateStr(new Date());
+    const recHoje = receitas.filter(r => r.data === hojeStr && r.status === 'Pago');
+    const valHoje = recHoje.reduce((s, r) => s + (Number(r.valor) || 0), 0);
+    const atendHoje = compromissos.filter(c => c.data === hojeStr && (!c.tipo || c.tipo === 'Atendimento')).length;
+    document.getElementById('fin-hoje-valor').textContent = '+' + brl(valHoje);
+    document.getElementById('fin-hoje-atend').textContent = atendHoje + (atendHoje === 1 ? ' atendimento' : ' atendimentos');
   }
 
   /* ── Card Agenda ─────────────────────────────────────────────── */
@@ -2322,6 +2950,28 @@
     const elOcup = document.getElementById('ag-ocupacao');
     elOcup.innerHTML = ocupacao + '%' +
       ' <small id="ag-slots" style="font-size:10px;font-weight:400;opacity:.7"> de 40 slots</small>';
+
+    // Bloco HOJE — atendimentos e valor previsto do dia
+    const hojeStr = toDateStr(new Date());
+    const compHoje = compromissos.filter(c => c.data === hojeStr);
+    const atendHoje = compHoje.filter(c => !c.tipo || c.tipo === 'Atendimento').length;
+    const valorPrevHoje = compHoje
+      .filter(c => Number(c.valor) > 0)
+      .reduce((s, c) => s + (Number(c.valor) || 0), 0);
+    document.getElementById('ag-hoje-atend').textContent = atendHoje + (atendHoje === 1 ? ' atendimento' : ' atendimentos');
+    document.getElementById('ag-hoje-valor').innerHTML = '<i data-lucide="wallet"></i>' + brl(valorPrevHoje) + ' previstos';
+
+    // Footer — previsao de receita do mes (compromissos do mes corrente com valor)
+    const now = new Date();
+    const ano = now.getFullYear();
+    const mes = now.getMonth();
+    const prevMes = compromissos
+      .filter(c => {
+        const d = new Date(c.data + 'T00:00:00');
+        return d.getFullYear() === ano && d.getMonth() === mes && Number(c.valor) > 0;
+      })
+      .reduce((s, c) => s + (Number(c.valor) || 0), 0);
+    document.getElementById('ag-prev-mes').textContent = brl(prevMes);
   }
 
   /* ── Lançamentos recentes ────────────────────────────────────── */
@@ -2469,7 +3119,7 @@
     if (!el) return;
 
     if (doDia.length === 0) {
-      el.innerHTML = '<div class="lanc-vazio">Nenhum compromisso neste dia 🎉</div>';
+      el.innerHTML = '<div class="lanc-vazio">Nenhum compromisso neste dia</div>';
       return;
     }
 
@@ -2492,6 +3142,7 @@
         <div class="home-comp-tipo">${tipo}${escHtml(valStr)}</div>
       </div>`;
     }).join('') + '</div>';
+    renderIcons();
   }
 
   function renderMiniAgenda() {
@@ -2545,15 +3196,19 @@
     if (!el) return;
     const compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
     const hojeStr = toDateStr(new Date());
-    const doDia = compromissos.filter(c => c.data === hojeStr);
+    const doDia = compromissos
+      .filter(c => c.data === hojeStr)
+      .sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
     if (!doDia.length) {
-      el.innerHTML = '<div class="lanc-vazio">Nenhum compromisso hoje 🎉</div>';
+      el.innerHTML = '<div class="lanc-vazio">Nenhum compromisso hoje</div>';
       return;
     }
     const atend = doDia.filter(c => !c.tipo || c.tipo === 'Atendimento').length;
     const prof  = doDia.filter(c => c.tipo === 'Compromisso Profissional').length;
     const pess  = doDia.filter(c => c.tipo === 'Compromisso Pessoal').length;
-    el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:6px 12px 14px">
+
+    // Resumo de contagens (mantido)
+    const sumario = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:6px 12px 10px">
       <div style="background:#F0E8F8;border-radius:8px;padding:10px 4px;text-align:center">
         <div style="font-size:22px;font-weight:700;color:#9B72B0;line-height:1">${atend}</div>
         <div style="font-size:9px;color:#9B72B0;font-weight:600;margin-top:4px;line-height:1.2">Atendimentos</div>
@@ -2567,6 +3222,41 @@
         <div style="font-size:9px;color:#888;font-weight:600;margin-top:4px;line-height:1.2">Pessoais</div>
       </div>
     </div>`;
+
+    // Lista detalhada com botao de acao para atendimentos
+    const itens = doDia.map(c => {
+      const isAtend = !c.tipo || c.tipo === 'Atendimento';
+      const cor = corBarraTipo(c.tipo);
+      const realizado = !!c.realizado;
+      const valor = Number(c.valor) || 0;
+
+      // Botao "Realizado" so aparece em atendimentos nao realizados
+      let acao = '';
+      if (isAtend && !realizado) {
+        const valorTxt = valor > 0 ? ' +' + brl(valor) : '';
+        acao = `<button class="btn-realizado" onclick="marcarRealizado('${c.id}')" title="Marcar como realizado">
+          <i data-lucide="check"></i><span>Realizado${valorTxt}</span>
+        </button>`;
+      } else if (realizado) {
+        const valorTxt = valor > 0 ? ' · +' + brl(valor) : '';
+        acao = `<span class="badge-realizado"><i data-lucide="check-circle-2"></i>Recebido${valorTxt}</span>`;
+      } else if (valor > 0) {
+        acao = `<span style="font-size:11px;color:#4CAF50;font-weight:600">${brl(valor)}</span>`;
+      }
+
+      const bgItem = realizado ? '#EAF7E8' : '#fff';
+      const borderItem = realizado ? '1px solid #C5E2C0' : '1px solid #f0eef3';
+
+      return `<div class="home-agenda-item" style="background:${bgItem};border:${borderItem};border-left:3px solid ${cor};border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <div style="flex-shrink:0;font-size:11px;font-weight:700;color:#666;min-width:42px">${escHtml(c.hora||'--:--')}</div>
+        <div style="flex:1;min-width:0;font-size:12px;font-weight:500;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(c.nome||c.descricao||'Compromisso')}</div>
+        ${acao}
+      </div>`;
+    }).join('');
+
+    el.innerHTML = sumario +
+      `<div style="padding:0 12px 12px">${itens}</div>`;
+    renderIcons();
   }
 
   function renderHomeAgendaSemana() {
@@ -2588,6 +3278,12 @@
         .filter(c => c.data === ds)
         .sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
 
+      // Totais do dia: atendimentos + valor previsto
+      const atendDia = doDia.filter(c => !c.tipo || c.tipo === 'Atendimento').length;
+      const valorDia = doDia
+        .filter(c => Number(c.valor) > 0)
+        .reduce((s, c) => s + (Number(c.valor) || 0), 0);
+
       const headerBg  = isHoje ? '#F0E8F8' : '#fff';
       const headerBor = isHoje ? '1.5px solid #9B72B0' : '1px solid #eee';
       const numColor  = isHoje ? '#9B72B0' : '#333';
@@ -2604,12 +3300,21 @@
         </div>`;
       }).join('');
 
-      return `<div style="background:#fff;border-radius:8px;border:${headerBor};overflow:hidden;min-width:0">
+      // Resumo do dia (rodape da coluna): qtd + valor — agenda = dinheiro
+      const resumoDia = (atendDia > 0 || valorDia > 0)
+        ? `<div style="padding:4px 4px 6px;border-top:1px solid #eee;text-align:center">
+            <div style="font-size:10px;font-weight:700;color:${numColor};line-height:1.2">${atendDia} atend.</div>
+            <div style="font-size:9px;font-weight:600;color:#4CAF50;margin-top:1px;line-height:1">${brl(valorDia)}</div>
+          </div>`
+        : '';
+
+      return `<div style="background:#fff;border-radius:8px;border:${headerBor};overflow:hidden;min-width:0;display:flex;flex-direction:column">
         <div style="padding:5px 4px;text-align:center;background:${headerBg};border-bottom:${headerBor}">
           <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${nomColor}">${nome}</div>
           <div style="font-size:13px;font-weight:700;color:${numColor};line-height:1.3">${d.getDate()}</div>
         </div>
-        <div style="padding:4px;display:flex;flex-direction:column;gap:3px">${miniCards}</div>
+        <div style="padding:4px;display:flex;flex-direction:column;gap:3px;flex:1">${miniCards}</div>
+        ${resumoDia}
       </div>`;
     }).join('');
 
@@ -2618,6 +3323,7 @@
         ${colunas}
       </div>
     </div>`;
+    renderIcons();
   }
 
   function renderAgendaHome() {
@@ -2680,9 +3386,10 @@
           </div>
         </div>
         <div class="list-item-val val-receita">${brl(r.valor)}</div>
-        <button class="btn-icon del" onclick="excluirReceita('${r.id}')" title="Excluir">🗑</button>
+        <button class="btn-icon del" onclick="excluirReceita('${r.id}')" title="Excluir"><i data-lucide="trash-2"></i></button>
       </div>`;
     }).join('');
+    renderIcons();
   }
 
   /* ── DESPESAS ──────────────────────────────────────────────────── */
@@ -2752,8 +3459,8 @@
             <div class="list-item-meta">${escHtml(d.categoria)}</div>
           </div>
           <div class="list-item-val val-despesa">${brl(d.valor)}</div>
-          <button class="btn-icon" onclick="toggleEditarFixa('${d.id}')" title="Editar">✏️</button>
-          <button class="btn-icon del" onclick="excluirDespesaFixa('${d.id}')" title="Excluir">🗑</button>
+          <button class="btn-icon" onclick="toggleEditarFixa('${d.id}')" title="Editar"><i data-lucide="pencil"></i></button>
+          <button class="btn-icon del" onclick="excluirDespesaFixa('${d.id}')" title="Excluir"><i data-lucide="trash-2"></i></button>
         </div>
         <div class="edit-inline" id="edit-fixa-${d.id}">
           <input id="ef-desc-${d.id}" value="${escHtml(d.descricao)}" placeholder="Descrição">
@@ -2762,6 +3469,7 @@
           <button class="btn-primary" style="font-size:12px;padding:5px 12px;flex:0" onclick="salvarEdicaoFixa('${d.id}')">Salvar</button>
         </div>
       </div>`).join('');
+    renderIcons();
   }
   function salvarDespesa() {
     const data  = document.getElementById('d-data').value;
@@ -2810,9 +3518,10 @@
           <div class="list-item-meta">${escHtml(d.categoria)} · ${df}</div>
         </div>
         <div class="list-item-val val-despesa">- ${brl(d.valor)}</div>
-        <button class="btn-icon del" onclick="excluirDespesa('${d.id}')" title="Excluir">🗑</button>
+        <button class="btn-icon del" onclick="excluirDespesa('${d.id}')" title="Excluir"><i data-lucide="trash-2"></i></button>
       </div>`;
     }).join('');
+    renderIcons();
   }
 
   /* ── AGENDA (tela completa) ────────────────────────────────────── */
@@ -2875,7 +3584,7 @@
       const valorTxt = (c.tipo === 'Atendimento' && Number(c.valor) > 0)
         ? `<span style="font-size:11px;font-weight:700;color:#7E57C2;margin-left:4px">${brl(c.valor)}</span>` : '';
       const rlzBtn = c.realizado ? '' :
-        `<button class="btn-icon" onclick="marcarRealizado('${c.id}')" title="Marcar realizado">✅</button>`;
+        `<button class="btn-icon" onclick="marcarRealizado('${c.id}')" title="Marcar realizado"><i data-lucide="check-circle-2"></i></button>`;
       return `<div class="comp-item">
         <div class="comp-barra" style="background:${cor}"></div>
         <div class="comp-hora">${escHtml(c.hora||'--:--')}</div>
@@ -2885,7 +3594,7 @@
         </div>
         <span class="comp-badge ${bc}">${escHtml(c.status||'Pendente')}</span>
         ${rlzBtn}
-        <button class="btn-icon del" onclick="excluirCompromisso('${c.id}')" title="Excluir">🗑</button>
+        <button class="btn-icon del" onclick="excluirCompromisso('${c.id}')" title="Excluir"><i data-lucide="trash-2"></i></button>
       </div>`;
     }).join('');
   }
@@ -2917,22 +3626,306 @@
     renderAgendaSemanal();
     atualizarHome();
   }
+  /* ── Segundo Cerebro — Modal Nova/Editar Nota ────────────────── */
+  function abrirModalNota(id) {
+    const m = document.getElementById('modal-nota');
+    if (!m) return;
+    const tituloModal = document.getElementById('nota-titulo-modal');
+    const btnExcluir = document.getElementById('nota-btn-excluir');
+
+    if (id) {
+      // Modo edicao
+      const nota = getNotas().find(n => n.id === id);
+      if (!nota) { toast('Nota não encontrada.', 'error'); return; }
+      document.getElementById('nota-id').value = nota.id;
+      document.getElementById('nota-input-titulo').value = nota.titulo || '';
+      document.getElementById('nota-input-categoria').value = nota.categoria || 'casos';
+      document.getElementById('nota-input-paciente').value = nota.paciente || '';
+      document.getElementById('nota-input-conteudo').value = nota.conteudo || '';
+      document.getElementById('nota-input-tags').value = (Array.isArray(nota.tags) ? nota.tags.join(', ') : '');
+      tituloModal.innerHTML = '<i data-lucide="brain"></i>Editar Nota';
+      btnExcluir.style.display = 'inline-block';
+    } else {
+      // Modo novo
+      document.getElementById('nota-id').value = '';
+      document.getElementById('nota-input-titulo').value = '';
+      document.getElementById('nota-input-categoria').value = cerebroFiltroCategoria || 'casos';
+      document.getElementById('nota-input-paciente').value = '';
+      document.getElementById('nota-input-conteudo').value = '';
+      document.getElementById('nota-input-tags').value = '';
+      tituloModal.innerHTML = '<i data-lucide="brain"></i>Nova Nota';
+      btnExcluir.style.display = 'none';
+    }
+    m.style.display = 'flex';
+    setTimeout(() => document.getElementById('nota-input-titulo').focus(), 50);
+    renderIcons();
+  }
+  function fecharModalNota() {
+    const m = document.getElementById('modal-nota');
+    if (m) m.style.display = 'none';
+  }
+
+  function salvarNota() {
+    const id = document.getElementById('nota-id').value || uid();
+    const titulo = document.getElementById('nota-input-titulo').value.trim();
+    const categoria = document.getElementById('nota-input-categoria').value;
+    const paciente = document.getElementById('nota-input-paciente').value.trim();
+    const conteudo = document.getElementById('nota-input-conteudo').value.trim();
+    const tagsStr = document.getElementById('nota-input-tags').value.trim();
+
+    if (!titulo) { toast('Preencha o título da nota.', 'error'); return; }
+    if (!conteudo) { toast('Preencha o conteúdo da nota.', 'error'); return; }
+    if (!CEREBRO_CATEGORIAS.find(c => c.id === categoria)) {
+      toast('Categoria inválida.', 'error'); return;
+    }
+
+    const tags = tagsStr
+      ? tagsStr.split(',').map(t => t.trim().toLowerCase().replace(/\s+/g, '-')).filter(Boolean)
+      : [];
+
+    const notas = getNotas();
+    const idx = notas.findIndex(n => n.id === id);
+    const agora = new Date().toISOString();
+
+    if (idx >= 0) {
+      // Edicao
+      notas[idx] = { ...notas[idx], titulo, categoria, paciente, conteudo, tags, dataModificacao: agora };
+      setNotas(notas);
+      fecharModalNota();
+      renderCerebro();
+      toast('Nota atualizada.', 'success');
+    } else {
+      // Nova
+      notas.push({ id, titulo, categoria, paciente, conteudo, tags, data: agora, dataModificacao: agora });
+      setNotas(notas);
+      fecharModalNota();
+      renderCerebro();
+      toast('Nota criada com sucesso.', 'success');
+    }
+  }
+
+  function excluirNotaDoModal() {
+    const id = document.getElementById('nota-id').value;
+    if (!id) return;
+    fecharModalNota();
+    excluirNota(id);
+  }
+
+  function excluirNota(id) {
+    const notas = getNotas();
+    const nota = notas.find(n => n.id === id);
+    if (!nota) return;
+    // Snapshot para desfazer
+    const snapshot = { ...nota };
+    setNotas(notas.filter(n => n.id !== id));
+    renderCerebro();
+    toast(
+      'Nota "' + (nota.titulo || 'sem título').slice(0, 40) + '" excluída',
+      null,
+      {
+        actionText: 'Desfazer',
+        onAction: () => {
+          const arr = getNotas();
+          arr.push(snapshot);
+          setNotas(arr);
+          renderCerebro();
+          toast('Nota restaurada.', 'success', { duration: 2400 });
+        },
+        duration: 5000
+      }
+    );
+  }
+
+  /* ── Segundo Cerebro — Render principal ──────────────────────── */
+  function setBuscaCerebro(v) {
+    cerebroFiltroBusca = String(v || '').toLowerCase().trim();
+    renderCerebro();
+  }
+  function setCategoriaFiltro(catId) {
+    // toggle: clicar de novo na mesma desfaz
+    cerebroFiltroCategoria = (cerebroFiltroCategoria === catId) ? null : catId;
+    renderCerebro();
+  }
+  function limparFiltros() {
+    cerebroFiltroCategoria = null;
+    cerebroFiltroBusca = '';
+    const buscaEl = document.getElementById('cerebro-busca');
+    if (buscaEl) buscaEl.value = '';
+    renderCerebro();
+  }
+
+  function notaMatchBusca(n, q) {
+    if (!q) return true;
+    const haystack = [
+      n.titulo, n.conteudo, n.paciente,
+      ...(Array.isArray(n.tags) ? n.tags : [])
+    ].map(s => String(s||'').toLowerCase()).join(' ');
+    return haystack.includes(q);
+  }
+
+  function renderCerebro() {
+    // 1) Categorias (com contagem)
+    const grid = document.getElementById('cerebro-categorias-grid');
+    if (grid) {
+      const notas = getNotas();
+      grid.innerHTML = CEREBRO_CATEGORIAS.map(cat => {
+        const count = notas.filter(n => n.categoria === cat.id).length;
+        const ativa = cerebroFiltroCategoria === cat.id;
+        return `<div class="cerebro-cat${ativa ? ' cerebro-cat-ativa' : ''}" onclick="setCategoriaFiltro('${cat.id}')" style="cursor:pointer;${ativa ? 'border:2px solid '+cat.cor+';' : ''}">
+          <div class="cerebro-cat-icon" style="color:${cat.cor}"><i data-lucide="${cat.icone}"></i></div>
+          <div class="cerebro-cat-nome">${cat.nome}</div>
+          <div class="cerebro-cat-count">${count} ${count === 1 ? 'nota' : 'notas'}</div>
+        </div>`;
+      }).join('');
+    }
+
+    // 2) Filtros ativos (chips)
+    const filtrosEl = document.getElementById('cerebro-filtros-ativos');
+    if (filtrosEl) {
+      const chips = [];
+      if (cerebroFiltroCategoria) {
+        const c = getCategoria(cerebroFiltroCategoria);
+        chips.push(`<span style="background:${c.cor}22;color:${c.cor};padding:4px 10px;border-radius:12px;font-weight:700">Categoria: ${c.nome}</span>`);
+      }
+      if (cerebroFiltroBusca) {
+        chips.push(`<span style="background:#eee;color:#555;padding:4px 10px;border-radius:12px;font-weight:600">Busca: "${escHtml(cerebroFiltroBusca)}"</span>`);
+      }
+      if (chips.length) {
+        filtrosEl.style.display = 'flex';
+        filtrosEl.innerHTML = chips.join('') +
+          '<button onclick="limparFiltros()" style="background:none;border:none;color:#9B72B0;font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;margin-left:6px">Limpar</button>';
+      } else {
+        filtrosEl.style.display = 'none';
+        filtrosEl.innerHTML = '';
+      }
+    }
+
+    // 3) Lista de notas filtrada
+    const conteudoEl = document.getElementById('cerebro-conteudo');
+    if (conteudoEl) {
+      const notas = getNotas()
+        .filter(n => !cerebroFiltroCategoria || n.categoria === cerebroFiltroCategoria)
+        .filter(n => notaMatchBusca(n, cerebroFiltroBusca))
+        .sort((a, b) => (b.dataModificacao || b.data || '').localeCompare(a.dataModificacao || a.data || ''));
+
+      if (!notas.length) {
+        // Empty state — adapta texto se ha filtro
+        const filtroAtivo = cerebroFiltroCategoria || cerebroFiltroBusca;
+        const titulo = filtroAtivo ? 'Nenhuma anotação encontrada' : 'Nenhuma anotação ainda';
+        const desc = filtroAtivo
+          ? 'Tente ajustar a busca ou limpar o filtro.'
+          : 'Suas anotações clínicas aparecerão aqui. Comece registrando um caso ou protocolo.';
+        conteudoEl.innerHTML = `<div class="cerebro-empty">
+          <div style="margin-bottom:14px"><i data-lucide="pen-line" class="icon-xl"></i></div>
+          <p style="font-size:15px;font-weight:600;color:var(--texto);margin-bottom:8px">${titulo}</p>
+          <p style="font-size:13px;color:var(--texto-muted);max-width:380px;margin:0 auto;line-height:1.6">${desc}</p>
+          ${!filtroAtivo ? '<button class="btn-primary" style="margin-top:16px" onclick="abrirModalNota()">+ Criar primeira nota</button>' : ''}
+        </div>`;
+      } else {
+        conteudoEl.innerHTML = '<div class="nota-lista">' +
+          notas.map(n => renderNotaCard(n)).join('') + '</div>';
+      }
+    }
+
+    renderIcons();
+  }
+
+  function renderNotaCard(n) {
+    const cat = getCategoria(n.categoria);
+    const dataStr = (n.dataModificacao || n.data || '').slice(0, 10).split('-').reverse().join('/');
+    const snippet = String(n.conteudo || '').replace(/\s+/g, ' ').slice(0, 160);
+    const tagsHtml = (Array.isArray(n.tags) && n.tags.length)
+      ? '<div class="nota-tags">' + n.tags.map(t => '<span class="nota-tag">#' + escHtml(t) + '</span>').join('') + '</div>'
+      : '';
+    const pacHtml = n.paciente ? ' · ' + escHtml(n.paciente) : '';
+    return `<div class="nota-card" onclick="abrirModalNota('${n.id}')">
+      <div class="nota-card-header">
+        <div class="nota-card-titulo">${escHtml(n.titulo || '(sem título)')}</div>
+        <span class="nota-card-cat" style="background:${cat.cor}22;color:${cat.cor}">${cat.nome}</span>
+      </div>
+      ${snippet ? '<div class="nota-card-snippet">' + escHtml(snippet) + (n.conteudo && n.conteudo.length > 160 ? '...' : '') + '</div>' : ''}
+      <div class="nota-card-footer">
+        <span>${dataStr}${pacHtml}</span>
+        ${tagsHtml}
+      </div>
+    </div>`;
+  }
+
+  /**
+   * 1-toque puro: marca compromisso como realizado E (se valor > 0) cria receita.
+   * Toast com botao "Desfazer" por 5s — se clicar, restaura tudo (receita removida + status).
+   */
   function marcarRealizado(id) {
     const lista = JSON.parse(localStorage.getItem('compromissos') || '[]');
     const idx = lista.findIndex(c => c.id === id);
     if (idx < 0) return;
     const comp = lista[idx];
-    if (comp.valor > 0 && confirm(`Lançar como receita?\n${comp.nome} — ${brl(comp.valor)}`)) {
-      const recs = JSON.parse(localStorage.getItem('receitas') || '[]');
-      recs.push({ id: uid(), data: comp.data, nome: comp.nome,
-        tipo: comp.tipo === 'Atendimento' ? 'Consulta' : comp.tipo,
-        valor: comp.valor, formaPagamento: 'Pix', status: 'Pago', categoria: comp.tipo });
-      localStorage.setItem('receitas', JSON.stringify(recs));
+    if (comp.realizado) {
+      toast('Este atendimento já está marcado como realizado.', null, { duration: 2400 });
+      return;
     }
+
+    // Snapshot para desfazer
+    const snapshot = { compIdx: idx, compAntes: { ...comp }, recCriadaId: null };
+
+    // 1) Cria receita se valor > 0
+    if (Number(comp.valor) > 0) {
+      const recs = JSON.parse(localStorage.getItem('receitas') || '[]');
+      const novaRec = {
+        id: uid(),
+        data: comp.data,
+        nome: comp.nome,
+        tipo: comp.tipo === 'Atendimento' ? 'Consulta' : (comp.tipo || 'Consulta'),
+        valor: Number(comp.valor),
+        formaPagamento: getFormaPagamentoDefault(),
+        status: 'Pago',
+        categoria: comp.tipo || 'Atendimento'
+      };
+      recs.push(novaRec);
+      localStorage.setItem('receitas', JSON.stringify(recs));
+      snapshot.recCriadaId = novaRec.id;
+    }
+
+    // 2) Atualiza compromisso
     lista[idx] = { ...comp, status: 'Confirmado', realizado: true };
     localStorage.setItem('compromissos', JSON.stringify(lista));
+
+    // 3) Atualiza UI
     renderAgendaSemanal();
     atualizarHome();
+
+    // 4) Toast com Desfazer
+    const valorStr = Number(comp.valor) > 0 ? ' — receita +' + brl(comp.valor) + ' lançada' : '';
+    toast(
+      (comp.nome || 'Atendimento') + ' confirmado' + valorStr,
+      'success',
+      {
+        actionText: 'Desfazer',
+        onAction: () => desfazerRealizado(snapshot),
+        duration: 5000
+      }
+    );
+  }
+
+  /** Desfaz a operação do 1-toque: remove receita criada e restaura compromisso. */
+  function desfazerRealizado(snapshot) {
+    if (!snapshot) return;
+    // Restaura compromisso
+    const lista = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const idx = lista.findIndex(c => c.id === snapshot.compAntes.id);
+    if (idx >= 0) {
+      lista[idx] = snapshot.compAntes;
+      localStorage.setItem('compromissos', JSON.stringify(lista));
+    }
+    // Remove receita criada (se houve)
+    if (snapshot.recCriadaId) {
+      const recs = JSON.parse(localStorage.getItem('receitas') || '[]')
+        .filter(r => r.id !== snapshot.recCriadaId);
+      localStorage.setItem('receitas', JSON.stringify(recs));
+    }
+    renderAgendaSemanal();
+    atualizarHome();
+    toast('Operação desfeita.', null, { duration: 2400 });
   }
 
   /* ── HISTÓRICO ─────────────────────────────────────────────────── */
@@ -3010,7 +4003,7 @@
       const vc = item.tipo==='receita' ? 'val-receita' : 'val-despesa';
       const tc = item.status==='Fixo' ? 'tag-fixo' : item.status==='Pendente' ? 'tag-pendente' : 'tag-pago';
       const del = item.status !== 'Fixo'
-        ? `<button class="btn-icon del" onclick="excluirItemHist('${item.id}','${item.tipo}')" title="Excluir">🗑</button>` : '';
+        ? `<button class="btn-icon del" onclick="excluirItemHist('${item.id}','${item.tipo}')" title="Excluir"><i data-lucide="trash-2"></i></button>` : '';
       return `<div class="list-item">
         <div class="lanc-avatar" style="background:${cor};width:32px;height:32px;font-size:11px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;font-weight:700">${escHtml(ini)}</div>
         <div class="list-item-info">
@@ -3023,6 +4016,7 @@
         ${del}
       </div>`;
     }).join('');
+    renderIcons();
   }
   function excluirItemHist(id, tipo) {
     if (!confirm('Excluir este lançamento?')) return;
@@ -3078,12 +4072,22 @@
 
       const cards = doDia.map(c => {
         const cor = corBarraTipo(c.tipo);
-        const bg  = cor === '#9B72B0' ? '#E8D5F5' :
-                    cor === '#7B9BC8' ? '#D5E8F5' : '#EBEBEB';
-        const txtCor = cor === '#999' ? '#555' : cor;
+        const realizado = !!c.realizado;
+        // Se realizado, sobrepoe estilos com tom verde
+        const bg  = realizado
+          ? '#EAF7E8'
+          : (cor === '#9B72B0' ? '#E8D5F5' :
+             cor === '#7B9BC8' ? '#D5E8F5' : '#EBEBEB');
+        const borderColor = realizado ? '#4CAF50' : cor;
+        const txtCor = realizado ? '#2E7D32' : (cor === '#999' ? '#555' : cor);
         const valorTxt = (c.tipo === 'Atendimento' && Number(c.valor) > 0)
-          ? `<div class="agenda-comp-tipo" style="font-weight:700;opacity:1">${brl(c.valor)}</div>` : '';
-        return `<div class="agenda-comp-card" style="background:${bg};border-color:${cor};color:${txtCor}">
+          ? `<div class="agenda-comp-tipo" style="font-weight:700;opacity:1">${realizado ? '+' : ''}${brl(c.valor)}</div>` : '';
+        const checkBadge = realizado
+          ? `<div style="position:absolute;top:6px;right:6px;background:#4CAF50;color:#fff;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center" title="Atendimento realizado">
+              <i data-lucide="check" style="width:11px;height:11px;stroke-width:3"></i>
+            </div>` : '';
+        return `<div class="agenda-comp-card" style="background:${bg};border-color:${borderColor};color:${txtCor};position:relative">
+          ${checkBadge}
           <div class="agenda-comp-hora">${escHtml(c.hora||'--:--')}</div>
           <div class="agenda-comp-nome">${escHtml(c.nome||c.descricao||'Compromisso')}</div>
           <div class="agenda-comp-tipo">${escHtml(c.tipo||'Atendimento')}</div>
@@ -3099,11 +4103,13 @@
         <div class="agenda-col-body">${cards}</div>
       </div>`;
     }).join('');
+    renderIcons();
   }
 
   function abrirModalNovoComp() {
     const m = document.getElementById('modal-novo-comp');
     if (m) { m.style.display = 'flex'; toggleValorAgenda(); }
+    renderIcons();
   }
   function fecharModalNovoComp() {
     const m = document.getElementById('modal-novo-comp');
@@ -3116,6 +4122,7 @@
     const modal = document.getElementById('modal-em-breve');
     modal.style.display = 'flex';
     closeDrawer();
+    renderIcons();
   }
 
   function fecharModalEmBreve() {
@@ -3131,6 +4138,7 @@
   function abrirStory() {
     document.getElementById('story-screen').classList.add('aberto');
     closeDrawer();
+    renderIcons();
   }
   function fecharStory() {
     document.getElementById('story-screen').classList.remove('aberto');
@@ -3157,12 +4165,22 @@
     renderLancamentos();
     renderAgendaHome();
     renderAgendaSemanal();
+    renderCerebro();
     toggleValorAgenda();
     const hash = location.hash.replace('#', '');
     if (TELAS.includes(hash)) go(hash);
+    // Render dos icones Lucide — espera pequeno tick caso a lib carregue depois
+    renderIcons();
+    setTimeout(renderIcons, 80);
+    setTimeout(renderIcons, 400);
   }
 
-  boot();
+  // O script Lucide tem `defer`. Garantimos boot apos DOM carregado.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
 </script>
 </body>
 </html>
