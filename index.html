@@ -1476,6 +1476,55 @@
       }
     }
 
+    /* ── Botao Microfone (reconhecimento de voz) ─────────────── */
+    .btn-mic {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f3f0f7;
+      color: #6B3F8A;
+      border: 1px solid #d6bfe5;
+      border-radius: 18px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s, transform .1s, box-shadow .15s;
+    }
+    .btn-mic [data-lucide] {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2;
+    }
+    .btn-mic:hover {
+      background: #ebe3f4;
+    }
+    .btn-mic:active {
+      transform: scale(.96);
+    }
+    .btn-mic:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+    /* Estado: ouvindo (vermelho pulsando) */
+    .btn-mic.mic-listening {
+      background: #C62828;
+      color: #fff;
+      border-color: #C62828;
+      animation: micPulse 1.2s infinite ease-in-out;
+    }
+    .btn-mic.mic-listening:hover { background: #A91D1D; border-color: #A91D1D; }
+    @keyframes micPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(198,40,40,.6); }
+      50%      { box-shadow: 0 0 0 8px rgba(198,40,40,0); }
+    }
+    /* Estado: processando (amarelo) */
+    .btn-mic.mic-processing {
+      background: #F9A825;
+      color: #fff;
+      border-color: #F9A825;
+    }
+
     /* ── Botao Despesa estilizado (proposta ChatGPT, adaptado com Lucide) ──── */
     .btn-fin-despesa {
       display: flex;
@@ -2410,8 +2459,15 @@
       </div>
 
       <div class="form-group" style="margin-bottom:14px">
-        <label class="field-label">Sua pergunta</label>
-        <textarea id="ia-input" class="field-input" rows="3" maxlength="500" style="resize:vertical;font-family:inherit;line-height:1.5" placeholder="Ex: Já atendi algum caso de fissura palatina? Quais técnicas usei?" oninput="atualizarCharCountIA()"></textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <label class="field-label" style="margin-bottom:0">Sua pergunta</label>
+          <button type="button" class="btn-mic" id="ia-btn-mic" onclick="toggleMicIA()" title="Falar pergunta">
+            <i data-lucide="mic"></i>
+            <span class="btn-mic-label">Falar</span>
+          </button>
+        </div>
+        <textarea id="ia-input" class="field-input" rows="3" maxlength="500" style="resize:vertical;font-family:inherit;line-height:1.5" placeholder="Ex: Já atendi algum caso de fissura palatina? Quais técnicas usei? (ou clique no microfone)" oninput="atualizarCharCountIA()"></textarea>
+        <div id="ia-mic-status" style="font-size:11px;color:var(--lilas);text-align:left;margin-top:4px;display:none"></div>
         <div id="ia-char-count" style="font-size:11px;color:var(--texto-muted);text-align:right;margin-top:4px">0 / 500</div>
       </div>
 
@@ -2490,8 +2546,15 @@
     </div>
 
     <div class="form-group" style="margin-bottom:14px">
-      <label class="field-label">Conteúdo</label>
-      <textarea id="nota-input-conteudo" class="field-input" rows="6" style="resize:vertical;font-family:inherit;line-height:1.5" placeholder="Descreva o caso, protocolo, técnica, aprendizado..."></textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label class="field-label" style="margin-bottom:0">Conteúdo</label>
+        <button type="button" class="btn-mic" id="nota-btn-mic" onclick="toggleMicNota()" title="Ditar conteudo">
+          <i data-lucide="mic"></i>
+          <span class="btn-mic-label">Ditar</span>
+        </button>
+      </div>
+      <textarea id="nota-input-conteudo" class="field-input" rows="6" style="resize:vertical;font-family:inherit;line-height:1.5" placeholder="Descreva o caso, protocolo, técnica, aprendizado... (ou clique no microfone para ditar)"></textarea>
+      <div id="nota-mic-status" style="font-size:11px;color:var(--lilas);text-align:left;margin-top:4px;display:none"></div>
     </div>
 
     <div class="form-group" style="margin-bottom:18px">
@@ -2618,6 +2681,85 @@
      SCRIPTS
 ═══════════════════════════════════════════════════════════════ -->
 <script>
+  /* ── Reconhecimento de voz (Web Speech API) ────────────────────
+   * Helper reutilizavel. Funciona em Safari (Mac/iPhone) e Chrome.
+   * Estados callback: 'listening' | 'processing' | 'result' | 'error' | 'unsupported'
+   * Uso:
+   *   iniciarReconhecimentoVoz({
+   *     onStateChange: (estado) => { ... },
+   *     onResult: (textoFinal) => { ... },
+   *     onError: (motivo) => { ... }
+   *   });
+   *   // retorna controle: { stop: function }
+   */
+  function iniciarReconhecimentoVoz(opts) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      if (opts.onStateChange) opts.onStateChange('unsupported');
+      if (opts.onError) opts.onError('Seu navegador nao suporta reconhecimento de voz. Use Safari ou Chrome.');
+      return { stop: () => {} };
+    }
+
+    const recognition = new SR();
+    recognition.lang = 'pt-BR';
+    recognition.continuous = false;     // ate o usuario parar de falar
+    recognition.interimResults = true;  // resultados parciais durante a fala
+    recognition.maxAlternatives = 1;
+
+    let textoFinal = '';
+    let cancelado = false;
+
+    recognition.onstart = () => {
+      if (opts.onStateChange) opts.onStateChange('listening');
+    };
+
+    recognition.onresult = (event) => {
+      let interim = '';
+      let final = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const t = event.results[i][0].transcript;
+        if (event.results[i].isFinal) final += t + ' ';
+        else interim += t;
+      }
+      if (final) textoFinal += final;
+      // Mostra resultado parcial enquanto fala
+      if (opts.onPartial) opts.onPartial((textoFinal + interim).trim());
+    };
+
+    recognition.onerror = (event) => {
+      if (cancelado) return;
+      let mensagem = 'Erro ao reconhecer audio.';
+      if (event.error === 'no-speech') mensagem = 'Nao ouvi nada. Tenta de novo falando mais perto do microfone.';
+      else if (event.error === 'audio-capture') mensagem = 'Microfone nao disponivel. Verifique as permissoes.';
+      else if (event.error === 'not-allowed') mensagem = 'Permissao de microfone negada. Habilite nas configuracoes do navegador.';
+      else if (event.error === 'network') mensagem = 'Sem conexao para processar o audio.';
+      if (opts.onError) opts.onError(mensagem);
+      if (opts.onStateChange) opts.onStateChange('error');
+    };
+
+    recognition.onend = () => {
+      if (cancelado) return;
+      if (opts.onStateChange) opts.onStateChange('processing');
+      const texto = textoFinal.trim();
+      if (texto && opts.onResult) opts.onResult(texto);
+      if (opts.onStateChange) opts.onStateChange('result');
+    };
+
+    try {
+      recognition.start();
+    } catch (e) {
+      if (opts.onError) opts.onError('Nao foi possivel iniciar o microfone: ' + e.message);
+      if (opts.onStateChange) opts.onStateChange('error');
+    }
+
+    return {
+      stop: () => {
+        cancelado = true;
+        try { recognition.stop(); } catch (e) {}
+      }
+    };
+  }
+
   /* ── Lucide — render icones (idempotente, com retry se lib ainda nao carregou) ── */
   function renderIcons() {
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -3916,6 +4058,65 @@
     const cnt = document.getElementById('ia-char-count');
     if (inp && cnt) cnt.textContent = inp.value.length + ' / 500';
   }
+
+  /* ── Microfone do modal Perguntar a IA ──────────────────────── */
+  let __micIAControle = null;
+  function toggleMicIA() {
+    const btn = document.getElementById('ia-btn-mic');
+    const inp = document.getElementById('ia-input');
+    const status = document.getElementById('ia-mic-status');
+    if (!btn || !inp || !status) return;
+
+    // Se ja esta gravando, parar
+    if (__micIAControle) {
+      __micIAControle.stop();
+      __micIAControle = null;
+      btn.classList.remove('mic-listening', 'mic-processing');
+      status.style.display = 'none';
+      return;
+    }
+
+    // Iniciar reconhecimento
+    __micIAControle = iniciarReconhecimentoVoz({
+      onStateChange: (estado) => {
+        btn.classList.remove('mic-listening', 'mic-processing');
+        if (estado === 'listening') {
+          btn.classList.add('mic-listening');
+          status.style.display = 'block';
+          status.style.color = '#C62828';
+          status.textContent = '🔴 Ouvindo... clique de novo para parar';
+        } else if (estado === 'processing') {
+          btn.classList.add('mic-processing');
+          status.style.display = 'block';
+          status.style.color = '#A06200';
+          status.textContent = '⚙️ Processando audio...';
+        } else if (estado === 'result' || estado === 'error') {
+          btn.classList.remove('mic-listening', 'mic-processing');
+        } else if (estado === 'unsupported') {
+          btn.disabled = true;
+        }
+      },
+      onPartial: (texto) => {
+        // Resultado parcial enquanto fala — mostra no campo em tempo real
+        inp.value = texto;
+        atualizarCharCountIA();
+      },
+      onResult: (texto) => {
+        inp.value = texto;
+        atualizarCharCountIA();
+        __micIAControle = null;
+        setTimeout(() => { status.style.display = 'none'; }, 1200);
+        inp.focus();
+      },
+      onError: (msg) => {
+        __micIAControle = null;
+        status.style.display = 'block';
+        status.style.color = '#C62828';
+        status.textContent = '⚠️ ' + msg;
+        setTimeout(() => { status.style.display = 'none'; }, 4000);
+      }
+    });
+  }
   function resetarPerguntaIA() {
     document.getElementById('ia-pergunta-area').style.display = 'block';
     document.getElementById('ia-loading').style.display = 'none';
@@ -3990,6 +4191,63 @@
       document.getElementById('ia-erro-area').style.display = 'block';
       renderIcons();
     }
+  }
+
+  /* ── Microfone do modal Nova Nota (ditar conteudo) ─────────── */
+  let __micNotaControle = null;
+  let __micNotaTextoBase = ''; // texto que ja existia antes de comecar a ditar
+  function toggleMicNota() {
+    const btn = document.getElementById('nota-btn-mic');
+    const inp = document.getElementById('nota-input-conteudo');
+    const status = document.getElementById('nota-mic-status');
+    if (!btn || !inp || !status) return;
+
+    if (__micNotaControle) {
+      __micNotaControle.stop();
+      __micNotaControle = null;
+      btn.classList.remove('mic-listening', 'mic-processing');
+      status.style.display = 'none';
+      return;
+    }
+
+    // Salva o que ja estava digitado para apendar a transcricao no fim
+    __micNotaTextoBase = inp.value;
+    const separador = __micNotaTextoBase && !__micNotaTextoBase.endsWith('\n') ? '\n\n' : '';
+
+    __micNotaControle = iniciarReconhecimentoVoz({
+      onStateChange: (estado) => {
+        btn.classList.remove('mic-listening', 'mic-processing');
+        if (estado === 'listening') {
+          btn.classList.add('mic-listening');
+          status.style.display = 'block';
+          status.style.color = '#C62828';
+          status.textContent = '🔴 Gravando... fale claramente. Clique de novo para parar.';
+        } else if (estado === 'processing') {
+          btn.classList.add('mic-processing');
+          status.style.display = 'block';
+          status.style.color = '#A06200';
+          status.textContent = '⚙️ Processando audio...';
+        } else if (estado === 'unsupported') {
+          btn.disabled = true;
+        }
+      },
+      onPartial: (texto) => {
+        inp.value = __micNotaTextoBase + separador + texto;
+      },
+      onResult: (texto) => {
+        inp.value = (__micNotaTextoBase + separador + texto).trim();
+        __micNotaControle = null;
+        setTimeout(() => { status.style.display = 'none'; }, 1500);
+        inp.focus();
+      },
+      onError: (msg) => {
+        __micNotaControle = null;
+        status.style.display = 'block';
+        status.style.color = '#C62828';
+        status.textContent = '⚠️ ' + msg;
+        setTimeout(() => { status.style.display = 'none'; }, 4000);
+      }
+    });
   }
 
   /* ── Segundo Cerebro — Modal Nova/Editar Nota ────────────────── */
