@@ -1476,6 +1476,40 @@
       }
     }
 
+    /* ── Botao Despesa estilizado (proposta ChatGPT, adaptado com Lucide) ──── */
+    .btn-fin-despesa {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #FCE8E6;
+      border: none;
+      border-radius: 14px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: #7A2E2E;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      transition: transform .2s ease, box-shadow .2s ease;
+      flex: 1;
+      min-width: 0;
+    }
+    .btn-fin-despesa [data-lucide] {
+      width: 22px;
+      height: 22px;
+      stroke-width: 2.2;
+      color: #E57373;
+      flex-shrink: 0;
+    }
+    .btn-fin-despesa:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    }
+    .btn-fin-despesa:active {
+      transform: scale(0.97);
+    }
+
     /* ── Botao "Perguntar a IA" (gradiente lilás especial) ──── */
     .btn-ia {
       display: inline-flex;
@@ -1959,7 +1993,10 @@
           <!-- Botões de ação -->
           <div class="action-buttons">
             <button class="btn-primary" style="background:#4CAF50;border-color:#4CAF50" onclick="go('receitas')">＋ Registrar atendimento</button>
-            <button class="btn-primary" style="background:#E57373;border-color:#E57373" onclick="go('despesas')">＋ Registrar despesa</button>
+            <button class="btn-fin-despesa" onclick="go('despesas')">
+              <i data-lucide="trending-down"></i>
+              <span>Registrar despesa</span>
+            </button>
           </div>
 
           <!-- Lançamentos recentes -->
