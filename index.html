@@ -7,6 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- jsPDF + autotable para gerar relatorio em PDF (download direto) -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js" defer></script>
+
   <!-- Lucide Icons (linha-fina, moderno) — jsDelivr CDN (mais confiavel) -->
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"
           onload="window.__lucideReady=true; if(typeof renderIcons==='function') renderIcons();"
@@ -1476,6 +1480,34 @@
       }
     }
 
+    /* ── Botao Relatório PDF (na tela Historico) ─────────────── */
+    .btn-pdf-relatorio {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #6B3F8A 0%, #9B72B0 100%);
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(107,63,138,.25);
+      transition: transform .12s, box-shadow .15s;
+      margin-left: auto;
+    }
+    .btn-pdf-relatorio:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 14px rgba(107,63,138,.34);
+    }
+    .btn-pdf-relatorio:active { transform: scale(.97); }
+    .btn-pdf-relatorio [data-lucide] {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2.2;
+    }
+
     /* ── Botao Microfone (reconhecimento de voz) ─────────────── */
     .btn-mic {
       display: inline-flex;
@@ -1633,6 +1665,63 @@
       transition: background .15s;
     }
     .ia-sugestao:hover { background: #E5D5F0; }
+
+    /* ── Atalhos avancados (botoes coloridos no modal IA) ────── */
+    .ia-atalho {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      color: #444;
+      border: 1.5px solid #e5e0eb;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: transform .1s, border-color .15s, background .15s, box-shadow .15s;
+      min-height: 38px;
+    }
+    .ia-atalho:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(107,63,138,.10);
+    }
+    .ia-atalho:active { transform: scale(.97); }
+    .ia-atalho .ia-atalho-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .ia-atalho .ia-atalho-icon [data-lucide] {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+    }
+    .ia-atalho .ia-atalho-titulo {
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Variantes por categoria */
+    .ia-atalho-laudo .ia-atalho-icon  { background: #F0E8F8; color: #6B3F8A; }
+    .ia-atalho-laudo:hover            { border-color: #6B3F8A; }
+    .ia-atalho-post .ia-atalho-icon   { background: #FFE0EC; color: #C2185B; }
+    .ia-atalho-post:hover             { border-color: #C2185B; }
+    .ia-atalho-palestra .ia-atalho-icon { background: #E8F5E9; color: #2E7D32; }
+    .ia-atalho-palestra:hover           { border-color: #2E7D32; }
+    .ia-atalho-lacunas .ia-atalho-icon  { background: #FFF3E0; color: #A06200; }
+    .ia-atalho-lacunas:hover            { border-color: #A06200; }
+    .ia-atalho-resumo .ia-atalho-icon   { background: #E3F2FD; color: #1565C0; }
+    .ia-atalho-resumo:hover             { border-color: #1565C0; }
+    .ia-atalho-conexoes .ia-atalho-icon { background: #F3E5F5; color: #7B1FA2; }
+    .ia-atalho-conexoes:hover           { border-color: #7B1FA2; }
 
     /* ── Loading dots da IA ──────────────────────────────────── */
     .ia-pulse-dot {
@@ -2285,6 +2374,10 @@
         <button class="filtro-btn"       id="filt-receitas"  onclick="filtrarHist('receitas')">Receitas</button>
         <button class="filtro-btn"       id="filt-despesas"  onclick="filtrarHist('despesas')">Despesas</button>
         <select class="filtro-mes" id="hist-mes-sel" onchange="renderHistorico()"></select>
+        <button class="btn-pdf-relatorio" onclick="gerarRelatorioPDF()" title="Gerar relatório em PDF para enviar ao contador">
+          <i data-lucide="file-down"></i>
+          <span>Relatório PDF</span>
+        </button>
       </div>
       <div class="list-card" style="flex:1">
         <div id="lista-historico"></div>
@@ -2452,9 +2545,15 @@
     <p style="font-size:12px;color:var(--texto-muted);margin-bottom:14px">A IA lê <strong>apenas suas notas</strong> do Segundo Cérebro e responde com base nelas. <span id="ia-restantes" style="color:var(--lilas);font-weight:600"></span></p>
 
     <div id="ia-pergunta-area">
-      <!-- Sugestoes rapidas -->
+      <!-- Atalhos avancados (botoes coloridos com acoes especificas) -->
+      <div style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Atalhos da IA</div>
+        <div id="ia-atalhos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px"></div>
+      </div>
+
+      <!-- Sugestoes rapidas (perguntas livres) -->
       <div style="margin-bottom:10px">
-        <div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Perguntas rápidas</div>
+        <div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Ou pergunte algo direto</div>
         <div id="ia-sugestoes" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       </div>
 
@@ -3974,6 +4073,67 @@
     'Tem algum padrão entre meus cases?'
   ];
 
+  /**
+   * 6 atalhos avancados — perguntas pre-formuladas com persona/objetivo claro.
+   * Click → preenche o textarea com a pergunta e dispara a consulta automaticamente.
+   */
+  const IA_ATALHOS = [
+    {
+      id: 'laudo',
+      classe: 'ia-atalho-laudo',
+      icone: 'file-text',
+      titulo: 'Gerar laudo',
+      pergunta: 'Crie um rascunho de laudo profissional para o caso mais recente que tenho registrado. Estrutura: Identificação (paciente, idade), Queixa, Avaliação, Conduta, Evolução, Conclusão. Use linguagem clínica formal mas acessível.'
+    },
+    {
+      id: 'post',
+      classe: 'ia-atalho-post',
+      icone: 'instagram',
+      titulo: 'Post Instagram',
+      pergunta: 'Escolha um tema dos meus cases ou protocolos e crie um post para Instagram (3 parágrafos curtos, linguagem acessível para o público leigo, sem identificar pacientes). Inclua hashtags relevantes.'
+    },
+    {
+      id: 'palestra',
+      classe: 'ia-atalho-palestra',
+      icone: 'mic',
+      titulo: 'Tema palestra',
+      pergunta: 'Olhe meus cases, protocolos e técnicas. Sugira 3 temas potentes para uma palestra de 30 minutos, com base no que TENHO MAIS MATERIAL registrado. Para cada tema, indique quais notas usar.'
+    },
+    {
+      id: 'lacunas',
+      classe: 'ia-atalho-lacunas',
+      icone: 'search-x',
+      titulo: 'Detectar lacunas',
+      pergunta: 'Analise meus cases e protocolos. Identifique 2-3 áreas importantes que provavelmente atendo na prática mas ainda não tenho material registrado. Sugira o que valeria documentar.'
+    },
+    {
+      id: 'resumo',
+      classe: 'ia-atalho-resumo',
+      icone: 'calendar-clock',
+      titulo: 'Resumo do mês',
+      pergunta: 'Faça um resumo dos cases e protocolos que tenho registrados nos últimos 30 dias. Destaque temas recorrentes, técnicas mais usadas e qualquer padrão clínico que perceber.'
+    },
+    {
+      id: 'conexoes',
+      classe: 'ia-atalho-conexoes',
+      icone: 'git-merge',
+      titulo: 'Conexões',
+      pergunta: 'Encontre conexões entre meus cases, protocolos e técnicas. Quais notas se relacionam entre si? Aponte 2-3 pares ou trios que se complementam e explique o porquê.'
+    }
+  ];
+
+  function executarAtalhoIA(atalhoId) {
+    const a = IA_ATALHOS.find(x => x.id === atalhoId);
+    if (!a) return;
+    const inp = document.getElementById('ia-input');
+    if (inp) {
+      inp.value = a.pergunta;
+      atualizarCharCountIA();
+    }
+    // Dispara a pergunta automaticamente
+    perguntarIA();
+  }
+
   function getIAUsoHoje() {
     const hojeStr = new Date().toISOString().slice(0, 10);
     const raw = localStorage.getItem('ccp_ia_uso');
@@ -4026,6 +4186,16 @@
     document.getElementById('ia-erro-area').style.display = 'none';
     document.getElementById('ia-input').value = '';
     document.getElementById('ia-char-count').textContent = '0 / 500';
+    // Atalhos avancados (botoes coloridos com acoes especificas)
+    const atalhosEl = document.getElementById('ia-atalhos');
+    if (atalhosEl) {
+      atalhosEl.innerHTML = IA_ATALHOS.map(a =>
+        `<button class="ia-atalho ${a.classe}" onclick="executarAtalhoIA('${a.id}')" title="${escHtml(a.pergunta)}">
+          <span class="ia-atalho-icon"><i data-lucide="${a.icone}"></i></span>
+          <span class="ia-atalho-titulo">${escHtml(a.titulo)}</span>
+        </button>`
+      ).join('');
+    }
     // Sugestoes (re-renderizadas a cada abertura caso queira variar no futuro)
     const sugEl = document.getElementById('ia-sugestoes');
     if (sugEl) {
@@ -4557,6 +4727,186 @@
 
   /* ── HISTÓRICO ─────────────────────────────────────────────────── */
   let histFiltro = 'todos';
+
+  /**
+   * Gera PDF do relatório do mês selecionado (para enviar ao contador).
+   * Usa jsPDF + autotable (carregados via CDN).
+   * Download direto do arquivo, sem depender do Cmd+P do navegador.
+   */
+  function gerarRelatorioPDF() {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      toast('Biblioteca de PDF ainda carregando. Aguarde 2 segundos e tenta de novo.', 'error', { duration: 3500 });
+      return;
+    }
+
+    // Pega o mes selecionado no filtro
+    const sel = document.getElementById('hist-mes-sel');
+    if (!sel || !sel.value) {
+      toast('Selecione um mês primeiro.', 'error');
+      return;
+    }
+    const [ano, mes] = sel.value.split('-').map(Number); // mes 1-12
+    const mesIdx = mes - 1;
+
+    const receitas = JSON.parse(localStorage.getItem('receitas') || '[]')
+      .filter(r => {
+        const d = new Date(r.data + 'T00:00:00');
+        return d.getFullYear() === ano && d.getMonth() === mesIdx;
+      })
+      .sort((a, b) => (a.data || '').localeCompare(b.data || ''));
+
+    const despesas = JSON.parse(localStorage.getItem('despesas') || '[]')
+      .filter(d => {
+        const dd = new Date(d.data + 'T00:00:00');
+        return dd.getFullYear() === ano && dd.getMonth() === mesIdx;
+      })
+      .sort((a, b) => (a.data || '').localeCompare(b.data || ''));
+
+    if (!receitas.length && !despesas.length) {
+      toast('Nada lançado neste mês para gerar relatório.', 'error', { duration: 3500 });
+      return;
+    }
+
+    const totalReceita = receitas.reduce((s, r) => s + (Number(r.valor) || 0), 0);
+    const totalDespesa = despesas.reduce((s, d) => s + (Number(d.valor) || 0), 0);
+    const resultado = totalReceita - totalDespesa;
+    const impPct = getImpostoPct();
+    const impostoEst = totalReceita * (impPct / 100);
+
+    const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                        'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const periodo = nomesMeses[mesIdx] + ' / ' + ano;
+
+    // Inicializa PDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const margemX = 15;
+    let y = 18;
+
+    // ── Cabeçalho ─────────────────────────────────────────────────
+    doc.setFillColor(155, 114, 176); // lilás
+    doc.rect(0, 0, 210, 28, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('CONTA COMIGO AI PRO', margemX, 13);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Relatório mensal para contador', margemX, 19);
+    doc.text('Período: ' + periodo, margemX, 24);
+
+    // Data de geração no canto direito
+    const agora = new Date();
+    const dataStr = agora.toLocaleDateString('pt-BR') + ' ' +
+                    agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    doc.setFontSize(8);
+    doc.text('Gerado em ' + dataStr, 210 - margemX, 24, { align: 'right' });
+
+    // ── Resumo financeiro ─────────────────────────────────────────
+    y = 38;
+    doc.setTextColor(50, 50, 50);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumo financeiro', margemX, y);
+    y += 6;
+
+    doc.autoTable({
+      startY: y,
+      theme: 'plain',
+      styles: { fontSize: 11, cellPadding: 2 },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 65 }, 1: { halign: 'right', cellWidth: 40 } },
+      body: [
+        ['Receitas (' + receitas.length + ' lançamentos)', brl(totalReceita)],
+        ['Despesas (' + despesas.length + ' lançamentos)', brl(totalDespesa)],
+        ['Resultado líquido', { content: brl(resultado), styles: { fontStyle: 'bold', textColor: resultado >= 0 ? [29, 158, 117] : [200, 90, 90] } }],
+        ['Imposto estimado (' + impPct + '%)', brl(impostoEst)]
+      ]
+    });
+    y = doc.lastAutoTable.finalY + 8;
+
+    // ── Tabela de receitas ────────────────────────────────────────
+    if (receitas.length) {
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(50, 50, 50);
+      doc.text('Receitas', margemX, y);
+      y += 4;
+
+      const linhasRec = receitas.map(r => [
+        new Date(r.data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        r.nome || '-',
+        r.tipo || r.categoria || '-',
+        r.formaPagamento || '-',
+        r.status || 'Pago',
+        brl(r.valor || 0)
+      ]);
+      // Linha de total
+      linhasRec.push([
+        { content: 'TOTAL', colSpan: 5, styles: { fontStyle: 'bold', halign: 'right' } },
+        { content: brl(totalReceita), styles: { fontStyle: 'bold' } }
+      ]);
+
+      doc.autoTable({
+        startY: y,
+        head: [['Data', 'Paciente', 'Tipo', 'Forma pagto.', 'Status', 'Valor']],
+        body: linhasRec,
+        theme: 'striped',
+        styles: { fontSize: 9, cellPadding: 2 },
+        headStyles: { fillColor: [76, 175, 80], textColor: 255, fontStyle: 'bold' },
+        columnStyles: { 5: { halign: 'right' } }
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    }
+
+    // ── Tabela de despesas ────────────────────────────────────────
+    if (despesas.length) {
+      // Quebra de página se faltar espaço
+      if (y > 240) { doc.addPage(); y = 20; }
+
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(50, 50, 50);
+      doc.text('Despesas', margemX, y);
+      y += 4;
+
+      const linhasDesp = despesas.map(d => [
+        new Date(d.data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        d.descricao || d.nome || '-',
+        d.categoria || '-',
+        brl(d.valor || 0)
+      ]);
+      linhasDesp.push([
+        { content: 'TOTAL', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } },
+        { content: brl(totalDespesa), styles: { fontStyle: 'bold' } }
+      ]);
+
+      doc.autoTable({
+        startY: y,
+        head: [['Data', 'Descrição', 'Categoria', 'Valor']],
+        body: linhasDesp,
+        theme: 'striped',
+        styles: { fontSize: 9, cellPadding: 2 },
+        headStyles: { fillColor: [229, 115, 115], textColor: 255, fontStyle: 'bold' },
+        columnStyles: { 3: { halign: 'right' } }
+      });
+      y = doc.lastAutoTable.finalY + 8;
+    }
+
+    // ── Aviso final ───────────────────────────────────────────────
+    if (y > 260) { doc.addPage(); y = 20; }
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.setFont('helvetica', 'italic');
+    const aviso = 'Aviso: o imposto exibido é uma ESTIMATIVA com base no % de ' + impPct + '% configurado pelo profissional. ' +
+                  'Confirme sempre os cálculos com seu contador. Este relatório é um auxiliar de apuração, não substitui declaração fiscal.';
+    const avisoLinhas = doc.splitTextToSize(aviso, 180);
+    doc.text(avisoLinhas, margemX, y);
+
+    // Salvar arquivo
+    const nomeArquivo = 'relatorio_contador_' + ano + '-' + String(mes).padStart(2,'0') + '.pdf';
+    doc.save(nomeArquivo);
+    toast('PDF gerado com sucesso: ' + nomeArquivo, 'success', { duration: 3500 });
+  }
 
   function populaSelectMes() {
     const sel = document.getElementById('hist-mes-sel');
