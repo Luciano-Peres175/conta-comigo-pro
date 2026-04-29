@@ -2990,11 +2990,11 @@
   function maybeInit() {
     const primeiraVez = !localStorage.getItem('ccp_initialized');
     if (primeiraVez) {
-      localStorage.setItem('receitas',      JSON.stringify([]));
-      localStorage.setItem('despesas',      JSON.stringify([]));
-      localStorage.setItem('compromissos',  JSON.stringify([]));
+      // Auto-load: dados demo COMPLETOS na primeira vez (notas + financeiro + agenda)
+      localStorage.setItem('receitas',      JSON.stringify(getReceitasDemo()));
+      localStorage.setItem('despesas',      JSON.stringify(getDespesasDemo()));
+      localStorage.setItem('compromissos',  JSON.stringify(getCompromissosDemo()));
       localStorage.setItem('despesasFixas', JSON.stringify(FIXAS_DEFAULT));
-      // Auto-load: 10 notas demo de fonoaudiologia na primeira vez
       localStorage.setItem('notas_cerebro', JSON.stringify(getNotasDemo()));
       localStorage.setItem('ccp_initialized', '1');
     }
@@ -3203,42 +3203,133 @@
     ];
   }
 
-  /** Carrega notas demo (sem duplicar — verifica IDs existentes). */
+  /**
+   * Demos de RECEITAS — coerentes com os cases das notas (M.S., L.B., A.K.).
+   * Datas espalhadas no MES corrente do dispositivo.
+   */
+  function getReceitasDemo() {
+    const now = new Date();
+    const ano = now.getFullYear();
+    const mes = String(now.getMonth() + 1).padStart(2, '0');
+    const d = (dia) => ano + '-' + mes + '-' + String(dia).padStart(2, '0');
+    return [
+      { id: 'demo-rec-1', data: d(3),  nome: 'Maria S. (M.S.)',  tipo: 'Atendimento', valor: 280, formaPagamento: 'Pix',      status: 'Pago',     categoria: 'Atendimento' },
+      { id: 'demo-rec-2', data: d(5),  nome: 'Leonardo B. (L.B.)', tipo: 'Avaliação',   valor: 350, formaPagamento: 'Pix',      status: 'Pago',     categoria: 'Avaliação' },
+      { id: 'demo-rec-3', data: d(8),  nome: 'Maria S. (M.S.)',  tipo: 'Atendimento', valor: 280, formaPagamento: 'Pix',      status: 'Pago',     categoria: 'Atendimento' },
+      { id: 'demo-rec-4', data: d(10), nome: 'Ana K. (A.K.)',    tipo: 'Atendimento', valor: 280, formaPagamento: 'Cartão de débito', status: 'Pago', categoria: 'Atendimento' },
+      { id: 'demo-rec-5', data: d(12), nome: 'Leonardo B. (L.B.)', tipo: 'Atendimento', valor: 280, formaPagamento: 'Pix',     status: 'Pago',     categoria: 'Atendimento' },
+      { id: 'demo-rec-6', data: d(15), nome: 'Maria S. (M.S.)',  tipo: 'Atendimento', valor: 280, formaPagamento: 'Pix',      status: 'Pago',     categoria: 'Atendimento' },
+      { id: 'demo-rec-7', data: d(17), nome: 'Beatriz N.',         tipo: 'Avaliação',   valor: 350, formaPagamento: 'Pix',      status: 'Pago',     categoria: 'Avaliação' },
+      { id: 'demo-rec-8', data: d(20), nome: 'Ana K. (A.K.)',    tipo: 'Atendimento', valor: 280, formaPagamento: 'Pix',      status: 'Pago',     categoria: 'Atendimento' },
+      { id: 'demo-rec-9', data: d(22), nome: 'Beatriz N.',         tipo: 'Atendimento', valor: 280, formaPagamento: 'Pix',      status: 'Pendente', categoria: 'Atendimento' },
+      { id: 'demo-rec-10',data: d(25), nome: 'Maria S. (M.S.)',  tipo: 'Atendimento', valor: 280, formaPagamento: 'Pix',      status: 'Pago',     categoria: 'Atendimento' }
+    ];
+  }
+
+  /**
+   * Demos de DESPESAS variáveis (não fixas — fixas já têm DEFAULT).
+   * Datas no mês corrente.
+   */
+  function getDespesasDemo() {
+    const now = new Date();
+    const ano = now.getFullYear();
+    const mes = String(now.getMonth() + 1).padStart(2, '0');
+    const d = (dia) => ano + '-' + mes + '-' + String(dia).padStart(2, '0');
+    return [
+      { id: 'demo-desp-1', data: d(7),  descricao: 'Curso de aleitamento materno', categoria: 'Capacitação',      valor: 450, status: 'Pago' },
+      { id: 'demo-desp-2', data: d(14), descricao: 'Livro técnico — Disfagia',     categoria: 'Material Estudo',  valor: 180, status: 'Pago' },
+      { id: 'demo-desp-3', data: d(21), descricao: 'Manutenção do equipamento',    categoria: 'Equipamentos',     valor: 220, status: 'Pago' }
+    ];
+  }
+
+  /**
+   * Demos de COMPROMISSOS — alguns no passado (realizados) e outros futuros.
+   * Coerentes com os cases das notas.
+   */
+  function getCompromissosDemo() {
+    const now = new Date();
+    const ano = now.getFullYear();
+    const mes = String(now.getMonth() + 1).padStart(2, '0');
+    const d = (dia) => ano + '-' + mes + '-' + String(dia).padStart(2, '0');
+    const hoje = now.getDate();
+    return [
+      // Já realizados (passados, com receita lançada)
+      { id: 'demo-comp-1', data: d(Math.max(1, hoje - 4)), hora: '09:00', nome: 'Maria S. (M.S.)', tipo: 'Atendimento', valor: 280, status: 'Confirmado', realizado: true, duracao: 45 },
+      { id: 'demo-comp-2', data: d(Math.max(1, hoje - 2)), hora: '14:00', nome: 'Ana K. (A.K.)',   tipo: 'Atendimento', valor: 280, status: 'Confirmado', realizado: true, duracao: 45 },
+      // Hoje (não realizados ainda)
+      { id: 'demo-comp-3', data: d(hoje), hora: '10:00', nome: 'Leonardo B. (L.B.)', tipo: 'Atendimento', valor: 280, status: 'Pendente', duracao: 45 },
+      { id: 'demo-comp-4', data: d(hoje), hora: '15:30', nome: 'Beatriz N.',         tipo: 'Atendimento', valor: 280, status: 'Pendente', duracao: 45 },
+      // Próximos dias
+      { id: 'demo-comp-5', data: d(Math.min(28, hoje + 1)), hora: '09:00', nome: 'Maria S. (M.S.)', tipo: 'Atendimento', valor: 280, status: 'Pendente', duracao: 45 },
+      { id: 'demo-comp-6', data: d(Math.min(28, hoje + 3)), hora: '11:00', nome: 'Reunião com pediatra parceira', tipo: 'Compromisso Profissional', valor: 0, status: 'Pendente', duracao: 60 }
+    ];
+  }
+
+  /**
+   * Helper: une arrays de demo com dados existentes, evitando duplicar por ID.
+   * Retorna { adicionadas: number, total: number }.
+   */
+  function _mesclarDemo(chave, demos) {
+    const atuais = JSON.parse(localStorage.getItem(chave) || '[]');
+    const idsExistentes = new Set(atuais.map(x => x.id));
+    const novas = demos.filter(x => !idsExistentes.has(x.id));
+    if (novas.length) {
+      localStorage.setItem(chave, JSON.stringify([...atuais, ...novas]));
+    }
+    return { adicionadas: novas.length };
+  }
+
+  /** Carrega TUDO demo (notas + receitas + despesas + compromissos), sem duplicar. */
   function carregarDemo() {
-    const atuais = getNotas();
-    const idsExistentes = new Set(atuais.map(n => n.id));
-    const novas = getNotasDemo().filter(n => !idsExistentes.has(n.id));
-    if (!novas.length) {
-      toast('As notas demo já estão carregadas.', null, { duration: 2400 });
+    const r1 = _mesclarDemo('notas_cerebro', getNotasDemo());
+    const r2 = _mesclarDemo('receitas',     getReceitasDemo());
+    const r3 = _mesclarDemo('despesas',     getDespesasDemo());
+    const r4 = _mesclarDemo('compromissos', getCompromissosDemo());
+    const totalAdicionado = r1.adicionadas + r2.adicionadas + r3.adicionadas + r4.adicionadas;
+    if (!totalAdicionado) {
+      toast('Os exemplos já estão todos carregados.', null, { duration: 2400 });
       return;
     }
-    setNotas([...atuais, ...novas]);
     fecharConfig();
     renderCerebro();
+    if (typeof renderListaReceitas === 'function') renderListaReceitas();
+    if (typeof renderListaDespesas === 'function') renderListaDespesas();
+    if (typeof renderAgendaSemanal === 'function') renderAgendaSemanal();
     atualizarHome();
-    toast(novas.length + ' notas de exemplo adicionadas.', 'success', { duration: 3500 });
+    toast(totalAdicionado + ' itens de exemplo carregados (notas + receitas + despesas + agenda).', 'success', { duration: 3500 });
   }
 
-  /** Apaga TODAS as notas e recarrega só as 10 demos. */
+  /** Apaga TUDO e recarrega TODOS os exemplos demo (notas + receitas + despesas + compromissos). */
   function resetarComDemo() {
-    if (!confirm('Isso vai APAGAR TODAS as suas notas atuais e carregar apenas as 10 notas de exemplo. Continuar?')) return;
+    if (!confirm('Isso vai APAGAR TODOS os dados atuais e carregar apenas os exemplos demo:\n\n• 10 notas no Segundo Cérebro\n• 10 receitas de exemplo\n• 3 despesas variáveis\n• 6 compromissos (passados, hoje e futuros)\n\nContinuar?')) return;
     setNotas(getNotasDemo());
+    localStorage.setItem('receitas',     JSON.stringify(getReceitasDemo()));
+    localStorage.setItem('despesas',     JSON.stringify(getDespesasDemo()));
+    localStorage.setItem('compromissos', JSON.stringify(getCompromissosDemo()));
     fecharConfig();
     renderCerebro();
+    if (typeof renderListaReceitas === 'function') renderListaReceitas();
+    if (typeof renderListaDespesas === 'function') renderListaDespesas();
+    if (typeof renderAgendaSemanal === 'function') renderAgendaSemanal();
     atualizarHome();
-    toast('Resetado com 10 notas de exemplo.', 'success', { duration: 3500 });
+    toast('Resetado com exemplos completos (notas + finanças + agenda).', 'success', { duration: 3500 });
   }
 
-  /** Apaga TUDO (todas as notas + receitas + despesas + compromissos). Despesas fixas mantidas. */
+  /** Apaga TUDO inclusive despesas fixas — deixa zerado de verdade. */
   function limparTudo() {
-    if (!confirm('Isso vai APAGAR TODOS os dados do app:\n\n• Todas as notas do Segundo Cérebro\n• Todas as receitas\n• Todas as despesas\n• Todos os compromissos\n\nDespesas fixas e configurações serão mantidas.\n\nEsta ação NÃO PODE ser desfeita. Continuar?')) return;
+    if (!confirm('Isso vai APAGAR TODOS os dados do app:\n\n• Todas as notas do Segundo Cérebro\n• Todas as receitas\n• Todas as despesas\n• Todas as despesas fixas\n• Todos os compromissos\n\nApenas as configurações (forma de pagamento, % imposto) serão mantidas.\n\nEsta ação NÃO PODE ser desfeita. Continuar?')) return;
     if (!confirm('Tem certeza? Esta é sua última chance.')) return;
     setNotas([]);
-    localStorage.setItem('receitas', JSON.stringify([]));
-    localStorage.setItem('despesas', JSON.stringify([]));
+    localStorage.setItem('receitas',     JSON.stringify([]));
+    localStorage.setItem('despesas',     JSON.stringify([]));
+    localStorage.setItem('despesasFixas', JSON.stringify([]));
     localStorage.setItem('compromissos', JSON.stringify([]));
     fecharConfig();
     renderCerebro();
+    if (typeof renderListaReceitas === 'function') renderListaReceitas();
+    if (typeof renderListaDespesas === 'function') renderListaDespesas();
+    if (typeof renderDespesasFixas === 'function') renderDespesasFixas();
+    if (typeof renderAgendaSemanal === 'function') renderAgendaSemanal();
     atualizarHome();
     toast('Todos os dados foram apagados. Comece do zero.', 'success', { duration: 4000 });
   }
@@ -4754,12 +4845,28 @@
       })
       .sort((a, b) => (a.data || '').localeCompare(b.data || ''));
 
-    const despesas = JSON.parse(localStorage.getItem('despesas') || '[]')
+    const despesasAvulsas = JSON.parse(localStorage.getItem('despesas') || '[]')
       .filter(d => {
         const dd = new Date(d.data + 'T00:00:00');
         return dd.getFullYear() === ano && dd.getMonth() === mesIdx;
       })
       .sort((a, b) => (a.data || '').localeCompare(b.data || ''));
+
+    // Despesas fixas — aparecem como lançamentos automáticos do dia 1 do mês
+    const primeiroDiaStr = ano + '-' + String(mes).padStart(2,'0') + '-01';
+    const despesasFixas = JSON.parse(localStorage.getItem('despesasFixas') || '[]')
+      .map(df => ({
+        data: primeiroDiaStr,
+        descricao: df.descricao || df.nome || 'Despesa Fixa',
+        categoria: df.categoria || 'Fixo',
+        valor: Number(df.valor) || 0,
+        fixa: true
+      }));
+
+    // Combina (fixas primeiro, avulsas em seguida) e ordena por data
+    const despesas = [...despesasFixas, ...despesasAvulsas].sort((a, b) =>
+      (a.data || '').localeCompare(b.data || '')
+    );
 
     if (!receitas.length && !despesas.length) {
       toast('Nada lançado neste mês para gerar relatório.', 'error', { duration: 3500 });
@@ -4872,21 +4979,22 @@
         new Date(d.data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
         d.descricao || d.nome || '-',
         d.categoria || '-',
+        d.fixa ? 'Fixa' : 'Variável',
         brl(d.valor || 0)
       ]);
       linhasDesp.push([
-        { content: 'TOTAL', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } },
+        { content: 'TOTAL', colSpan: 4, styles: { fontStyle: 'bold', halign: 'right' } },
         { content: brl(totalDespesa), styles: { fontStyle: 'bold' } }
       ]);
 
       doc.autoTable({
         startY: y,
-        head: [['Data', 'Descrição', 'Categoria', 'Valor']],
+        head: [['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor']],
         body: linhasDesp,
         theme: 'striped',
         styles: { fontSize: 9, cellPadding: 2 },
         headStyles: { fillColor: [229, 115, 115], textColor: 255, fontStyle: 'bold' },
-        columnStyles: { 3: { halign: 'right' } }
+        columnStyles: { 4: { halign: 'right' } }
       });
       y = doc.lastAutoTable.finalY + 8;
     }
