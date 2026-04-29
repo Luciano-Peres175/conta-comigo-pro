@@ -1508,6 +1508,35 @@
       transform: none;
     }
 
+    /* Contador inline X/50 dentro do botao IA */
+    .btn-ia-contador {
+      background: rgba(255,255,255,.22);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-left: 4px;
+      letter-spacing: .03em;
+      transition: background .25s, color .25s;
+    }
+    /* Estado de aviso (4-10 restantes): botao amarelo */
+    .btn-ia.contador-aviso {
+      background: linear-gradient(135deg, #F9A825 0%, #F57F17 100%);
+      box-shadow: 0 4px 14px rgba(245,127,23,.32);
+    }
+    .btn-ia.contador-aviso:hover {
+      box-shadow: 0 6px 18px rgba(245,127,23,.42);
+    }
+    /* Estado de atencao (0-3 restantes): botao vermelho */
+    .btn-ia.contador-atencao {
+      background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+      box-shadow: 0 4px 14px rgba(198,40,40,.32);
+    }
+    .btn-ia.contador-atencao:hover {
+      box-shadow: 0 6px 18px rgba(198,40,40,.42);
+    }
+
     /* ── Sugestoes rapidas (chips clicaveis) ─────────────────── */
     .ia-sugestao {
       background: #F0E8F8;
@@ -2216,9 +2245,10 @@
       <!-- Busca + acoes -->
       <div class="cerebro-search">
         <input type="text" id="cerebro-busca" class="field-input" placeholder="Buscar em suas anotações..." style="flex:1" oninput="setBuscaCerebro(this.value)">
-        <button class="btn-ia" style="white-space:nowrap" onclick="abrirModalIA()">
+        <button class="btn-ia" id="btn-ia-sc" style="white-space:nowrap" onclick="abrirModalIA()">
           <i data-lucide="sparkles"></i>
           <span>Perguntar à IA</span>
+          <span class="btn-ia-contador" id="btn-ia-contador">50/50</span>
         </button>
         <button class="btn-primary" style="white-space:nowrap" onclick="abrirModalNota()">+ Nova Nota</button>
       </div>
@@ -3786,11 +3816,24 @@
   function atualizarRestantesIA() {
     const usados = getIAUsoHoje();
     const restantes = Math.max(0, IA_LIMITE_DIA - usados);
+
+    // Texto dentro do modal
     const el = document.getElementById('ia-restantes');
     if (el) {
       el.textContent = restantes + ' de ' + IA_LIMITE_DIA + ' perguntas restantes hoje';
       if (restantes === 0) el.style.color = '#C62828';
     }
+
+    // Contador inline no botao da tela do SC + cor adaptativa
+    const btn = document.getElementById('btn-ia-sc');
+    const cnt = document.getElementById('btn-ia-contador');
+    if (cnt) cnt.textContent = restantes + '/' + IA_LIMITE_DIA;
+    if (btn) {
+      btn.classList.remove('contador-aviso', 'contador-atencao');
+      if (restantes <= 3) btn.classList.add('contador-atencao');
+      else if (restantes <= 10) btn.classList.add('contador-aviso');
+    }
+
     return restantes;
   }
 
@@ -4112,6 +4155,9 @@
           notas.map(n => renderNotaCard(n)).join('') + '</div>';
       }
     }
+
+    // Atualiza contador inline no botao "Perguntar a IA"
+    atualizarRestantesIA();
 
     renderIcons();
   }
