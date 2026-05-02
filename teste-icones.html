@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste Visual de Ícones — Conta Comigo AI Pro</title>
+  <style>
+    :root {
+      --lilas: #9B72B0;
+      --lilas-escuro: #7E57C2;
+      --lilas-bg: #EDE7F6;
+      --branco: #ffffff;
+      --texto: #2D2D2D;
+      --texto-muted: #888;
+      --shadow: 0 2px 12px rgba(155, 114, 176, .08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #F8F5FB 0%, #FFFFFF 100%);
+      color: var(--texto);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      text-align: center;
+      padding: 30px 20px;
+      background: var(--branco);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 30px;
+    }
+    header h1 { font-size: 28px; color: var(--lilas); margin-bottom: 8px; }
+    header p { color: var(--texto-muted); font-size: 15px; }
+    section {
+      background: var(--branco);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+    section h2 {
+      font-size: 22px;
+      color: var(--lilas);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    section .descricao {
+      color: var(--texto-muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    /* === Mockup Bottom Nav === */
+    .mockup-mobile {
+      max-width: 380px;
+      margin: 0 auto;
+      background: #f5f5f5;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,.15);
+    }
+    .mockup-titulo {
+      background: var(--lilas);
+      color: white;
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+    }
+    .mockup-conteudo {
+      background: white;
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--texto-muted);
+      font-size: 13px;
+      min-height: 200px;
+    }
+    .bottom-nav {
+      display: flex;
+      background: white;
+      border-top: 1.5px solid var(--lilas-bg);
+      padding: 0;
+      height: 72px;
+    }
+    .bn-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      padding: 6px;
+      color: var(--texto-muted);
+      font-size: 10px;
+    }
+    .bn-item.active { color: var(--lilas); font-weight: 600; }
+    .bn-item img {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+    }
+    .bn-item .legenda { font-size: 10px; }
+
+    /* === Galeria de ícones === */
+    .galeria {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+    }
+    .card-icone {
+      background: #FAFAFA;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      transition: transform .2s;
+    }
+    .card-icone:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    .card-icone img {
+      width: 100%;
+      max-width: 140px;
+      height: auto;
+      border-radius: 8px;
+    }
+    .card-icone .nome {
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--texto);
+    }
+    .card-icone .meta {
+      font-size: 11px;
+      color: var(--texto-muted);
+      margin-top: 4px;
+    }
+
+    /* === Botões horizontais === */
+    .botoes-horizontais {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .botoes-horizontais img {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform .15s;
+    }
+    .botoes-horizontais img:hover {
+      transform: scale(1.02);
+    }
+
+    /* === Comparação === */
+    .comparacao {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .comparacao-coluna {
+      text-align: center;
+    }
+    .comparacao-coluna h3 {
+      font-size: 14px;
+      color: var(--texto-muted);
+      margin-bottom: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .comparacao-coluna .legenda {
+      font-size: 12px;
+      color: var(--texto-muted);
+      margin-top: 8px;
+    }
+
+    /* === SVG references (originais) === */
+    .svg-icon {
+      width: 36px;
+      height: 36px;
+      display: inline-block;
+    }
+    .svg-icon-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--lilas-bg);
+    }
+
+    @media (max-width: 600px) {
+      section { padding: 20px 16px; }
+      header h1 { font-size: 22px; }
+      .comparacao { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <h1>🎨 Teste Visual de Ícones</h1>
+    <p>Conta Comigo AI Pro — Identidade Visual Família · Versão 1 · Maio/2026</p>
+  </header>
+
+  <!-- ====================================================== -->
+  <section>
+    <h2>📱 Bottom Nav (Mobile) — Comparação</h2>
+    <p class="descricao">Como ficaria o dock inferior do mobile com os PNGs novos vs os SVGs atuais.</p>
+
+    <div class="comparacao">
+      <div class="comparacao-coluna">
+        <h3>🆕 Novo (PNG Claymorphism 3D)</h3>
+        <div class="mockup-mobile">
+          <div class="mockup-titulo">Conta Comigo AI Pro</div>
+          <div class="mockup-conteudo">[ Conteúdo da tela ]</div>
+          <div class="bottom-nav">
+            <div class="bn-item">
+              <span class="svg-icon-box">
+                <svg width="20" height="20" viewBox="0 0 28 28" fill="none"><path d="M4 14L14 5L24 14V25H18V18H10V25H4V14Z" stroke="#7E57C2" stroke-width="2.5" stroke-linejoin="round" fill="rgba(126,87,194,.12)"/></svg>
+              </span>
+              <span class="legenda">Início</span>
+            </div>
+            <div class="bn-item">
+              <img src="assets/icons/agenda.png" alt="Agenda">
+              <span class="legenda">Agenda</span>
+            </div>
+            <div class="bn-item">
+              <img src="assets/icons/receita.png" alt="Receitas">
+              <span class="legenda">Receitas</span>
+            </div>
+            <div class="bn-item">
+              <img src="assets/icons/despesa.png" alt="Despesas">
+              <span class="legenda">Despesas</span>
+            </div>
+            <div class="bn-item active">
+              <img src="assets/icons/cerebro-ia.png" alt="Cérebro">
+              <span class="legenda">Cérebro</span>
+            </div>
+          </div>
+        </div>
+        <p class="legenda">PNGs aplicados em Agenda, Receitas, Despesas e Cérebro</p>
+      </div>
+
+      <div class="comparacao-coluna">
+        <h3>📍 Atual (SVG Flat)</h3>
+        <div class="mockup-mobile">
+          <div class="mockup-titulo">Conta Comigo AI Pro</div>
+          <div class="mockup-conteudo">[ Conteúdo da tela ]</div>
+          <div class="bottom-nav">
+            <div class="bn-item">
+              <span class="svg-icon-box">
+                <svg width="20" height="20" viewBox="0 0 28 28" fill="none"><path d="M4 14L14 5L24 14V25H18V18H10V25H4V14Z" stroke="#7E57C2" stroke-width="2.5" stroke-linejoin="round" fill="rgba(126,87,194,.12)"/></svg>
+              </span>
+              <span class="legenda">Início</span>
+            </div>
+            <div class="bn-item">
+              <span class="svg-icon-box">
+                <svg width="20" height="20" viewBox="0 0 28 28"><rect x="4" y="6" width="20" height="18" rx="3" fill="#7E57C2"/><rect x="4" y="6" width="20" height="6" rx="3" fill="#5E35B1"/><path d="M9 17 L12 20 L19 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span class="legenda">Agenda</span>
+            </div>
+            <div class="bn-item">
+              <span class="svg-icon-box" style="background:#E6F4EA">
+                <svg width="20" height="20" viewBox="0 0 28 28"><circle cx="14" cy="14" r="10" fill="#4CAF50"/><text x="14" y="18" text-anchor="middle" fill="white" font-size="10" font-weight="bold">$</text></svg>
+              </span>
+              <span class="legenda">Receitas</span>
+            </div>
+            <div class="bn-item">
+              <span class="svg-icon-box" style="background:#FCE8E6">
+                <svg width="20" height="20" viewBox="0 0 28 28"><circle cx="14" cy="14" r="10" fill="#E57373"/><text x="14" y="18" text-anchor="middle" fill="white" font-size="10" font-weight="bold">$</text></svg>
+              </span>
+              <span class="legenda">Despesas</span>
+            </div>
+            <div class="bn-item active">
+              <span class="svg-icon-box">
+                <svg width="20" height="20" viewBox="0 0 28 28"><path d="M14 4C9 4 6 7.5 6 11c0 2 .8 3.8 2 5v4l3-1.5c1 .3 2 .5 3 .5 5 0 8-3.5 8-8s-3-7-8-7z" fill="#7E57C2"/><circle cx="19" cy="18" r="5" fill="#5C6BC0"/></svg>
+              </span>
+              <span class="legenda">Cérebro</span>
+            </div>
+          </div>
+        </div>
+        <p class="legenda">SVGs flat atualmente em produção</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================== -->
+  <section>
+    <h2>🟪 Botões Horizontais (3 estilos)</h2>
+    <p class="descricao">Botões grandes prontos para uso direto nas telas. Texto integrado no PNG.</p>
+
+    <div class="botoes-horizontais">
+      <img src="assets/icons/btn-agendar-lilas.png" alt="Agendar Compromisso">
+      <img src="assets/icons/btn-atendimento-verde.png" alt="Registrar Atendimento">
+      <img src="assets/icons/btn-despesa-rosa.png" alt="Registrar Despesa">
+    </div>
+  </section>
+
+  <!-- ====================================================== -->
+  <section>
+    <h2>🖼️ Galeria de Ícones (10 únicos)</h2>
+    <p class="descricao">Todos os ícones da família Conta Comigo. Estilo Claymorphism 3D, fundo lilás, 1254×1254 px.</p>
+
+    <div class="galeria">
+      <div class="card-icone">
+        <img src="assets/icons/cerebro-ia.png" alt="Cérebro IA">
+        <div class="nome">Cérebro IA ⭐</div>
+        <div class="meta">Símbolo da marca?</div>
+      </div>
+      <div class="card-icone">
+        <img src="assets/icons/agenda.png" alt="Agenda">
+        <div class="nome">Agenda</div>
+        <div class="meta">Calendário com check</div>
+      </div>
+      <div class="card-icone">
+        <img src="assets/icons/receita.png" alt="Receita">
+        <div class="nome">Receita</div>
+        <div class="meta">Moeda verde + seta crescimento</div>
+      </div>
+      <div class="card-icone">
+        <img src="assets/icons/despesa.png" alt="Despesa">
+        <div class="nome">Despesa</div>
+        <div class="meta">Moeda vermelha + seta queda</div>
+      </div>
+      <div class="card-icone">
+        <img src="assets/icons/whatsapp.png" alt="WhatsApp">
+        <div class="nome">WhatsApp</div>
+        <div class="meta">Estilo lilás</div>
+      </div>
+      <div class="card-icone">
+        <img src="assets/icons/certificado.png" alt="Certificado">
+        <div class="nome">Certificado / Documento</div>
+        <div class="meta">Documento + selo</div>
+      </div>
+      <div class="card-icone">
+        <img src="assets/icons/historico.png" alt="Histórico">
+        <div class="nome">Histórico</div>
+        <div class="meta">Documento + relógio</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================== -->
+  <section style="background: linear-gradient(135deg, var(--lilas-bg), white); border: 2px solid var(--lilas-bg);">
+    <h2>📋 Próximos passos</h2>
+    <p style="color: var(--texto); line-height: 1.7;">
+      Depois de avaliar visualmente acima, você decide:<br><br>
+      <strong>1.</strong> Os PNGs ficam bons no app real? <br>
+      <strong>2.</strong> Quais aplicar definitivamente (todos? só alguns?)<br>
+      <strong>3.</strong> Estilo Claymorphism 3D combina, ou prefere mais flat?<br>
+      <strong>4.</strong> Que ícones faltam pra completar a família?<br><br>
+      <em style="color: var(--texto-muted); font-size: 13px;">Esta página é só para teste visual. O app principal continua intocado em <a href="/" style="color: var(--lilas);">y-kappa-two-84.vercel.app</a></em>
+    </p>
+  </section>
+
+</div>
+
+</body>
+</html>
