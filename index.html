@@ -2110,7 +2110,7 @@
       <span style="color:var(--lilas-light);font-size:11px">v1.0 · <span class="user-nome-display"></span></span>
       <button class="sidebar-micro-btn" onclick="abrirConfig()"><i data-lucide="settings"></i> Configurações</button>
       <button class="sidebar-micro-btn" onclick="abrirStory()"><i data-lucide="sparkles"></i> Nossa história</button>
-      <button class="sidebar-micro-btn" onclick="resetarDados()">↺ Resetar demo</button>
+      <button class="sidebar-micro-btn" id="btn-resetar-demo" onclick="resetarDados()">↺ Resetar demo</button>
       <button class="sidebar-micro-btn" onclick="authSair()" style="color:#A82424"><i data-lucide="log-out"></i> Sair</button>
     </div>
   </aside>
@@ -2810,14 +2810,14 @@
     <div style="border-top:1px solid #eee;padding-top:18px">
       <div style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Gerenciar dados</div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button onclick="carregarDemo()" style="background:#F0E8F8;color:#6B3F8A;border:1px solid #D6BFE5;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px">
+        <button id="btn-carregar-demo" onclick="carregarDemo()" style="background:#F0E8F8;color:#6B3F8A;border:1px solid #D6BFE5;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px">
           <i data-lucide="sprout" style="width:16px;height:16px;flex-shrink:0"></i>
           <div style="flex:1">
             <div>Carregar notas de exemplo</div>
             <div style="font-size:11px;font-weight:400;color:#6B3F8A;opacity:.75;margin-top:2px">Adiciona 10 cases/protocolos/artigos de fonoaudiologia (sem apagar o que ja existe)</div>
           </div>
         </button>
-        <button onclick="resetarComDemo()" style="background:#FFF3E0;color:#A06200;border:1px solid #FFCC80;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px">
+        <button id="btn-resetar-com-demo" onclick="resetarComDemo()" style="background:#FFF3E0;color:#A06200;border:1px solid #FFCC80;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px">
           <i data-lucide="refresh-cw" style="width:16px;height:16px;flex-shrink:0"></i>
           <div style="flex:1">
             <div>Resetar com notas de exemplo</div>
@@ -3074,6 +3074,23 @@
       nomeEl.textContent = nome || 'Beta';
       tagEl.textContent  = 'Beta Próxima';
     }
+
+    // Esconde funcoes de demo da Le pra quem nao e Familia
+    aplicarVisibilidadePorGrupo(grupo);
+  }
+
+  function aplicarVisibilidadePorGrupo(grupo) {
+    const ehFamilia = (grupo === 'familia');
+    // Botoes que carregam dados-demo da Le — so Familia ve
+    ['btn-carregar-demo', 'btn-resetar-com-demo', 'btn-resetar-demo'].forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el) el.style.display = ehFamilia ? '' : 'none';
+    });
+  }
+
+  // Bloqueio de seguranca: mesmo que alguem chame as funcoes pelo console, nao executa pra Amigas
+  function souFamilia() {
+    return window.authProfile && window.authProfile.grupo === 'familia';
   }
 
   // Dispara verificacao de auth ao carregar a pagina
@@ -3583,6 +3600,7 @@
 
   /** Carrega TUDO demo (notas + receitas + despesas + compromissos), sem duplicar. */
   function carregarDemo() {
+    if (!souFamilia()) { toast('Esta opção é exclusiva para a Família.', 'error'); return; }
     const r1 = _mesclarDemo('notas_cerebro', getNotasDemo());
     const r2 = _mesclarDemo('receitas',     getReceitasDemo());
     const r3 = _mesclarDemo('despesas',     getDespesasDemo());
@@ -3603,6 +3621,7 @@
 
   /** Apaga TUDO e recarrega TODOS os exemplos demo (notas + receitas + despesas + compromissos). */
   function resetarComDemo() {
+    if (!souFamilia()) { toast('Esta opção é exclusiva para a Família.', 'error'); return; }
     if (!confirm('Isso vai APAGAR TODOS os dados atuais e carregar apenas os exemplos demo:\n\n• 10 notas no Segundo Cérebro\n• 10 receitas de exemplo\n• 3 despesas variáveis\n• 6 compromissos (passados, hoje e futuros)\n\nContinuar?')) return;
     setNotas(getNotasDemo());
     localStorage.setItem('receitas',     JSON.stringify(getReceitasDemo()));
@@ -5705,6 +5724,7 @@
 
   /* ── Reset demo ────────────────────────────────────────────────── */
   function resetarDados() {
+    if (!souFamilia()) { toast('Esta opção é exclusiva para a Família.', 'error'); return; }
     if (!confirm('Resetar todos os dados para o estado inicial de demonstração?\n\nEsta ação apaga tudo que foi cadastrado.')) return;
     localStorage.clear();
     closeDrawer();
