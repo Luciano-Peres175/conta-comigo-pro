@@ -445,12 +445,17 @@
       display: block;
       border-radius: 14px;
       overflow: hidden;
-      transition: transform .15s, box-shadow .15s;
-      box-shadow: 0 2px 8px rgba(155,114,176,.16);
+      transition: transform .15s;
+      height: 64px;
     }
-    .btn-pic:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(155,114,176,.22); }
+    .btn-pic:hover { transform: translateY(-2px); }
     .btn-pic:active { transform: translateY(0); }
-    .btn-pic img { width: 100%; display: block; border-radius: 14px; }
+    .btn-pic img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
     .btn-primary {
       flex: 1;
       background: var(--lilas);
@@ -2067,7 +2072,7 @@
 
     <nav class="sidebar-nav">
       <button class="nav-item active" id="nav-home" onclick="go('home')">
-        <span class="nav-icon"><span class="nav-icon-box" style="background:#EDE7F6"><svg width="14" height="14" viewBox="0 0 28 28" fill="none"><path d="M4 14L14 5L24 14V25H18V18H10V25H4V14Z" stroke="#7E57C2" stroke-width="2.5" stroke-linejoin="round" fill="rgba(126,87,194,.12)"/></svg></span></span> Início
+        <span class="nav-icon"><img src="assets/icons/inicio.png" alt="Início" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Início
       </button>
       <button class="nav-item" id="nav-agenda" onclick="go('agenda')">
         <span class="nav-icon"><img src="assets/icons/agenda.png" alt="Agenda" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Agenda
@@ -2550,7 +2555,7 @@
 ═══════════════════════════════════════════════════════════════ -->
 <nav id="bottom-nav" style="display:none">
   <button class="bottom-nav-item active" id="bn-home" onclick="go('home')">
-    <span class="bn-icon"><span class="bn-icon-box" style="background:#EDE7F6"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><path d="M4 14L14 5L24 14V25H18V18H10V25H4V14Z" stroke="#7E57C2" stroke-width="2.5" stroke-linejoin="round" fill="rgba(126,87,194,.12)"/></svg></span></span>
+    <span class="bn-icon"><img src="assets/icons/inicio.png" alt="Início" style="width:36px;height:36px;border-radius:8px;object-fit:contain;display:block"></span>
     <span>Início</span>
   </button>
   <button class="bottom-nav-item" id="bn-agenda" onclick="go('agenda')">
