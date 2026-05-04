@@ -2482,7 +2482,7 @@
 <div id="modal-novo-comp" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.45);z-index:500;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:18px;padding:24px 22px;max-width:460px;width:92%;box-shadow:0 20px 60px rgba(107,63,138,.22);position:relative;max-height:90vh;overflow-y:auto">
     <button onclick="fecharModalNovoComp()" style="position:absolute;top:14px;right:16px;border:none;background:none;cursor:pointer;color:#888;display:flex;align-items:center;justify-content:center;width:28px;height:28px"><i data-lucide="x"></i></button>
-    <h3 style="font-family:var(--font-title);font-size:18px;font-weight:600;color:var(--lilas);margin-bottom:16px">Novo Compromisso</h3>
+    <h3 id="modal-comp-titulo" style="font-family:var(--font-title);font-size:18px;font-weight:600;color:var(--lilas);margin-bottom:16px">Novo Compromisso</h3>
     <div class="form-row">
       <div class="form-group">
         <label class="field-label">Data</label>
@@ -2530,7 +2530,7 @@
         </select>
       </div>
     </div>
-    <button class="btn-primary" style="width:100%;margin-top:4px" onclick="salvarCompromisso()">Salvar Compromisso</button>
+    <button id="modal-comp-btn-salvar" class="btn-primary" style="width:100%;margin-top:4px" onclick="salvarCompromisso()">Salvar Compromisso</button>
   </div>
 </div>
 
@@ -3857,6 +3857,8 @@
   }
 
   /* ── RECEITAS ─────────────────────────────────────────────────── */
+  let editandoReceitaId = null;
+
   function salvarReceita() {
     const data  = document.getElementById('r-data').value;
     const nome  = document.getElementById('r-nome').value.trim();
@@ -3869,6 +3871,18 @@
       return;
     }
     const lista = JSON.parse(localStorage.getItem('receitas') || '[]');
+    if (editandoReceitaId) {
+      const idx = lista.findIndex(r => r.id === editandoReceitaId);
+      if (idx >= 0) {
+        lista[idx] = { ...lista[idx], data, nome, tipo, valor, formaPagamento: forma, status, categoria: tipo };
+      }
+      localStorage.setItem('receitas', JSON.stringify(lista));
+      cancelarEdicaoReceita();
+      renderListaReceitas();
+      atualizarHome();
+      toast('Receita atualizada!', 'success');
+      return;
+    }
     lista.push({ id: uid(), data, nome, tipo, valor, formaPagamento: forma, status, categoria: tipo });
     localStorage.setItem('receitas', JSON.stringify(lista));
     document.getElementById('r-nome').value  = '';
@@ -3878,11 +3892,50 @@
     toast('Receita salva com sucesso!', 'success');
   }
 
+  function editarReceita(id) {
+    const lista = JSON.parse(localStorage.getItem('receitas') || '[]');
+    const r = lista.find(x => x.id === id);
+    if (!r) return;
+    editandoReceitaId = id;
+    document.getElementById('r-data').value = r.data || '';
+    document.getElementById('r-nome').value = r.nome || '';
+    document.getElementById('r-tipo').value = r.tipo || 'Avaliação';
+    document.getElementById('r-valor').value = String(r.valor || '').replace('.', ',');
+    document.getElementById('r-pagamento').value = r.formaPagamento || 'Pix';
+    document.getElementById('r-status').value = r.status || 'Pago';
+    const btn = document.querySelector('#screen-receitas .btn-salvar-inline');
+    if (btn) btn.textContent = 'Atualizar Receita';
+    let aviso = document.getElementById('r-edit-aviso');
+    if (!aviso) {
+      aviso = document.createElement('div');
+      aviso.id = 'r-edit-aviso';
+      aviso.style.cssText = 'background:#FFF8E1;border:1px solid #F5C842;color:#7A5A00;padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px';
+      aviso.innerHTML = '<span>✏️ Editando receita existente</span><button onclick="cancelarEdicaoReceita()" style="background:none;border:1px solid #B8860B;color:#7A5A00;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600">Cancelar</button>';
+      const cardBody = document.querySelector('#screen-receitas .form-card .card-body');
+      if (cardBody) cardBody.insertBefore(aviso, cardBody.firstChild);
+    }
+    aviso.style.display = 'flex';
+    document.getElementById('screen-receitas').scrollTop = 0;
+    document.getElementById('r-nome').focus();
+    document.getElementById('r-data').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function cancelarEdicaoReceita() {
+    editandoReceitaId = null;
+    document.getElementById('r-nome').value = '';
+    document.getElementById('r-valor').value = '';
+    const btn = document.querySelector('#screen-receitas .btn-salvar-inline');
+    if (btn) btn.textContent = 'Salvar Receita';
+    const aviso = document.getElementById('r-edit-aviso');
+    if (aviso) aviso.style.display = 'none';
+  }
+
   function excluirReceita(id) {
     if (!confirm('Excluir esta receita?')) return;
     localStorage.setItem('receitas', JSON.stringify(
       JSON.parse(localStorage.getItem('receitas') || '[]').filter(r => r.id !== id)
     ));
+    if (editandoReceitaId === id) cancelarEdicaoReceita();
     renderListaReceitas();
     atualizarHome();
   }
@@ -3911,6 +3964,7 @@
           </div>
         </div>
         <div class="list-item-val val-receita">${brl(r.valor)}</div>
+        <button class="btn-icon" onclick="editarReceita('${r.id}')" title="Editar"><i data-lucide="pencil"></i></button>
         <button class="btn-icon del" onclick="excluirReceita('${r.id}')" title="Excluir"><i data-lucide="trash-2"></i></button>
       </div>`;
     }).join('');
@@ -3996,6 +4050,8 @@
       </div>`).join('');
     renderIcons();
   }
+  let editandoDespesaId = null;
+
   function salvarDespesa() {
     const data  = document.getElementById('d-data').value;
     const desc  = document.getElementById('d-descricao').value.trim();
@@ -4006,6 +4062,18 @@
       return;
     }
     const lista = JSON.parse(localStorage.getItem('despesas') || '[]');
+    if (editandoDespesaId) {
+      const idx = lista.findIndex(d => d.id === editandoDespesaId);
+      if (idx >= 0) {
+        lista[idx] = { ...lista[idx], data, descricao: desc, nome: desc, categoria: cat, valor };
+      }
+      localStorage.setItem('despesas', JSON.stringify(lista));
+      cancelarEdicaoDespesa();
+      renderListaDespesas();
+      atualizarHome();
+      toast('Despesa atualizada!', 'success');
+      return;
+    }
     lista.push({ id: uid(), data, descricao: desc, nome: desc, categoria: cat, valor });
     localStorage.setItem('despesas', JSON.stringify(lista));
     document.getElementById('d-descricao').value = '';
@@ -4014,11 +4082,49 @@
     atualizarHome();
     toast('Despesa salva com sucesso!', 'success');
   }
+
+  function editarDespesa(id) {
+    const lista = JSON.parse(localStorage.getItem('despesas') || '[]');
+    const d = lista.find(x => x.id === id);
+    if (!d) return;
+    editandoDespesaId = id;
+    document.getElementById('d-data').value = d.data || '';
+    document.getElementById('d-descricao').value = d.descricao || d.nome || '';
+    document.getElementById('d-categoria').value = d.categoria || 'Outros';
+    document.getElementById('d-valor').value = String(d.valor || '').replace('.', ',');
+    const btn = document.querySelector('#screen-despesas .btn-salvar-inline');
+    if (btn) btn.textContent = 'Atualizar Despesa';
+    let aviso = document.getElementById('d-edit-aviso');
+    if (!aviso) {
+      aviso = document.createElement('div');
+      aviso.id = 'd-edit-aviso';
+      aviso.style.cssText = 'background:#FFF8E1;border:1px solid #F5C842;color:#7A5A00;padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px';
+      aviso.innerHTML = '<span>✏️ Editando despesa existente</span><button onclick="cancelarEdicaoDespesa()" style="background:none;border:1px solid #B8860B;color:#7A5A00;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600">Cancelar</button>';
+      const cardBody = document.querySelector('#screen-despesas .form-card .card-body');
+      if (cardBody) cardBody.insertBefore(aviso, cardBody.firstChild);
+    }
+    aviso.style.display = 'flex';
+    document.getElementById('screen-despesas').scrollTop = 0;
+    document.getElementById('d-descricao').focus();
+    document.getElementById('d-data').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function cancelarEdicaoDespesa() {
+    editandoDespesaId = null;
+    document.getElementById('d-descricao').value = '';
+    document.getElementById('d-valor').value = '';
+    const btn = document.querySelector('#screen-despesas .btn-salvar-inline');
+    if (btn) btn.textContent = 'Salvar Despesa';
+    const aviso = document.getElementById('d-edit-aviso');
+    if (aviso) aviso.style.display = 'none';
+  }
+
   function excluirDespesa(id) {
     if (!confirm('Excluir esta despesa?')) return;
     localStorage.setItem('despesas', JSON.stringify(
       JSON.parse(localStorage.getItem('despesas') || '[]').filter(d => d.id !== id)
     ));
+    if (editandoDespesaId === id) cancelarEdicaoDespesa();
     renderListaDespesas();
     atualizarHome();
   }
@@ -4043,6 +4149,7 @@
           <div class="list-item-meta">${escHtml(d.categoria)} · ${df}</div>
         </div>
         <div class="list-item-val val-despesa">- ${brl(d.valor)}</div>
+        <button class="btn-icon" onclick="editarDespesa('${d.id}')" title="Editar"><i data-lucide="pencil"></i></button>
         <button class="btn-icon del" onclick="excluirDespesa('${d.id}')" title="Excluir"><i data-lucide="trash-2"></i></button>
       </div>`;
     }).join('');
@@ -4119,10 +4226,14 @@
         </div>
         <span class="comp-badge ${bc}">${escHtml(c.status||'Pendente')}</span>
         ${rlzBtn}
+        <button class="btn-icon" onclick="editarCompromisso('${c.id}')" title="Editar"><i data-lucide="pencil"></i></button>
         <button class="btn-icon del" onclick="excluirCompromisso('${c.id}')" title="Excluir"><i data-lucide="trash-2"></i></button>
       </div>`;
     }).join('');
+    renderIcons();
   }
+  let editandoCompromissoId = null;
+
   function salvarCompromisso() {
     const data   = document.getElementById('c-data').value;
     const hora   = document.getElementById('c-hora').value;
@@ -4133,6 +4244,21 @@
     const status = document.getElementById('c-status').value;
     if (!data || !nome) { toast('Preencha data e nome.', 'error'); return; }
     const lista = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    if (editandoCompromissoId) {
+      const idx = lista.findIndex(c => c.id === editandoCompromissoId);
+      if (idx >= 0) {
+        lista[idx] = { ...lista[idx], data, hora, nome, descricao: nome, tipo, duracao: dur, valor, status };
+      }
+      localStorage.setItem('compromissos', JSON.stringify(lista));
+      editandoCompromissoId = null;
+      fecharModalNovoComp();
+      renderAgendaSemanal();
+      if (typeof renderCalendario === 'function') renderCalendario();
+      if (calDiaSel && typeof renderListaDiaAgenda === 'function') renderListaDiaAgenda(calDiaSel);
+      atualizarHome();
+      toast('Compromisso atualizado!', 'success');
+      return;
+    }
     lista.push({ id: uid(), data, hora, nome, descricao: nome, tipo, duracao: dur, valor, status, realizado: false });
     localStorage.setItem('compromissos', JSON.stringify(lista));
     document.getElementById('c-nome').value  = '';
@@ -4140,15 +4266,43 @@
     document.getElementById('c-hora').value  = '';
     fecharModalNovoComp();
     renderAgendaSemanal();
+    if (typeof renderCalendario === 'function') renderCalendario();
+    if (calDiaSel && typeof renderListaDiaAgenda === 'function') renderListaDiaAgenda(calDiaSel);
     atualizarHome();
     toast('Compromisso salvo!', 'success');
   }
+
+  function editarCompromisso(id) {
+    const lista = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const c = lista.find(x => x.id === id);
+    if (!c) return;
+    editandoCompromissoId = id;
+    document.getElementById('c-data').value = c.data || '';
+    document.getElementById('c-hora').value = c.hora || '';
+    document.getElementById('c-nome').value = c.nome || c.descricao || '';
+    document.getElementById('c-tipo').value = c.tipo || 'Atendimento';
+    document.getElementById('c-duracao').value = String(c.duracao || 45);
+    document.getElementById('c-valor').value = c.valor ? String(c.valor).replace('.', ',') : '';
+    document.getElementById('c-status').value = c.status || 'Confirmado';
+    const tit = document.getElementById('modal-comp-titulo');
+    if (tit) tit.textContent = 'Editar Compromisso';
+    const btn = document.getElementById('modal-comp-btn-salvar');
+    if (btn) btn.textContent = 'Atualizar Compromisso';
+    abrirModalNovoComp();
+  }
+
   function excluirCompromisso(id) {
     if (!confirm('Excluir este compromisso?')) return;
     localStorage.setItem('compromissos', JSON.stringify(
       JSON.parse(localStorage.getItem('compromissos') || '[]').filter(c => c.id !== id)
     ));
+    if (editandoCompromissoId === id) {
+      editandoCompromissoId = null;
+      fecharModalNovoComp();
+    }
     renderAgendaSemanal();
+    if (typeof renderCalendario === 'function') renderCalendario();
+    if (calDiaSel && typeof renderListaDiaAgenda === 'function') renderListaDiaAgenda(calDiaSel);
     atualizarHome();
   }
   /* ── Segundo Cerebro — Modal "Perguntar a IA" ────────────────── */
@@ -5086,7 +5240,10 @@
       const sinal = item.tipo==='receita' ? '+ ' : '- ';
       const vc = item.tipo==='receita' ? 'val-receita' : 'val-despesa';
       const tc = item.status==='Fixo' ? 'tag-fixo' : item.status==='Pendente' ? 'tag-pendente' : 'tag-pago';
-      const del = item.status !== 'Fixo'
+      const podeEditar = item.status !== 'Fixo';
+      const edit = podeEditar
+        ? `<button class="btn-icon" onclick="editarItemHist('${item.id}','${item.tipo}')" title="Editar"><i data-lucide="pencil"></i></button>` : '';
+      const del = podeEditar
         ? `<button class="btn-icon del" onclick="excluirItemHist('${item.id}','${item.tipo}')" title="Excluir"><i data-lucide="trash-2"></i></button>` : '';
       return `<div class="list-item">
         <div class="lanc-avatar" style="background:${cor};width:32px;height:32px;font-size:11px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;font-weight:700">${escHtml(ini)}</div>
@@ -5097,10 +5254,20 @@
           </div>
         </div>
         <div class="list-item-val ${vc}">${sinal}${brl(item.valor)}</div>
+        ${edit}
         ${del}
       </div>`;
     }).join('');
     renderIcons();
+  }
+  function editarItemHist(id, tipo) {
+    if (tipo === 'receita') {
+      go('receitas');
+      setTimeout(() => editarReceita(id), 50);
+    } else if (tipo === 'despesa') {
+      go('despesas');
+      setTimeout(() => editarDespesa(id), 50);
+    }
   }
   function excluirItemHist(id, tipo) {
     if (!confirm('Excluir este lançamento?')) return;
@@ -5198,6 +5365,12 @@
   function fecharModalNovoComp() {
     const m = document.getElementById('modal-novo-comp');
     if (m) m.style.display = 'none';
+    // Reseta modo edicao quando fecha
+    editandoCompromissoId = null;
+    const tit = document.getElementById('modal-comp-titulo');
+    if (tit) tit.textContent = 'Novo Compromisso';
+    const btn = document.getElementById('modal-comp-btn-salvar');
+    if (btn) btn.textContent = 'Salvar Compromisso';
   }
 
   /* ── Modal Em breve ────────────────────────────────────────────── */
