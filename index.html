@@ -15,6 +15,20 @@
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"
           onload="window.__lucideReady=true; if(typeof renderIcons==='function') renderIcons();"
           onerror="console.error('[Lucide] CDN principal falhou, tentando fallback'); var s=document.createElement('script'); s.src='https://unpkg.com/lucide@latest/dist/umd/lucide.js'; s.onload=function(){window.__lucideReady=true; if(typeof renderIcons==='function') renderIcons();}; document.head.appendChild(s);"></script>
+
+  <!-- Supabase (memoria na nuvem + login com email/senha) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Cliente Supabase — Conta Comigo Pro (Programa Beta Proximos)
+    window.SUPABASE_URL = 'https://wpymqverwnuinlypwouw.supabase.co';
+    window.SUPABASE_KEY = 'sb_publishable_VpiFsrp91kQxgF_IFlZlgQ_dMs1y5yf';
+    window.supa = null;
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.supabase && window.supabase.createClient) {
+        window.supa = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+      }
+    });
+  </script>
   <style>
     /* ── Reset & tokens ─────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1933,9 +1947,76 @@
 <body>
 
 <!-- ═══════════════════════════════════════════════════════════════
+     TELA DE LOGIN / CADASTRO (aparece se nao logado)
+═══════════════════════════════════════════════════════════════ -->
+<div id="auth-screen" style="display:none;position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#EDE3F4 0%,#F7F0FB 100%);overflow-y:auto;padding:20px">
+  <div style="max-width:420px;margin:40px auto;background:#fff;border-radius:18px;padding:32px 28px;box-shadow:0 20px 60px rgba(107,63,138,.18)">
+
+    <div style="text-align:center;margin-bottom:24px">
+      <h1 style="font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:600;color:#9B72B0;margin-bottom:6px">Conta Comigo AI Pro</h1>
+      <p style="font-size:13px;color:#888899" id="auth-subtitle">Entre na sua conta</p>
+    </div>
+
+    <!-- Tabs Login / Cadastro -->
+    <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid #f0eef3">
+      <button id="auth-tab-login" onclick="authTrocarTab('login')" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid #9B72B0;color:#9B72B0;font-weight:600;font-size:14px;cursor:pointer">Entrar</button>
+      <button id="auth-tab-signup" onclick="authTrocarTab('signup')" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:#888;font-weight:500;font-size:14px;cursor:pointer">Criar conta</button>
+    </div>
+
+    <!-- Formulario Login -->
+    <div id="auth-form-login">
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;font-weight:600;color:#666;margin-bottom:4px;display:block">E-mail</label>
+        <input type="email" id="auth-login-email" placeholder="seu@email.com" style="width:100%;padding:10px 12px;border:1px solid #e6e0ed;border-radius:8px;font-size:14px;font-family:inherit">
+      </div>
+      <div style="margin-bottom:18px">
+        <label style="font-size:12px;font-weight:600;color:#666;margin-bottom:4px;display:block">Senha</label>
+        <input type="password" id="auth-login-senha" placeholder="••••••••" style="width:100%;padding:10px 12px;border:1px solid #e6e0ed;border-radius:8px;font-size:14px;font-family:inherit">
+      </div>
+      <button onclick="authEntrar()" style="width:100%;padding:12px;background:#9B72B0;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Entrar</button>
+    </div>
+
+    <!-- Formulario Cadastro -->
+    <div id="auth-form-signup" style="display:none">
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;font-weight:600;color:#666;margin-bottom:4px;display:block">Seu nome</label>
+        <input type="text" id="auth-signup-nome" placeholder="Como você quer ser chamado(a)" style="width:100%;padding:10px 12px;border:1px solid #e6e0ed;border-radius:8px;font-size:14px;font-family:inherit">
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;font-weight:600;color:#666;margin-bottom:4px;display:block">E-mail</label>
+        <input type="email" id="auth-signup-email" placeholder="seu@email.com" style="width:100%;padding:10px 12px;border:1px solid #e6e0ed;border-radius:8px;font-size:14px;font-family:inherit">
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;font-weight:600;color:#666;margin-bottom:4px;display:block">Senha (mínimo 6 caracteres)</label>
+        <input type="password" id="auth-signup-senha" placeholder="••••••••" style="width:100%;padding:10px 12px;border:1px solid #e6e0ed;border-radius:8px;font-size:14px;font-family:inherit">
+      </div>
+      <div style="margin-bottom:18px">
+        <label style="font-size:12px;font-weight:600;color:#666;margin-bottom:6px;display:block">Você é da:</label>
+        <div style="display:flex;gap:8px">
+          <label style="flex:1;padding:10px;border:2px solid #e6e0ed;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:500" id="auth-grupo-familia-label">
+            <input type="radio" name="auth-grupo" value="familia" onchange="authMarcarGrupo('familia')" style="display:none" checked>
+            👨‍👩‍👧 Família
+          </label>
+          <label style="flex:1;padding:10px;border:2px solid #e6e0ed;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:500" id="auth-grupo-amigas-label">
+            <input type="radio" name="auth-grupo" value="amigas" onchange="authMarcarGrupo('amigas')" style="display:none">
+            🤝 Amigas
+          </label>
+        </div>
+      </div>
+      <button onclick="authCadastrar()" style="width:100%;padding:12px;background:#9B72B0;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">Criar minha conta</button>
+    </div>
+
+    <!-- Mensagem de erro/sucesso -->
+    <div id="auth-msg" style="margin-top:14px;padding:10px;border-radius:8px;font-size:13px;display:none"></div>
+
+    <p style="text-align:center;font-size:11px;color:#aaa;margin-top:18px">Programa Beta Próximos · v1</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
      MOBILE: header fixo
 ═══════════════════════════════════════════════════════════════ -->
-<header id="mobile-header">
+<header id="mobile-header" style="display:none">
   <span class="mobile-logo">Conta Comigo AI Pro</span>
   <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleDrawer()">
     <span></span><span></span><span></span>
@@ -1950,7 +2031,7 @@
 <!-- ═══════════════════════════════════════════════════════════════
      APP
 ═══════════════════════════════════════════════════════════════ -->
-<div id="app">
+<div id="app" style="display:none">
 
   <!-- SIDEBAR ───────────────────────────────────────────────── -->
   <aside id="sidebar">
@@ -2005,10 +2086,11 @@
     </nav>
 
     <div class="sidebar-footer">
-      <span style="color:var(--lilas-light);font-size:11px">v1.0</span>
+      <span style="color:var(--lilas-light);font-size:11px">v1.0 · <span class="user-nome-display"></span></span>
       <button class="sidebar-micro-btn" onclick="abrirConfig()"><i data-lucide="settings"></i> Configurações</button>
       <button class="sidebar-micro-btn" onclick="abrirStory()"><i data-lucide="sparkles"></i> Nossa história</button>
       <button class="sidebar-micro-btn" onclick="resetarDados()">↺ Resetar demo</button>
+      <button class="sidebar-micro-btn" onclick="authSair()" style="color:#A82424"><i data-lucide="log-out"></i> Sair</button>
     </div>
   </aside>
 
@@ -2447,7 +2529,7 @@
 <!-- ═══════════════════════════════════════════════════════════════
      BOTTOM NAV (mobile)
 ═══════════════════════════════════════════════════════════════ -->
-<nav id="bottom-nav">
+<nav id="bottom-nav" style="display:none">
   <button class="bottom-nav-item active" id="bn-home" onclick="go('home')">
     <span class="bn-icon"><span class="bn-icon-box" style="background:#EDE7F6"><svg width="20" height="20" viewBox="0 0 28 28" fill="none"><path d="M4 14L14 5L24 14V25H18V18H10V25H4V14Z" stroke="#7E57C2" stroke-width="2.5" stroke-linejoin="round" fill="rgba(126,87,194,.12)"/></svg></span></span>
     <span>Início</span>
@@ -2779,6 +2861,177 @@
      SCRIPTS
 ═══════════════════════════════════════════════════════════════ -->
 <script>
+  /* ════════════════════════════════════════════════════════════════
+     AUTENTICAÇÃO — Login / Cadastro via Supabase
+     ════════════════════════════════════════════════════════════════
+     Cada conta é isolada. Família (Luciano/Catia/Lê) e Amigas (Claudinha/Babi/+1).
+  */
+
+  // Sessao do usuario logado (preenchida em authCheck)
+  window.authUser = null;
+  window.authProfile = null;
+
+  function authTrocarTab(tab) {
+    const tabLogin  = document.getElementById('auth-tab-login');
+    const tabSignup = document.getElementById('auth-tab-signup');
+    const formLogin  = document.getElementById('auth-form-login');
+    const formSignup = document.getElementById('auth-form-signup');
+    const subtitle   = document.getElementById('auth-subtitle');
+    if (tab === 'login') {
+      tabLogin.style.cssText  = 'flex:1;padding:10px;background:none;border:none;border-bottom:2px solid #9B72B0;color:#9B72B0;font-weight:600;font-size:14px;cursor:pointer';
+      tabSignup.style.cssText = 'flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:#888;font-weight:500;font-size:14px;cursor:pointer';
+      formLogin.style.display  = '';
+      formSignup.style.display = 'none';
+      if (subtitle) subtitle.textContent = 'Entre na sua conta';
+    } else {
+      tabSignup.style.cssText = 'flex:1;padding:10px;background:none;border:none;border-bottom:2px solid #9B72B0;color:#9B72B0;font-weight:600;font-size:14px;cursor:pointer';
+      tabLogin.style.cssText  = 'flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:#888;font-weight:500;font-size:14px;cursor:pointer';
+      formLogin.style.display  = 'none';
+      formSignup.style.display = '';
+      if (subtitle) subtitle.textContent = 'Criar sua conta no Conta Comigo Pro';
+    }
+    authMostrarMsg('', 'limpar');
+  }
+
+  function authMarcarGrupo(grupo) {
+    const fam = document.getElementById('auth-grupo-familia-label');
+    const ami = document.getElementById('auth-grupo-amigas-label');
+    if (grupo === 'familia') {
+      fam.style.cssText = 'flex:1;padding:10px;border:2px solid #9B72B0;background:#EDE3F4;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:#9B72B0';
+      ami.style.cssText = 'flex:1;padding:10px;border:2px solid #e6e0ed;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:500';
+    } else {
+      ami.style.cssText = 'flex:1;padding:10px;border:2px solid #9B72B0;background:#EDE3F4;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:#9B72B0';
+      fam.style.cssText = 'flex:1;padding:10px;border:2px solid #e6e0ed;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:500';
+    }
+  }
+
+  function authMostrarMsg(texto, tipo) {
+    const el = document.getElementById('auth-msg');
+    if (!el) return;
+    if (tipo === 'limpar' || !texto) {
+      el.style.display = 'none';
+      el.textContent = '';
+      return;
+    }
+    if (tipo === 'erro') {
+      el.style.cssText = 'margin-top:14px;padding:10px;border-radius:8px;font-size:13px;display:block;background:#FCE4E4;color:#A82424;border:1px solid #F5B5B5';
+    } else {
+      el.style.cssText = 'margin-top:14px;padding:10px;border-radius:8px;font-size:13px;display:block;background:#E4F5E4;color:#2E7D32;border:1px solid #A5D6A7';
+    }
+    el.textContent = texto;
+  }
+
+  async function authCadastrar() {
+    if (!window.supa) { authMostrarMsg('Sistema ainda carregando, aguarde 2 segundos e tente de novo.', 'erro'); return; }
+    const nome  = document.getElementById('auth-signup-nome').value.trim();
+    const email = document.getElementById('auth-signup-email').value.trim().toLowerCase();
+    const senha = document.getElementById('auth-signup-senha').value;
+    const grupo = document.querySelector('input[name="auth-grupo"]:checked')?.value || 'familia';
+    if (!nome || !email || !senha) { authMostrarMsg('Preencha nome, e-mail e senha.', 'erro'); return; }
+    if (senha.length < 6)        { authMostrarMsg('A senha precisa ter pelo menos 6 caracteres.', 'erro'); return; }
+
+    authMostrarMsg('Criando conta...', 'sucesso');
+
+    const { data, error } = await window.supa.auth.signUp({ email, password: senha });
+    if (error) { authMostrarMsg('Erro: ' + error.message, 'erro'); return; }
+    if (!data.user) { authMostrarMsg('Erro inesperado. Tente novamente.', 'erro'); return; }
+
+    // Cria entrada em profiles
+    const { error: errProfile } = await window.supa.from('profiles').insert({
+      id: data.user.id, nome, grupo
+    });
+    if (errProfile) {
+      console.error('[profiles] erro:', errProfile);
+      authMostrarMsg('Conta criada, mas houve um problema no perfil. Avisa o Luciano.', 'erro');
+      return;
+    }
+
+    authMostrarMsg('Conta criada! Entrando...', 'sucesso');
+    setTimeout(() => authCheck(), 600);
+  }
+
+  async function authEntrar() {
+    if (!window.supa) { authMostrarMsg('Sistema ainda carregando, aguarde 2 segundos e tente de novo.', 'erro'); return; }
+    const email = document.getElementById('auth-login-email').value.trim().toLowerCase();
+    const senha = document.getElementById('auth-login-senha').value;
+    if (!email || !senha) { authMostrarMsg('Preencha e-mail e senha.', 'erro'); return; }
+
+    authMostrarMsg('Entrando...', 'sucesso');
+
+    const { error } = await window.supa.auth.signInWithPassword({ email, password: senha });
+    if (error) { authMostrarMsg('E-mail ou senha incorretos.', 'erro'); return; }
+
+    authMostrarMsg('Bem-vindo(a)!', 'sucesso');
+    setTimeout(() => authCheck(), 400);
+  }
+
+  async function authSair() {
+    if (!window.supa) return;
+    if (!confirm('Sair da sua conta?')) return;
+    await window.supa.auth.signOut();
+    window.authUser = null;
+    window.authProfile = null;
+    location.reload();
+  }
+
+  async function authCheck() {
+    // Espera o cliente Supabase estar pronto
+    let tentativas = 0;
+    while (!window.supa && tentativas < 30) { await new Promise(r => setTimeout(r, 100)); tentativas++; }
+    if (!window.supa) {
+      console.error('[auth] Supabase nao carregou');
+      mostrarTelaAuth();
+      return;
+    }
+
+    const { data: { session } } = await window.supa.auth.getSession();
+    if (!session) { mostrarTelaAuth(); return; }
+
+    window.authUser = session.user;
+
+    // Busca perfil
+    const { data: profile } = await window.supa
+      .from('profiles')
+      .select('id, nome, grupo')
+      .eq('id', session.user.id)
+      .single();
+    window.authProfile = profile || null;
+
+    esconderTelaAuth();
+  }
+
+  function mostrarTelaAuth() {
+    const a = document.getElementById('auth-screen');
+    if (a) a.style.display = 'block';
+    const app = document.getElementById('app');
+    if (app) app.style.display = 'none';
+    const mh = document.getElementById('mobile-header');
+    if (mh) mh.style.display = 'none';
+    const bn = document.getElementById('bottom-nav');
+    if (bn) bn.style.display = 'none';
+  }
+
+  function esconderTelaAuth() {
+    const a = document.getElementById('auth-screen');
+    if (a) a.style.display = 'none';
+    const app = document.getElementById('app');
+    if (app) app.style.display = '';
+    const mh = document.getElementById('mobile-header');
+    if (mh) mh.style.display = '';
+    const bn = document.getElementById('bottom-nav');
+    if (bn) bn.style.display = '';
+    // Atualiza nome no header se existir
+    if (window.authProfile && window.authProfile.nome) {
+      const userBadges = document.querySelectorAll('.user-nome-display');
+      userBadges.forEach(el => el.textContent = window.authProfile.nome);
+    }
+  }
+
+  // Dispara verificacao de auth ao carregar a pagina
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(authCheck, 200);
+  });
+
   /* ── Reconhecimento de voz (Web Speech API) ────────────────────
    * Helper reutilizavel. Funciona em Safari (Mac/iPhone) e Chrome.
    * Estados callback: 'listening' | 'processing' | 'result' | 'error' | 'unsupported'
