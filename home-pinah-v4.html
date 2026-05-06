@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Pinah v4 — Conta Comigo One</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --lilas:        #9B72B0;
+      --lilas-light:  #C9A8D8;
+      --lilas-bg:     #EDE3F4;
+      --lilas-deep:   #6E4F87;
+      --rosa:         #E8C4D4;
+      --verde:        #7EC8B8;
+      --fundo:        #F7F0FB;
+      --card:         #FFFFFF;
+      --card-tint:    #FBF7FE;
+      --texto:        #2D2D2D;
+      --texto-muted:  #888899;
+      --linha:        rgba(155,114,176,0.18);
+
+      --shadow-soft:  0 8px 24px rgba(155,114,176,0.18), 0 2px 6px rgba(155,114,176,0.10);
+      --shadow-deep:  0 14px 32px rgba(155,114,176,0.28), 0 4px 10px rgba(155,114,176,0.14);
+      --shadow-btn:   0 4px 14px rgba(155,114,176,0.22), 0 1px 3px rgba(155,114,176,0.10);
+
+      --font-body:  system-ui, -apple-system, 'SF Pro Text', sans-serif;
+      --font-title: 'Playfair Display', Georgia, serif;
+    }
+
+    html, body {
+      min-height: 100vh;
+      font-family: var(--font-body);
+      color: var(--texto);
+      background:
+        radial-gradient(1200px 700px at 30% 0%, rgba(201,168,216,0.30), transparent 60%),
+        radial-gradient(900px 600px at 90% 100%, rgba(232,196,212,0.20), transparent 55%),
+        var(--fundo);
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .device {
+      width: 100%;
+      max-width: 410px;
+      background: var(--fundo);
+      border-radius: 36px;
+      box-shadow:
+        0 30px 80px rgba(110,79,135,0.30),
+        0 8px 24px rgba(110,79,135,0.18);
+      overflow: hidden;
+      padding: 22px 18px 28px;
+      position: relative;
+    }
+
+    /* ── Topbar ─────────────────────────────────────────────── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .btn-3d {
+      background: var(--card);
+      border: none;
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .btn-3d:active { transform: translateY(1px); box-shadow: var(--shadow-btn); }
+
+    .btn-side {
+      width: 52px; height: 52px;
+      border-radius: 18px;
+      box-shadow: var(--shadow-soft);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 4px;
+    }
+    .btn-side i { width: 22px; height: 22px; color: var(--lilas); stroke-width: 2; }
+
+    .btn-pinah {
+      width: 70px; height: 70px;
+      border-radius: 24px;
+      box-shadow: var(--shadow-deep);
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(180deg, #FFFFFF 0%, #F7EDFB 100%);
+    }
+    .btn-pinah svg { width: 44px; height: 44px; }
+
+    /* hamburger linhas */
+    .hamb { display: flex; flex-direction: column; gap: 4px; }
+    .hamb span { display: block; height: 2px; background: var(--lilas); border-radius: 2px; }
+    .hamb span:nth-child(1) { width: 20px; }
+    .hamb span:nth-child(2) { width: 20px; }
+    .hamb span:nth-child(3) { width: 14px; }
+
+    /* ── Saudação ───────────────────────────────────────────── */
+    .greeting { padding: 6px 6px 18px; }
+    .greeting h1 {
+      font-family: var(--font-title);
+      font-size: 26px;
+      font-weight: 500;
+      line-height: 1.15;
+      color: var(--texto);
+    }
+    .greeting p {
+      font-size: 12px;
+      color: var(--texto-muted);
+      letter-spacing: 0.3px;
+      margin-top: 4px;
+    }
+
+    /* ── Card-Botão (suspenso) ───────────────────────────────── */
+    .card-btn {
+      width: 100%;
+      background: var(--card);
+      border: none;
+      border-radius: 24px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow-soft);
+      cursor: pointer;
+      text-align: left;
+      transition: transform .14s ease, box-shadow .14s ease;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .card-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-deep); }
+    .card-btn:active { transform: translateY(0); box-shadow: var(--shadow-btn); }
+
+    .card-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .card-head .label {
+      display: flex; align-items: baseline; gap: 8px;
+      font-size: 12px; font-weight: 600; color: var(--lilas);
+      letter-spacing: 0.7px; text-transform: uppercase;
+    }
+    .card-head .sub {
+      font-size: 12px; font-weight: 400; color: var(--texto-muted); text-transform: none; letter-spacing: 0;
+    }
+    .card-head i.chev { width: 18px; height: 18px; color: var(--lilas); stroke-width: 2; }
+
+    /* ── Card Agenda — mini-tela semana ───────────────────── */
+    .week {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+    .day {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 4px 0;
+    }
+    .day .name { font-size: 10px; color: var(--texto-muted); margin-bottom: 4px; }
+    .day .num { font-size: 13px; font-weight: 500; color: var(--texto-muted); margin-bottom: 8px; }
+    .day.weekend .num { color: #B0AEA8; }
+    .day.today .name { color: var(--lilas); font-weight: 600; }
+    .day.today .num { color: var(--lilas); font-size: 15px; }
+    .day .slots {
+      width: 100%;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .slot {
+      height: 4px;
+      border-radius: 2px;
+      background: transparent;
+    }
+    .slot.has { background: rgba(155,114,176,0.35); }
+    .day.today .slot.has { background: var(--lilas); }
+
+    /* ── Card Financeiro compacto ────────────────────────────── */
+    .fin-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .fin-info .v {
+      font-size: 24px; font-weight: 500; line-height: 1; margin-top: 4px;
+    }
+    .fin-info .desc { font-size: 11px; color: var(--texto-muted); margin-top: 4px; }
+
+    /* ── Botão captura rápida (destaque) ────────────────────── */
+    .quick-btn {
+      width: 100%;
+      background: linear-gradient(180deg, #F4EBFA 0%, #EBDDF5 100%);
+      border: 1px solid var(--lilas);
+      border-radius: 22px;
+      padding: 14px 18px;
+      box-shadow:
+        0 0 0 4px rgba(155,114,176,0.14),
+        0 8px 22px rgba(155,114,176,0.22);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px;
+      transition: transform .14s ease, box-shadow .14s ease;
+      margin-top: 4px;
+    }
+    .quick-btn:hover { transform: translateY(-2px); box-shadow: 0 0 0 4px rgba(155,114,176,0.16), 0 14px 28px rgba(155,114,176,0.26); }
+
+    .quick-btn .left { display: flex; align-items: center; gap: 12px; }
+    .quick-btn .icon-chip {
+      width: 42px; height: 42px;
+      border-radius: 14px;
+      background: var(--lilas);
+      box-shadow: 0 4px 10px rgba(110,79,135,0.30);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .quick-btn .icon-chip i { width: 22px; height: 22px; color: #FFFFFF; stroke-width: 1.8; }
+    .quick-btn .ttl { font-size: 14px; font-weight: 500; color: var(--lilas-deep); }
+    .quick-btn .sub { font-size: 11px; color: var(--lilas); margin-top: 2px; }
+    .quick-btn i.arrow { width: 22px; height: 22px; color: var(--lilas); stroke-width: 2; }
+
+    /* nota de protótipo */
+    .protonote {
+      max-width: 410px;
+      margin: 18px auto 0;
+      text-align: center;
+      font-size: 11px;
+      color: var(--texto-muted);
+      letter-spacing: 0.3px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="device">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <button class="btn-3d btn-side" aria-label="Menu" title="Menu">
+        <span class="hamb"><span></span><span></span><span></span></span>
+      </button>
+      <button class="btn-3d btn-pinah" aria-label="Pinah" title="Pinah">
+        <!-- Placeholder Pinah line-art (substituir pelo PNG do deslumbrado quando tu quiser) -->
+        <svg viewBox="0 0 34 34" fill="none" stroke="#9B72B0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 13c0-3 1.5-6 4-6 1.5 0 2.5 1 3 2 .5-1 1.5-2 3-2 2.5 0 4 3 4 6 0 5-3.5 9-7 9s-7-4-7-9z"/>
+          <path d="M11 11c-.5-1.5-1.5-2.5-2.5-2.5"/>
+          <path d="M23 11c.5-1.5 1.5-2.5 2.5-2.5"/>
+          <circle cx="13.5" cy="14" r="0.7" fill="#9B72B0"/>
+          <circle cx="20.5" cy="14" r="0.7" fill="#9B72B0"/>
+          <path d="M16 17c.5.6 1.5.6 2 0"/>
+          <path d="M14 22c2 2 4 2 6 0"/>
+        </svg>
+      </button>
+      <button class="btn-3d btn-side" aria-label="Configurações" title="Configurações">
+        <i data-lucide="settings"></i>
+      </button>
+    </div>
+
+    <!-- SAUDAÇÃO -->
+    <div class="greeting">
+      <h1>Bom dia, Luciano</h1>
+      <p id="data-hoje">quarta · 6 de maio</p>
+    </div>
+
+    <!-- CARD AGENDA -->
+    <button class="card-btn" id="card-agenda" aria-label="Abrir Modo Agenda">
+      <div class="card-head">
+        <span class="label">Agenda <span class="sub">maio</span></span>
+        <i class="chev" data-lucide="chevron-right"></i>
+      </div>
+      <div class="week" id="week"></div>
+    </button>
+
+    <!-- CARD FINANCEIRO -->
+    <button class="card-btn" id="card-financeiro" aria-label="Abrir Modo Financeiro">
+      <div class="fin-row">
+        <div class="fin-info">
+          <span class="label" style="font-size:12px;font-weight:600;color:var(--lilas);letter-spacing:0.7px;text-transform:uppercase;">Financeiro</span>
+          <div class="v">R$ 2.840</div>
+          <div class="desc">saldo previsto · maio</div>
+        </div>
+        <i class="chev" data-lucide="chevron-right"></i>
+      </div>
+    </button>
+
+    <!-- BOTÃO CAPTURA RÁPIDA (destaque) -->
+    <button class="quick-btn" id="captura" aria-label="Captura rápida com a Pinah">
+      <div class="left">
+        <div class="icon-chip"><i data-lucide="upload"></i></div>
+        <div>
+          <div class="ttl">Anotar ou perguntar</div>
+          <div class="sub">captura rápida com a Pinah</div>
+        </div>
+      </div>
+      <i class="arrow" data-lucide="arrow-right"></i>
+    </button>
+
+  </div>
+
+  <div class="protonote">protótipo Home Pinah v4 · 06/05/2026 · dados mock</div>
+
+  <script>
+    // Strip da semana — 7 dias com 6 slots cada (manhã/tarde/noite)
+    const semana = [
+      { name: 'seg', num: 4,  slots: [1,0,1,0,1,0] },
+      { name: 'ter', num: 5,  slots: [1,1,0,0,1,0] },
+      { name: 'qua', num: 6,  slots: [0,1,1,0,1,1], today: true },
+      { name: 'qui', num: 7,  slots: [0,0,1,0,0,0] },
+      { name: 'sex', num: 8,  slots: [1,0,1,1,0,0] },
+      { name: 'sáb', num: 9,  slots: [0,0,0,0,0,0], weekend: true },
+      { name: 'dom', num: 10, slots: [0,1,0,0,0,0], weekend: true }
+    ];
+
+    const week = document.getElementById('week');
+    semana.forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'day' + (d.today ? ' today' : '') + (d.weekend ? ' weekend' : '');
+      const slotsHtml = d.slots.map(s => `<span class="slot${s ? ' has' : ''}"></span>`).join('');
+      el.innerHTML = `
+        <span class="name">${d.name}</span>
+        <span class="num">${d.num}</span>
+        <div class="slots">${slotsHtml}</div>
+      `;
+      week.appendChild(el);
+    });
+
+    // Data dinâmica
+    const dias = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+    const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    const hoje = new Date();
+    document.getElementById('data-hoje').textContent =
+      `${dias[hoje.getDay()]} · ${hoje.getDate()} de ${meses[hoje.getMonth()]}`;
+
+    // Click handlers (mock)
+    document.getElementById('card-agenda').onclick = () => alert('→ Abriria Modo Agenda detalhado');
+    document.getElementById('card-financeiro').onclick = () => alert('→ Abriria Modo Financeiro detalhado');
+    document.getElementById('captura').onclick = () => alert('→ Abriria captura rápida (foto/áudio/texto)');
+
+    // Lucide icons
+    if (window.lucide) lucide.createIcons();
+  </script>
+
+</body>
+</html>
