@@ -2142,6 +2142,156 @@
     .pinah-quick-ttl { font-size: 14px; font-weight: 500; color: var(--lilas-deep); }
     .pinah-quick-sub { font-size: 11px; color: var(--lilas); margin-top: 2px; }
     .pinah-quick-btn > svg.lucide { width: 22px; height: 22px; color: var(--lilas); stroke-width: 2; }
+
+    /* ══════════════════════════════════════════════════════════════
+       TELA PINAH — Claymorphism Direcional v10
+       Mesa #EDEBE5 · Botão fill #FFF7EC
+       Luz: noroeste → sombra diagonal sudeste (135°)
+       ══════════════════════════════════════════════════════════════ */
+    :root {
+      --psc-mesa:   #EDEBE5;
+      --psc-fill:   #FFF6F2;
+      --psc-amber:  #FF5500;
+      --psc-sh:     rgba(200,60,0,0.85);
+      --psc-sh2:    rgba(200,60,0,0.50);
+      --psc-grad:   linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(255,85,0,0.88) 100%);
+      --psc-grad-m: linear-gradient(135deg, rgba(255,255,255,0.88) 0%, rgba(255,85,0,0.80) 100%);
+      --psc-grad-s: linear-gradient(135deg, rgba(255,255,255,0.80) 0%, rgba(255,85,0,0.55) 100%);
+    }
+    #screen-pinah {
+      background: var(--psc-mesa);
+      min-height: 100vh;
+      padding: 0; gap: 0;
+    }
+    .psc-wrap {
+      flex: 1; display: flex; flex-direction: column;
+      padding: 12px 16px 0;
+      background: var(--psc-mesa);
+      max-width: 480px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    /* topo visual */
+    .psc-topo-outer {
+      padding: 1.5px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,200,140,0.80) 0%, rgba(255,85,0,0.90) 100%);
+      box-shadow: 3px 4px 0 rgba(200,60,0,0.60);
+      margin-bottom: 10px;
+    }
+    .psc-topo-inner {
+      background: var(--psc-fill); border-radius: 13px;
+      padding: 8px 14px; text-align: center;
+      font-family: var(--font-title); font-size: 13px; color: #5A5040;
+    }
+    /* topbar */
+    .psc-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #D8D4CC;
+      margin-bottom: 0;
+    }
+    /* botões laterais — gradient border via padding-box/border-box */
+    .psc-btn-side {
+      width: 50px; height: 50px; border-radius: 14px;
+      background:
+        #FFF6F2 padding-box,
+        linear-gradient(135deg, rgba(255,200,140,0.90) 0%, rgba(255,85,0,1.0) 100%) border-box;
+      border: 2px solid transparent;
+      box-shadow: 4px 5px 0 rgba(200,60,0,0.85);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      padding: 5px;
+      transition: transform .1s ease, box-shadow .1s ease;
+    }
+    .psc-btn-side:active { transform: translate(2px,2.5px); box-shadow: 2px 2.5px 0 rgba(200,60,0,0.85); }
+    .psc-btn-side img { width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 9px; }
+    /* botão central Pinah — mais largo */
+    .psc-btn-pinah {
+      width: 82px; height: 50px; border-radius: 16px;
+      background:
+        #FFF6F2 padding-box,
+        linear-gradient(135deg, rgba(255,200,140,0.90) 0%, rgba(255,85,0,1.0) 100%) border-box;
+      border: 2px solid transparent;
+      box-shadow: 4px 5px 0 rgba(200,60,0,0.85);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      padding: 6px;
+      transition: transform .1s ease, box-shadow .1s ease;
+    }
+    .psc-btn-pinah:active { transform: translate(2px,2.5px); box-shadow: 2px 2.5px 0 rgba(200,60,0,0.85); }
+    .psc-btn-pinah img { width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 11px; }
+    /* badge estrela ativa */
+    .psc-star-badge {
+      position: absolute; top: -5px; right: -5px;
+      width: 15px; height: 15px;
+      background: var(--psc-amber); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px; color: white; line-height: 1;
+      pointer-events: none;
+    }
+    /* mesa — área de conversa */
+    .psc-mesa-area {
+      flex: 1; display: flex; flex-direction: column;
+      min-height: 300px; padding: 16px 0; overflow-y: auto;
+    }
+    /* estado inicial — Pinah centrada */
+    .psc-inicial {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px; padding: 20px;
+    }
+    /* frase: marca d'água pequena */
+    .psc-frase {
+      font-family: var(--font-title);
+      font-size: 11px; color: rgba(90,80,64,0.30);
+      text-align: center; line-height: 1.7;
+      max-width: 190px; letter-spacing: 0.15px;
+    }
+    /* mensagens da conversa */
+    .psc-msg-pinah { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 14px; }
+    .psc-msg-pinah p { font-family: var(--font-body); font-size: 13px; color: var(--lilas-deep); line-height: 1.5; max-width: 260px; margin: 0; }
+    .psc-msg-user { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+    .psc-msg-user p { font-family: var(--font-title); font-size: 13px; color: var(--texto); line-height: 1.5; max-width: 260px; text-align: right; margin: 0; }
+    /* prompt flutuante */
+    .psc-prompt-outer {
+      padding: 1.5px; border-radius: 19.5px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(255,85,0,0.88) 100%);
+      box-shadow: 5px 6px 0 rgba(200,60,0,0.85);
+      margin: 0 0 16px;
+    }
+    .psc-prompt-inner { background: var(--psc-fill); border-radius: 18px; padding: 9px 10px; }
+    .psc-textarea {
+      width: 100%; border: none; background: transparent;
+      font-family: var(--font-body); font-size: 13px; color: var(--texto);
+      resize: none; outline: none; padding: 2px 4px 6px; line-height: 1.4;
+    }
+    .psc-textarea::placeholder { color: #B0A090; }
+    .psc-prompt-row { display: flex; align-items: center; justify-content: space-between; }
+    /* mini-botões do prompt */
+    .psc-pbtn {
+      width: 30px; height: 30px; border-radius: 8px;
+      background:
+        #FFF6F2 padding-box,
+        linear-gradient(135deg, rgba(255,200,140,0.90) 0%, rgba(255,85,0,1.0) 100%) border-box;
+      border: 1.5px solid transparent;
+      box-shadow: 3px 4px 0 rgba(200,60,0,0.80);
+      cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;
+      transition: transform .1s ease;
+    }
+    .psc-pbtn:active { transform: translate(1.5px,2px); box-shadow: 1.5px 2px 0 rgba(200,60,0,0.80); }
+    .psc-pbtn img { width: 16px; height: 16px; object-fit: contain; }
+    .psc-pbtn svg { width: 13px; height: 13px; }
+    /* botão enviar — levemente maior e mais destacado */
+    .psc-pbtn-send {
+      width: 34px; height: 34px; border-radius: 10px;
+      background:
+        #FFF6F2 padding-box,
+        linear-gradient(135deg, rgba(255,200,140,0.90) 0%, rgba(255,85,0,1.0) 100%) border-box;
+      border: 1.5px solid transparent;
+      box-shadow: 4px 5px 0 rgba(200,60,0,0.85);
+      cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;
+      transition: transform .1s ease;
+    }
+    .psc-pbtn-send:active { transform: translate(2px,2.5px); box-shadow: 2px 2.5px 0 rgba(200,60,0,0.85); }
+    .psc-pbtn-send img { width: 18px; height: 18px; object-fit: contain; }
   </style>
 </head>
 <body>
@@ -2663,6 +2813,77 @@
 
       <!-- Lista de notas (dinamica — substitui empty state quando ha notas) -->
       <div id="cerebro-conteudo"></div>
+    </section>
+
+    <!-- ══ TELA PINAH ══════════════════════════════════════════════ -->
+    <section class="screen" id="screen-pinah">
+      <div class="psc-wrap">
+
+        <!-- topo visual flutuante -->
+        <div class="psc-topo-outer">
+          <div class="psc-topo-inner" id="psc-topo-text">—</div>
+        </div>
+
+        <!-- topbar -->
+        <div class="psc-topbar">
+          <button class="psc-btn-side" onclick="abrirMenuPinah()" aria-label="Menu">
+            <img src="assets/icons/ic-menu.png" alt="Menu">
+          </button>
+          <div style="position:relative;">
+            <button class="psc-btn-pinah" onclick="go('home')" aria-label="Voltar para Home">
+              <img src="assets/icons/pinah-mascote.png" alt="Pinah">
+            </button>
+            <div class="psc-star-badge">★</div>
+          </div>
+          <button class="psc-btn-side" onclick="abrirConfigPinah()" aria-label="Configurações">
+            <img src="assets/icons/ic-config.png" alt="Configurações">
+          </button>
+        </div>
+
+        <!-- mesa — estado inicial, Pinah centrada -->
+        <div class="psc-mesa-area" id="psc-mesa-area">
+          <div class="psc-inicial" id="psc-inicial">
+            <svg width="100" height="100" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="55" cy="52" r="34" stroke="#FF5500" stroke-width="2.5" fill="none"/>
+              <ellipse cx="24" cy="38" rx="7" ry="10" stroke="#FF5500" stroke-width="2" fill="none" transform="rotate(-15 24 38)"/>
+              <ellipse cx="86" cy="38" rx="7" ry="10" stroke="#FF5500" stroke-width="2" fill="none" transform="rotate(15 86 38)"/>
+              <circle cx="44" cy="48" r="4" stroke="#FF5500" stroke-width="2" fill="none"/>
+              <circle cx="66" cy="48" r="4" stroke="#FF5500" stroke-width="2" fill="none"/>
+              <circle cx="46" cy="46" r="1.2" fill="#FF5500"/>
+              <circle cx="68" cy="46" r="1.2" fill="#FF5500"/>
+              <ellipse cx="55" cy="56" rx="2.5" ry="1.8" fill="#FF5500"/>
+              <path d="M44 63 Q55 72 66 63" stroke="#FF5500" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <path d="M12 18 L13.2 21.6 L17 21.6 L14 23.8 L15.2 27.4 L12 25.2 L8.8 27.4 L10 23.8 L7 21.6 L10.8 21.6 Z" fill="#FF5500" opacity="0.5"/>
+              <path d="M98 14 L99 17 L102 17 L99.5 18.8 L100.5 21.8 L98 20 L95.5 21.8 L96.5 18.8 L94 17 L97 17 Z" fill="#FF5500" opacity="0.7"/>
+              <path d="M100 68 L101 71 L104 71 L101.5 72.8 L102.5 75.8 L100 74 L97.5 75.8 L98.5 72.8 L96 71 L99 71 Z" fill="#FF5500" opacity="0.4"/>
+              <path d="M8 72 L8.8 74.4 L11.4 74.4 L9.3 76 L10.1 78.4 L8 76.8 L5.9 78.4 L6.7 76 L4.6 74.4 L7.2 74.4 Z" fill="#FF5500" opacity="0.35"/>
+            </svg>
+            <p class="psc-frase">Oi, sou a Pinah, quero te ajudar a deixar tua mente livre para o que importa, viver!</p>
+          </div>
+        </div>
+
+        <!-- prompt flutuante -->
+        <div class="psc-prompt-outer">
+          <div class="psc-prompt-inner">
+            <textarea class="psc-textarea" id="psc-input" placeholder="Pergunte ou anote algo…" rows="2"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();pinahEnviar();}"></textarea>
+            <div class="psc-prompt-row">
+              <button class="psc-pbtn" onclick="pinahAnexar()" aria-label="Anexar">
+                <img src="assets/icons/ic-anexar.png" alt="Anexar">
+              </button>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <button class="psc-pbtn" onclick="pinahVoz()" aria-label="Voz">
+                  <svg viewBox="0 0 13 13" fill="none"><rect x="4" y="1" width="5" height="6.5" rx="2.5" stroke="#FF5500" stroke-width="1.4"/><path d="M1.5 7a5 5 0 009 0" stroke="#FF5500" stroke-width="1.4" stroke-linecap="round"/><line x1="6.5" y1="12" x2="6.5" y2="9.5" stroke="#FF5500" stroke-width="1.4" stroke-linecap="round"/></svg>
+                </button>
+                <button class="psc-pbtn-send" onclick="pinahEnviar()" aria-label="Enviar">
+                  <img src="assets/icons/ic-enviar.png" alt="Enviar">
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </section>
 
   </main>
@@ -3447,7 +3668,7 @@
   }
 
   /* ── Navegação ──────────────────────────────────────────────── */
-  const TELAS = ['home', 'agenda', 'receitas', 'despesas', 'historico', 'cerebro'];
+  const TELAS = ['home', 'agenda', 'receitas', 'despesas', 'historico', 'cerebro', 'pinah'];
 
   function go(tela) {
     closeDrawer();
@@ -4361,9 +4582,31 @@
     }
   }
 
-  function abrirMenuPinah()   { alert('Menu lateral Pinah — em breve. Por enquanto use a navegação atual.'); }
-  function abrirTelaPinah()   { go('cerebro'); }
+  function abrirMenuPinah()   { alert('Menu lateral Pinah — em breve.'); }
+  function abrirTelaPinah()   { go('pinah'); renderPinahTopo(); }
   function abrirConfigPinah() { alert('Configurações Pinah — em breve.'); }
+
+  function renderPinahTopo() {
+    const el = document.getElementById('psc-topo-text');
+    if (!el) return;
+    const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    const agora = new Date();
+    const hh = String(agora.getHours()).padStart(2,'0');
+    const mm = String(agora.getMinutes()).padStart(2,'0');
+    let nome = 'Luciano';
+    try { const u = JSON.parse(localStorage.getItem('usuario')||'{}'); if(u&&u.nome) nome=String(u.nome).split(' ')[0]; } catch(_) {}
+    el.textContent = nome + ', são ' + hh + ':' + mm + ', dia ' + agora.getDate() + ' de ' + meses[agora.getMonth()] + ' de ' + agora.getFullYear();
+  }
+
+  function pinahEnviar() {
+    const input = document.getElementById('psc-input');
+    if (!input || !input.value.trim()) return;
+    input.value = '';
+    input.style.height = 'auto';
+    /* stub — integração com IA em sessão futura */
+  }
+  function pinahAnexar() { /* stub — em breve */ }
+  function pinahVoz()    { /* stub — em breve */ }
 
   /* ── RECEITAS ─────────────────────────────────────────────────── */
   let editandoReceitaId = null;
