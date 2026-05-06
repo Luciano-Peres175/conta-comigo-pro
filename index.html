@@ -1991,10 +1991,11 @@
       margin-bottom: 18px;
     }
     .pinah-btn-3d {
-      background: var(--branco);
+      background: var(--lilas-bg);
       border: none;
       cursor: pointer;
       transition: transform .14s ease, box-shadow .14s ease;
+      overflow: hidden;
     }
     .pinah-btn-3d:active { transform: translateY(1px); box-shadow: var(--shadow-btn); }
     .pinah-btn-side {
@@ -2002,6 +2003,10 @@
       border-radius: 18px;
       box-shadow: var(--shadow-soft);
       display: flex; align-items: center; justify-content: center;
+      padding: 0;
+    }
+    .pinah-btn-side img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
     }
     .pinah-btn-side i, .pinah-btn-side svg.lucide {
       width: 22px; height: 22px; color: var(--lilas); stroke-width: 2;
@@ -2011,10 +2016,13 @@
       border-radius: 24px;
       box-shadow: var(--shadow-deep);
       display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(180deg, #FFFFFF 0%, #F7EDFB 100%);
+      background: var(--lilas-bg);
       padding: 0;
     }
-    .pinah-btn-pinah svg, .pinah-btn-pinah img { width: 44px; height: 44px; }
+    .pinah-btn-pinah img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .pinah-btn-pinah svg { width: 44px; height: 44px; }
     .pinah-hamb { display: flex; flex-direction: column; gap: 4px; }
     .pinah-hamb span { display: block; height: 2px; background: var(--lilas); border-radius: 2px; }
     .pinah-hamb span:nth-child(1) { width: 20px; }
@@ -2296,21 +2304,13 @@
 
         <div class="pinah-topbar">
           <button class="pinah-btn-3d pinah-btn-side" onclick="abrirMenuPinah()" aria-label="Menu" title="Menu">
-            <span class="pinah-hamb"><span></span><span></span><span></span></span>
+            <img src="assets/icons/ic-menu.png" alt="Menu">
           </button>
           <button class="pinah-btn-3d pinah-btn-pinah" onclick="abrirTelaPinah()" aria-label="Pinah" title="Pinah">
-            <svg viewBox="0 0 34 34" fill="none" stroke="#9B72B0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 13c0-3 1.5-6 4-6 1.5 0 2.5 1 3 2 .5-1 1.5-2 3-2 2.5 0 4 3 4 6 0 5-3.5 9-7 9s-7-4-7-9z"/>
-              <path d="M11 11c-.5-1.5-1.5-2.5-2.5-2.5"/>
-              <path d="M23 11c.5-1.5 1.5-2.5 2.5-2.5"/>
-              <circle cx="13.5" cy="14" r="0.7" fill="#9B72B0"/>
-              <circle cx="20.5" cy="14" r="0.7" fill="#9B72B0"/>
-              <path d="M16 17c.5.6 1.5.6 2 0"/>
-              <path d="M14 22c2 2 4 2 6 0"/>
-            </svg>
+            <img src="assets/icons/pinah-mascote.png" alt="Pinah">
           </button>
           <button class="pinah-btn-3d pinah-btn-side" onclick="abrirConfigPinah()" aria-label="Configurações" title="Configurações">
-            <i data-lucide="settings"></i>
+            <img src="assets/icons/ic-config.png" alt="Configurações">
           </button>
         </div>
 
