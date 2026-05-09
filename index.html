@@ -2297,7 +2297,8 @@
    SCREEN ONE — Chat | Agenda | Financeiro
    Pérola #F4F1EA · Lilás #7B5CF0 · Glow radial na superfície
    ============================================================ */
-#screen-one{background:#F4F1EA;min-height:100vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
+#screen-one{background:#F4F1EA;min-height:100vh;padding:0;overflow:hidden;}
+#screen-one.active{display:flex;flex-direction:column;}
 .one-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 6px;position:relative;z-index:10;flex-shrink:0;}
 .one-btn-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
 .one-btn-glow{position:absolute;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle,rgba(123,92,240,.22) 0%,transparent 68%);pointer-events:none;z-index:0;}
@@ -2332,6 +2333,28 @@
 .one-dot{width:6px;height:6px;border-radius:50%;background:#C8C3BA;transition:background .2s,transform .2s;}
 .one-dot.active{background:#7B5CF0;transform:scale(1.15);}
 .one-agenda-card{background:#fff;border-radius:20px;border:0.5px solid rgba(0,0,0,.07);padding:14px 12px;margin-top:4px;box-shadow:0 4px 16px rgba(0,0,0,.06),0 1px 4px rgba(0,0,0,.04);flex:1;display:flex;flex-direction:column;}
+
+
+/* ── Screen-one: esconde estrutura do app antigo ─────────────── */
+body:has(#screen-one.active) #sidebar      { display:none !important; }
+body:has(#screen-one.active) #bottom-nav   { display:none !important; }
+body:has(#screen-one.active) #main         { margin-left:0 !important; background:#F4F1EA; }
+
+/* ── Screen-one: mobile-first, centralizado no desktop ────────── */
+#screen-one.active {
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 9999;
+  box-shadow: 0 0 60px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
 
 </style>
 </head>
@@ -2422,7 +2445,132 @@
 <!-- ═══════════════════════════════════════════════════════════════
      APP
 ═══════════════════════════════════════════════════════════════ -->
-<div id="app" style="display:none">
+
+  <!-- =====================================================
+       SCREEN ONE — Chat | Agenda | Financeiro
+       Linguagem nova: pérola + lilás + glow na superfície
+       ===================================================== -->
+  <section class="screen" id="screen-one">
+
+    <!-- Topbar fixa -->
+    <div class="one-topbar">
+      <div class="one-btn-wrap">
+        <div class="one-btn-glow"></div>
+        <button class="one-btn-side" onclick="abrirMenuPinah()">
+          <img src="assets/icons/ic-menu.png" alt="menu">
+        </button>
+      </div>
+      <div class="one-btn-pinah-wrap">
+        <div class="one-btn-pinah-glow"></div>
+        <button class="one-btn-pinah">
+          <img src="assets/icons/pinah-mascote.png" alt="Pinah">
+          <span class="one-btn-pinah-label">PINAH</span>
+        </button>
+      </div>
+      <div class="one-btn-wrap">
+        <div class="one-btn-glow"></div>
+        <button class="one-btn-side" onclick="abrirConfigPinah()">
+          <img src="assets/icons/ic-config.png" alt="config">
+        </button>
+      </div>
+    </div>
+
+    <!-- Saudação -->
+    <div class="one-greeting" id="one-greeting-text">—</div>
+
+    <!-- Telas deslizáveis -->
+    <div class="one-screens-wrap" id="one-screens-wrap">
+
+      <!-- CHAT -->
+      <div class="one-screen one-chat">
+        <div class="one-chat-area">
+          <div class="one-pinah-glow-pool"></div>
+          <svg class="one-pinah-svg" width="160" height="170" viewBox="0 0 160 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="one-neon" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2.8" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="one-neon-s" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <ellipse cx="80" cy="108" rx="40" ry="44" fill="white" stroke="#9B7FF0" stroke-width="2.2" filter="url(#one-neon-s)"/>
+            <ellipse cx="80" cy="68" rx="30" ry="28" fill="white" stroke="#9B7FF0" stroke-width="2.2" filter="url(#one-neon-s)"/>
+            <ellipse cx="57" cy="49" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="2" filter="url(#one-neon)"/>
+            <ellipse cx="103" cy="49" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="2" filter="url(#one-neon)"/>
+            <ellipse cx="57" cy="49" rx="5.5" ry="8.5" fill="#EDE3FA" stroke="#C4A8FA" stroke-width="1.2" filter="url(#one-neon-s)"/>
+            <ellipse cx="103" cy="49" rx="5.5" ry="8.5" fill="#EDE3FA" stroke="#C4A8FA" stroke-width="1.2" filter="url(#one-neon-s)"/>
+            <circle cx="69" cy="66" r="5.5" fill="white" stroke="#7B5CF0" stroke-width="2" filter="url(#one-neon-s)"/>
+            <circle cx="91" cy="66" r="5.5" fill="white" stroke="#7B5CF0" stroke-width="2" filter="url(#one-neon-s)"/>
+            <circle cx="69" cy="67" r="2.8" fill="#7B5CF0"/>
+            <circle cx="91" cy="67" r="2.8" fill="#7B5CF0"/>
+            <circle cx="70" cy="65.5" r="1.1" fill="white"/>
+            <circle cx="92" cy="65.5" r="1.1" fill="white"/>
+            <ellipse cx="80" cy="76" rx="4.5" ry="3" fill="#D4B8FA" stroke="#9B7FF0" stroke-width="1.2" filter="url(#one-neon-s)"/>
+            <path d="M71 82 Q80 88 89 82" stroke="#9B7FF0" stroke-width="2" stroke-linecap="round" fill="none" filter="url(#one-neon-s)"/>
+            <ellipse cx="46" cy="113" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="1.8" transform="rotate(-22,46,113)" filter="url(#one-neon-s)"/>
+            <ellipse cx="114" cy="113" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="1.8" transform="rotate(22,114,113)" filter="url(#one-neon-s)"/>
+            <rect x="65" y="90" width="30" height="9" rx="4.5" fill="#EDE3FA" stroke="#9B7FF0" stroke-width="1.4" filter="url(#one-neon-s)"/>
+            <circle cx="80" cy="94.5" r="3.5" fill="#7B5CF0" filter="url(#one-neon-s)"/>
+            <path d="M118 132 Q145 116 134 100" stroke="#C4A8FA" stroke-width="3.5" stroke-linecap="round" fill="none" filter="url(#one-neon)"/>
+          </svg>
+          <p class="one-pinah-phrase">O que posso fazer por você?</p>
+        </div>
+        <div class="one-prompt-outer">
+          <div class="one-prompt-card">
+            <textarea class="one-prompt-input" id="one-input" rows="1" placeholder="O que você quer capturar ou lembrar?"></textarea>
+            <button class="one-prompt-btn" onclick="oneAnexar()">
+              <div class="one-prompt-btn-glow"></div>
+              <img src="assets/icons/ic-anexar.png" alt="anexar">
+            </button>
+            <button class="one-prompt-btn" onclick="oneVoz()">
+              <div class="one-prompt-btn-glow"></div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round" style="position:relative;z-index:1">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+            </button>
+            <div class="one-send-wrap">
+              <div class="one-send-glow"></div>
+              <button class="one-send-btn" onclick="oneEnviar()">
+                <img src="assets/icons/ic-enviar.png" alt="enviar">
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AGENDA (em desenvolvimento) -->
+      <div class="one-screen one-agenda" style="padding:8px 14px 16px;">
+        <div class="one-agenda-card">
+          <p style="text-align:center;font-size:13px;color:#9B7FF0;font-family:system-ui;margin:auto;">Agenda — em breve</p>
+        </div>
+      </div>
+
+      <!-- FINANCEIRO (em desenvolvimento) -->
+      <div class="one-screen one-financeiro" style="padding:8px 14px 16px;">
+        <div style="background:#7B5CF0;border-radius:20px;padding:18px 16px;color:white;font-family:system-ui;box-shadow:0 4px 16px rgba(123,92,240,.35);">
+          <p style="font-size:10px;opacity:.70;margin:0 0 4px 0;">saldo disponível · maio</p>
+          <p style="font-size:26px;font-weight:500;margin:0;">R$ 4.280,50</p>
+        </div>
+      </div>
+
+    </div><!-- /one-screens-wrap -->
+
+    <!-- Dots de navegação -->
+    <div class="one-dots" id="one-dots">
+      <div class="one-dot active"></div>
+      <div class="one-dot"></div>
+      <div class="one-dot"></div>
+    </div>
+
+  </section><!-- /screen-one -->
+
+  <div id="app" style="display:none">
 
   <!-- SIDEBAR ───────────────────────────────────────────────── -->
   <aside id="sidebar">
@@ -2927,129 +3075,6 @@
       </div>
     </section>
 
-  <!-- =====================================================
-       SCREEN ONE — Chat | Agenda | Financeiro
-       Linguagem nova: pérola + lilás + glow na superfície
-       ===================================================== -->
-  <section class="screen" id="screen-one">
-
-    <!-- Topbar fixa -->
-    <div class="one-topbar">
-      <div class="one-btn-wrap">
-        <div class="one-btn-glow"></div>
-        <button class="one-btn-side" onclick="abrirMenuPinah()">
-          <img src="assets/icons/ic-menu.png" alt="menu">
-        </button>
-      </div>
-      <div class="one-btn-pinah-wrap">
-        <div class="one-btn-pinah-glow"></div>
-        <button class="one-btn-pinah">
-          <img src="assets/icons/pinah-mascote.png" alt="Pinah">
-          <span class="one-btn-pinah-label">PINAH</span>
-        </button>
-      </div>
-      <div class="one-btn-wrap">
-        <div class="one-btn-glow"></div>
-        <button class="one-btn-side" onclick="abrirConfigPinah()">
-          <img src="assets/icons/ic-config.png" alt="config">
-        </button>
-      </div>
-    </div>
-
-    <!-- Saudação -->
-    <div class="one-greeting" id="one-greeting-text">—</div>
-
-    <!-- Telas deslizáveis -->
-    <div class="one-screens-wrap" id="one-screens-wrap">
-
-      <!-- CHAT -->
-      <div class="one-screen one-chat">
-        <div class="one-chat-area">
-          <div class="one-pinah-glow-pool"></div>
-          <svg class="one-pinah-svg" width="160" height="170" viewBox="0 0 160 170" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <filter id="one-neon" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="2.8" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-              <filter id="one-neon-s" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <ellipse cx="80" cy="108" rx="40" ry="44" fill="white" stroke="#9B7FF0" stroke-width="2.2" filter="url(#one-neon-s)"/>
-            <ellipse cx="80" cy="68" rx="30" ry="28" fill="white" stroke="#9B7FF0" stroke-width="2.2" filter="url(#one-neon-s)"/>
-            <ellipse cx="57" cy="49" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="2" filter="url(#one-neon)"/>
-            <ellipse cx="103" cy="49" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="2" filter="url(#one-neon)"/>
-            <ellipse cx="57" cy="49" rx="5.5" ry="8.5" fill="#EDE3FA" stroke="#C4A8FA" stroke-width="1.2" filter="url(#one-neon-s)"/>
-            <ellipse cx="103" cy="49" rx="5.5" ry="8.5" fill="#EDE3FA" stroke="#C4A8FA" stroke-width="1.2" filter="url(#one-neon-s)"/>
-            <circle cx="69" cy="66" r="5.5" fill="white" stroke="#7B5CF0" stroke-width="2" filter="url(#one-neon-s)"/>
-            <circle cx="91" cy="66" r="5.5" fill="white" stroke="#7B5CF0" stroke-width="2" filter="url(#one-neon-s)"/>
-            <circle cx="69" cy="67" r="2.8" fill="#7B5CF0"/>
-            <circle cx="91" cy="67" r="2.8" fill="#7B5CF0"/>
-            <circle cx="70" cy="65.5" r="1.1" fill="white"/>
-            <circle cx="92" cy="65.5" r="1.1" fill="white"/>
-            <ellipse cx="80" cy="76" rx="4.5" ry="3" fill="#D4B8FA" stroke="#9B7FF0" stroke-width="1.2" filter="url(#one-neon-s)"/>
-            <path d="M71 82 Q80 88 89 82" stroke="#9B7FF0" stroke-width="2" stroke-linecap="round" fill="none" filter="url(#one-neon-s)"/>
-            <ellipse cx="46" cy="113" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="1.8" transform="rotate(-22,46,113)" filter="url(#one-neon-s)"/>
-            <ellipse cx="114" cy="113" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="1.8" transform="rotate(22,114,113)" filter="url(#one-neon-s)"/>
-            <rect x="65" y="90" width="30" height="9" rx="4.5" fill="#EDE3FA" stroke="#9B7FF0" stroke-width="1.4" filter="url(#one-neon-s)"/>
-            <circle cx="80" cy="94.5" r="3.5" fill="#7B5CF0" filter="url(#one-neon-s)"/>
-            <path d="M118 132 Q145 116 134 100" stroke="#C4A8FA" stroke-width="3.5" stroke-linecap="round" fill="none" filter="url(#one-neon)"/>
-          </svg>
-          <p class="one-pinah-phrase">O que posso fazer por você?</p>
-        </div>
-        <div class="one-prompt-outer">
-          <div class="one-prompt-card">
-            <textarea class="one-prompt-input" id="one-input" rows="1" placeholder="O que você quer capturar ou lembrar?"></textarea>
-            <button class="one-prompt-btn" onclick="oneAnexar()">
-              <div class="one-prompt-btn-glow"></div>
-              <img src="assets/icons/ic-anexar.png" alt="anexar">
-            </button>
-            <button class="one-prompt-btn" onclick="oneVoz()">
-              <div class="one-prompt-btn-glow"></div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round" style="position:relative;z-index:1">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" y1="19" x2="12" y2="23"/>
-                <line x1="8" y1="23" x2="16" y2="23"/>
-              </svg>
-            </button>
-            <div class="one-send-wrap">
-              <div class="one-send-glow"></div>
-              <button class="one-send-btn" onclick="oneEnviar()">
-                <img src="assets/icons/ic-enviar.png" alt="enviar">
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- AGENDA (em desenvolvimento) -->
-      <div class="one-screen one-agenda" style="padding:8px 14px 16px;">
-        <div class="one-agenda-card">
-          <p style="text-align:center;font-size:13px;color:#9B7FF0;font-family:system-ui;margin:auto;">Agenda — em breve</p>
-        </div>
-      </div>
-
-      <!-- FINANCEIRO (em desenvolvimento) -->
-      <div class="one-screen one-financeiro" style="padding:8px 14px 16px;">
-        <div style="background:#7B5CF0;border-radius:20px;padding:18px 16px;color:white;font-family:system-ui;box-shadow:0 4px 16px rgba(123,92,240,.35);">
-          <p style="font-size:10px;opacity:.70;margin:0 0 4px 0;">saldo disponível · maio</p>
-          <p style="font-size:26px;font-weight:500;margin:0;">R$ 4.280,50</p>
-        </div>
-      </div>
-
-    </div><!-- /one-screens-wrap -->
-
-    <!-- Dots de navegação -->
-    <div class="one-dots" id="one-dots">
-      <div class="one-dot active"></div>
-      <div class="one-dot"></div>
-      <div class="one-dot"></div>
-    </div>
-
-  </section><!-- /screen-one -->
 
 
   </main>
@@ -6344,7 +6369,8 @@
     renderCerebro();
     toggleValorAgenda();
     const hash = location.hash.replace('#', '');
-    if (TELAS.includes(hash)) go(hash);
+    if (hash === 'one') { go('one'); }
+    else if (TELAS.includes(hash)) go(hash);
     // Render dos icones Lucide — espera pequeno tick caso a lib carregue depois
     renderIcons();
     setTimeout(renderIcons, 80);
@@ -6412,12 +6438,20 @@ function oneVoz()    { /* TODO */ }
 /* Atualiza greeting ao entrar na tela */
 (function() {
   var orig = window.go;
-  if (typeof orig === 'function') {
-    window.go = function(tela) {
-      orig(tela);
-      if (tela === 'one') renderOneGreeting();
-    };
-  }
+  window.go = function(tela) {
+    /* Screen-one está fora do #app — trata separado */
+    var screenOne = document.getElementById('screen-one');
+    if (tela === 'one') {
+      /* Ativa screen-one diretamente */
+      document.querySelectorAll('.screen.active').forEach(function(s){ s.classList.remove('active'); });
+      if (screenOne) screenOne.classList.add('active');
+      renderOneGreeting();
+      return;
+    }
+    /* Ao sair do screen-one, desativa ele */
+    if (screenOne) screenOne.classList.remove('active');
+    if (typeof orig === 'function') orig(tela);
+  };
   /* Inicializa greeting imediatamente e a cada minuto */
   renderOneGreeting();
   setInterval(renderOneGreeting, 60000);
