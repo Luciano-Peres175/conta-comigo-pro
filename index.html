@@ -2299,39 +2299,55 @@
    ============================================================ */
 #screen-one{background:#F4F1EA;min-height:100vh;padding:0;overflow:hidden;}
 #screen-one.active{display:flex;flex-direction:column;}
-.one-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 6px;position:relative;z-index:10;flex-shrink:0;}
+/* ── Topbar ──────────────────────────────────────────────────── */
+.one-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px;position:relative;z-index:10;flex-shrink:0;}
 .one-btn-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
-.one-btn-glow{position:absolute;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle,rgba(123,92,240,.22) 0%,transparent 68%);pointer-events:none;z-index:0;}
-.one-btn-side{position:relative;z-index:1;width:42px;height:42px;background:#fff;border:none;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.10),0 1px 3px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.80);}
-.one-btn-side img{width:22px;height:22px;object-fit:contain;}
+.one-btn-glow{position:absolute;width:68px;height:68px;border-radius:50%;background:radial-gradient(circle,rgba(123,92,240,.20) 0%,transparent 65%);pointer-events:none;z-index:0;}
+/* Botões laterais — menu e config */
+.one-btn-side{position:relative;z-index:1;width:50px;height:50px;background:#fff;border:none;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,.12),0 2px 5px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(0,0,0,.04);}
+.one-btn-side:active{transform:translateY(1px);box-shadow:0 3px 10px rgba(0,0,0,.10),0 1px 3px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.90);}
+.one-btn-side img{width:24px;height:24px;object-fit:contain;}
+/* Botão central — Pinah */
 .one-btn-pinah-wrap{position:relative;display:flex;flex-direction:column;align-items:center;}
-.one-btn-pinah-glow{position:absolute;width:82px;height:82px;border-radius:50%;background:radial-gradient(circle,rgba(123,92,240,.24) 0%,transparent 68%);top:-14px;pointer-events:none;z-index:0;}
-.one-btn-pinah{position:relative;z-index:1;background:#fff;border:none;border-radius:20px;padding:5px 14px;display:flex;flex-direction:column;align-items:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.90);}
-.one-btn-pinah img{width:34px;height:34px;object-fit:contain;margin-bottom:2px;}
-.one-btn-pinah-label{font-size:8.5px;font-weight:700;letter-spacing:1.8px;color:#7B5CF0;font-family:system-ui,-apple-system,sans-serif;}
-.one-greeting{text-align:center;font-size:12px;color:#8A8480;font-family:system-ui,-apple-system,sans-serif;padding:2px 0 8px;flex-shrink:0;}
+.one-btn-pinah-glow{position:absolute;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(123,92,240,.22) 0%,transparent 65%);top:-18px;pointer-events:none;z-index:0;}
+.one-btn-pinah{position:relative;z-index:1;background:#fff;border:none;border-radius:24px;padding:8px 18px 7px;display:flex;flex-direction:column;align-items:center;cursor:pointer;
+  box-shadow:0 8px 24px rgba(0,0,0,.13),0 3px 8px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.98),inset 0 -2px 0 rgba(0,0,0,.05);}
+.one-btn-pinah:active{transform:translateY(2px);box-shadow:0 4px 14px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.90);}
+.one-btn-pinah img{width:48px;height:48px;object-fit:contain;margin-bottom:3px;}
+.one-btn-pinah-label{font-size:9px;font-weight:700;letter-spacing:2px;color:#7B5CF0;font-family:system-ui,-apple-system,sans-serif;}
+/* Saudação */
+.one-greeting{text-align:center;font-size:12px;color:#8A8480;font-family:system-ui,-apple-system,sans-serif;padding:2px 0 6px;flex-shrink:0;}
+/* Scroll de telas */
 .one-screens-wrap{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex:1;min-height:0;}
 .one-screens-wrap::-webkit-scrollbar{display:none;}
-.one-screen{min-width:100%;width:100%;flex-shrink:0;scroll-snap-align:start;display:flex;flex-direction:column;position:relative;padding:0 14px;box-sizing:border-box;}
-.one-chat-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:0;padding:10px 0;}
-.one-pinah-glow-pool{position:absolute;width:220px;height:200px;border-radius:50%;background:radial-gradient(ellipse,rgba(123,92,240,.16) 0%,rgba(155,127,240,.07) 45%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-55%);pointer-events:none;}
-.one-pinah-svg{position:relative;z-index:2;margin-bottom:10px;}
-.one-pinah-phrase{font-size:15px;color:#5A5060;text-align:center;margin:0;line-height:1.4;position:relative;z-index:2;font-family:system-ui,-apple-system,sans-serif;}
-.one-prompt-outer{padding:8px 0 16px;position:relative;flex-shrink:0;}
-.one-prompt-outer::before{content:'';position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:70%;height:18px;border-radius:50%;background:radial-gradient(ellipse,rgba(123,92,240,.15) 0%,transparent 70%);filter:blur(4px);pointer-events:none;}
-.one-prompt-card{background:#fff;border-radius:22px;border:0.5px solid rgba(0,0,0,.07);padding:10px 12px;display:flex;align-items:center;gap:8px;position:relative;box-shadow:0 4px 16px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.05),inset 0 1px 0 rgba(255,255,255,.90);}
-.one-prompt-input{flex:1;font-size:13px;color:#2D2D2D;font-family:system-ui,-apple-system,sans-serif;background:transparent;border:none;outline:none;resize:none;padding:0;line-height:1.4;max-height:96px;overflow-y:auto;}
-.one-prompt-input::placeholder{color:#B0A8B8;}
-.one-prompt-btn{position:relative;width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:none;border:none;cursor:pointer;padding:0;}
-.one-prompt-btn-glow{position:absolute;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle,rgba(123,92,240,.14) 0%,transparent 70%);pointer-events:none;}
-.one-prompt-btn img{position:relative;z-index:1;width:18px;height:18px;object-fit:contain;}
-.one-send-wrap{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.one-send-glow{position:absolute;width:56px;height:28px;border-radius:50%;background:radial-gradient(ellipse,rgba(123,92,240,.30) 0%,transparent 70%);bottom:-6px;pointer-events:none;}
-.one-send-btn{position:relative;z-index:1;width:36px;height:36px;border-radius:50%;background:#7B5CF0;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 10px rgba(123,92,240,.40),0 1px 3px rgba(123,92,240,.20),inset 0 1px 0 rgba(255,255,255,.20);}
-.one-send-btn img{width:18px;height:18px;object-fit:contain;}
-.one-dots{display:flex;justify-content:center;align-items:center;gap:7px;padding:8px 0 6px;flex-shrink:0;}
+.one-screen{min-width:100%;width:100%;flex-shrink:0;scroll-snap-align:start;display:flex;flex-direction:column;position:relative;padding:0 16px;box-sizing:border-box;}
+/* ── Área central do Chat ─────────────────────────────────── */
+.one-chat-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:0;padding:0 0 8px;}
+.one-pinah-glow-pool{position:absolute;width:260px;height:240px;border-radius:50%;background:radial-gradient(ellipse,rgba(123,92,240,.18) 0%,rgba(155,127,240,.08) 45%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-55%);pointer-events:none;}
+.one-pinah-img{position:relative;z-index:2;width:min(140px,36vw);height:auto;object-fit:contain;margin-bottom:16px;filter:drop-shadow(0 10px 24px rgba(123,92,240,.28)) drop-shadow(0 2px 6px rgba(123,92,240,.15));}
+.one-pinah-phrase{font-size:clamp(14px,4vw,17px);color:#5A5060;text-align:center;margin:0;line-height:1.45;position:relative;z-index:2;font-family:'Playfair Display',Georgia,serif;font-style:italic;max-width:260px;}
+/* ── Prompt card ─────────────────────────────────────────── */
+.one-prompt-outer{padding:8px 0 env(safe-area-inset-bottom,16px);position:relative;flex-shrink:0;}
+.one-prompt-outer::before{content:'';position:absolute;bottom:env(safe-area-inset-bottom,16px);left:50%;transform:translateX(-50%);width:65%;height:22px;border-radius:50%;background:radial-gradient(ellipse,rgba(123,92,240,.18) 0%,transparent 70%);filter:blur(6px);pointer-events:none;}
+.one-prompt-card{background:#fff;border-radius:26px;border:0.5px solid rgba(0,0,0,.06);padding:14px 14px 14px 18px;display:flex;align-items:center;gap:10px;position:relative;
+  box-shadow:0 10px 32px rgba(0,0,0,.10),0 3px 10px rgba(0,0,0,.06),inset 0 1.5px 0 rgba(255,255,255,.98),inset 0 -1px 0 rgba(0,0,0,.03);}
+.one-prompt-input{flex:1;font-size:15px;color:#2D2D2D;font-family:system-ui,-apple-system,sans-serif;background:transparent;border:none;outline:none;resize:none;padding:0;line-height:1.45;max-height:110px;overflow-y:auto;}
+.one-prompt-input::placeholder{color:#B8B0C4;font-size:15px;}
+.one-prompt-btn{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:none;border:none;cursor:pointer;padding:0;}
+.one-prompt-btn-glow{position:absolute;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,rgba(123,92,240,.14) 0%,transparent 70%);pointer-events:none;}
+.one-prompt-btn img{position:relative;z-index:1;width:22px;height:22px;object-fit:contain;}
+.one-prompt-btn svg{position:relative;z-index:1;}
+.one-send-wrap{position:relative;width:46px;height:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.one-send-glow{position:absolute;width:64px;height:32px;border-radius:50%;background:radial-gradient(ellipse,rgba(123,92,240,.32) 0%,transparent 70%);bottom:-8px;pointer-events:none;}
+.one-send-btn{position:relative;z-index:1;width:46px;height:46px;border-radius:50%;background:#7B5CF0;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 5px 16px rgba(123,92,240,.45),0 2px 5px rgba(123,92,240,.25),inset 0 1px 0 rgba(255,255,255,.25);}
+.one-send-btn:active{transform:translateY(1px);box-shadow:0 2px 8px rgba(123,92,240,.35);}
+.one-send-btn img{width:22px;height:22px;object-fit:contain;}
+/* Dots */
+.one-dots{display:flex;justify-content:center;align-items:center;gap:7px;padding:8px 0 8px;flex-shrink:0;}
 .one-dot{width:6px;height:6px;border-radius:50%;background:#C8C3BA;transition:background .2s,transform .2s;}
-.one-dot.active{background:#7B5CF0;transform:scale(1.15);}
+.one-dot.active{background:#7B5CF0;transform:scale(1.25);}
 .one-agenda-card{background:#fff;border-radius:20px;border:0.5px solid rgba(0,0,0,.07);padding:14px 12px;margin-top:4px;box-shadow:0 4px 16px rgba(0,0,0,.06),0 1px 4px rgba(0,0,0,.04);flex:1;display:flex;flex-direction:column;}
 
 
@@ -2530,38 +2546,8 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
       <div class="one-screen one-chat">
         <div class="one-chat-area">
           <div class="one-pinah-glow-pool"></div>
-          <svg class="one-pinah-svg" width="160" height="170" viewBox="0 0 160 170" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <filter id="one-neon" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="2.8" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-              <filter id="one-neon-s" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <ellipse cx="80" cy="108" rx="40" ry="44" fill="white" stroke="#9B7FF0" stroke-width="2.2" filter="url(#one-neon-s)"/>
-            <ellipse cx="80" cy="68" rx="30" ry="28" fill="white" stroke="#9B7FF0" stroke-width="2.2" filter="url(#one-neon-s)"/>
-            <ellipse cx="57" cy="49" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="2" filter="url(#one-neon)"/>
-            <ellipse cx="103" cy="49" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="2" filter="url(#one-neon)"/>
-            <ellipse cx="57" cy="49" rx="5.5" ry="8.5" fill="#EDE3FA" stroke="#C4A8FA" stroke-width="1.2" filter="url(#one-neon-s)"/>
-            <ellipse cx="103" cy="49" rx="5.5" ry="8.5" fill="#EDE3FA" stroke="#C4A8FA" stroke-width="1.2" filter="url(#one-neon-s)"/>
-            <circle cx="69" cy="66" r="5.5" fill="white" stroke="#7B5CF0" stroke-width="2" filter="url(#one-neon-s)"/>
-            <circle cx="91" cy="66" r="5.5" fill="white" stroke="#7B5CF0" stroke-width="2" filter="url(#one-neon-s)"/>
-            <circle cx="69" cy="67" r="2.8" fill="#7B5CF0"/>
-            <circle cx="91" cy="67" r="2.8" fill="#7B5CF0"/>
-            <circle cx="70" cy="65.5" r="1.1" fill="white"/>
-            <circle cx="92" cy="65.5" r="1.1" fill="white"/>
-            <ellipse cx="80" cy="76" rx="4.5" ry="3" fill="#D4B8FA" stroke="#9B7FF0" stroke-width="1.2" filter="url(#one-neon-s)"/>
-            <path d="M71 82 Q80 88 89 82" stroke="#9B7FF0" stroke-width="2" stroke-linecap="round" fill="none" filter="url(#one-neon-s)"/>
-            <ellipse cx="46" cy="113" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="1.8" transform="rotate(-22,46,113)" filter="url(#one-neon-s)"/>
-            <ellipse cx="114" cy="113" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="1.8" transform="rotate(22,114,113)" filter="url(#one-neon-s)"/>
-            <rect x="65" y="90" width="30" height="9" rx="4.5" fill="#EDE3FA" stroke="#9B7FF0" stroke-width="1.4" filter="url(#one-neon-s)"/>
-            <circle cx="80" cy="94.5" r="3.5" fill="#7B5CF0" filter="url(#one-neon-s)"/>
-            <path d="M118 132 Q145 116 134 100" stroke="#C4A8FA" stroke-width="3.5" stroke-linecap="round" fill="none" filter="url(#one-neon)"/>
-          </svg>
-          <p class="one-pinah-phrase">O que posso fazer por você?</p>
+          <img src="assets/icons/pinah-mascote.png" class="one-pinah-img" alt="Pinah">
+          <p class="one-pinah-phrase">Sua mente livre<br>para o que importa.</p>
         </div>
         <div class="one-prompt-outer">
           <div class="one-prompt-card">
@@ -2572,7 +2558,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
             </button>
             <button class="one-prompt-btn" onclick="oneVoz()">
               <div class="one-prompt-btn-glow"></div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round" style="position:relative;z-index:1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round" style="position:relative;z-index:1">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
                 <line x1="12" y1="19" x2="12" y2="23"/>
