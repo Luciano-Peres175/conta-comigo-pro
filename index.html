@@ -2292,7 +2292,48 @@
     }
     .psc-pbtn-send:active { transform: translate(2px,2.5px); box-shadow: 2px 2.5px 0 rgba(200,60,0,0.85); }
     .psc-pbtn-send img { width: 18px; height: 18px; object-fit: contain; }
-  </style>
+  
+/* ============================================================
+   SCREEN ONE — Chat | Agenda | Financeiro
+   Pérola #F4F1EA · Lilás #7B5CF0 · Glow radial na superfície
+   ============================================================ */
+#screen-one{background:#F4F1EA;min-height:100vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
+.one-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 6px;position:relative;z-index:10;flex-shrink:0;}
+.one-btn-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
+.one-btn-glow{position:absolute;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle,rgba(123,92,240,.22) 0%,transparent 68%);pointer-events:none;z-index:0;}
+.one-btn-side{position:relative;z-index:1;width:42px;height:42px;background:#fff;border:none;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.10),0 1px 3px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.80);}
+.one-btn-side img{width:22px;height:22px;object-fit:contain;}
+.one-btn-pinah-wrap{position:relative;display:flex;flex-direction:column;align-items:center;}
+.one-btn-pinah-glow{position:absolute;width:82px;height:82px;border-radius:50%;background:radial-gradient(circle,rgba(123,92,240,.24) 0%,transparent 68%);top:-14px;pointer-events:none;z-index:0;}
+.one-btn-pinah{position:relative;z-index:1;background:#fff;border:none;border-radius:20px;padding:5px 14px;display:flex;flex-direction:column;align-items:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.90);}
+.one-btn-pinah img{width:34px;height:34px;object-fit:contain;margin-bottom:2px;}
+.one-btn-pinah-label{font-size:8.5px;font-weight:700;letter-spacing:1.8px;color:#7B5CF0;font-family:system-ui,-apple-system,sans-serif;}
+.one-greeting{text-align:center;font-size:12px;color:#8A8480;font-family:system-ui,-apple-system,sans-serif;padding:2px 0 8px;flex-shrink:0;}
+.one-screens-wrap{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex:1;min-height:0;}
+.one-screens-wrap::-webkit-scrollbar{display:none;}
+.one-screen{min-width:100%;width:100%;flex-shrink:0;scroll-snap-align:start;display:flex;flex-direction:column;position:relative;padding:0 14px;box-sizing:border-box;}
+.one-chat-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;min-height:0;padding:10px 0;}
+.one-pinah-glow-pool{position:absolute;width:220px;height:200px;border-radius:50%;background:radial-gradient(ellipse,rgba(123,92,240,.16) 0%,rgba(155,127,240,.07) 45%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-55%);pointer-events:none;}
+.one-pinah-svg{position:relative;z-index:2;margin-bottom:10px;}
+.one-pinah-phrase{font-size:15px;color:#5A5060;text-align:center;margin:0;line-height:1.4;position:relative;z-index:2;font-family:system-ui,-apple-system,sans-serif;}
+.one-prompt-outer{padding:8px 0 16px;position:relative;flex-shrink:0;}
+.one-prompt-outer::before{content:'';position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:70%;height:18px;border-radius:50%;background:radial-gradient(ellipse,rgba(123,92,240,.15) 0%,transparent 70%);filter:blur(4px);pointer-events:none;}
+.one-prompt-card{background:#fff;border-radius:22px;border:0.5px solid rgba(0,0,0,.07);padding:10px 12px;display:flex;align-items:center;gap:8px;position:relative;box-shadow:0 4px 16px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.05),inset 0 1px 0 rgba(255,255,255,.90);}
+.one-prompt-input{flex:1;font-size:13px;color:#2D2D2D;font-family:system-ui,-apple-system,sans-serif;background:transparent;border:none;outline:none;resize:none;padding:0;line-height:1.4;max-height:96px;overflow-y:auto;}
+.one-prompt-input::placeholder{color:#B0A8B8;}
+.one-prompt-btn{position:relative;width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:none;border:none;cursor:pointer;padding:0;}
+.one-prompt-btn-glow{position:absolute;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle,rgba(123,92,240,.14) 0%,transparent 70%);pointer-events:none;}
+.one-prompt-btn img{position:relative;z-index:1;width:18px;height:18px;object-fit:contain;}
+.one-send-wrap{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.one-send-glow{position:absolute;width:56px;height:28px;border-radius:50%;background:radial-gradient(ellipse,rgba(123,92,240,.30) 0%,transparent 70%);bottom:-6px;pointer-events:none;}
+.one-send-btn{position:relative;z-index:1;width:36px;height:36px;border-radius:50%;background:#7B5CF0;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 10px rgba(123,92,240,.40),0 1px 3px rgba(123,92,240,.20),inset 0 1px 0 rgba(255,255,255,.20);}
+.one-send-btn img{width:18px;height:18px;object-fit:contain;}
+.one-dots{display:flex;justify-content:center;align-items:center;gap:7px;padding:8px 0 6px;flex-shrink:0;}
+.one-dot{width:6px;height:6px;border-radius:50%;background:#C8C3BA;transition:background .2s,transform .2s;}
+.one-dot.active{background:#7B5CF0;transform:scale(1.15);}
+.one-agenda-card{background:#fff;border-radius:20px;border:0.5px solid rgba(0,0,0,.07);padding:14px 12px;margin-top:4px;box-shadow:0 4px 16px rgba(0,0,0,.06),0 1px 4px rgba(0,0,0,.04);flex:1;display:flex;flex-direction:column;}
+
+</style>
 </head>
 <body>
 
@@ -2885,6 +2926,131 @@
 
       </div>
     </section>
+
+  <!-- =====================================================
+       SCREEN ONE — Chat | Agenda | Financeiro
+       Linguagem nova: pérola + lilás + glow na superfície
+       ===================================================== -->
+  <section class="screen" id="screen-one">
+
+    <!-- Topbar fixa -->
+    <div class="one-topbar">
+      <div class="one-btn-wrap">
+        <div class="one-btn-glow"></div>
+        <button class="one-btn-side" onclick="abrirMenuPinah()">
+          <img src="assets/icons/ic-menu.png" alt="menu">
+        </button>
+      </div>
+      <div class="one-btn-pinah-wrap">
+        <div class="one-btn-pinah-glow"></div>
+        <button class="one-btn-pinah">
+          <img src="assets/icons/pinah-mascote.png" alt="Pinah">
+          <span class="one-btn-pinah-label">PINAH</span>
+        </button>
+      </div>
+      <div class="one-btn-wrap">
+        <div class="one-btn-glow"></div>
+        <button class="one-btn-side" onclick="abrirConfigPinah()">
+          <img src="assets/icons/ic-config.png" alt="config">
+        </button>
+      </div>
+    </div>
+
+    <!-- Saudação -->
+    <div class="one-greeting" id="one-greeting-text">—</div>
+
+    <!-- Telas deslizáveis -->
+    <div class="one-screens-wrap" id="one-screens-wrap">
+
+      <!-- CHAT -->
+      <div class="one-screen one-chat">
+        <div class="one-chat-area">
+          <div class="one-pinah-glow-pool"></div>
+          <svg class="one-pinah-svg" width="160" height="170" viewBox="0 0 160 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="one-neon" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2.8" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="one-neon-s" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <ellipse cx="80" cy="108" rx="40" ry="44" fill="white" stroke="#9B7FF0" stroke-width="2.2" filter="url(#one-neon-s)"/>
+            <ellipse cx="80" cy="68" rx="30" ry="28" fill="white" stroke="#9B7FF0" stroke-width="2.2" filter="url(#one-neon-s)"/>
+            <ellipse cx="57" cy="49" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="2" filter="url(#one-neon)"/>
+            <ellipse cx="103" cy="49" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="2" filter="url(#one-neon)"/>
+            <ellipse cx="57" cy="49" rx="5.5" ry="8.5" fill="#EDE3FA" stroke="#C4A8FA" stroke-width="1.2" filter="url(#one-neon-s)"/>
+            <ellipse cx="103" cy="49" rx="5.5" ry="8.5" fill="#EDE3FA" stroke="#C4A8FA" stroke-width="1.2" filter="url(#one-neon-s)"/>
+            <circle cx="69" cy="66" r="5.5" fill="white" stroke="#7B5CF0" stroke-width="2" filter="url(#one-neon-s)"/>
+            <circle cx="91" cy="66" r="5.5" fill="white" stroke="#7B5CF0" stroke-width="2" filter="url(#one-neon-s)"/>
+            <circle cx="69" cy="67" r="2.8" fill="#7B5CF0"/>
+            <circle cx="91" cy="67" r="2.8" fill="#7B5CF0"/>
+            <circle cx="70" cy="65.5" r="1.1" fill="white"/>
+            <circle cx="92" cy="65.5" r="1.1" fill="white"/>
+            <ellipse cx="80" cy="76" rx="4.5" ry="3" fill="#D4B8FA" stroke="#9B7FF0" stroke-width="1.2" filter="url(#one-neon-s)"/>
+            <path d="M71 82 Q80 88 89 82" stroke="#9B7FF0" stroke-width="2" stroke-linecap="round" fill="none" filter="url(#one-neon-s)"/>
+            <ellipse cx="46" cy="113" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="1.8" transform="rotate(-22,46,113)" filter="url(#one-neon-s)"/>
+            <ellipse cx="114" cy="113" rx="11" ry="15" fill="white" stroke="#B09CF5" stroke-width="1.8" transform="rotate(22,114,113)" filter="url(#one-neon-s)"/>
+            <rect x="65" y="90" width="30" height="9" rx="4.5" fill="#EDE3FA" stroke="#9B7FF0" stroke-width="1.4" filter="url(#one-neon-s)"/>
+            <circle cx="80" cy="94.5" r="3.5" fill="#7B5CF0" filter="url(#one-neon-s)"/>
+            <path d="M118 132 Q145 116 134 100" stroke="#C4A8FA" stroke-width="3.5" stroke-linecap="round" fill="none" filter="url(#one-neon)"/>
+          </svg>
+          <p class="one-pinah-phrase">O que posso fazer por você?</p>
+        </div>
+        <div class="one-prompt-outer">
+          <div class="one-prompt-card">
+            <textarea class="one-prompt-input" id="one-input" rows="1" placeholder="O que você quer capturar ou lembrar?"></textarea>
+            <button class="one-prompt-btn" onclick="oneAnexar()">
+              <div class="one-prompt-btn-glow"></div>
+              <img src="assets/icons/ic-anexar.png" alt="anexar">
+            </button>
+            <button class="one-prompt-btn" onclick="oneVoz()">
+              <div class="one-prompt-btn-glow"></div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round" style="position:relative;z-index:1">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+            </button>
+            <div class="one-send-wrap">
+              <div class="one-send-glow"></div>
+              <button class="one-send-btn" onclick="oneEnviar()">
+                <img src="assets/icons/ic-enviar.png" alt="enviar">
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AGENDA (em desenvolvimento) -->
+      <div class="one-screen one-agenda" style="padding:8px 14px 16px;">
+        <div class="one-agenda-card">
+          <p style="text-align:center;font-size:13px;color:#9B7FF0;font-family:system-ui;margin:auto;">Agenda — em breve</p>
+        </div>
+      </div>
+
+      <!-- FINANCEIRO (em desenvolvimento) -->
+      <div class="one-screen one-financeiro" style="padding:8px 14px 16px;">
+        <div style="background:#7B5CF0;border-radius:20px;padding:18px 16px;color:white;font-family:system-ui;box-shadow:0 4px 16px rgba(123,92,240,.35);">
+          <p style="font-size:10px;opacity:.70;margin:0 0 4px 0;">saldo disponível · maio</p>
+          <p style="font-size:26px;font-weight:500;margin:0;">R$ 4.280,50</p>
+        </div>
+      </div>
+
+    </div><!-- /one-screens-wrap -->
+
+    <!-- Dots de navegação -->
+    <div class="one-dots" id="one-dots">
+      <div class="one-dot active"></div>
+      <div class="one-dot"></div>
+      <div class="one-dot"></div>
+    </div>
+
+  </section><!-- /screen-one -->
+
 
   </main>
 </div>
@@ -3668,7 +3834,7 @@
   }
 
   /* ── Navegação ──────────────────────────────────────────────── */
-  const TELAS = ['home', 'agenda', 'receitas', 'despesas', 'historico', 'cerebro', 'pinah'];
+  const TELAS = ['home', 'agenda', 'receitas', 'despesas', 'historico', 'cerebro', 'pinah','one'];
 
   function go(tela) {
     closeDrawer();
@@ -6191,6 +6357,72 @@
   } else {
     boot();
   }
+
+/* =====================================================
+   SCREEN ONE — Chat | Agenda | Financeiro
+   ===================================================== */
+function renderOneGreeting() {
+  var el = document.getElementById('one-greeting-text');
+  if (!el) return;
+  var now = new Date();
+  var dias = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+  var meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  var hh = String(now.getHours()).padStart(2,'0');
+  var mm = String(now.getMinutes()).padStart(2,'0');
+  el.textContent = 'Luciano, ' + hh + ':' + mm + ' · ' + dias[now.getDay()] + ', ' + now.getDate() + ' de ' + meses[now.getMonth()];
+}
+
+function oneEnviar() {
+  var input = document.getElementById('one-input');
+  if (!input || !input.value.trim()) return;
+  /* TODO: integrar com IA */
+  input.value = '';
+  input.style.height = 'auto';
+}
+function oneAnexar() { /* TODO */ }
+function oneVoz()    { /* TODO */ }
+
+/* Dots — atualiza ao rolar entre telas */
+(function() {
+  function setup() {
+    var wrap = document.getElementById('one-screens-wrap');
+    var dots = document.querySelectorAll('#one-dots .one-dot');
+    if (!wrap || !dots.length) { setTimeout(setup, 200); return; }
+    wrap.addEventListener('scroll', function() {
+      var idx = Math.round(wrap.scrollLeft / wrap.offsetWidth);
+      dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+    }, { passive: true });
+  }
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', setup) : setup();
+})();
+
+/* Auto-resize textarea */
+(function() {
+  function setup() {
+    var ta = document.getElementById('one-input');
+    if (!ta) { setTimeout(setup, 300); return; }
+    ta.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 96) + 'px';
+    });
+  }
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', setup) : setup();
+})();
+
+/* Atualiza greeting ao entrar na tela */
+(function() {
+  var orig = window.go;
+  if (typeof orig === 'function') {
+    window.go = function(tela) {
+      orig(tela);
+      if (tela === 'one') renderOneGreeting();
+    };
+  }
+  /* Inicializa greeting imediatamente e a cada minuto */
+  renderOneGreeting();
+  setInterval(renderOneGreeting, 60000);
+})();
+
 </script>
 </body>
 </html>
