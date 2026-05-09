@@ -2351,6 +2351,22 @@
 .one-agenda-card{background:#fff;border-radius:20px;border:0.5px solid rgba(0,0,0,.07);padding:14px 12px;margin-top:4px;box-shadow:0 4px 16px rgba(0,0,0,.06),0 1px 4px rgba(0,0,0,.04);flex:1;display:flex;flex-direction:column;}
 
 
+/* ── Modais internos do screen-one ─────────────────────────── */
+.one-modal-overlay{display:none;position:absolute;inset:0;background:rgba(30,20,50,.50);z-index:200;align-items:flex-end;justify-content:center;}
+.one-modal-overlay.open{display:flex;}
+.one-modal{background:#F4F1EA;border-radius:24px 24px 0 0;width:100%;padding:22px 18px 32px;max-height:82%;overflow-y:auto;}
+.one-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.one-modal-title{font-size:16px;font-weight:600;color:#2D2D2D;font-family:system-ui,-apple-system,sans-serif;}
+.one-modal-close{width:32px;height:32px;background:#fff;border:none;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.10);}
+.one-modal-tabs{display:flex;gap:8px;margin-bottom:16px;background:#E8E3DA;border-radius:14px;padding:3px;}
+.one-modal-tab{flex:1;padding:9px;border-radius:11px;border:none;background:transparent;font-size:13px;font-weight:600;color:#7A7080;cursor:pointer;font-family:system-ui,-apple-system,sans-serif;transition:all .2s;}
+.one-modal-tab.active{background:#fff;color:#7B5CF0;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.one-field{width:100%;background:#fff;border:1.5px solid #E8E2F0;border-radius:14px;padding:12px 14px;font-size:14px;font-family:system-ui,-apple-system,sans-serif;color:#2D2D2D;margin-bottom:10px;outline:none;box-sizing:border-box;-webkit-appearance:none;}
+.one-field:focus{border-color:#7B5CF0;}
+.one-field::placeholder{color:#B8B0C4;}
+.one-modal-save{width:100%;background:#7B5CF0;color:#fff;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px;font-family:system-ui,-apple-system,sans-serif;}
+.one-toast{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:#2D2D2D;color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;font-family:system-ui;z-index:300;white-space:nowrap;pointer-events:none;animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(8px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 /* ── Agenda sub-screen ──────────────────────────────────────── */
 .one-agenda-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:0 10px 6px;}
 .one-agenda-nav{display:flex;align-items:center;justify-content:space-between;padding:4px 0 8px;flex-shrink:0;}
@@ -2517,7 +2533,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
     <div class="one-topbar">
       <div class="one-btn-wrap">
         <div class="one-btn-glow"></div>
-        <button class="one-btn-side" onclick="abrirMenuPinah()">
+        <button class="one-btn-side" onclick="typeof toggleDrawer==='function'?toggleDrawer():null">
           <img src="assets/icons/ic-menu.png" alt="menu">
         </button>
       </div>
@@ -2580,7 +2596,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
         <div class="one-agenda-wrap">
           <div class="one-agenda-nav">
             <span class="one-agenda-nav-period" id="one-ag-period">—</span>
-            <button class="one-agenda-add" onclick="abrirModalNovoComp ? abrirModalNovoComp() : null">+ Novo</button>
+            <button class="one-agenda-add" onclick="go('agenda')">+ Ver tudo / Novo</button>
           </div>
           <div class="one-agenda-week" id="one-ag-week">
             <!-- JS renderiza as 7 colunas -->
@@ -2612,7 +2628,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
           <p class="one-fin-section-title">Lançamentos recentes</p>
           <div class="one-fin-list" id="one-fin-list"></div>
           <div class="one-fin-add-row">
-            <button onclick="document.getElementById('screen-one').classList.remove('active'); if(typeof originalGo === 'function') originalGo('receitas'); else go('receitas');">+ Lançar receita / despesa</button>
+            <button onclick="go('receitas')">+ Lançar receita / despesa</button>
           </div>
         </div>
       </div>
@@ -2626,9 +2642,44 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
       <div class="one-dot"></div>
     </div>
 
+    <!-- Modal: Novo Lançamento -->
+    <div class="one-modal-overlay" id="one-modal-lancamento">
+      <div class="one-modal">
+        <div class="one-modal-header">
+          <span class="one-modal-title">Novo Lançamento</span>
+          <button class="one-modal-close" onclick="oneFecharModal('lancamento')">✕</button>
+        </div>
+        <div class="one-modal-tabs">
+          <button class="one-modal-tab active" id="tab-rec" onclick="oneMudarTipoLanc('receita')">↑ Receita</button>
+          <button class="one-modal-tab" id="tab-desp" onclick="oneMudarTipoLanc('despesa')">↓ Despesa</button>
+        </div>
+        <input type="text" class="one-field" id="lanc-nome" placeholder="Descrição">
+        <input type="number" class="one-field" id="lanc-valor" placeholder="Valor (R$)" inputmode="decimal" step="0.01">
+        <input type="date" class="one-field" id="lanc-data">
+        <input type="text" class="one-field" id="lanc-cat" placeholder="Categoria (ex: Atendimento, Aluguel…)">
+        <button class="one-modal-save" onclick="oneSalvarLancamento()">Salvar</button>
+      </div>
+    </div>
+
+    <!-- Modal: Novo Compromisso -->
+    <div class="one-modal-overlay" id="one-modal-compromisso">
+      <div class="one-modal">
+        <div class="one-modal-header">
+          <span class="one-modal-title">Novo Compromisso</span>
+          <button class="one-modal-close" onclick="oneFecharModal('compromisso')">✕</button>
+        </div>
+        <input type="text" class="one-field" id="comp-nome" placeholder="Nome ou descrição">
+        <input type="date" class="one-field" id="comp-data">
+        <input type="time" class="one-field" id="comp-hora">
+        <input type="text" class="one-field" id="comp-tipo" placeholder="Tipo (Atendimento, Reunião…)">
+        <input type="number" class="one-field" id="comp-valor" placeholder="Valor (opcional)" inputmode="decimal" step="0.01">
+        <button class="one-modal-save" onclick="oneSalvarCompromisso()">Salvar</button>
+      </div>
+    </div>
+
   </section><!-- /screen-one -->
 
-  <div id="app" style="display:none">
+  <div id="app" style="display:flex">
 
   <!-- SIDEBAR ───────────────────────────────────────────────── -->
   <aside id="sidebar">
@@ -3614,13 +3665,16 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 
   function mostrarTelaAuth() {
     const a = document.getElementById('auth-screen');
-    if (a) a.style.display = 'block';
+    if (a) { a.style.display = 'block'; a.style.zIndex = '10000'; }
     const app = document.getElementById('app');
     if (app) app.style.display = 'none';
     const mh = document.getElementById('mobile-header');
     if (mh) mh.style.display = 'none';
     const bn = document.getElementById('bottom-nav');
     if (bn) bn.style.display = 'none';
+    /* Esconde screen-one enquanto auth está ativa */
+    const so = document.getElementById('screen-one');
+    if (so) so.classList.remove('active');
   }
 
   function esconderTelaAuth() {
@@ -3632,13 +3686,15 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
     if (mh) mh.style.display = '';
     const bn = document.getElementById('bottom-nav');
     if (bn) bn.style.display = '';
-    // Atualiza nome no rodape da sidebar
+    /* Atualiza nome no rodape da sidebar */
     if (window.authProfile && window.authProfile.nome) {
       const userBadges = document.querySelectorAll('.user-nome-display');
       userBadges.forEach(el => el.textContent = window.authProfile.nome);
     }
-    // Atualiza card da sidebar (avatar + nome + tag) conforme grupo
+    /* Atualiza card da sidebar (avatar + nome + tag) conforme grupo */
     customizarCardSidebar();
+    /* Pós-login → screen-one é o home */
+    if (typeof go === 'function') go('one');
   }
 
   function customizarCardSidebar() {
@@ -6667,10 +6723,9 @@ function renderOneFinanceiro() {
 (function() {
   var orig = window.go;
   window.go = function(tela) {
-    /* Screen-one está fora do #app — trata separado */
     var screenOne = document.getElementById('screen-one');
-    if (tela === 'one') {
-      /* Ativa screen-one diretamente */
+    /* 'one' e 'home' → screen-one é o home do app */
+    if (tela === 'one' || tela === 'home') {
       document.querySelectorAll('.screen.active').forEach(function(s){ s.classList.remove('active'); });
       if (screenOne) screenOne.classList.add('active');
       renderOneGreeting();
@@ -6678,13 +6733,158 @@ function renderOneFinanceiro() {
       renderOneFinanceiro();
       return;
     }
-    /* Ao sair do screen-one, desativa ele */
+    /* Saindo para tela funcional — desativa screen-one */
     if (screenOne) screenOne.classList.remove('active');
     if (typeof orig === 'function') orig(tela);
   };
   /* Inicializa greeting imediatamente e a cada minuto */
   renderOneGreeting();
   setInterval(renderOneGreeting, 60000);
+})();
+
+/* ── Modais internos ─────────────────────────────────────────── */
+var _lancTipo = 'receita';
+
+function oneAbrirLancamento() {
+  _lancTipo = 'receita';
+  var today = new Date();
+  document.getElementById('lanc-data').value = today.getFullYear() + '-'
+    + String(today.getMonth()+1).padStart(2,'0') + '-'
+    + String(today.getDate()).padStart(2,'0');
+  document.getElementById('lanc-nome').value = '';
+  document.getElementById('lanc-valor').value = '';
+  document.getElementById('lanc-cat').value = '';
+  document.getElementById('tab-rec').classList.add('active');
+  document.getElementById('tab-desp').classList.remove('active');
+  document.getElementById('one-modal-lancamento').classList.add('open');
+}
+
+function oneMudarTipoLanc(tipo) {
+  _lancTipo = tipo;
+  document.getElementById('tab-rec').classList.toggle('active', tipo === 'receita');
+  document.getElementById('tab-desp').classList.toggle('active', tipo === 'despesa');
+}
+
+function oneFecharModal(id) {
+  var el = document.getElementById('one-modal-' + id);
+  if (el) el.classList.remove('open');
+}
+
+function oneSalvarLancamento() {
+  var nome  = (document.getElementById('lanc-nome').value  || '').trim();
+  var valor = parseFloat(document.getElementById('lanc-valor').value) || 0;
+  var data  = document.getElementById('lanc-data').value;
+  var cat   = (document.getElementById('lanc-cat').value   || '').trim() || 'Geral';
+  if (!nome || !valor || !data) { oneToast('Preencha descrição, valor e data.'); return; }
+  var chave = _lancTipo === 'receita' ? 'receitas' : 'despesas';
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(chave) || '[]'); } catch(e){}
+  var item = { id: 'one-' + Date.now(), data: data, valor: valor, status: 'Pago', categoria: cat };
+  if (_lancTipo === 'receita') { item.nome = nome; item.tipo = cat; item.formaPagamento = 'Pix'; }
+  else { item.descricao = nome; }
+  lista.push(item);
+  localStorage.setItem(chave, JSON.stringify(lista));
+  oneFecharModal('lancamento');
+  renderOneFinanceiro();
+  oneToast(_lancTipo === 'receita' ? '✓ Receita salva!' : '✓ Despesa salva!');
+}
+
+function oneAbrirCompromisso() {
+  var today = new Date();
+  document.getElementById('comp-data').value = today.getFullYear() + '-'
+    + String(today.getMonth()+1).padStart(2,'0') + '-'
+    + String(today.getDate()).padStart(2,'0');
+  document.getElementById('comp-hora').value  = '';
+  document.getElementById('comp-nome').value  = '';
+  document.getElementById('comp-tipo').value  = '';
+  document.getElementById('comp-valor').value = '';
+  document.getElementById('one-modal-compromisso').classList.add('open');
+}
+
+function oneSalvarCompromisso() {
+  var nome  = (document.getElementById('comp-nome').value || '').trim();
+  var data  = document.getElementById('comp-data').value;
+  var hora  = document.getElementById('comp-hora').value;
+  var tipo  = (document.getElementById('comp-tipo').value || '').trim() || 'Compromisso';
+  var valor = parseFloat(document.getElementById('comp-valor').value) || 0;
+  if (!nome || !data) { oneToast('Preencha nome e data.'); return; }
+  var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
+  lista.push({ id: 'one-'+Date.now(), data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, status:'Pendente', duracao:45 });
+  localStorage.setItem('compromissos', JSON.stringify(lista));
+  oneFecharModal('compromisso');
+  renderOneAgenda();
+  oneToast('✓ Compromisso salvo!');
+}
+
+function oneToast(msg) {
+  var old = document.querySelector('.one-toast');
+  if (old) old.remove();
+  var t = document.createElement('div');
+  t.className = 'one-toast';
+  t.textContent = msg;
+  document.getElementById('screen-one').appendChild(t);
+  setTimeout(function(){ t.remove(); }, 2200);
+}
+
+/* ── Dados demo + ativação automática ────────────────────────── */
+(function() {
+  function oneInitDemo() {
+    if (localStorage.getItem('one_init')) return;
+    var now = new Date();
+    var ano = now.getFullYear();
+    var mes = String(now.getMonth()+1).padStart(2,'0');
+    var h = now.getDate();
+    var d = function(dia) { return ano+'-'+mes+'-'+String(Math.max(1,Math.min(28,dia))).padStart(2,'0'); };
+    if (!localStorage.getItem('receitas')) {
+      localStorage.setItem('receitas', JSON.stringify([
+        {id:'d1',data:d(h-8),nome:'Maria S.',tipo:'Atendimento',valor:280,formaPagamento:'Pix',status:'Pago',categoria:'Atendimento'},
+        {id:'d2',data:d(h-5),nome:'Leonardo B.',tipo:'Avaliação',valor:350,formaPagamento:'Pix',status:'Pago',categoria:'Avaliação'},
+        {id:'d3',data:d(h-3),nome:'Ana K.',tipo:'Atendimento',valor:280,formaPagamento:'Pix',status:'Pago',categoria:'Atendimento'},
+        {id:'d4',data:d(h),nome:'Beatriz N.',tipo:'Atendimento',valor:280,formaPagamento:'Pix',status:'Pendente',categoria:'Atendimento'}
+      ]));
+    }
+    if (!localStorage.getItem('despesas')) {
+      localStorage.setItem('despesas', JSON.stringify([
+        {id:'e1',data:d(h-7),descricao:'Material de consultório',categoria:'Material',valor:180,status:'Pago'},
+        {id:'e2',data:d(h-2),descricao:'Curso online',categoria:'Capacitação',valor:320,status:'Pago'}
+      ]));
+    }
+    if (!localStorage.getItem('compromissos')) {
+      localStorage.setItem('compromissos', JSON.stringify([
+        {id:'c1',data:d(h-2),hora:'09:00',nome:'Maria S.',tipo:'Atendimento',valor:280,status:'Confirmado',realizado:true},
+        {id:'c2',data:d(h-1),hora:'14:00',nome:'Ana K.',tipo:'Atendimento',valor:280,status:'Confirmado',realizado:true},
+        {id:'c3',data:d(h),hora:'10:00',nome:'Beatriz N.',tipo:'Atendimento',valor:280,status:'Confirmado'},
+        {id:'c4',data:d(h),hora:'15:30',nome:'Leonardo B.',tipo:'Avaliação',valor:350,status:'Pendente'},
+        {id:'c5',data:d(h+2),hora:'09:00',nome:'Maria S.',tipo:'Atendimento',valor:280,status:'Pendente'},
+        {id:'c6',data:d(h+4),hora:'11:00',nome:'Reunião parceria',tipo:'Profissional',valor:0,status:'Pendente'}
+      ]));
+    }
+    localStorage.setItem('one_init', '1');
+  }
+
+  function activateOne() {
+    oneInitDemo();
+    var so = document.getElementById('screen-one');
+    if (!so) return;
+    /* Ativa sempre — screen-one é o app principal */
+    document.querySelectorAll('.screen.active').forEach(function(s){ s.classList.remove('active'); });
+    so.classList.add('active');
+    renderOneGreeting();
+    renderOneAgenda();
+    renderOneFinanceiro();
+  }
+
+  /* Fechar modal clicando no overlay */
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('one-modal-overlay')) {
+      e.target.classList.remove('open');
+    }
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', activateOne);
+  } else {
+    activateOne();
+  }
 })();
 
 </script>
