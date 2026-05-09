@@ -2335,6 +2335,51 @@
 .one-agenda-card{background:#fff;border-radius:20px;border:0.5px solid rgba(0,0,0,.07);padding:14px 12px;margin-top:4px;box-shadow:0 4px 16px rgba(0,0,0,.06),0 1px 4px rgba(0,0,0,.04);flex:1;display:flex;flex-direction:column;}
 
 
+/* ── Agenda sub-screen ──────────────────────────────────────── */
+.one-agenda-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:0 10px 6px;}
+.one-agenda-nav{display:flex;align-items:center;justify-content:space-between;padding:4px 0 8px;flex-shrink:0;}
+.one-agenda-nav-period{font-size:11px;font-weight:600;color:#5A5060;letter-spacing:.2px;}
+.one-agenda-add{background:#7B5CF0;color:#fff;border:none;border-radius:10px;font-size:11px;font-weight:600;padding:5px 11px;cursor:pointer;box-shadow:0 2px 8px rgba(123,92,240,.35);}
+.one-agenda-week{display:flex;gap:4px;flex:1;min-height:0;overflow:hidden;}
+.one-agenda-col{flex:1;min-width:0;display:flex;flex-direction:column;}
+.one-agenda-day-header{text-align:center;padding:0 0 5px;flex-shrink:0;}
+.one-agenda-day-name{font-size:9px;font-weight:700;letter-spacing:.4px;color:#9A94A4;text-transform:uppercase;}
+.one-agenda-day-num{font-size:14px;font-weight:600;color:#3A2D4A;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin:2px auto 0;}
+.one-agenda-day-num.today{background:#7B5CF0;color:#fff;}
+.one-agenda-day-cards{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:3px;padding-bottom:4px;scrollbar-width:none;}
+.one-agenda-day-cards::-webkit-scrollbar{display:none;}
+.one-agenda-card-mini{border-radius:5px;padding:3px 3px 2px;cursor:pointer;transition:opacity .15s;border-left:2px solid transparent;}
+.one-agenda-card-mini:active{opacity:.75;}
+.one-agenda-card-mini-name{font-size:8.5px;font-weight:600;color:#3A2D4A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;font-family:system-ui,-apple-system,sans-serif;}
+.one-agenda-card-mini-time{font-size:8px;color:#7A7080;margin-top:1px;font-family:system-ui,-apple-system,sans-serif;}
+.one-agenda-card-mini.confirmado{background:#EDE3FA;border-color:#7B5CF0;}
+.one-agenda-card-mini.pendente{background:#F5F0FF;border-color:#B09CF5;}
+.one-agenda-card-mini.realizado{background:#EEF7F3;border-color:#5EB585;}
+.one-agenda-empty-col{flex:1;background:rgba(0,0,0,.025);border-radius:6px;min-height:20px;}
+
+/* ── Financeiro sub-screen ──────────────────────────────────── */
+.one-fin-wrap{flex:1;overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;padding:0 10px 10px;gap:0;}
+.one-fin-wrap::-webkit-scrollbar{display:none;}
+.one-fin-saldo-card{background:linear-gradient(135deg,#7B5CF0 0%,#9B7FF0 100%);border-radius:18px;padding:16px 16px 12px;color:#fff;flex-shrink:0;margin-bottom:10px;box-shadow:0 6px 20px rgba(123,92,240,.38);}
+.one-fin-saldo-label{font-size:9.5px;opacity:.80;letter-spacing:.3px;margin:0 0 2px;font-family:system-ui,-apple-system,sans-serif;text-transform:uppercase;}
+.one-fin-saldo-value{font-size:26px;font-weight:500;margin:0 0 10px;font-family:system-ui,-apple-system,sans-serif;letter-spacing:-.5px;}
+.one-fin-mini-stats{display:flex;gap:6px;}
+.one-fin-mini-stat{flex:1;background:rgba(255,255,255,.15);border-radius:9px;padding:5px 7px;}
+.one-fin-mini-stat-label{font-size:8.5px;opacity:.80;margin:0 0 1px;font-family:system-ui,-apple-system,sans-serif;}
+.one-fin-mini-stat-value{font-size:12px;font-weight:600;margin:0;font-family:system-ui,-apple-system,sans-serif;}
+.one-fin-section-title{font-size:10px;font-weight:700;color:#9A94A4;letter-spacing:.5px;text-transform:uppercase;margin:0 0 7px;flex-shrink:0;}
+.one-fin-list{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+.one-fin-item{background:#fff;border-radius:12px;padding:8px 10px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 5px rgba(0,0,0,.05);}
+.one-fin-item-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.one-fin-item-info{flex:1;min-width:0;}
+.one-fin-item-name{font-size:11.5px;font-weight:600;color:#2D2D2D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:system-ui,-apple-system,sans-serif;}
+.one-fin-item-date{font-size:9.5px;color:#9A94A4;margin-top:1px;font-family:system-ui,-apple-system,sans-serif;}
+.one-fin-item-value{font-size:12px;font-weight:700;flex-shrink:0;font-family:system-ui,-apple-system,sans-serif;}
+.one-fin-item-value.rec{color:#2BA574;}
+.one-fin-item-value.desp{color:#D95757;}
+.one-fin-add-row{padding:8px 0 2px;flex-shrink:0;}
+.one-fin-add-row button{background:#7B5CF0;color:#fff;border:none;border-radius:13px;font-size:12px;font-weight:600;padding:10px;cursor:pointer;box-shadow:0 3px 10px rgba(123,92,240,.30);width:100%;}
+
 /* ── Screen-one: esconde estrutura do app antigo ─────────────── */
 body:has(#screen-one.active) #sidebar      { display:none !important; }
 body:has(#screen-one.active) #bottom-nav   { display:none !important; }
@@ -2544,18 +2589,45 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
         </div>
       </div>
 
-      <!-- AGENDA (em desenvolvimento) -->
-      <div class="one-screen one-agenda" style="padding:8px 14px 16px;">
-        <div class="one-agenda-card">
-          <p style="text-align:center;font-size:13px;color:#9B7FF0;font-family:system-ui;margin:auto;">Agenda — em breve</p>
+      <!-- AGENDA -->
+      <div class="one-screen one-agenda" style="padding:8px 0 0;">
+        <div class="one-agenda-wrap">
+          <div class="one-agenda-nav">
+            <span class="one-agenda-nav-period" id="one-ag-period">—</span>
+            <button class="one-agenda-add" onclick="abrirModalNovoComp ? abrirModalNovoComp() : null">+ Novo</button>
+          </div>
+          <div class="one-agenda-week" id="one-ag-week">
+            <!-- JS renderiza as 7 colunas -->
+          </div>
         </div>
       </div>
 
-      <!-- FINANCEIRO (em desenvolvimento) -->
-      <div class="one-screen one-financeiro" style="padding:8px 14px 16px;">
-        <div style="background:#7B5CF0;border-radius:20px;padding:18px 16px;color:white;font-family:system-ui;box-shadow:0 4px 16px rgba(123,92,240,.35);">
-          <p style="font-size:10px;opacity:.70;margin:0 0 4px 0;">saldo disponível · maio</p>
-          <p style="font-size:26px;font-weight:500;margin:0;">R$ 4.280,50</p>
+      <!-- FINANCEIRO -->
+      <div class="one-screen one-financeiro" style="padding:8px 0 0;">
+        <div class="one-fin-wrap">
+          <div class="one-fin-saldo-card">
+            <p class="one-fin-saldo-label">Saldo do mês · <span id="one-fin-mes">—</span></p>
+            <p class="one-fin-saldo-value" id="one-fin-saldo">R$ —</p>
+            <div class="one-fin-mini-stats">
+              <div class="one-fin-mini-stat">
+                <p class="one-fin-mini-stat-label">↑ entradas</p>
+                <p class="one-fin-mini-stat-value" id="one-fin-entradas">—</p>
+              </div>
+              <div class="one-fin-mini-stat">
+                <p class="one-fin-mini-stat-label">↓ saídas</p>
+                <p class="one-fin-mini-stat-value" id="one-fin-saidas">—</p>
+              </div>
+              <div class="one-fin-mini-stat">
+                <p class="one-fin-mini-stat-label">⏳ pendente</p>
+                <p class="one-fin-mini-stat-value" id="one-fin-pendente-one">—</p>
+              </div>
+            </div>
+          </div>
+          <p class="one-fin-section-title">Lançamentos recentes</p>
+          <div class="one-fin-list" id="one-fin-list"></div>
+          <div class="one-fin-add-row">
+            <button onclick="document.getElementById('screen-one').classList.remove('active'); if(typeof originalGo === 'function') originalGo('receitas'); else go('receitas');">+ Lançar receita / despesa</button>
+          </div>
         </div>
       </div>
 
@@ -6408,6 +6480,176 @@ function oneEnviar() {
 function oneAnexar() { /* TODO */ }
 function oneVoz()    { /* TODO */ }
 
+/* ── Agenda (screen-one) ─────────────────────────────────── */
+function renderOneAgenda() {
+  var wrap = document.getElementById('one-ag-week');
+  var periodEl = document.getElementById('one-ag-period');
+  if (!wrap) return;
+
+  var today = new Date();
+  var dow = today.getDay(); // 0=Dom
+  var mondayOffset = dow === 0 ? -6 : 1 - dow;
+  var monday = new Date(today);
+  monday.setDate(today.getDate() + mondayOffset);
+
+  var compromissos = [];
+  try { compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
+
+  var dias = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+  var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+  var sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  if (periodEl) {
+    if (monday.getMonth() === sunday.getMonth()) {
+      periodEl.textContent = monday.getDate() + '–' + sunday.getDate() + ' de ' + meses[monday.getMonth()];
+    } else {
+      periodEl.textContent = monday.getDate() + ' ' + meses[monday.getMonth()] + ' – ' + sunday.getDate() + ' ' + meses[sunday.getMonth()];
+    }
+  }
+
+  function toDateStr(d) {
+    return d.getFullYear() + '-'
+      + String(d.getMonth()+1).padStart(2,'0') + '-'
+      + String(d.getDate()).padStart(2,'0');
+  }
+  var todayStr = toDateStr(today);
+
+  wrap.innerHTML = '';
+  for (var i = 0; i < 7; i++) {
+    var day = new Date(monday);
+    day.setDate(monday.getDate() + i);
+    var dayStr = toDateStr(day);
+    var isToday = dayStr === todayStr;
+
+    var dayComps = compromissos
+      .filter(function(c){ return c.data === dayStr; })
+      .sort(function(a,b){ return (a.hora||'00:00').localeCompare(b.hora||'00:00'); });
+
+    var col = document.createElement('div');
+    col.className = 'one-agenda-col';
+
+    var header = document.createElement('div');
+    header.className = 'one-agenda-day-header';
+    header.innerHTML = '<div class="one-agenda-day-name">' + dias[i] + '</div>'
+      + '<div class="one-agenda-day-num' + (isToday ? ' today' : '') + '">' + day.getDate() + '</div>';
+
+    var cardsDiv = document.createElement('div');
+    cardsDiv.className = 'one-agenda-day-cards';
+
+    if (dayComps.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'one-agenda-empty-col';
+      cardsDiv.appendChild(empty);
+    } else {
+      dayComps.forEach(function(c) {
+        var card = document.createElement('div');
+        var cls = c.realizado ? 'realizado' : (c.status === 'Confirmado' ? 'confirmado' : 'pendente');
+        card.className = 'one-agenda-card-mini ' + cls;
+        var firstName = (c.nome || '').split(' ')[0];
+        card.innerHTML = '<div class="one-agenda-card-mini-name">' + firstName + '</div>'
+          + (c.hora ? '<div class="one-agenda-card-mini-time">' + c.hora + '</div>' : '');
+        cardsDiv.appendChild(card);
+      });
+    }
+
+    col.appendChild(header);
+    col.appendChild(cardsDiv);
+    wrap.appendChild(col);
+  }
+}
+
+/* ── Financeiro (screen-one) ─────────────────────────────── */
+function renderOneFinanceiro() {
+  var now = new Date();
+  var mes = now.getMonth();
+  var ano = now.getFullYear();
+  var mesStr = String(mes+1).padStart(2,'0');
+  var mesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var prefix = ano + '-' + mesStr;
+
+  var receitas = []; var despesas = []; var fixas = [];
+  try { receitas = JSON.parse(localStorage.getItem('receitas') || '[]'); } catch(e){}
+  try { despesas = JSON.parse(localStorage.getItem('despesas') || '[]'); } catch(e){}
+  try { fixas    = JSON.parse(localStorage.getItem('despesasFixas') || '[]'); } catch(e){}
+
+  var recMes  = receitas.filter(function(r){ return r.data && r.data.startsWith(prefix); });
+  var despMes = despesas.filter(function(d){ return d.data && d.data.startsWith(prefix); });
+
+  var totalRec   = recMes.filter(function(r){ return r.status==='Pago'; })
+                         .reduce(function(s,r){ return s+(r.valor||0); },0);
+  var totalDesp  = despMes.filter(function(d){ return d.status==='Pago'; })
+                          .reduce(function(s,d){ return s+(d.valor||0); },0);
+  var totalFixas = fixas.reduce(function(s,f){ return s+(f.valor||0); },0);
+  totalDesp += totalFixas;
+  var pendente   = recMes.filter(function(r){ return r.status!=='Pago'; })
+                         .reduce(function(s,r){ return s+(r.valor||0); },0);
+  var saldo = totalRec - totalDesp;
+
+  function fmt(v) {
+    return 'R$ ' + Math.abs(v).toFixed(2)
+      .replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  }
+
+  var mesEl    = document.getElementById('one-fin-mes');
+  var saldoEl  = document.getElementById('one-fin-saldo');
+  var entEl    = document.getElementById('one-fin-entradas');
+  var saiEl    = document.getElementById('one-fin-saidas');
+  var penEl    = document.getElementById('one-fin-pendente-one');
+  var listEl   = document.getElementById('one-fin-list');
+
+  if (mesEl)   mesEl.textContent   = mesNomes[mes].toUpperCase();
+  if (saldoEl) saldoEl.textContent = (saldo < 0 ? '−' : '') + fmt(saldo);
+  if (entEl)   entEl.textContent   = fmt(totalRec);
+  if (saiEl)   saiEl.textContent   = fmt(totalDesp);
+  if (penEl)   penEl.textContent   = fmt(pendente);
+
+  if (!listEl) return;
+
+  var items = [];
+  recMes.forEach(function(r){
+    items.push({data:r.data, nome:r.nome||r.tipo||'Receita',
+                tipo:'rec', valor:r.valor||0, status:r.status, cat:r.categoria});
+  });
+  despMes.forEach(function(d){
+    items.push({data:d.data, nome:d.descricao||'Despesa',
+                tipo:'desp', valor:d.valor||0, status:d.status, cat:d.categoria});
+  });
+  items.sort(function(a,b){ return b.data.localeCompare(a.data); });
+  items = items.slice(0, 10);
+
+  var catIcons = {
+    'Atendimento':'🩺','Avaliação':'📋','Capacitação':'📚',
+    'Material Estudo':'📖','Equipamentos':'🔧','Alimentação':'🍽️',
+    'Transporte':'🚗','Saúde':'💊','default':'💰'
+  };
+
+  listEl.innerHTML = '';
+  if (items.length === 0) {
+    listEl.innerHTML = '<p style="text-align:center;font-size:12px;color:#9A94A4;'
+      + 'padding:20px 0;font-family:system-ui;">Nenhum lançamento este mês</p>';
+    return;
+  }
+  items.forEach(function(item){
+    var icon  = catIcons[item.cat] || (item.tipo==='rec' ? '💚' : '🔴');
+    var bg    = item.tipo==='rec' ? '#EDF7F2' : '#FDF2F2';
+    var parts = (item.data||'----').split('-');
+    var dateLabel = (parts[2]||'?') + '/' + (parts[1]||'?');
+    var el = document.createElement('div');
+    el.className = 'one-fin-item';
+    el.innerHTML = '<div class="one-fin-item-icon" style="background:' + bg + '">' + icon + '</div>'
+      + '<div class="one-fin-item-info">'
+      + '<div class="one-fin-item-name">' + item.nome + '</div>'
+      + '<div class="one-fin-item-date">' + dateLabel
+        + (item.status!=='Pago' ? ' · pendente' : '') + '</div>'
+      + '</div>'
+      + '<div class="one-fin-item-value ' + item.tipo + '">'
+      + (item.tipo==='rec' ? '+' : '−') + fmt(item.valor) + '</div>';
+    listEl.appendChild(el);
+  });
+}
+
 /* Dots — atualiza ao rolar entre telas */
 (function() {
   function setup() {
@@ -6446,6 +6688,8 @@ function oneVoz()    { /* TODO */ }
       document.querySelectorAll('.screen.active').forEach(function(s){ s.classList.remove('active'); });
       if (screenOne) screenOne.classList.add('active');
       renderOneGreeting();
+      renderOneAgenda();
+      renderOneFinanceiro();
       return;
     }
     /* Ao sair do screen-one, desativa ele */
