@@ -2412,26 +2412,150 @@
 .one-fin-add-row{padding:8px 0 2px;flex-shrink:0;}
 .one-fin-add-row button{background:#7B5CF0;color:#fff;border:none;border-radius:13px;font-size:12px;font-weight:600;padding:10px;cursor:pointer;box-shadow:0 3px 10px rgba(123,92,240,.30);width:100%;}
 
-/* ── Screen-one: esconde estrutura do app antigo ─────────────── */
+/* ── Screen-one: mobile — overlay sobre o app antigo ─────────── */
 body:has(#screen-one.active) #sidebar      { display:none !important; }
 body:has(#screen-one.active) #bottom-nav   { display:none !important; }
 body:has(#screen-one.active) #main         { margin-left:0 !important; background:#F4F1EA; }
 
-/* ── Screen-one: mobile-first, centralizado no desktop ────────── */
 #screen-one.active {
   display: flex;
   flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
   max-width: 480px;
   width: 100%;
   margin: 0 auto;
   min-height: 100vh;
   min-height: 100dvh;
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
   z-index: 9999;
-  box-shadow: 0 0 60px rgba(0,0,0,0.08);
   overflow: hidden;
 }
+
+/* ── Screen-one: desktop (≥ 900px) — integrado ao layout ─────── */
+@media (min-width: 900px) {
+  /* Sidebar continua visível */
+  body:has(#screen-one.active) #sidebar { display:flex !important; }
+  body:has(#screen-one.active) #main    { margin-left:var(--sidebar-w) !important; padding:0 !important; }
+  /* screen-one ocupa o espaço depois da sidebar */
+  #screen-one.active {
+    left: var(--sidebar-w);
+    right: 0;
+    max-width: none;
+    margin: 0;
+  }
+  /* Esconde elementos só-mobile */
+  body:has(#screen-one.active) .one-topbar       { display:none !important; }
+  body:has(#screen-one.active) .one-greeting     { display:none !important; }
+  body:has(#screen-one.active) .one-screens-wrap { display:none !important; }
+  body:has(#screen-one.active) .one-dots         { display:none !important; }
+  /* Mostra elementos só-desktop */
+  body:has(#screen-one.active) .one-desktop-header { display:flex !important; }
+  body:has(#screen-one.active) .one-desktop-layout { display:flex !important; }
+}
+
+/* ── Desktop layout ───────────────────────────────────────────── */
+.one-desktop-header {
+  display: none; /* JS / media query mostra */
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 36px 0 40px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(123,92,240,.08);
+  padding-bottom: 16px;
+  background: #F4F1EA;
+}
+.one-desktop-title {
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:22px;font-weight:600;color:#2D2D2D;margin:4px 0 0;
+}
+.one-desktop-subtitle {
+  font-size:12px;color:#8A8480;margin:0;
+}
+.one-desktop-layout {
+  display: none; /* JS / media query mostra */
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Coluna central: chat */
+.one-desktop-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 48px 32px;
+  min-width: 0;
+  position: relative;
+}
+.one-desktop-chat .one-chat-area {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; min-height: 0;
+}
+.one-desktop-chat .one-pinah-img { width: min(160px,13vw); }
+.one-desktop-chat .one-pinah-phrase { font-size: clamp(15px,1.5vw,20px); max-width: 380px; }
+
+/* Coluna direita: cards de Agenda + Financeiro */
+.one-desktop-sidebar {
+  width: 340px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px 32px 28px 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.one-desktop-sidebar::-webkit-scrollbar { display:none; }
+
+.one-desk-card {
+  background: #fff;
+  border-radius: 22px;
+  border: 0.5px solid rgba(0,0,0,.06);
+  padding: 18px 16px 14px;
+  box-shadow:
+    0 14px 40px rgba(0,0,0,.09),
+    0 4px 12px rgba(0,0,0,.06),
+    inset 0 1.5px 0 rgba(255,255,255,.98),
+    inset 0 -1px 0 rgba(0,0,0,.03);
+}
+.one-desk-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.one-desk-card-title {
+  font-size: 13px; font-weight: 700;
+  color: #3A2D4A; letter-spacing: .2px;
+  font-family: system-ui,-apple-system,sans-serif;
+}
+.one-desk-card-btn {
+  background: #7B5CF0; color: #fff; border: none;
+  border-radius: 9px; font-size: 11px; font-weight: 600;
+  padding: 5px 11px; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(123,92,240,.35);
+  font-family: system-ui,-apple-system,sans-serif;
+}
+/* Agenda week dentro do card desktop */
+.one-desk-card .one-agenda-week {
+  display: flex; gap: 3px; height: 160px; overflow: hidden;
+}
+.one-desk-card .one-agenda-col { flex:1; min-width:0; display:flex; flex-direction:column; }
+/* Financeiro mini dentro do card desktop */
+.one-desk-fin-saldo-card {
+  background: linear-gradient(135deg,#7B5CF0 0%,#9B7FF0 100%);
+  border-radius: 14px; padding: 12px 14px 10px; color:#fff;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 14px rgba(123,92,240,.35);
+}
+.one-desk-fin-saldo-value {
+  font-size: 22px; font-weight: 500; margin: 2px 0 8px;
+  font-family: system-ui,-apple-system,sans-serif;
+}
+.one-desk-fin-mini-stats { display:flex; gap:5px; }
+.one-desk-fin-mini-stat  { flex:1; background:rgba(255,255,255,.15); border-radius:8px; padding:4px 6px; }
+.one-desk-fin-mini-stat-label { font-size:8px; opacity:.80; margin:0 0 1px; font-family:system-ui; }
+.one-desk-fin-mini-stat-value { font-size:11px; font-weight:600; margin:0; font-family:system-ui; }
 
 </style>
 </head>
@@ -2642,6 +2766,100 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
       <div class="one-dot"></div>
     </div>
 
+    <!-- ═══ DESKTOP LAYOUT (visível só em ≥ 900px via CSS/media) ═══ -->
+    <div class="one-desktop-header">
+      <div>
+        <p class="one-desktop-subtitle" id="one-desk-greeting">—</p>
+        <h2 class="one-desktop-title">Conta Comigo ONE</h2>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="one-btn-side" onclick="abrirConfigPinah()" title="Configurações">
+          <img src="assets/icons/ic-config.png" alt="config">
+        </button>
+        <button class="one-btn-side" onclick="authSair()" title="Sair" style="font-size:13px;color:#7A7080;font-weight:600;letter-spacing:0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="one-desktop-layout">
+
+      <!-- Coluna central: Chat com Pinah -->
+      <div class="one-desktop-chat">
+        <div class="one-chat-area">
+          <div class="one-pinah-glow-pool"></div>
+          <img src="assets/icons/pinah-mascote.png" class="one-pinah-img" alt="Pinah">
+          <p class="one-pinah-phrase">Sua mente livre<br>para o que importa.</p>
+        </div>
+        <div class="one-prompt-outer">
+          <div class="one-prompt-card">
+            <textarea class="one-prompt-input" id="one-input-desk" rows="1" placeholder="O que você quer capturar ou lembrar?"></textarea>
+            <button class="one-prompt-btn" onclick="oneAnexar()">
+              <div class="one-prompt-btn-glow"></div>
+              <img src="assets/icons/ic-anexar.png" alt="anexar">
+            </button>
+            <button class="one-prompt-btn" onclick="oneVoz()">
+              <div class="one-prompt-btn-glow"></div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round" style="position:relative;z-index:1">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+            </button>
+            <div class="one-send-wrap">
+              <div class="one-send-glow"></div>
+              <button class="one-send-btn" onclick="oneEnviar()">
+                <img src="assets/icons/ic-enviar.png" alt="enviar">
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna direita: cards flutuantes -->
+      <div class="one-desktop-sidebar">
+
+        <!-- Card Agenda -->
+        <div class="one-desk-card">
+          <div class="one-desk-card-header">
+            <span class="one-desk-card-title">📅 Agenda da semana</span>
+            <button class="one-desk-card-btn" onclick="go('agenda')">+ Ver tudo</button>
+          </div>
+          <div class="one-agenda-week" id="one-desk-ag-week"></div>
+          <button onclick="oneAbrirCompromisso()" style="width:100%;margin-top:10px;background:transparent;border:1.5px dashed rgba(123,92,240,.30);border-radius:10px;padding:7px;font-size:11px;color:#7B5CF0;font-weight:600;cursor:pointer;font-family:system-ui">+ Novo compromisso</button>
+        </div>
+
+        <!-- Card Financeiro -->
+        <div class="one-desk-card">
+          <div class="one-desk-card-header">
+            <span class="one-desk-card-title">💰 Financeiro</span>
+            <button class="one-desk-card-btn" onclick="go('receitas')">+ Lançar</button>
+          </div>
+          <div class="one-desk-fin-saldo-card">
+            <p class="one-fin-saldo-label" style="font-size:9px">Saldo do mês</p>
+            <p class="one-desk-fin-saldo-value" id="one-desk-fin-saldo">R$ —</p>
+            <div class="one-desk-fin-mini-stats">
+              <div class="one-desk-fin-mini-stat">
+                <p class="one-desk-fin-mini-stat-label">↑ entradas</p>
+                <p class="one-desk-fin-mini-stat-value" id="one-desk-fin-entradas">—</p>
+              </div>
+              <div class="one-desk-fin-mini-stat">
+                <p class="one-desk-fin-mini-stat-label">↓ saídas</p>
+                <p class="one-desk-fin-mini-stat-value" id="one-desk-fin-saidas">—</p>
+              </div>
+              <div class="one-desk-fin-mini-stat">
+                <p class="one-desk-fin-mini-stat-label">⏳ pendente</p>
+                <p class="one-desk-fin-mini-stat-value" id="one-desk-fin-pendente">—</p>
+              </div>
+            </div>
+          </div>
+          <div class="one-fin-list" id="one-desk-fin-list" style="gap:4px;display:flex;flex-direction:column"></div>
+        </div>
+
+      </div><!-- /one-desktop-sidebar -->
+    </div><!-- /one-desktop-layout -->
+
     <!-- Modal: Novo Lançamento -->
     <div class="one-modal-overlay" id="one-modal-lancamento">
       <div class="one-modal">
@@ -2679,7 +2897,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 
   </section><!-- /screen-one -->
 
-  <div id="app" style="display:flex">
+  <div id="app" style="display:none">
 
   <!-- SIDEBAR ───────────────────────────────────────────────── -->
   <aside id="sidebar">
@@ -3638,6 +3856,14 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   }
 
   async function authCheck() {
+    // ── Modo demo local (file://) — sem Supabase ──────────────────
+    if (location.protocol === 'file:') {
+      window.authUser    = { id: 'demo', email: 'demo@local' };
+      window.authProfile = { id: 'demo', nome: 'Letícia Kurtz', grupo: 'familia' };
+      esconderTelaAuth();
+      return;
+    }
+
     // Espera o cliente Supabase estar pronto
     let tentativas = 0;
     while (!window.supa && tentativas < 30) { await new Promise(r => setTimeout(r, 100)); tentativas++; }
@@ -6719,6 +6945,103 @@ function renderOneFinanceiro() {
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', setup) : setup();
 })();
 
+/* ── Renderizações do Desktop ─────────────────────────────────── */
+function renderOneDeskGreeting() {
+  var el = document.getElementById('one-desk-greeting');
+  if (!el) return;
+  var now = new Date();
+  var h = now.getHours();
+  var saud = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  var nome = (window.authProfile && window.authProfile.nome) ? ', ' + window.authProfile.nome.split(' ')[0] : '';
+  var dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  el.textContent = saud + nome + ' · ' + dias[now.getDay()] + ', ' + now.getDate() + ' de ' + meses[now.getMonth()];
+}
+
+function renderOneDeskAgenda() {
+  var wrap = document.getElementById('one-desk-ag-week');
+  if (!wrap) return;
+  var lista = [];
+  try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
+  var today = new Date();
+  var diasSem = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  var html = '';
+  var todayYMD = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(today); d.setDate(today.getDate() + i);
+    var ymd = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    var items = lista.filter(function(c){return c.data===ymd;}).sort(function(a,b){return (a.hora||'').localeCompare(b.hora||'');});
+    var isHoje = ymd === todayYMD;
+    html += '<div class="one-agenda-col">';
+    html += '<div class="one-agenda-day-header">';
+    html += '<div class="one-agenda-day-name">'+diasSem[d.getDay()]+'</div>';
+    html += '<div class="one-agenda-day-num'+(isHoje?' today':'')+'">'+(d.getDate())+'</div>';
+    html += '</div><div class="one-agenda-day-cards">';
+    if (!items.length) {
+      html += '<div class="one-agenda-empty-col"></div>';
+    } else {
+      items.forEach(function(c) {
+        var cls = c.realizado ? 'realizado' : ((c.status||'').toLowerCase() === 'confirmado' ? 'confirmado' : 'pendente');
+        html += '<div class="one-agenda-card-mini '+cls+'">';
+        html += '<div class="one-agenda-card-mini-name">'+(c.nome||c.descricao||'—')+'</div>';
+        if (c.hora) html += '<div class="one-agenda-card-mini-time">'+c.hora+'</div>';
+        html += '</div>';
+      });
+    }
+    html += '</div></div>';
+  }
+  wrap.innerHTML = html;
+}
+
+function renderOneDeskFinanceiro() {
+  var saldoEl = document.getElementById('one-desk-fin-saldo');
+  if (!saldoEl) return;
+  var entEl  = document.getElementById('one-desk-fin-entradas');
+  var saiEl  = document.getElementById('one-desk-fin-saidas');
+  var pendEl = document.getElementById('one-desk-fin-pendente');
+  var listEl = document.getElementById('one-desk-fin-list');
+  var now    = new Date();
+  var mesStr = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var receitas=[]; var despesas=[];
+  try { receitas = JSON.parse(localStorage.getItem('receitas')||'[]'); } catch(e){}
+  try { despesas = JSON.parse(localStorage.getItem('despesas')||'[]'); } catch(e){}
+  var fmt = function(v){ return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  var recMes   = receitas.filter(function(r){return (r.data||'').startsWith(mesStr);});
+  var despMes  = despesas.filter(function(d){return (d.data||'').startsWith(mesStr);});
+  var totalRec = recMes.reduce(function(a,r){return a+(r.valor||0);},0);
+  var totalDesp= despMes.reduce(function(a,d){return a+(d.valor||0);},0);
+  var pendente = recMes.filter(function(r){return r.status==='Pendente';}).reduce(function(a,r){return a+(r.valor||0);},0)
+               + despMes.filter(function(d){return d.status!=='Pago';}).reduce(function(a,d){return a+(d.valor||0);},0);
+  saldoEl.textContent = fmt(totalRec - totalDesp);
+  if (entEl)  entEl.textContent  = fmt(totalRec);
+  if (saiEl)  saiEl.textContent  = fmt(totalDesp);
+  if (pendEl) pendEl.textContent = fmt(pendente);
+  if (listEl) {
+    var todos = receitas.concat(despesas).map(function(item) {
+      return { item: item, isRec: receitas.indexOf(item) >= 0 };
+    }).sort(function(a,b){return (b.item.data||'').localeCompare(a.item.data||'');}).slice(0,5);
+    var html = '';
+    todos.forEach(function(obj) {
+      var i = obj.item; var isRec = obj.isRec;
+      var cor = isRec ? '#2BA574' : '#D95757';
+      var bg  = isRec ? 'rgba(43,165,116,.10)' : 'rgba(217,87,87,.10)';
+      var seta= isRec ? '↑' : '↓';
+      html += '<div class="one-fin-item">';
+      html += '<div class="one-fin-item-icon" style="background:'+bg+';color:'+cor+'">'+seta+'</div>';
+      html += '<div class="one-fin-item-info"><div class="one-fin-item-name">'+(i.nome||i.descricao||'—')+'</div>';
+      html += '<div class="one-fin-item-date">'+(i.data||'')+'</div></div>';
+      html += '<div class="one-fin-item-value '+(isRec?'rec':'desp')+'">'+fmt(i.valor||0)+'</div></div>';
+    });
+    listEl.innerHTML = html || '<p style="font-size:12px;color:#B0A8BC;text-align:center;padding:12px 0">Nenhum lançamento</p>';
+  }
+}
+
+function renderOneDesktop() {
+  renderOneDeskGreeting();
+  renderOneDeskAgenda();
+  renderOneDeskFinanceiro();
+}
+
 /* Atualiza greeting ao entrar na tela */
 (function() {
   var orig = window.go;
@@ -6731,6 +7054,7 @@ function renderOneFinanceiro() {
       renderOneGreeting();
       renderOneAgenda();
       renderOneFinanceiro();
+      renderOneDesktop();
       return;
     }
     /* Saindo para tela funcional — desativa screen-one */
@@ -6739,7 +7063,8 @@ function renderOneFinanceiro() {
   };
   /* Inicializa greeting imediatamente e a cada minuto */
   renderOneGreeting();
-  setInterval(renderOneGreeting, 60000);
+  renderOneDesktop();
+  setInterval(function(){ renderOneGreeting(); renderOneDeskGreeting(); }, 60000);
 })();
 
 /* ── Modais internos ─────────────────────────────────────────── */
@@ -6871,6 +7196,7 @@ function oneToast(msg) {
     renderOneGreeting();
     renderOneAgenda();
     renderOneFinanceiro();
+    renderOneDesktop();
   }
 
   /* Fechar modal clicando no overlay */
