@@ -2480,9 +2480,9 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: 20px 20px 20px 0;
-  gap: 16px;
-  background: #F0EDE6;
+  padding: 16px 0 16px 0; /* sem padding lateral — os cards cuidam disso */
+  gap: 14px;
+  background: #EDEAE3;
 }
 
 /* Coluna central: chat — 2/3 */
@@ -2492,15 +2492,13 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   display: flex;
   flex-direction: column;
   background: #F4F1EA;
-  border-radius: 24px;
-  padding: 32px 36px 24px;
+  border-radius: 0 20px 20px 0;
+  padding: 32px 36px 24px 36px;
   position: relative;
   overflow: hidden;
-  /* relevo sutil na área de chat */
   box-shadow:
-    inset 0 2px 0 rgba(255,255,255,.90),
-    inset 0 -2px 0 rgba(0,0,0,.04),
-    0 2px 8px rgba(0,0,0,.04);
+    inset 0 1px 0 rgba(255,255,255,.80),
+    2px 0 12px rgba(0,0,0,.05);
 }
 
 /* Glow neon lilás atrás da Pinah */
@@ -2532,25 +2530,26 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 }
 
 /* Prompt desktop — grande, 3D intenso */
-.one-desktop-chat .one-prompt-outer { flex-shrink:0; padding:4px 0 0; }
+.one-desktop-chat .one-prompt-outer { flex-shrink:0; padding:8px 0 0; }
 .one-desktop-chat .one-prompt-card {
-  border-radius: 26px;
-  padding: 20px 16px 20px 24px;
-  min-height: 80px;
+  border-radius: 28px;
+  padding: 22px 18px 22px 26px;
+  min-height: 96px;
   align-items: flex-end;
   background: #fff;
   box-shadow:
-    0 24px 56px rgba(0,0,0,.14),
-    0 8px 20px rgba(0,0,0,.09),
-    0 2px 6px rgba(0,0,0,.05),
-    inset 0 2.5px 0 rgba(255,255,255,1),
-    inset 0 -4px 0 rgba(0,0,0,.09),
-    inset 1px 0 0 rgba(255,255,255,.6),
-    inset -1px 0 0 rgba(0,0,0,.03);
+    0 28px 64px rgba(0,0,0,.16),
+    0 10px 24px rgba(0,0,0,.10),
+    0 3px 8px rgba(0,0,0,.06),
+    inset 0 3px 0 rgba(255,255,255,1),
+    inset 0 -5px 0 rgba(0,0,0,.10),
+    inset 2px 0 0 rgba(255,255,255,.5),
+    inset -2px 0 0 rgba(0,0,0,.03);
 }
 .one-desktop-chat .one-prompt-input {
-  font-size: 15px; min-height: 44px; max-height: 200px;
-  line-height: 1.6; overflow-y: auto;
+  font-size: 16px; min-height: 52px; max-height: 220px;
+  line-height: 1.65; overflow-y: auto;
+  padding-top: 4px;
 }
 .one-desktop-chat .one-send-btn {
   width: 52px; height: 52px; border-radius: 50%;
@@ -2569,8 +2568,9 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   max-width: 380px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   overflow: hidden;
+  padding: 0 16px 0 0; /* padding-right: espaço para a sombra dos cards */
 }
 
 /* Card botão gigante — mesmo estilo dos botões do app */
