@@ -2555,13 +2555,18 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   align-items: flex-end;
   background: #fff;
   box-shadow:
-    0 28px 64px rgba(0,0,0,.16),
-    0 10px 24px rgba(0,0,0,.10),
-    0 3px 8px rgba(0,0,0,.06),
+    /* Neon lilac glow */
+    0 0 0 1.5px rgba(155,114,176,0.18),
+    0 0 24px rgba(155,114,176,0.34),
+    0 0 52px rgba(123,92,240,0.16),
+    /* Profundidade 3D */
+    0 28px 64px rgba(0,0,0,.14),
+    0 10px 24px rgba(0,0,0,.09),
+    0 3px 8px rgba(0,0,0,.05),
     inset 0 3px 0 rgba(255,255,255,1),
-    inset 0 -5px 0 rgba(0,0,0,.10),
-    inset 2px 0 0 rgba(255,255,255,.5),
-    inset -2px 0 0 rgba(0,0,0,.03);
+    inset 0 -5px 0 rgba(0,0,0,.08),
+    inset 2px 0 0 rgba(255,255,255,.6),
+    inset -2px 0 0 rgba(110,79,135,0.05);
 }
 .one-desktop-chat .one-prompt-input {
   font-size: 16px; min-height: 52px; max-height: 220px;
@@ -2586,8 +2591,8 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   display: flex;
   flex-direction: column;
   gap: 14px;
-  overflow: hidden;
-  padding: 0 16px 0 0; /* padding-right: espaço para a sombra dos cards */
+  overflow: visible; /* nao cortar o box-shadow neon dos cards */
+  padding: 0 20px 0 4px; /* mais padding direito para o glow respirar */
 }
 
 /* Card botão gigante — relevo 3D + neon lilac glow */
