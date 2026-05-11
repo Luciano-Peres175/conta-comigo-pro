@@ -2556,18 +2556,19 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   align-items: flex-end;
   background: #fff;
   box-shadow:
-    /* Neon lilac glow */
-    0 0 0 1.5px rgba(155,114,176,0.18),
-    0 0 24px rgba(155,114,176,0.34),
-    0 0 52px rgba(123,92,240,0.16),
-    /* Profundidade 3D */
-    0 28px 64px rgba(0,0,0,.14),
-    0 10px 24px rgba(0,0,0,.09),
+    /* Neon #A020F0 no prompt */
+    0 0 0 2px rgba(160,32,240,0.85),
+    0 0 0 5px rgba(160,32,240,0.42),
+    0 0 0 10px rgba(160,32,240,0.16),
+    0 0 0 16px rgba(160,32,240,0.05),
+    0 0 7px 1px rgba(160,32,240,0.55),
+    0 28px 64px rgba(0,0,0,.12),
+    0 10px 24px rgba(0,0,0,.08),
     0 3px 8px rgba(0,0,0,.05),
     inset 0 3px 0 rgba(255,255,255,1),
     inset 0 -5px 0 rgba(0,0,0,.08),
     inset 2px 0 0 rgba(255,255,255,.6),
-    inset -2px 0 0 rgba(110,79,135,0.05);
+    inset -2px 0 0 rgba(160,32,240,0.07);
 }
 .one-desktop-chat .one-prompt-input {
   font-size: 16px; min-height: 52px; max-height: 220px;
@@ -2613,11 +2614,12 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   overflow: hidden;
   transition: transform .15s ease, box-shadow .15s ease;
   box-shadow:
-    /* Anéis neon concentrados — decaem, não espalham */
-    0 0 0 2px rgba(155,114,176,0.82),
-    0 0 0 5px rgba(155,114,176,0.44),
-    0 0 0 9px rgba(155,114,176,0.18),
-    0 0 0 14px rgba(155,114,176,0.06),
+    /* Neon #A020F0 — anéis concentrados, não espalham */
+    0 0 0 2px rgba(160,32,240,0.92),
+    0 0 0 5px rgba(160,32,240,0.52),
+    0 0 0 10px rgba(160,32,240,0.22),
+    0 0 0 16px rgba(160,32,240,0.07),
+    0 0 7px 1px rgba(160,32,240,0.65),
     /* Profundidade */
     0 12px 28px rgba(0,0,0,.10),
     0 4px 10px rgba(0,0,0,.07),
@@ -2625,16 +2627,16 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
     inset 0 2px 0 rgba(255,255,255,1),
     inset 0 -3px 0 rgba(0,0,0,.07),
     inset 1px 0 0 rgba(255,255,255,.75),
-    inset -1px 0 0 rgba(110,79,135,0.06);
+    inset -1px 0 0 rgba(160,32,240,0.08);
 }
 .one-desk-card:hover {
   transform: translateY(-3px);
   box-shadow:
-    /* Anéis amplificados no hover */
-    0 0 0 2px rgba(155,114,176,0.95),
-    0 0 0 6px rgba(155,114,176,0.55),
-    0 0 0 11px rgba(155,114,176,0.24),
-    0 0 0 17px rgba(155,114,176,0.08),
+    0 0 0 2px rgba(160,32,240,1.0),
+    0 0 0 6px rgba(160,32,240,0.65),
+    0 0 0 12px rgba(160,32,240,0.28),
+    0 0 0 20px rgba(160,32,240,0.09),
+    0 0 10px 2px rgba(160,32,240,0.75),
     0 16px 32px rgba(0,0,0,.12),
     0 5px 12px rgba(0,0,0,.08),
     inset 0 2px 0 rgba(255,255,255,1),
@@ -2643,10 +2645,10 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .one-desk-card:active {
   transform: translateY(1px);
   box-shadow:
-    /* Anéis comprimidos no clique */
-    0 0 0 2px rgba(155,114,176,0.70),
-    0 0 0 4px rgba(155,114,176,0.30),
-    0 0 0 7px rgba(155,114,176,0.10),
+    0 0 0 2px rgba(160,32,240,0.75),
+    0 0 0 4px rgba(160,32,240,0.32),
+    0 0 0 7px rgba(160,32,240,0.11),
+    0 0 5px 1px rgba(160,32,240,0.45),
     0 6px 16px rgba(0,0,0,.09),
     0 2px 6px rgba(0,0,0,.07),
     inset 0 2px 0 rgba(255,255,255,.90),
