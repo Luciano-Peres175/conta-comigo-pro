@@ -2455,10 +2455,11 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   #screen-one.active {
     left: var(--sidebar-w);
     right: 0;
+    width: auto; /* fix: sobrescreve width:100% do mobile que causava overflow de 220px */
     max-width: none;
     margin: 0;
     overflow: hidden;
-    background: #F0EDE6; /* fundo levemente mais escuro para os cards contrastarem */
+    background: #F0EDE6;
   }
   body:has(#screen-one.active) .one-topbar       { display:none !important; }
   body:has(#screen-one.active) .one-greeting     { display:none !important; }
