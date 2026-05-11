@@ -2513,18 +2513,21 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
     border-radius: 20px !important;
     background: #F4F1EA !important;
     box-shadow: 0 0 0 2px rgba(160,32,240,0.90) !important;
-    overflow: visible !important; /* permite glow dos botões não ser cortado */
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   /* Nav dentro da mesa aux: botões com mesmo estilo dos cards laterais */
   body:has(#screen-one.active) .sidebar-nav {
     flex: 1 !important;
-    padding: 12px 12px 6px !important; /* padding generoso p/ glow não clipar */
+    /* 14px de padding: glow externo (2px ring + 8px ring = 10px) cabe dentro */
+    padding: 14px 14px 8px !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 8px !important;
     overflow-y: auto !important;
-    overflow-x: visible !important;
+    overflow-x: hidden !important;
   }
   body:has(#screen-one.active) .nav-item {
     border-radius: 16px !important;
