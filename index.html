@@ -2593,8 +2593,9 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   display: flex;
   flex-direction: column;
   gap: 14px;
-  overflow: visible; /* nao cortar o box-shadow neon dos cards */
-  padding: 0 20px 0 4px; /* mais padding direito para o glow respirar */
+  overflow: visible;
+  padding: 0 20px 0 4px;
+  gap: 32px; /* mais espaco para comparar os dois estilos de neon */
 }
 
 /* Card botão gigante — relevo 3D + neon em anéis concentrados */
@@ -2653,6 +2654,44 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
     0 2px 6px rgba(0,0,0,.07),
     inset 0 2px 0 rgba(255,255,255,.90),
     inset 0 -2px 0 rgba(0,0,0,.06);
+}
+
+/* Estilo A: dois aneis limpos — card Agenda */
+.one-desk-card-agenda {
+  box-shadow:
+    0 0 0 2px rgba(160,32,240,0.92),
+    0 0 0 8px rgba(160,32,240,0.22),
+    0 12px 28px rgba(0,0,0,.10),
+    0 4px 10px rgba(0,0,0,.07),
+    inset 0 2px 0 rgba(255,255,255,1),
+    inset 0 -3px 0 rgba(0,0,0,.07);
+}
+.one-desk-card-agenda:hover {
+  box-shadow:
+    0 0 0 2px rgba(160,32,240,1.0),
+    0 0 0 10px rgba(160,32,240,0.30),
+    0 16px 32px rgba(0,0,0,.12),
+    inset 0 2px 0 rgba(255,255,255,1),
+    inset 0 -3px 0 rgba(0,0,0,.08);
+}
+
+/* Estilo B: degrade blur — card Financeiro */
+.one-desk-card-financeiro {
+  box-shadow:
+    0 0 0 2px rgba(160,32,240,0.90),
+    0 0 16px 5px rgba(160,32,240,0.42),
+    0 12px 28px rgba(0,0,0,.10),
+    0 4px 10px rgba(0,0,0,.07),
+    inset 0 2px 0 rgba(255,255,255,1),
+    inset 0 -3px 0 rgba(0,0,0,.07);
+}
+.one-desk-card-financeiro:hover {
+  box-shadow:
+    0 0 0 2px rgba(160,32,240,1.0),
+    0 0 22px 7px rgba(160,32,240,0.55),
+    0 16px 32px rgba(0,0,0,.12),
+    inset 0 2px 0 rgba(255,255,255,1),
+    inset 0 -3px 0 rgba(0,0,0,.08);
 }
 
 /* Agenda week dentro do card desktop */
