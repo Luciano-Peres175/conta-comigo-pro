@@ -2451,48 +2451,10 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 
 /* ── Screen-one: desktop (≥ 900px) ───────────────────────────── */
 @media (min-width: 900px) {
-  /* ── Sidebar redesign: card flutuante neon no ONE desktop ──── */
-  body:has(#screen-one.active) #sidebar {
-    display: flex !important;
-    left: 10px !important;
-    top: 10px !important;
-    height: calc(100vh - 20px) !important;
-    border-radius: 20px !important;
-    border-right: none !important;
-    background: #F4F1EA !important;
-    box-shadow:
-      0 0 0 2px rgba(160,32,240,0.90),
-      0 8px 24px rgba(0,0,0,.07) !important;
-    overflow: hidden !important;
-  }
-  /* Separadores internos do sidebar alinhados com paleta neon */
-  body:has(#screen-one.active) .sidebar-logo {
-    border-bottom-color: rgba(160,32,240,0.14) !important;
-  }
-  body:has(#screen-one.active) .sidebar-profile {
-    border-bottom-color: rgba(160,32,240,0.14) !important;
-  }
-  body:has(#screen-one.active) .sidebar-footer {
-    border-top-color: rgba(160,32,240,0.14) !important;
-    background: transparent !important;
-  }
-  body:has(#screen-one.active) .nav-separator {
-    background: rgba(160,32,240,0.12) !important;
-  }
-  body:has(#screen-one.active) .nav-item:hover {
-    background: rgba(160,32,240,0.08) !important;
-    color: #A020F0 !important;
-  }
-  body:has(#screen-one.active) .nav-item.active {
-    background: rgba(160,32,240,0.10) !important;
-    color: #A020F0 !important;
-  }
-  body:has(#screen-one.active) .nav-item.active::before {
-    background: #A020F0 !important;
-  }
+  body:has(#screen-one.active) #sidebar { display:flex !important; }
   body:has(#screen-one.active) #main    { margin-left:var(--sidebar-w) !important; padding:0 !important; }
   #screen-one.active {
-    left: 230px; /* sidebar: 10px inset + 220px width = 230px */
+    left: var(--sidebar-w);
     right: 0;
     width: auto; /* fix: sobrescreve width:100% do mobile que causava overflow de 220px */
     max-width: none;
