@@ -2480,12 +2480,10 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   border-bottom: none;
   background: #F4F1EA;
   min-height: 64px;
-  /* card arredondado — apenas largura do chat */
-  width: 66.66%;
-  align-self: flex-start;
-  border-radius: 20px;
+  border-radius: 16px;
   box-shadow: 0 0 0 2px rgba(160,32,240,0.90), 0 4px 12px rgba(0,0,0,.06);
-  margin: 12px 0 0 0;
+  margin: 0 0 10px 0;
+  flex-shrink: 0;
 }
 .one-desktop-title {
   font-family:'Playfair Display',Georgia,serif;
@@ -2505,7 +2503,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: 8px 0 16px 0;
+  padding: 14px 0 14px 14px;
   gap: 14px;
   background: #EDEAE3;
 }
@@ -2518,7 +2516,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   flex-direction: column;
   background: #F4F1EA;
   border-radius: 20px;
-  padding: 32px 36px 24px 36px;
+  padding: 20px 28px 24px 28px;
   position: relative;
   overflow: hidden;
   box-shadow:
@@ -2888,31 +2886,29 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
     </div>
 
     <!-- ═══ DESKTOP LAYOUT (visível só em ≥ 900px via CSS/media) ═══ -->
-    <div class="one-desktop-header">
-      <!-- Saudação + título -->
-      <div style="flex-shrink:0">
-        <p class="one-desktop-subtitle" id="one-desk-greeting">—</p>
-        <h2 class="one-desktop-title">Conta Comigo ONE</h2>
-      </div>
-      <!-- Frase rotativa central -->
-      <div class="one-desk-phrase-wrap">
-        <p class="one-desk-phrase" id="one-desk-phrase">Sua mente livre para o que importa.</p>
-      </div>
-      <!-- Botões de ação -->
-      <div style="display:flex;gap:10px;align-items:center;flex-shrink:0">
-        <button class="one-btn-side" onclick="abrirConfigPinah()" title="Configurações">
-          <img src="assets/icons/ic-config.png" alt="config">
-        </button>
-        <button class="one-btn-side" onclick="authSair()" title="Sair">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        </button>
-      </div>
-    </div>
-
     <div class="one-desktop-layout">
 
       <!-- Coluna central: Chat com Pinah -->
       <div class="one-desktop-chat">
+
+        <!-- Header dentro da mesa — alinha automaticamente -->
+        <div class="one-desktop-header">
+          <div style="flex-shrink:0">
+            <p class="one-desktop-subtitle" id="one-desk-greeting">—</p>
+            <h2 class="one-desktop-title">Conta Comigo ONE</h2>
+          </div>
+          <div class="one-desk-phrase-wrap">
+            <p class="one-desk-phrase" id="one-desk-phrase">Sua mente livre para o que importa.</p>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-shrink:0">
+            <button class="one-btn-side" onclick="abrirConfigPinah()" title="Configurações">
+              <img src="assets/icons/ic-config.png" alt="config">
+            </button>
+            <button class="one-btn-side" onclick="authSair()" title="Sair">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
         <div class="one-chat-area">
           <div class="one-pinah-glow-pool"></div>
           <img src="assets/icons/pinah-mascote.png" class="one-pinah-img" alt="Pinah">
