@@ -213,6 +213,15 @@
       text-align: center;
     }
 
+    /* wrapper neutro no mobile — só ativa no desktop ONE via media query */
+    .sidebar-mesa-aux {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
     /* ════════════════════════════════════════════════════════════
        CONTEÚDO PRINCIPAL
     ════════════════════════════════════════════════════════════ */
@@ -2451,12 +2460,11 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 
 /* ── Screen-one: desktop (≥ 900px) ───────────────────────────── */
 @media (min-width: 900px) {
-  body:has(#screen-one.active) #sidebar { display:flex !important; }
   body:has(#screen-one.active) #main    { margin-left:var(--sidebar-w) !important; padding:0 !important; }
   #screen-one.active {
     left: var(--sidebar-w);
     right: 0;
-    width: auto; /* fix: sobrescreve width:100% do mobile que causava overflow de 220px */
+    width: auto;
     max-width: none;
     margin: 0;
     overflow: hidden;
@@ -2468,6 +2476,115 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   body:has(#screen-one.active) .one-dots         { display:none !important; }
   body:has(#screen-one.active) .one-desktop-header-row { display:flex !important; }
   body:has(#screen-one.active) .one-desktop-layout { display:flex !important; }
+
+  /* ── Sidebar redesign: dois cards (avatar + mesa auxiliar) ──── */
+
+  /* Container: transparente, ritmo espelha header-row + layout */
+  body:has(#screen-one.active) #sidebar {
+    display: flex !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    /* padding-top 12px = header-row pt | gap 22px = header-row pb(8) + layout pt(14) | padding-bottom 14px = layout pb */
+    padding: 12px 4px 14px 10px !important;
+    gap: 22px !important;
+    overflow: visible !important;
+  }
+
+  /* Card do avatar: só contorno, alinha com o header */
+  body:has(#screen-one.active) .sidebar-logo    { display: none !important; }
+  body:has(#screen-one.active) .sidebar-profile {
+    flex-shrink: 0 !important;
+    height: 64px !important;
+    border-radius: 20px !important;
+    border: none !important;
+    background: #F4F1EA !important;
+    box-shadow: 0 0 0 2px rgba(160,32,240,0.90) !important;
+    padding: 14px 16px !important;
+    gap: 12px !important;
+    align-items: center !important;
+    margin: 0 !important;
+  }
+
+  /* Mesa auxiliar: contorno, alinha com a mesa principal */
+  body:has(#screen-one.active) .sidebar-mesa-aux {
+    flex: 1 !important;
+    min-height: 0 !important;
+    border-radius: 20px !important;
+    background: #F4F1EA !important;
+    box-shadow: 0 0 0 2px rgba(160,32,240,0.90) !important;
+    overflow: hidden !important;
+  }
+
+  /* Nav dentro da mesa aux: botões suspensos */
+  body:has(#screen-one.active) .sidebar-nav {
+    flex: 1 !important;
+    padding: 10px 8px 6px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 3px !important;
+    overflow-y: auto !important;
+  }
+  body:has(#screen-one.active) .nav-item {
+    border-radius: 13px !important;
+    padding: 9px 12px !important;
+    margin: 0 !important;
+    background: rgba(255,255,255,0.55) !important;
+    color: #6E4F87 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+  }
+  body:has(#screen-one.active) .nav-item:hover {
+    background: rgba(255,255,255,0.85) !important;
+    color: #A020F0 !important;
+  }
+  body:has(#screen-one.active) .nav-item.active {
+    background: #fff !important;
+    color: #A020F0 !important;
+    font-weight: 600 !important;
+    box-shadow: 0 0 0 1.5px rgba(160,32,240,0.45), 0 2px 8px rgba(0,0,0,.06) !important;
+  }
+  body:has(#screen-one.active) .nav-item.active::before { display: none !important; }
+  body:has(#screen-one.active) .nav-separator {
+    background: rgba(160,32,240,0.14) !important;
+    margin: 4px 6px !important;
+  }
+  body:has(#screen-one.active) .nav-label {
+    padding: 4px 8px 2px !important;
+    font-size: 9px !important;
+    color: rgba(160,32,240,0.55) !important;
+  }
+
+  /* Footer da mesa aux: configs separados por linha fina */
+  body:has(#screen-one.active) .sidebar-footer {
+    flex-shrink: 0 !important;
+    padding: 7px 8px 9px !important;
+    border-top: 1px solid rgba(160,32,240,0.15) !important;
+    background: transparent !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    text-align: left !important;
+  }
+  body:has(#screen-one.active) .sidebar-footer > span { display: none !important; }
+  body:has(#screen-one.active) .sidebar-micro-btn {
+    border-radius: 10px !important;
+    background: rgba(255,255,255,0.45) !important;
+    padding: 7px 10px !important;
+    font-size: 11px !important;
+    text-align: left !important;
+    width: 100% !important;
+    border: none !important;
+  }
+  body:has(#screen-one.active) .sidebar-micro-btn:hover {
+    background: rgba(255,255,255,0.85) !important;
+    color: #A020F0 !important;
+  }
+
+  /* ── Header: contorno apenas (igual à mesa) ─────────────────── */
+  body:has(#screen-one.active) .one-desktop-header {
+    box-shadow: 0 0 0 2px rgba(160,32,240,0.90) !important;
+  }
 }
 
 /* ── Desktop: header ─────────────────────────────────────────── */
@@ -3068,49 +3185,51 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
       </div>
     </div>
 
-    <nav class="sidebar-nav">
-      <button class="nav-item active" id="nav-home" onclick="go('home')">
-        <span class="nav-icon"><img src="assets/icons/inicio.png" alt="Início" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Início
-      </button>
-      <button class="nav-item" id="nav-agenda" onclick="go('agenda')">
-        <span class="nav-icon"><img src="assets/icons/agenda.png" alt="Agenda" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Agenda
-      </button>
-      <button class="nav-item" id="nav-receitas" onclick="go('receitas')">
-        <span class="nav-icon"><img src="assets/icons/receita.png" alt="Receitas" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Receitas
-      </button>
-      <button class="nav-item" id="nav-despesas" onclick="go('despesas')">
-        <span class="nav-icon"><img src="assets/icons/despesa.png" alt="Despesas" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Despesas
-      </button>
-      <button class="nav-item" id="nav-historico" onclick="go('historico')">
-        <span class="nav-icon"><img src="assets/icons/historico.png" alt="Histórico" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Histórico
-      </button>
+    <div class="sidebar-mesa-aux">
+      <nav class="sidebar-nav">
+        <button class="nav-item active" id="nav-home" onclick="go('home')">
+          <span class="nav-icon"><img src="assets/icons/inicio.png" alt="Início" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Início
+        </button>
+        <button class="nav-item" id="nav-agenda" onclick="go('agenda')">
+          <span class="nav-icon"><img src="assets/icons/agenda.png" alt="Agenda" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Agenda
+        </button>
+        <button class="nav-item" id="nav-receitas" onclick="go('receitas')">
+          <span class="nav-icon"><img src="assets/icons/receita.png" alt="Receitas" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Receitas
+        </button>
+        <button class="nav-item" id="nav-despesas" onclick="go('despesas')">
+          <span class="nav-icon"><img src="assets/icons/despesa.png" alt="Despesas" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Despesas
+        </button>
+        <button class="nav-item" id="nav-historico" onclick="go('historico')">
+          <span class="nav-icon"><img src="assets/icons/historico.png" alt="Histórico" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Histórico
+        </button>
 
-      <div class="nav-separator"></div>
-      <div class="nav-label">Ferramentas</div>
+        <div class="nav-separator"></div>
+        <div class="nav-label">Ferramentas</div>
 
-      <button class="nav-item" id="nav-cerebro" onclick="go('cerebro')">
-        <span class="nav-icon"><img src="assets/icons/cerebro-ia.png" alt="Segundo Cérebro" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Segundo Cérebro
-      </button>
-      <button class="nav-item" onclick="go('historico')" title="Histórico + Relatório PDF para o contador">
-        <span class="nav-icon"><img src="assets/icons/certificado.png" alt="Rel. Contador" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Rel. Contador
-      </button>
+        <button class="nav-item" id="nav-cerebro" onclick="go('cerebro')">
+          <span class="nav-icon"><img src="assets/icons/cerebro-ia.png" alt="Segundo Cérebro" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Segundo Cérebro
+        </button>
+        <button class="nav-item" onclick="go('historico')" title="Histórico + Relatório PDF para o contador">
+          <span class="nav-icon"><img src="assets/icons/certificado.png" alt="Rel. Contador" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Rel. Contador
+        </button>
 
-      <div class="nav-separator"></div>
-      <div class="nav-label">Em Breve</div>
+        <div class="nav-separator"></div>
+        <div class="nav-label">Em Breve</div>
 
-      <button class="nav-item" onclick="abrirModalEmBreve('WhatsApp')">
-        <span class="nav-icon"><img src="assets/icons/whatsapp.png" alt="WhatsApp" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> WhatsApp
-        <span class="nav-badge">Em breve</span>
-      </button>
-    </nav>
+        <button class="nav-item" onclick="abrirModalEmBreve('WhatsApp')">
+          <span class="nav-icon"><img src="assets/icons/whatsapp.png" alt="WhatsApp" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> WhatsApp
+          <span class="nav-badge">Em breve</span>
+        </button>
+      </nav>
 
-    <div class="sidebar-footer">
-      <span style="color:var(--lilas-light);font-size:11px">v1.0 · <span class="user-nome-display"></span></span>
-      <button class="sidebar-micro-btn" onclick="abrirConfig()"><i data-lucide="settings"></i> Configurações</button>
-      <button class="sidebar-micro-btn" onclick="abrirStory()"><i data-lucide="sparkles"></i> Nossa história</button>
-      <button class="sidebar-micro-btn" id="btn-resetar-demo" onclick="resetarDados()">↺ Resetar demo</button>
-      <button class="sidebar-micro-btn" onclick="authSair()" style="color:#A82424"><i data-lucide="log-out"></i> Sair</button>
-    </div>
+      <div class="sidebar-footer">
+        <span style="color:var(--lilas-light);font-size:11px">v1.0 · <span class="user-nome-display"></span></span>
+        <button class="sidebar-micro-btn" onclick="abrirConfig()"><i data-lucide="settings"></i> Configurações</button>
+        <button class="sidebar-micro-btn" onclick="abrirStory()"><i data-lucide="sparkles"></i> Nossa história</button>
+        <button class="sidebar-micro-btn" id="btn-resetar-demo" onclick="resetarDados()">↺ Resetar demo</button>
+        <button class="sidebar-micro-btn" onclick="authSair()" style="color:#A82424"><i data-lucide="log-out"></i> Sair</button>
+      </div>
+    </div><!-- /sidebar-mesa-aux -->
   </aside>
 
   <!-- MAIN ──────────────────────────────────────────────────── -->
