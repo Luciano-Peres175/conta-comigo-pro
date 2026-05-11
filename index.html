@@ -2341,14 +2341,15 @@
 .one-prompt-outer{padding:8px 0 env(safe-area-inset-bottom,16px);position:relative;flex-shrink:0;}
 .one-prompt-outer::before{content:'';position:absolute;bottom:env(safe-area-inset-bottom,16px);left:50%;transform:translateX(-50%);width:65%;height:22px;border-radius:50%;background:radial-gradient(ellipse,rgba(123,92,240,.18) 0%,transparent 70%);filter:blur(6px);pointer-events:none;}
 .one-prompt-card{background:#fff;border-radius:26px;
-  border-top:1.5px solid rgba(255,255,255,0.92);border-left:1.5px solid rgba(255,255,255,0.85);border-right:1.5px solid rgba(110,79,135,0.20);border-bottom:1.5px solid rgba(110,79,135,0.24);
+  border:none;
   padding:14px 14px 14px 18px;display:flex;align-items:center;gap:10px;position:relative;
   box-shadow:
-    0 0 0 1.5px rgba(155,114,176,0.16),
-    0 0 20px rgba(155,114,176,0.30),
-    0 0 44px rgba(123,92,240,0.14),
-    0 10px 32px rgba(0,0,0,.09),0 3px 10px rgba(0,0,0,.05),
-    inset 0 1.5px 0 rgba(255,255,255,.98),inset 0 -1px 0 rgba(0,0,0,.03);}
+    0 0 0 2px rgba(160,32,240,0.90),
+    0 0 0 8px rgba(160,32,240,0.20),
+    0 10px 28px rgba(0,0,0,.09),
+    0 3px 8px rgba(0,0,0,.05),
+    inset 0 1.5px 0 rgba(255,255,255,.98),
+    inset 0 -1px 0 rgba(0,0,0,.03);}
 .one-prompt-input{flex:1;font-size:15px;color:#2D2D2D;font-family:system-ui,-apple-system,sans-serif;background:transparent;border:none;outline:none;resize:none;padding:0;line-height:1.45;max-height:110px;overflow-y:auto;}
 .one-prompt-input::placeholder{color:#B8B0C4;font-size:15px;}
 .one-prompt-btn{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:none;border:none;cursor:pointer;padding:0;}
