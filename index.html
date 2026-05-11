@@ -2521,13 +2521,17 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   /* Nav dentro da mesa aux: botões com mesmo estilo dos cards laterais */
   body:has(#screen-one.active) .sidebar-nav {
     flex: 1 !important;
-    /* 14px de padding: glow externo (2px ring + 8px ring = 10px) cabe dentro */
     padding: 14px 14px 8px !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 8px !important;
+    gap: 14px !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
+  }
+  /* Ícones menores dentro dos botões do menu desktop */
+  body:has(#screen-one.active) .nav-icon img {
+    width: 22px !important;
+    height: 22px !important;
   }
   body:has(#screen-one.active) .nav-item {
     border-radius: 16px !important;
