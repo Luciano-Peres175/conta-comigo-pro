@@ -2547,8 +2547,8 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   font-size: clamp(15px,1.4vw,19px); max-width: 320px; margin-top: 14px;
 }
 
-/* Prompt desktop — grande, 3D intenso */
-.one-desktop-chat .one-prompt-outer { flex-shrink:0; padding:8px 0 0; }
+/* Prompt desktop — estreito, alinhado com o título */
+.one-desktop-chat .one-prompt-outer { flex-shrink:0; padding:8px 52px 0; }
 .one-desktop-chat .one-prompt-card {
   border-radius: 28px;
   padding: 22px 18px 22px 26px;
@@ -2596,7 +2596,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   padding: 0 20px 0 4px; /* mais padding direito para o glow respirar */
 }
 
-/* Card botão gigante — relevo 3D + neon lilac glow */
+/* Card botão gigante — relevo 3D + neon em anéis concentrados */
 .one-desk-card {
   flex: 1;
   background: #fff;
@@ -2613,15 +2613,15 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   overflow: hidden;
   transition: transform .15s ease, box-shadow .15s ease;
   box-shadow:
-    /* Neon lilac — iluminado por trás */
-    0 0 0 1.5px rgba(155,114,176,0.20),
-    0 0 22px rgba(155,114,176,0.38),
-    0 0 48px rgba(123,92,240,0.18),
-    /* Profundidade direcional */
-    0 20px 48px rgba(0,0,0,.12),
-    0 8px 18px rgba(0,0,0,.07),
-    0 2px 5px rgba(0,0,0,.05),
-    /* Inset 3D highlights */
+    /* Anéis neon concentrados — decaem, não espalham */
+    0 0 0 2px rgba(155,114,176,0.82),
+    0 0 0 5px rgba(155,114,176,0.44),
+    0 0 0 9px rgba(155,114,176,0.18),
+    0 0 0 14px rgba(155,114,176,0.06),
+    /* Profundidade */
+    0 12px 28px rgba(0,0,0,.10),
+    0 4px 10px rgba(0,0,0,.07),
+    /* Inset 3D */
     inset 0 2px 0 rgba(255,255,255,1),
     inset 0 -3px 0 rgba(0,0,0,.07),
     inset 1px 0 0 rgba(255,255,255,.75),
@@ -2630,27 +2630,25 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .one-desk-card:hover {
   transform: translateY(-3px);
   box-shadow:
-    /* Neon amplificado no hover */
-    0 0 0 1.5px rgba(155,114,176,0.32),
-    0 0 34px rgba(155,114,176,0.55),
-    0 0 70px rgba(123,92,240,0.28),
-    /* Profundidade */
-    0 28px 58px rgba(0,0,0,.15),
-    0 10px 22px rgba(0,0,0,.09),
-    0 3px 7px rgba(0,0,0,.05),
+    /* Anéis amplificados no hover */
+    0 0 0 2px rgba(155,114,176,0.95),
+    0 0 0 6px rgba(155,114,176,0.55),
+    0 0 0 11px rgba(155,114,176,0.24),
+    0 0 0 17px rgba(155,114,176,0.08),
+    0 16px 32px rgba(0,0,0,.12),
+    0 5px 12px rgba(0,0,0,.08),
     inset 0 2px 0 rgba(255,255,255,1),
     inset 0 -3px 0 rgba(0,0,0,.08);
 }
 .one-desk-card:active {
   transform: translateY(1px);
   box-shadow:
-    /* Neon comprimido no clique */
-    0 0 0 1.5px rgba(155,114,176,0.28),
-    0 0 14px rgba(155,114,176,0.40),
-    0 0 30px rgba(123,92,240,0.18),
-    /* Comprimido */
-    0 8px 20px rgba(0,0,0,.09),
-    0 3px 8px rgba(0,0,0,.07),
+    /* Anéis comprimidos no clique */
+    0 0 0 2px rgba(155,114,176,0.70),
+    0 0 0 4px rgba(155,114,176,0.30),
+    0 0 0 7px rgba(155,114,176,0.10),
+    0 6px 16px rgba(0,0,0,.09),
+    0 2px 6px rgba(0,0,0,.07),
     inset 0 2px 0 rgba(255,255,255,.90),
     inset 0 -2px 0 rgba(0,0,0,.06);
 }
