@@ -61,6 +61,16 @@
       --shadow-soft:  0 8px 24px rgba(155,114,176,0.18), 0 2px 6px rgba(155,114,176,0.10);
       --shadow-deep:  0 14px 32px rgba(155,114,176,0.28), 0 4px 10px rgba(155,114,176,0.14);
       --shadow-btn:   0 4px 14px rgba(155,114,176,0.22), 0 1px 3px rgba(155,114,176,0.10);
+
+      /* Neon lilac glow — botões iluminados por trás */
+      --neon-glow:
+        0 0 0 1.5px rgba(155,114,176,0.20),
+        0 0 22px rgba(155,114,176,0.38),
+        0 0 48px rgba(123,92,240,0.18);
+      --neon-glow-hover:
+        0 0 0 1.5px rgba(155,114,176,0.30),
+        0 0 32px rgba(155,114,176,0.52),
+        0 0 68px rgba(123,92,240,0.26);
     }
 
     html, body {
@@ -2330,8 +2340,15 @@
 /* ── Prompt card ─────────────────────────────────────────── */
 .one-prompt-outer{padding:8px 0 env(safe-area-inset-bottom,16px);position:relative;flex-shrink:0;}
 .one-prompt-outer::before{content:'';position:absolute;bottom:env(safe-area-inset-bottom,16px);left:50%;transform:translateX(-50%);width:65%;height:22px;border-radius:50%;background:radial-gradient(ellipse,rgba(123,92,240,.18) 0%,transparent 70%);filter:blur(6px);pointer-events:none;}
-.one-prompt-card{background:#fff;border-radius:26px;border:0.5px solid rgba(0,0,0,.06);padding:14px 14px 14px 18px;display:flex;align-items:center;gap:10px;position:relative;
-  box-shadow:0 10px 32px rgba(0,0,0,.10),0 3px 10px rgba(0,0,0,.06),inset 0 1.5px 0 rgba(255,255,255,.98),inset 0 -1px 0 rgba(0,0,0,.03);}
+.one-prompt-card{background:#fff;border-radius:26px;
+  border-top:1.5px solid rgba(255,255,255,0.92);border-left:1.5px solid rgba(255,255,255,0.85);border-right:1.5px solid rgba(110,79,135,0.20);border-bottom:1.5px solid rgba(110,79,135,0.24);
+  padding:14px 14px 14px 18px;display:flex;align-items:center;gap:10px;position:relative;
+  box-shadow:
+    0 0 0 1.5px rgba(155,114,176,0.16),
+    0 0 20px rgba(155,114,176,0.30),
+    0 0 44px rgba(123,92,240,0.14),
+    0 10px 32px rgba(0,0,0,.09),0 3px 10px rgba(0,0,0,.05),
+    inset 0 1.5px 0 rgba(255,255,255,.98),inset 0 -1px 0 rgba(0,0,0,.03);}
 .one-prompt-input{flex:1;font-size:15px;color:#2D2D2D;font-family:system-ui,-apple-system,sans-serif;background:transparent;border:none;outline:none;resize:none;padding:0;line-height:1.45;max-height:110px;overflow-y:auto;}
 .one-prompt-input::placeholder{color:#B8B0C4;font-size:15px;}
 .one-prompt-btn{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:none;border:none;cursor:pointer;padding:0;}
@@ -2573,32 +2590,46 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   padding: 0 16px 0 0; /* padding-right: espaço para a sombra dos cards */
 }
 
-/* Card botão gigante — mesmo estilo dos botões do app */
+/* Card botão gigante — relevo 3D + neon lilac glow */
 .one-desk-card {
   flex: 1;
   background: #fff;
   border-radius: 24px;
-  border: 0.5px solid rgba(255,255,255,.80);
+  border-top:    1.5px solid rgba(255,255,255,0.92);
+  border-left:   1.5px solid rgba(255,255,255,0.85);
+  border-right:  1.5px solid rgba(110,79,135,0.22);
+  border-bottom: 1.5px solid rgba(110,79,135,0.28);
   padding: 20px 18px 16px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  transition: transform .12s ease, box-shadow .12s ease;
+  transition: transform .15s ease, box-shadow .15s ease;
   box-shadow:
-    0 20px 48px rgba(0,0,0,.13),
-    0 8px 18px rgba(0,0,0,.08),
+    /* Neon lilac — iluminado por trás */
+    0 0 0 1.5px rgba(155,114,176,0.20),
+    0 0 22px rgba(155,114,176,0.38),
+    0 0 48px rgba(123,92,240,0.18),
+    /* Profundidade direcional */
+    0 20px 48px rgba(0,0,0,.12),
+    0 8px 18px rgba(0,0,0,.07),
     0 2px 5px rgba(0,0,0,.05),
+    /* Inset 3D highlights */
     inset 0 2px 0 rgba(255,255,255,1),
-    inset 0 -3px 0 rgba(0,0,0,.08),
-    inset 1px 0 0 rgba(255,255,255,.7),
-    inset -1px 0 0 rgba(0,0,0,.03);
+    inset 0 -3px 0 rgba(0,0,0,.07),
+    inset 1px 0 0 rgba(255,255,255,.75),
+    inset -1px 0 0 rgba(110,79,135,0.06);
 }
 .one-desk-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow:
-    0 26px 56px rgba(0,0,0,.15),
+    /* Neon amplificado no hover */
+    0 0 0 1.5px rgba(155,114,176,0.32),
+    0 0 34px rgba(155,114,176,0.55),
+    0 0 70px rgba(123,92,240,0.28),
+    /* Profundidade */
+    0 28px 58px rgba(0,0,0,.15),
     0 10px 22px rgba(0,0,0,.09),
     0 3px 7px rgba(0,0,0,.05),
     inset 0 2px 0 rgba(255,255,255,1),
@@ -2607,8 +2638,13 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .one-desk-card:active {
   transform: translateY(1px);
   box-shadow:
-    0 10px 28px rgba(0,0,0,.10),
-    0 4px 10px rgba(0,0,0,.07),
+    /* Neon comprimido no clique */
+    0 0 0 1.5px rgba(155,114,176,0.28),
+    0 0 14px rgba(155,114,176,0.40),
+    0 0 30px rgba(123,92,240,0.18),
+    /* Comprimido */
+    0 8px 20px rgba(0,0,0,.09),
+    0 3px 8px rgba(0,0,0,.07),
     inset 0 2px 0 rgba(255,255,255,.90),
     inset 0 -2px 0 rgba(0,0,0,.06);
 }
