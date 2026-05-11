@@ -2475,11 +2475,17 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   display: none;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 24px 14px 36px;
+  padding: 16px 24px 16px 36px;
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(123,92,240,.10);
+  border-bottom: none;
   background: #F4F1EA;
-  min-height: 68px;
+  min-height: 64px;
+  /* card arredondado — apenas largura do chat */
+  width: 66.66%;
+  align-self: flex-start;
+  border-radius: 20px;
+  box-shadow: 0 0 0 2px rgba(160,32,240,0.90), 0 4px 12px rgba(0,0,0,.06);
+  margin: 12px 0 0 0;
 }
 .one-desktop-title {
   font-family:'Playfair Display',Georgia,serif;
@@ -2499,7 +2505,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: 16px 0 16px 0; /* sem padding lateral — os cards cuidam disso */
+  padding: 8px 0 16px 0;
   gap: 14px;
   background: #EDEAE3;
 }
@@ -2511,13 +2517,13 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   display: flex;
   flex-direction: column;
   background: #F4F1EA;
-  border-radius: 0 20px 20px 0;
+  border-radius: 20px;
   padding: 32px 36px 24px 36px;
   position: relative;
   overflow: hidden;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.80),
-    2px 0 12px rgba(0,0,0,.05);
+    0 0 0 2px rgba(160,32,240,0.90),
+    0 8px 24px rgba(0,0,0,.07);
 }
 
 /* Glow neon lilás atrás da Pinah */
