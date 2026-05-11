@@ -2548,7 +2548,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 }
 
 /* Prompt desktop — estreito, alinhado com o título */
-.one-desktop-chat .one-prompt-outer { flex-shrink:0; padding:8px 52px 0; }
+.one-desktop-chat .one-prompt-outer { flex-shrink:0; padding:8px 40px 0; }
 .one-desktop-chat .one-prompt-card {
   border-radius: 28px;
   padding: 22px 18px 22px 26px;
@@ -2556,17 +2556,12 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   align-items: flex-end;
   background: #fff;
   box-shadow:
-    /* Neon #A020F0 no prompt */
-    0 0 0 2px rgba(160,32,240,0.85),
-    0 0 0 5px rgba(160,32,240,0.42),
-    0 0 0 10px rgba(160,32,240,0.16),
-    0 0 0 16px rgba(160,32,240,0.05),
-    0 0 7px 1px rgba(160,32,240,0.55),
-    0 28px 64px rgba(0,0,0,.12),
-    0 10px 24px rgba(0,0,0,.08),
-    0 3px 8px rgba(0,0,0,.05),
+    0 0 0 2px rgba(160,32,240,0.88),
+    0 0 16px 5px rgba(160,32,240,0.38),
+    0 20px 48px rgba(0,0,0,.11),
+    0 6px 16px rgba(0,0,0,.07),
     inset 0 3px 0 rgba(255,255,255,1),
-    inset 0 -5px 0 rgba(0,0,0,.08),
+    inset 0 -5px 0 rgba(0,0,0,.07),
     inset 2px 0 0 rgba(255,255,255,.6),
     inset -2px 0 0 rgba(160,32,240,0.07);
 }
@@ -2615,16 +2610,10 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   overflow: hidden;
   transition: transform .15s ease, box-shadow .15s ease;
   box-shadow:
-    /* Neon #A020F0 — anéis concentrados, não espalham */
-    0 0 0 2px rgba(160,32,240,0.92),
-    0 0 0 5px rgba(160,32,240,0.52),
-    0 0 0 10px rgba(160,32,240,0.22),
-    0 0 0 16px rgba(160,32,240,0.07),
-    0 0 7px 1px rgba(160,32,240,0.65),
-    /* Profundidade */
+    0 0 0 2px rgba(160,32,240,0.90),
+    0 0 16px 5px rgba(160,32,240,0.42),
     0 12px 28px rgba(0,0,0,.10),
     0 4px 10px rgba(0,0,0,.07),
-    /* Inset 3D */
     inset 0 2px 0 rgba(255,255,255,1),
     inset 0 -3px 0 rgba(0,0,0,.07),
     inset 1px 0 0 rgba(255,255,255,.75),
@@ -2634,10 +2623,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   transform: translateY(-3px);
   box-shadow:
     0 0 0 2px rgba(160,32,240,1.0),
-    0 0 0 6px rgba(160,32,240,0.65),
-    0 0 0 12px rgba(160,32,240,0.28),
-    0 0 0 20px rgba(160,32,240,0.09),
-    0 0 10px 2px rgba(160,32,240,0.75),
+    0 0 22px 7px rgba(160,32,240,0.55),
     0 16px 32px rgba(0,0,0,.12),
     0 5px 12px rgba(0,0,0,.08),
     inset 0 2px 0 rgba(255,255,255,1),
@@ -2647,51 +2633,10 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   transform: translateY(1px);
   box-shadow:
     0 0 0 2px rgba(160,32,240,0.75),
-    0 0 0 4px rgba(160,32,240,0.32),
-    0 0 0 7px rgba(160,32,240,0.11),
-    0 0 5px 1px rgba(160,32,240,0.45),
+    0 0 10px 3px rgba(160,32,240,0.30),
     0 6px 16px rgba(0,0,0,.09),
-    0 2px 6px rgba(0,0,0,.07),
     inset 0 2px 0 rgba(255,255,255,.90),
     inset 0 -2px 0 rgba(0,0,0,.06);
-}
-
-/* Estilo A: dois aneis limpos — card Agenda */
-.one-desk-card-agenda {
-  box-shadow:
-    0 0 0 2px rgba(160,32,240,0.92),
-    0 0 0 8px rgba(160,32,240,0.22),
-    0 12px 28px rgba(0,0,0,.10),
-    0 4px 10px rgba(0,0,0,.07),
-    inset 0 2px 0 rgba(255,255,255,1),
-    inset 0 -3px 0 rgba(0,0,0,.07);
-}
-.one-desk-card-agenda:hover {
-  box-shadow:
-    0 0 0 2px rgba(160,32,240,1.0),
-    0 0 0 10px rgba(160,32,240,0.30),
-    0 16px 32px rgba(0,0,0,.12),
-    inset 0 2px 0 rgba(255,255,255,1),
-    inset 0 -3px 0 rgba(0,0,0,.08);
-}
-
-/* Estilo B: degrade blur — card Financeiro */
-.one-desk-card-financeiro {
-  box-shadow:
-    0 0 0 2px rgba(160,32,240,0.90),
-    0 0 16px 5px rgba(160,32,240,0.42),
-    0 12px 28px rgba(0,0,0,.10),
-    0 4px 10px rgba(0,0,0,.07),
-    inset 0 2px 0 rgba(255,255,255,1),
-    inset 0 -3px 0 rgba(0,0,0,.07);
-}
-.one-desk-card-financeiro:hover {
-  box-shadow:
-    0 0 0 2px rgba(160,32,240,1.0),
-    0 0 22px 7px rgba(160,32,240,0.55),
-    0 16px 32px rgba(0,0,0,.12),
-    inset 0 2px 0 rgba(255,255,255,1),
-    inset 0 -3px 0 rgba(0,0,0,.08);
 }
 
 /* Agenda week dentro do card desktop */
@@ -3003,6 +2948,16 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
           </div>
           <div class="one-agenda-week" id="one-desk-ag-week" style="flex:1;min-height:0"></div>
           <button onclick="event.stopPropagation();oneAbrirCompromisso()" style="width:100%;margin-top:10px;background:transparent;border:1.5px dashed rgba(123,92,240,.30);border-radius:10px;padding:7px;font-size:11px;color:#7B5CF0;font-weight:600;cursor:pointer;font-family:system-ui;flex-shrink:0">+ Novo compromisso</button>
+        </div>
+
+        <!-- Card Tarefas (clicável → abre módulo) -->
+        <div class="one-desk-card one-desk-card-tarefas" onclick="go('tarefas')" title="Abrir Tarefas">
+          <div class="one-desk-card-header">
+            <span class="one-desk-card-title">✅ Tarefas</span>
+            <button class="one-desk-card-btn" onclick="event.stopPropagation();go('tarefas')">Ver tudo →</button>
+          </div>
+          <div id="one-desk-tarefas-list" style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:6px;padding-top:4px"></div>
+          <button onclick="event.stopPropagation();" style="width:100%;margin-top:10px;background:transparent;border:1.5px dashed rgba(160,32,240,.30);border-radius:10px;padding:7px;font-size:11px;color:#A020F0;font-weight:600;cursor:pointer;font-family:system-ui;flex-shrink:0">➕ Nova tarefa</button>
         </div>
 
         <!-- Card Financeiro (clicável → abre módulo) -->
@@ -7211,9 +7166,31 @@ function renderOneDeskFinanceiro() {
   }
 }
 
+function renderOneDeskTarefas() {
+  var el = document.getElementById('one-desk-tarefas-list');
+  if (!el) return;
+  var tarefas = [];
+  try { tarefas = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  var pendentes = tarefas.filter(function(t){ return !t.concluida; }).slice(0,5);
+  if (!pendentes.length) {
+    el.innerHTML = '<p style="font-size:12px;color:#B0A8BC;text-align:center;padding:12px 0">Nenhuma tarefa pendente 🎉</p>';
+    return;
+  }
+  var html = '';
+  pendentes.forEach(function(t) {
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid rgba(160,32,240,0.08)">';
+    html += '<div style="width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(160,32,240,0.55);flex-shrink:0"></div>';
+    html += '<span style="font-size:12px;color:#2D2D2D;font-family:system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">'+(t.nome||t.titulo||t.descricao||'Tarefa')+'</span>';
+    if (t.prazo) html += '<span style="font-size:10px;color:#A8A0B8;flex-shrink:0">'+t.prazo+'</span>';
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
 function renderOneDesktop() {
   renderOneDeskGreeting();
   renderOneDeskAgenda();
+  renderOneDeskTarefas();
   renderOneDeskFinanceiro();
 }
 
