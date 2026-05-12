@@ -2840,6 +2840,174 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 #one-desk-fin-list::-webkit-scrollbar { display:none; }
 #one-desk-fin-list .one-fin-item { border-radius: 10px; }
 
+/* ════════════════════════════════════════════════════════════
+   SWAP de painéis (Chat ↔ Agenda ↔ ...)
+════════════════════════════════════════════════════════════ */
+.one-desktop-main {
+  flex: 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.one-desktop-main > [data-panel][hidden] { display: none !important; }
+.one-desktop-main > .one-desktop-chat,
+.one-desktop-main > .one-desktop-agenda {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Variante Agenda no centro — mesma linguagem visual da Chat */
+.one-desktop-agenda {
+  background: #F4F1EA;
+  border-radius: 20px;
+  padding: 18px 24px 22px 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow:
+    0 0 0 2px rgba(160,32,240,0.90),
+    0 8px 24px rgba(0,0,0,.07);
+}
+.one-ag-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+.one-ag-mes-label {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: #2D2D2D;
+  text-transform: capitalize;
+}
+.one-ag-nav-btn {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #7B5CF0;
+  font-weight: 500;
+  box-shadow:
+    0 0 0 1.5px rgba(160,32,240,0.70),
+    0 0 0 4px rgba(160,32,240,0.14),
+    0 3px 8px rgba(0,0,0,.06);
+  transition: transform .14s ease;
+}
+.one-ag-nav-btn:hover { transform: translateY(-1px); }
+.one-ag-nav-btn:active { transform: translateY(1px); }
+.one-ag-week-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  overflow: hidden;
+}
+.one-ag-day-col {
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  box-shadow:
+    0 0 0 1.5px rgba(160,32,240,0.55),
+    0 0 0 4px rgba(160,32,240,0.10),
+    0 4px 10px rgba(0,0,0,.06);
+}
+.one-ag-day-col.today {
+  box-shadow:
+    0 0 0 1.5px rgba(123,92,240,1.0),
+    0 0 0 5px rgba(123,92,240,0.20),
+    0 6px 14px rgba(0,0,0,.08);
+}
+.one-ag-day-header {
+  text-align: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(160,32,240,0.10);
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+.one-ag-day-name { font-size: 9.5px; color: #8A8480; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.one-ag-day-num { font-size: 16px; font-weight: 600; color: #2D2D2D; line-height: 1; margin-top: 2px; font-family: system-ui; }
+.one-ag-day-col.today .one-ag-day-name { color: #7B5CF0; }
+.one-ag-day-col.today .one-ag-day-num { color: #7B5CF0; }
+.one-ag-day-events {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 2px;
+}
+.one-ag-day-events::-webkit-scrollbar { display: none; }
+.one-ag-event {
+  background: #F0E8F8;
+  border-left: 2px solid #7B5CF0;
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+  min-width: 0;
+}
+.one-ag-event-hora { font-size: 9px; font-weight: 700; color: #7B5CF0; line-height: 1.1; }
+.one-ag-event-nome { font-size: 10px; color: #2D2D2D; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
+.one-ag-day-livre { font-size: 9px; color: #B0AEA8; text-align: center; padding: 4px; font-style: italic; }
+.one-ag-actions {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.one-ag-novo-btn {
+  background: linear-gradient(180deg, #F4EBFA 0%, #EBDDF5 100%);
+  border: 1px solid #7B5CF0;
+  border-radius: 14px;
+  padding: 10px 22px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6E4F87;
+  cursor: pointer;
+  font-family: system-ui;
+  box-shadow:
+    0 0 0 4px rgba(123,92,240,0.14),
+    0 6px 16px rgba(123,92,240,0.20);
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+.one-ag-novo-btn:hover { transform: translateY(-2px); box-shadow: 0 0 0 4px rgba(123,92,240,0.18), 0 10px 22px rgba(123,92,240,0.26); }
+
+/* Card Pinah compacto (versão lateral quando outro painel tá no centro) */
+.one-desk-card.one-desk-card-chat { cursor: pointer; }
+.one-desk-card-chat-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 10px 0;
+}
+.one-desk-card-chat-glow {
+  position: absolute;
+  width: 80%;
+  aspect-ratio: 1;
+  max-width: 140px;
+  background: radial-gradient(circle, rgba(123,92,240,0.45) 0%, rgba(123,92,240,0.15) 40%, transparent 70%);
+  filter: blur(2px);
+}
+.one-desk-card-chat-body img {
+  width: 70%;
+  max-width: 100px;
+  position: relative;
+  z-index: 1;
+}
+
 </style>
 </head>
 <body>
@@ -3075,8 +3243,11 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 
     <div class="one-desktop-layout">
 
-      <!-- Coluna central: Chat com Pinah -->
-      <div class="one-desktop-chat">
+      <!-- Coluna central: wrapper com variantes (swap entre Chat / Agenda / Financeiro / Tarefas) -->
+      <div class="one-desktop-main">
+
+      <!-- Variante Chat (default ativa) -->
+      <div class="one-desktop-chat" data-panel="chat">
         <div class="one-chat-area">
           <div class="one-pinah-glow-pool"></div>
           <img src="assets/icons/pinah-mascote.png" class="one-pinah-img" alt="Pinah">
@@ -3108,14 +3279,41 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
         </div>
       </div>
 
+      <!-- Variante Agenda (escondida por default — aparece via swapToCenter('agenda')) -->
+      <div class="one-desktop-agenda" data-panel="agenda" hidden>
+        <div class="one-ag-header">
+          <button class="one-ag-nav-btn" onclick="oneAgNavegar(-1)" title="Semana anterior">‹</button>
+          <span class="one-ag-mes-label" id="one-ag-mes-label">—</span>
+          <button class="one-ag-nav-btn" onclick="oneAgNavegar(1)" title="Próxima semana">›</button>
+        </div>
+        <div class="one-ag-week-grid" id="one-ag-week-grid"></div>
+        <div class="one-ag-actions">
+          <button class="one-ag-novo-btn" onclick="oneAbrirCompromisso()">+ Novo Compromisso</button>
+        </div>
+      </div>
+
+      </div><!-- /one-desktop-main -->
+
       <!-- Coluna direita: cards flutuantes -->
       <div class="one-desktop-sidebar">
 
-        <!-- Card Agenda (clicável → abre módulo) -->
-        <div class="one-desk-card one-desk-card-agenda" onclick="go('agenda')" title="Abrir Agenda completa">
+        <!-- Card Pinah compacto (escondido por default — aparece quando Chat sai do centro) -->
+        <div class="one-desk-card one-desk-card-chat" data-panel="chat" onclick="swapToCenter('chat')" hidden title="Voltar pra Pinah">
+          <div class="one-desk-card-header">
+            <span class="one-desk-card-title">🐾 Chat</span>
+            <span class="one-desk-card-btn">↺ voltar</span>
+          </div>
+          <div class="one-desk-card-chat-body">
+            <div class="one-desk-card-chat-glow"></div>
+            <img src="assets/icons/pinah-mascote.png" alt="Pinah">
+          </div>
+        </div>
+
+        <!-- Card Agenda (clicável → swap pro centro) -->
+        <div class="one-desk-card one-desk-card-agenda" data-panel="agenda" onclick="swapToCenter('agenda')" title="Abrir Agenda no centro">
           <div class="one-desk-card-header">
             <span class="one-desk-card-title">📅 Agenda da semana</span>
-            <button class="one-desk-card-btn" onclick="event.stopPropagation();go('agenda')">Ver tudo →</button>
+            <button class="one-desk-card-btn" onclick="event.stopPropagation();swapToCenter('agenda')">Abrir →</button>
           </div>
           <div class="one-agenda-week" id="one-desk-ag-week" style="flex:1;min-height:0"></div>
           <button onclick="event.stopPropagation();oneAbrirCompromisso()" style="width:100%;margin-top:10px;background:transparent;border:1.5px dashed rgba(123,92,240,.30);border-radius:10px;padding:7px;font-size:11px;color:#7B5CF0;font-weight:600;cursor:pointer;font-family:system-ui;flex-shrink:0">+ Novo compromisso</button>
@@ -7050,6 +7248,102 @@ function oneEnviar() {
 }
 function oneAnexar() { /* TODO */ }
 function oneVoz()    { /* TODO */ }
+
+/* ── SWAP de painéis (Chat ↔ Agenda ↔ ...) ──────────────── */
+var oneAgWeekOffset = 0; // semana atual = 0, -1 = anterior, +1 = próxima
+
+function swapToCenter(target) {
+  // 1. Identifica painel central atualmente ativo
+  var ativos = document.querySelectorAll('.one-desktop-main > [data-panel]:not([hidden])');
+  var atual = ativos[0];
+  if (!atual || atual.dataset.panel === target) return;
+  var atualPanel = atual.dataset.panel;
+
+  // 2. Esconde painel central atual, mostra novo
+  var panels = document.querySelectorAll('.one-desktop-main > [data-panel]');
+  panels.forEach(function(p) {
+    if (p.dataset.panel === target) p.removeAttribute('hidden');
+    else p.setAttribute('hidden', '');
+  });
+
+  // 3. Cards laterais: esconde o do target (vai pro centro), mostra o do antigo
+  var cards = document.querySelectorAll('.one-desktop-sidebar > [data-panel]');
+  cards.forEach(function(c) {
+    if (c.dataset.panel === target) c.setAttribute('hidden', '');
+    if (c.dataset.panel === atualPanel) c.removeAttribute('hidden');
+  });
+
+  // 4. Dispara render do novo painel se for o caso
+  if (target === 'agenda' && typeof renderOneAgendaPainel === 'function') {
+    renderOneAgendaPainel();
+  }
+}
+
+function oneAgNavegar(delta) {
+  oneAgWeekOffset += delta;
+  renderOneAgendaPainel();
+}
+
+function renderOneAgendaPainel() {
+  var grid = document.getElementById('one-ag-week-grid');
+  var label = document.getElementById('one-ag-mes-label');
+  if (!grid) return;
+
+  var compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var hojeStr = (typeof toDateStr === 'function') ? toDateStr(hoje) : hoje.toISOString().slice(0,10);
+
+  // segunda da semana corrente + offset
+  var dow = hoje.getDay(); // 0=dom, 1=seg, ...
+  var diffSeg = (dow === 0 ? -6 : 1 - dow);
+  var seg = new Date(hoje);
+  seg.setDate(hoje.getDate() + diffSeg + (oneAgWeekOffset * 7));
+
+  var meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  var domDaSemana = new Date(seg); domDaSemana.setDate(seg.getDate() + 6);
+  if (label) {
+    if (seg.getMonth() === domDaSemana.getMonth()) {
+      label.textContent = meses[seg.getMonth()] + ' ' + seg.getFullYear();
+    } else {
+      label.textContent = meses[seg.getMonth()] + ' / ' + meses[domDaSemana.getMonth()] + ' ' + domDaSemana.getFullYear();
+    }
+  }
+
+  var NOMES = ['seg','ter','qua','qui','sex','sáb','dom'];
+  var html = '';
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(seg); d.setDate(seg.getDate() + i);
+    var ds = (typeof toDateStr === 'function') ? toDateStr(d) : d.toISOString().slice(0,10);
+    var isHoje = ds === hojeStr;
+    var doDia = compromissos.filter(function(c){ return c.data === ds; })
+                            .sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
+
+    var events = '';
+    if (doDia.length === 0) {
+      events = '<div class="one-ag-day-livre">livre</div>';
+    } else {
+      events = doDia.map(function(c){
+        var hora = (c.hora || '--:--');
+        var nome = (c.nome || c.descricao || 'Compromisso');
+        return '<div class="one-ag-event" onclick="event.stopPropagation();' +
+               (typeof editarCompromisso === 'function' ? "editarCompromisso('" + (c.id || '') + "')" : '') +
+               '">' +
+               '<div class="one-ag-event-hora">' + hora + '</div>' +
+               '<div class="one-ag-event-nome">' + nome.replace(/</g,'&lt;') + '</div>' +
+               '</div>';
+      }).join('');
+    }
+
+    html += '<div class="one-ag-day-col' + (isHoje ? ' today' : '') + '">' +
+              '<div class="one-ag-day-header">' +
+                '<div class="one-ag-day-name">' + NOMES[i] + '</div>' +
+                '<div class="one-ag-day-num">' + d.getDate() + '</div>' +
+              '</div>' +
+              '<div class="one-ag-day-events">' + events + '</div>' +
+            '</div>';
+  }
+  grid.innerHTML = html;
+}
 
 /* ── Agenda (screen-one) ─────────────────────────────────── */
 function renderOneAgenda() {
