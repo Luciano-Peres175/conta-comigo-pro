@@ -3017,7 +3017,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 }
 .one-ag-bottom-row {
   flex: 0 0 auto;
-  height: 200px;
+  height: 245px;
   margin-left: 48px;
   min-height: 0;
   display: grid;
@@ -3037,6 +3037,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   gap: 12px;
   overflow-y: auto;
   overflow-x: hidden;
+  align-items: start;
   scrollbar-width: thin;
   scrollbar-color: rgba(123,92,240,0.30) transparent;
 }
@@ -3046,8 +3047,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 /* Coluna lateral de horas */
 .one-ag-hours-rail {
   position: relative;
-  height: 596px; /* 46px padding-top + 11h × 50px = 596px */
-  padding-top: 46px; /* alinha com o body do dia (depois do header) */
+  height: 596px; /* 46px offset header + 11h × 50px */
 }
 .one-ag-hour-mark {
   position: absolute;
@@ -3060,6 +3060,14 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   font-weight: 600;
   font-family: system-ui;
   transform: translateY(-6px);
+}
+.one-ag-half-mark {
+  position: absolute;
+  left: 14px;
+  right: 2px;
+  height: 1px;
+  background: rgba(110,79,135,0.20);
+  transform: translateY(-0.5px);
 }
 
 /* Prompt da Pinah */
@@ -3248,9 +3256,13 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   background:
     repeating-linear-gradient(
       to bottom,
-      rgba(160,32,240,0.06) 0,
-      rgba(160,32,240,0.06) 1px,
+      rgba(160,32,240,0.08) 0,
+      rgba(160,32,240,0.08) 1px,
       transparent 1px,
+      transparent 25px,
+      rgba(160,32,240,0.04) 25px,
+      rgba(160,32,240,0.04) 26px,
+      transparent 26px,
       transparent 50px
     );
   border-radius: 8px;
@@ -7834,12 +7846,16 @@ function renderOneAgendaPainel() {
   // Coluna lateral de horas (07h–22h, 60px/h = 900px total)
   var hoursHtml = '<div class="one-ag-hours-rail">';
   for (var h = 8; h <= 19; h++) {
-    var top = (h - 8) * 50;
+    var top = 46 + (h - 8) * 50;
     hoursHtml += '<div class="one-ag-hour-mark" style="top:' + top + 'px">' + (h < 10 ? '0' + h : h) + 'h</div>';
+    if (h < 19) {
+      hoursHtml += '<div class="one-ag-half-mark" style="top:' + (top + 25) + 'px"></div>';
+    }
   }
   hoursHtml += '</div>';
 
   grid.innerHTML = hoursHtml + html;
+  grid.scrollTop = 0;
   oneInitAgendaSortable();
 }
 
