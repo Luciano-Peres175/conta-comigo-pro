@@ -3887,3 +3887,32 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .pinah-notch[data-ctx="agenda"] .pinah-notch-textarea::placeholder {
   content: 'Agenda — ex: "Maria amanhã 14h R$ 180"';
 }
+
+/* ── Pinah Notch: prompt original fixo fora da área de trabalho ── */
+.one-prompt-notch {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 66.66%;
+  max-width: 860px;
+  z-index: 500;
+  padding: 8px 0 env(safe-area-inset-bottom, 16px);
+  pointer-events: auto;
+}
+.one-prompt-notch::before {
+  content: '';
+  position: absolute;
+  bottom: env(safe-area-inset-bottom, 16px);
+  left: 50%; transform: translateX(-50%);
+  width: 65%; height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(123,92,240,.18) 0%, transparent 70%);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* Dar espaço no rodapé da área de trabalho para o notch não sobrepor */
+.one-desktop-layout {
+  padding-bottom: 90px;
+}

@@ -276,30 +276,6 @@
           <img src="assets/icons/pinah-mascote.png" class="one-pinah-img" alt="Pinah">
           <p class="one-pinah-phrase">Sua mente livre<br>para o que importa.</p>
         </div>
-        <div class="one-prompt-outer">
-          <div class="one-prompt-card">
-            <textarea class="one-prompt-input" id="one-input-desk" rows="1" placeholder="O que você quer capturar ou lembrar?"></textarea>
-            <button class="one-prompt-btn" onclick="oneAnexar()">
-              <div class="one-prompt-btn-glow"></div>
-              <img src="assets/icons/ic-anexar.png" alt="anexar">
-            </button>
-            <button class="one-prompt-btn" onclick="oneVoz()">
-              <div class="one-prompt-btn-glow"></div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round" style="position:relative;z-index:1">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" y1="19" x2="12" y2="23"/>
-                <line x1="8" y1="23" x2="16" y2="23"/>
-              </svg>
-            </button>
-            <div class="one-send-wrap">
-              <div class="one-send-glow"></div>
-              <button class="one-send-btn" onclick="oneEnviar()">
-                <img src="assets/icons/ic-enviar.png" alt="enviar">
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Variante Agenda (escondida por default — aparece via swapToCenter('agenda')) -->
@@ -502,25 +478,33 @@
       </div>
     </div>
 
-  
+
+
   <!-- ═══════════════════════════════════════════════════════════════
-       PINAH NOTCH — prompt universal fixo (sempre visível no #one)
+       PINAH NOTCH — prompt original destacado da área de trabalho
   ═══════════════════════════════════════════════════════════════ -->
-  <div class="pinah-notch" id="pinah-notch">
-    <img src="assets/icons/pinah-mascote.png" class="pinah-notch-avatar" alt="Pinah" onclick="pinahNotchFocus()">
-    <div class="pinah-notch-pill">
-      <textarea id="pinah-notch-input" class="pinah-notch-textarea" rows="1"
-        placeholder="Diga à Pinah o que fazer…"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();pinahNotchEnviar();}"></textarea>
-      <button class="pinah-notch-mic" onclick="oneVoz()" title="Voz">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+  <div class="one-prompt-outer one-prompt-notch" id="one-prompt-notch">
+    <div class="one-prompt-card">
+      <textarea class="one-prompt-input" id="one-input-desk" rows="1" placeholder="O que você quer capturar ou lembrar?"></textarea>
+      <button class="one-prompt-btn" onclick="oneAnexar()">
+        <div class="one-prompt-btn-glow"></div>
+        <img src="assets/icons/ic-anexar.png" alt="anexar">
+      </button>
+      <button class="one-prompt-btn" onclick="oneVoz()">
+        <div class="one-prompt-btn-glow"></div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round" style="position:relative;z-index:1">
           <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
           <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
           <line x1="12" y1="19" x2="12" y2="23"/>
           <line x1="8" y1="23" x2="16" y2="23"/>
         </svg>
       </button>
-      <button class="pinah-notch-send" onclick="pinahNotchEnviar()" title="Enviar">↗</button>
+      <div class="one-send-wrap">
+        <div class="one-send-glow"></div>
+        <button class="one-send-btn" onclick="oneEnviar()">
+          <img src="assets/icons/ic-enviar.png" alt="enviar">
+        </button>
+      </div>
     </div>
   </div>
 
