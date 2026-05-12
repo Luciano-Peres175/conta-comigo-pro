@@ -3209,6 +3209,43 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   box-shadow: 0 3px 8px rgba(123,92,240,0.25);
 }
 .one-ag-form-save:hover { box-shadow: 0 5px 12px rgba(123,92,240,0.35); }
+
+/* ── Painéis Financeiro e Tarefas — layout Agenda ── */
+.one-fin-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+.one-fin-tabs {
+  display: flex;
+  gap: 4px;
+}
+.one-fin-tab {
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(160,32,240,0.25);
+  background: transparent;
+  color: #7B5CF0;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: system-ui;
+  transition: background .15s, color .15s;
+}
+.one-fin-tab.active {
+  background: #7B5CF0;
+  color: #fff;
+  border-color: #7B5CF0;
+}
+.one-fin-tab.active.desp {
+  background: #E87A7A;
+  border-color: #E87A7A;
+}
+
 .one-ag-form-del {
   background: #E87A7A;
   color: #fff;
@@ -3681,25 +3718,63 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
         </div>
       </div>
 
-      <!-- Variante Tarefas (escondida por default) -->
+      <!-- Variante Tarefas -->
       <div class="one-desktop-tarefas" data-panel="tarefas" hidden>
-        <div class="one-pn-header">
-          <span class="one-pn-title">✅ Tarefas</span>
-          <span class="one-pn-sub" id="one-tarefas-count">—</span>
+        <div class="one-ag-header" style="flex-shrink:0">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span class="one-ag-mes-label">✅ Tarefas</span>
+            <span class="one-pn-sub" id="one-tarefas-count">—</span>
+          </div>
         </div>
-        <div class="one-pn-body" id="one-tarefas-list"></div>
-        <div class="one-ag-actions">
-          <button class="one-ag-novo-btn" onclick="oneNovaTarefa()">+ Nova Tarefa</button>
+        <div class="one-fin-content">
+          <div class="one-pn-body" id="one-tarefas-list"></div>
+        </div>
+        <div class="one-ag-bottom-row" style="margin-left:0">
+          <div class="one-ag-form-box">
+            <div class="one-ag-form-title">Nova Tarefa</div>
+            <input type="text" class="one-ag-field" id="one-tar-nome" placeholder="Nome da tarefa">
+            <div class="one-ag-field-row">
+              <input type="text" class="one-ag-field" id="one-tar-area" placeholder="Área (ex: Clínica, Pessoal…)">
+              <select class="one-ag-field" id="one-tar-prio">
+                <option value="Normal">Normal</option>
+                <option value="Alta">Alta</option>
+                <option value="Baixa">Baixa</option>
+              </select>
+            </div>
+            <input type="date" class="one-ag-field" id="one-tar-data">
+            <div class="one-ag-form-actions">
+              <button class="one-ag-form-cancel" onclick="oneTarLimpar()">Limpar</button>
+              <button class="one-ag-form-save" onclick="oneTarSalvar()">Salvar</button>
+            </div>
+          </div>
+          <div class="one-ag-prompt-box">
+            <div class="one-ag-prompt-head">
+              <img src="assets/icons/pinah-mascote.png" class="one-ag-prompt-pinah" alt="Pinah">
+              <span class="one-ag-prompt-label">Diga à Pinah</span>
+            </div>
+            <p class="one-ag-prompt-hint">Conversa rápida — a Pinah cria a tarefa pra você. Exemplos:</p>
+            <ul class="one-ag-prompt-examples">
+              <li>"Ligar pro plano de saúde amanhã"</li>
+              <li>"Reunião de equipe sexta, prioridade alta"</li>
+              <li>"Renovar alvará até dia 20"</li>
+            </ul>
+            <div class="one-ag-prompt-row">
+              <textarea id="one-tar-prompt-input" class="one-ag-prompt-input" rows="3" placeholder="Digite aqui…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();oneTarPromptPinah();}"></textarea>
+              <button class="one-ag-prompt-btn" onclick="oneTarPromptPinah()" title="Pedir pra Pinah">↗</button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Variante Financeiro (escondida por default) -->
+      <!-- Variante Financeiro -->
       <div class="one-desktop-financeiro" data-panel="financeiro" hidden>
-        <div class="one-pn-header">
-          <span class="one-pn-title">💰 Financeiro do mês</span>
-          <span class="one-pn-sub" id="one-fin-periodo">—</span>
+        <div class="one-ag-header" style="flex-shrink:0">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span class="one-ag-mes-label">💰 Financeiro</span>
+            <span class="one-pn-sub" id="one-fin-periodo">—</span>
+          </div>
         </div>
-        <div class="one-fin-saldo-row">
+        <div class="one-fin-content">
           <div class="one-fin-saldo-card">
             <p class="one-fin-saldo-label">Saldo do mês</p>
             <p class="one-fin-saldo-value" id="one-fin-saldo-big">R$ —</p>
@@ -3709,10 +3784,42 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
               <div class="one-fin-stat"><span class="lbl">⏳ pendente</span><span class="val" id="one-fin-pendente-big">—</span></div>
             </div>
           </div>
+          <div class="one-pn-body" id="one-fin-list-big"></div>
         </div>
-        <div class="one-pn-body" id="one-fin-list-big"></div>
-        <div class="one-ag-actions">
-          <button class="one-ag-novo-btn" onclick="go('receitas')">+ Novo Lançamento</button>
+        <div class="one-ag-bottom-row" style="margin-left:0">
+          <div class="one-ag-form-box">
+            <div class="one-ag-form-title">Novo Lançamento</div>
+            <div class="one-fin-tabs">
+              <button class="one-fin-tab active" id="one-fin-tab-rec" onclick="oneFinSetTipo('receita')">↑ Receita</button>
+              <button class="one-fin-tab" id="one-fin-tab-desp" onclick="oneFinSetTipo('despesa')">↓ Despesa</button>
+            </div>
+            <input type="text" class="one-ag-field" id="one-fin-nome" placeholder="Descrição">
+            <div class="one-ag-field-row">
+              <input type="number" class="one-ag-field" id="one-fin-valor" placeholder="Valor (R$)" inputmode="decimal" step="0.01">
+              <input type="date" class="one-ag-field" id="one-fin-data">
+            </div>
+            <input type="text" class="one-ag-field" id="one-fin-cat" placeholder="Categoria (ex: Atendimento…)">
+            <div class="one-ag-form-actions">
+              <button class="one-ag-form-cancel" onclick="oneFinLimpar()">Limpar</button>
+              <button class="one-ag-form-save" onclick="oneFinSalvar()">Salvar</button>
+            </div>
+          </div>
+          <div class="one-ag-prompt-box">
+            <div class="one-ag-prompt-head">
+              <img src="assets/icons/pinah-mascote.png" class="one-ag-prompt-pinah" alt="Pinah">
+              <span class="one-ag-prompt-label">Diga à Pinah</span>
+            </div>
+            <p class="one-ag-prompt-hint">Conversa rápida — a Pinah registra o lançamento pra você. Exemplos:</p>
+            <ul class="one-ag-prompt-examples">
+              <li>"Recebi R$ 280 da Maria hoje"</li>
+              <li>"Despesa aluguel R$ 1200 dia 10"</li>
+              <li>"Paguei farmácia R$ 45 ontem"</li>
+            </ul>
+            <div class="one-ag-prompt-row">
+              <textarea id="one-fin-prompt-input" class="one-ag-prompt-input" rows="3" placeholder="Digite aqui…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();oneFinPromptPinah();}"></textarea>
+              <button class="one-ag-prompt-btn" onclick="oneFinPromptPinah()" title="Pedir pra Pinah">↗</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -7714,7 +7821,8 @@ function swapToCenter(target) {
 }
 
 function oneNovaTarefa() {
-  alert('Modal de Nova Tarefa — a ser implementado.');
+  swapToCenter('tarefas');
+  setTimeout(function(){ var el = document.getElementById('one-tar-nome'); if(el) el.focus(); }, 200);
 }
 
 function renderOneTarefasPainel() {
@@ -7729,13 +7837,95 @@ function renderOneTarefasPainel() {
     var prio = (t.prioridade || 'normal').toLowerCase();
     var prioCor = prio === 'alta' ? '#E87A7A' : prio === 'baixa' ? '#7EC8B8' : '#9B72B0';
     var prioBg  = prio === 'alta' ? '#FBEAEA' : prio === 'baixa' ? '#E6F5F0' : '#F0E8F8';
-    return '<div class="one-tarefa-item">' +
-             '<div class="one-tarefa-check"></div>' +
-             '<span class="one-tarefa-nome">' + (t.nome || t.titulo || 'Sem nome').replace(/</g,'&lt;') + '</span>' +
+    var conc = !!t.concluida;
+    return '<div class="one-tarefa-item" style="opacity:' + (conc?'.5':'1') + '">' +
+             '<div class="one-tarefa-check" onclick="oneTarToggle('' + t.id + '')" style="cursor:pointer;background:' + (conc?'#4CAF50':'transparent') + ';border-color:' + (conc?'#4CAF50':'#B0AEA8') + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px">' + (conc?'✓':'') + '</div>' +
+             '<span class="one-tarefa-nome" style="text-decoration:' + (conc?'line-through':'none') + '">' + (t.nome || t.titulo || 'Sem nome').replace(/</g,'&lt;') + '</span>' +
              '<span class="one-tarefa-prio" style="background:' + prioBg + ';color:' + prioCor + '">' + (t.prioridade || 'Normal') + '</span>' +
            '</div>';
   }).join('');
   el.innerHTML = html;
+}
+
+/* ── Financeiro inline ──────────────────────────────── */
+var oneFinTipoAtivo = 'receita';
+
+function oneFinSetTipo(tipo) {
+  oneFinTipoAtivo = tipo;
+  var rec  = document.getElementById('one-fin-tab-rec');
+  var desp = document.getElementById('one-fin-tab-desp');
+  if (rec)  { rec.classList.toggle('active', tipo === 'receita'); rec.classList.remove('desp'); }
+  if (desp) { desp.classList.toggle('active', tipo === 'despesa'); if (tipo==='despesa') desp.classList.add('desp'); else desp.classList.remove('desp'); }
+}
+
+function oneFinLimpar() {
+  ['one-fin-nome','one-fin-valor','one-fin-cat'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  var d = document.getElementById('one-fin-data');
+  if (d) d.value = typeof hojeISO === 'function' ? hojeISO() : new Date().toISOString().slice(0,10);
+  oneFinSetTipo('receita');
+}
+
+function oneFinSalvar() {
+  var nome  = (document.getElementById('one-fin-nome')||{}).value || '';
+  var valor = parseFloat((document.getElementById('one-fin-valor')||{}).value) || 0;
+  var data  = (document.getElementById('one-fin-data')||{}).value || (typeof hojeISO==='function' ? hojeISO() : new Date().toISOString().slice(0,10));
+  var cat   = (document.getElementById('one-fin-cat')||{}).value || '';
+  if (!nome || !valor) { if (typeof oneToast==='function') oneToast('Preencha descrição e valor.','error'); return; }
+  var key = oneFinTipoAtivo === 'receita' ? 'receitas' : 'despesas';
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(key)||'[]'); } catch(e){}
+  lista.push({ id: Date.now().toString(), nome: nome, valor: valor, data: data, categoria: cat,
+               status: oneFinTipoAtivo==='receita' ? 'pendente' : 'pago', criado: new Date().toISOString() });
+  localStorage.setItem(key, JSON.stringify(lista));
+  oneFinLimpar();
+  if (typeof oneToast==='function') oneToast('✓ ' + (oneFinTipoAtivo==='receita'?'Receita':'Despesa') + ' salva!');
+  if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
+  if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
+}
+
+function oneFinPromptPinah() {
+  var input = document.getElementById('one-fin-prompt-input');
+  if (!input || !input.value.trim()) return;
+  if (typeof oneToast==='function') oneToast('Pinah em breve! Use o form por enquanto 💜');
+  input.value = '';
+}
+
+/* ── Tarefas inline ──────────────────────────────────── */
+function oneTarLimpar() {
+  ['one-tar-nome','one-tar-area'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  var p = document.getElementById('one-tar-prio'); if (p) p.value = 'Normal';
+  var d = document.getElementById('one-tar-data'); if (d) d.value = '';
+}
+
+function oneTarSalvar() {
+  var nome = (document.getElementById('one-tar-nome')||{}).value || '';
+  if (!nome) { if (typeof oneToast==='function') oneToast('Nome da tarefa é obrigatório.','error'); return; }
+  var area = (document.getElementById('one-tar-area')||{}).value || 'Geral';
+  var prio = (document.getElementById('one-tar-prio')||{}).value || 'Normal';
+  var data = (document.getElementById('one-tar-data')||{}).value || '';
+  var lista = []; try { lista = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  lista.push({ id: Date.now().toString(), nome: nome, area: area, prioridade: prio, data: data, concluida: false, criado: new Date().toISOString() });
+  localStorage.setItem('tarefas', JSON.stringify(lista));
+  oneTarLimpar();
+  if (typeof oneToast==='function') oneToast('✓ Tarefa salva!');
+  if (typeof renderOneTarefasPainel==='function') renderOneTarefasPainel();
+}
+
+function oneTarToggle(id) {
+  var lista = []; try { lista = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  var idx = lista.findIndex(function(t){ return t.id === id; });
+  if (idx !== -1) { lista[idx].concluida = !lista[idx].concluida; localStorage.setItem('tarefas', JSON.stringify(lista)); }
+  if (typeof renderOneTarefasPainel==='function') renderOneTarefasPainel();
+}
+
+function oneTarPromptPinah() {
+  var input = document.getElementById('one-tar-prompt-input');
+  if (!input || !input.value.trim()) return;
+  if (typeof oneToast==='function') oneToast('Pinah em breve! Use o form por enquanto 💜');
+  input.value = '';
 }
 
 function renderOneFinanceiroPainel() {
