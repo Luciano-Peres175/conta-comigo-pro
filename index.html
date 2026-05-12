@@ -2495,12 +2495,13 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   body:has(#screen-one.active) .sidebar-logo    { display: none !important; }
   body:has(#screen-one.active) .sidebar-profile {
     flex-shrink: 0 !important;
-    height: 64px !important;
+    min-height: 96px !important;
+    height: auto !important;
     border-radius: 20px !important;
     border: none !important;
     background: #F4F1EA !important;
     box-shadow: 0 0 0 2px rgba(160,32,240,0.90) !important;
-    padding: 14px 16px !important;
+    padding: 16px 20px !important;
     gap: 12px !important;
     align-items: center !important;
     margin: 0 !important;
@@ -2521,10 +2522,10 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   /* Nav dentro da mesa aux: botões com mesmo estilo dos cards laterais */
   body:has(#screen-one.active) .sidebar-nav {
     flex: 1 !important;
-    padding: 14px 14px 8px !important;
+    padding: 18px 16px 10px !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 14px !important;
+    gap: 20px !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
   }
@@ -2547,10 +2548,10 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
     border-bottom: 1.5px solid rgba(110,79,135,0.28) !important;
     transition: transform .15s ease, box-shadow .15s ease !important;
     box-shadow:
-      0 0 0 2px rgba(160,32,240,0.92),
-      0 0 0 8px rgba(160,32,240,0.22),
-      0 6px 16px rgba(0,0,0,.09),
-      0 2px 6px rgba(0,0,0,.06),
+      0 0 0 1.5px rgba(160,32,240,0.80),
+      0 0 0 4px rgba(160,32,240,0.14),
+      0 4px 12px rgba(0,0,0,.07),
+      0 1px 4px rgba(0,0,0,.05),
       inset 0 2px 0 rgba(255,255,255,1),
       inset 0 -2px 0 rgba(0,0,0,.06),
       inset 1px 0 0 rgba(255,255,255,.75),
@@ -2560,10 +2561,10 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
     color: #A020F0 !important;
     transform: translateY(-1px) !important;
     box-shadow:
-      0 0 0 2px rgba(160,32,240,0.92),
-      0 0 0 10px rgba(160,32,240,0.28),
-      0 10px 22px rgba(0,0,0,.11),
-      0 3px 8px rgba(0,0,0,.07),
+      0 0 0 1.5px rgba(160,32,240,0.85),
+      0 0 0 5px rgba(160,32,240,0.18),
+      0 6px 16px rgba(0,0,0,.09),
+      0 2px 6px rgba(0,0,0,.06),
       inset 0 2px 0 rgba(255,255,255,1),
       inset 0 -2px 0 rgba(0,0,0,.06),
       inset 1px 0 0 rgba(255,255,255,.75),
