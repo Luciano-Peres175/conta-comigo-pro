@@ -2852,8 +2852,103 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 }
 .one-desktop-main > [data-panel][hidden],
 .one-desktop-sidebar > [data-panel][hidden] { display: none !important; }
-.one-desktop-main > .one-desktop-agenda:not([hidden]) { display: flex !important; }
-.one-desktop-main > .one-desktop-chat:not([hidden]) { display: flex !important; }
+.one-desktop-main > .one-desktop-agenda:not([hidden]),
+.one-desktop-main > .one-desktop-chat:not([hidden]),
+.one-desktop-main > .one-desktop-tarefas:not([hidden]),
+.one-desktop-main > .one-desktop-financeiro:not([hidden]) { display: flex !important; }
+
+/* Painéis centrais Tarefas e Financeiro — mesma linguagem */
+.one-desktop-tarefas, .one-desktop-financeiro {
+  background: #F4F1EA;
+  border-radius: 20px;
+  padding: 18px 24px 22px 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow:
+    0 0 0 2px rgba(160,32,240,0.90),
+    0 8px 24px rgba(0,0,0,.07);
+}
+.one-pn-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+.one-pn-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: #2D2D2D;
+}
+.one-pn-sub {
+  font-size: 11px;
+  color: #8A8480;
+}
+.one-pn-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow:
+    0 0 0 1.5px rgba(160,32,240,0.55),
+    0 0 0 4px rgba(160,32,240,0.10),
+    0 4px 10px rgba(0,0,0,.06);
+}
+.one-pn-body::-webkit-scrollbar { display: none; }
+.one-pn-body:empty::before {
+  content: 'Nenhum item ainda';
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  color: #B0AEA8;
+  font-style: italic;
+  padding: 20px;
+}
+
+/* Financeiro grande — saldo + stats */
+.one-fin-saldo-row { flex-shrink: 0; }
+.one-fin-saldo-card {
+  background: linear-gradient(135deg, #7B5CF0 0%, #9B72B0 100%);
+  border-radius: 16px;
+  padding: 18px 22px;
+  color: #fff;
+  box-shadow:
+    0 0 0 4px rgba(123,92,240,0.18),
+    0 8px 20px rgba(123,92,240,0.30);
+}
+.one-fin-saldo-label { font-size: 11px; opacity: .85; margin: 0; font-family: system-ui; }
+.one-fin-saldo-value { font-size: 32px; font-weight: 600; margin: 4px 0 14px; font-family: system-ui; line-height: 1; }
+.one-fin-stats-row { display: flex; gap: 10px; }
+.one-fin-stat { flex: 1; background: rgba(255,255,255,.18); border-radius: 10px; padding: 8px 10px; }
+.one-fin-stat .lbl { font-size: 9.5px; opacity: .80; display: block; font-family: system-ui; }
+.one-fin-stat .val { font-size: 13px; font-weight: 600; display: block; margin-top: 2px; font-family: system-ui; }
+
+/* Lista de tarefas e lançamentos no centro */
+.one-tarefa-item, .one-fin-item-big {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 4px;
+  border-bottom: 1px solid rgba(160,32,240,0.08);
+}
+.one-tarefa-item:last-child, .one-fin-item-big:last-child { border-bottom: none; }
+.one-tarefa-check {
+  width: 18px; height: 18px;
+  border-radius: 6px;
+  border: 1.5px solid #B0AEA8;
+  flex-shrink: 0;
+}
+.one-tarefa-nome { flex: 1; font-size: 13px; color: #2D2D2D; }
+.one-tarefa-prio {
+  font-size: 10px; padding: 2px 8px; border-radius: 6px;
+  background: #F0E8F8; color: #7B5CF0; font-weight: 600;
+}
 .one-desktop-main > .one-desktop-chat,
 .one-desktop-main > .one-desktop-agenda {
   flex: 1;
@@ -3295,6 +3390,41 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
         </div>
       </div>
 
+      <!-- Variante Tarefas (escondida por default) -->
+      <div class="one-desktop-tarefas" data-panel="tarefas" hidden>
+        <div class="one-pn-header">
+          <span class="one-pn-title">✅ Tarefas</span>
+          <span class="one-pn-sub" id="one-tarefas-count">—</span>
+        </div>
+        <div class="one-pn-body" id="one-tarefas-list"></div>
+        <div class="one-ag-actions">
+          <button class="one-ag-novo-btn" onclick="oneNovaTarefa()">+ Nova Tarefa</button>
+        </div>
+      </div>
+
+      <!-- Variante Financeiro (escondida por default) -->
+      <div class="one-desktop-financeiro" data-panel="financeiro" hidden>
+        <div class="one-pn-header">
+          <span class="one-pn-title">💰 Financeiro do mês</span>
+          <span class="one-pn-sub" id="one-fin-periodo">—</span>
+        </div>
+        <div class="one-fin-saldo-row">
+          <div class="one-fin-saldo-card">
+            <p class="one-fin-saldo-label">Saldo do mês</p>
+            <p class="one-fin-saldo-value" id="one-fin-saldo-big">R$ —</p>
+            <div class="one-fin-stats-row">
+              <div class="one-fin-stat"><span class="lbl">↑ entradas</span><span class="val" id="one-fin-entradas-big">—</span></div>
+              <div class="one-fin-stat"><span class="lbl">↓ saídas</span><span class="val" id="one-fin-saidas-big">—</span></div>
+              <div class="one-fin-stat"><span class="lbl">⏳ pendente</span><span class="val" id="one-fin-pendente-big">—</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="one-pn-body" id="one-fin-list-big"></div>
+        <div class="one-ag-actions">
+          <button class="one-ag-novo-btn" onclick="go('receitas')">+ Novo Lançamento</button>
+        </div>
+      </div>
+
       </div><!-- /one-desktop-main -->
 
       <!-- Coluna direita: cards flutuantes -->
@@ -3322,8 +3452,8 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
           <button onclick="event.stopPropagation();oneAbrirCompromisso()" style="width:100%;margin-top:10px;background:transparent;border:1.5px dashed rgba(123,92,240,.30);border-radius:10px;padding:7px;font-size:11px;color:#7B5CF0;font-weight:600;cursor:pointer;font-family:system-ui;flex-shrink:0">+ Novo compromisso</button>
         </div>
 
-        <!-- Card Tarefas (clicável → abre módulo) -->
-        <div class="one-desk-card one-desk-card-tarefas" onclick="go('tarefas')" title="Abrir Tarefas">
+        <!-- Card Tarefas (clicável → swap pro centro) -->
+        <div class="one-desk-card one-desk-card-tarefas" data-panel="tarefas" onclick="swapToCenter('tarefas')" title="Abrir Tarefas no centro">
           <div class="one-desk-card-header">
             <span class="one-desk-card-title">✅ Tarefas</span>
             <button class="one-desk-card-btn" onclick="event.stopPropagation();go('tarefas')">Ver tudo →</button>
@@ -3332,8 +3462,8 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
           <button onclick="event.stopPropagation();" style="width:100%;margin-top:10px;background:transparent;border:1.5px dashed rgba(160,32,240,.30);border-radius:10px;padding:7px;font-size:11px;color:#A020F0;font-weight:600;cursor:pointer;font-family:system-ui;flex-shrink:0">➕ Nova tarefa</button>
         </div>
 
-        <!-- Card Financeiro (clicável → abre módulo) -->
-        <div class="one-desk-card one-desk-card-financeiro" onclick="go('receitas')" title="Abrir Financeiro completo">
+        <!-- Card Financeiro (clicável → swap pro centro) -->
+        <div class="one-desk-card one-desk-card-financeiro" data-panel="financeiro" onclick="swapToCenter('financeiro')" title="Abrir Financeiro no centro">
           <div class="one-desk-card-header">
             <span class="one-desk-card-title">💰 Financeiro do mês</span>
             <button class="one-desk-card-btn" onclick="event.stopPropagation();go('receitas')">+ Lançar</button>
@@ -7280,6 +7410,82 @@ function swapToCenter(target) {
   if (target === 'agenda' && typeof renderOneAgendaPainel === 'function') {
     renderOneAgendaPainel();
   }
+  if (target === 'tarefas' && typeof renderOneTarefasPainel === 'function') {
+    renderOneTarefasPainel();
+  }
+  if (target === 'financeiro' && typeof renderOneFinanceiroPainel === 'function') {
+    renderOneFinanceiroPainel();
+  }
+}
+
+function oneNovaTarefa() {
+  alert('Modal de Nova Tarefa — a ser implementado.');
+}
+
+function renderOneTarefasPainel() {
+  var el = document.getElementById('one-tarefas-list');
+  var count = document.getElementById('one-tarefas-count');
+  if (!el) return;
+  var tarefas = JSON.parse(localStorage.getItem('tarefas') || '[]');
+  var pendentes = tarefas.filter(function(t){ return !t.concluida; });
+  if (count) count.textContent = pendentes.length + ' pendente' + (pendentes.length === 1 ? '' : 's');
+  if (!tarefas.length) { el.innerHTML = ''; return; }
+  var html = tarefas.map(function(t){
+    var prio = (t.prioridade || 'normal').toLowerCase();
+    var prioCor = prio === 'alta' ? '#E87A7A' : prio === 'baixa' ? '#7EC8B8' : '#9B72B0';
+    var prioBg  = prio === 'alta' ? '#FBEAEA' : prio === 'baixa' ? '#E6F5F0' : '#F0E8F8';
+    return '<div class="one-tarefa-item">' +
+             '<div class="one-tarefa-check"></div>' +
+             '<span class="one-tarefa-nome">' + (t.nome || t.titulo || 'Sem nome').replace(/</g,'&lt;') + '</span>' +
+             '<span class="one-tarefa-prio" style="background:' + prioBg + ';color:' + prioCor + '">' + (t.prioridade || 'Normal') + '</span>' +
+           '</div>';
+  }).join('');
+  el.innerHTML = html;
+}
+
+function renderOneFinanceiroPainel() {
+  var receitas = JSON.parse(localStorage.getItem('receitas') || '[]');
+  var despesas = JSON.parse(localStorage.getItem('despesas') || '[]');
+  var hoje = new Date();
+  var mes = hoje.getMonth(), ano = hoje.getFullYear();
+  var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  function noMes(d) {
+    var date = new Date(d + 'T00:00:00');
+    return date.getMonth() === mes && date.getFullYear() === ano;
+  }
+  var rMes = receitas.filter(function(r){ return noMes(r.data); });
+  var dMes = despesas.filter(function(d){ return noMes(d.data); });
+
+  var totalReceitas  = rMes.filter(function(r){ return r.status !== 'pendente'; }).reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
+  var totalDespesas  = dMes.reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+  var totalPendente  = rMes.filter(function(r){ return r.status === 'pendente'; }).reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
+  var saldo = totalReceitas - totalDespesas;
+
+  function brl(v) { return 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  var setText = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
+
+  setText('one-fin-periodo', meses[mes] + '/' + ano);
+  setText('one-fin-saldo-big', brl(saldo));
+  setText('one-fin-entradas-big', brl(totalReceitas));
+  setText('one-fin-saidas-big', brl(totalDespesas));
+  setText('one-fin-pendente-big', brl(totalPendente));
+
+  var el = document.getElementById('one-fin-list-big');
+  if (!el) return;
+  var lancamentos = rMes.map(function(r){ return {tipo:'in', nome:r.nome || r.descricao || 'Receita', valor:Number(r.valor)||0, data:r.data}; })
+                       .concat(dMes.map(function(d){ return {tipo:'out', nome:d.nome || d.descricao || 'Despesa', valor:Number(d.valor)||0, data:d.data}; }))
+                       .sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
+  if (!lancamentos.length) { el.innerHTML = ''; return; }
+  var html = lancamentos.slice(0, 12).map(function(l){
+    var cor = l.tipo === 'in' ? '#4CAF50' : '#E87A7A';
+    var sinal = l.tipo === 'in' ? '+' : '-';
+    return '<div class="one-fin-item-big">' +
+             '<span class="one-tarefa-nome">' + l.nome.replace(/</g,'&lt;') + '</span>' +
+             '<span style="font-size:13px;font-weight:600;color:' + cor + '">' + sinal + brl(l.valor).replace('R$ ','R$') + '</span>' +
+           '</div>';
+  }).join('');
+  el.innerHTML = html;
 }
 
 function oneAgNavegar(delta) {
