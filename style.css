@@ -3799,3 +3799,91 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   z-index: 2;
 }
 .one-ag-kcard:hover .one-ag-kcard-actions { display: flex; }
+
+/* ══════════════════════════════════════════════════════════════
+   PINAH NOTCH — prompt universal fixo
+══════════════════════════════════════════════════════════════ */
+.pinah-notch {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none; /* só aparece na screen-one */
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+  filter: drop-shadow(0 4px 20px rgba(155,114,176,0.25));
+}
+.screen-one-active .pinah-notch,
+#screen-one.active .pinah-notch,
+.pinah-notch.visible { display: flex; }
+
+.pinah-notch-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform .15s;
+  filter: drop-shadow(0 2px 8px rgba(155,114,176,0.4));
+}
+.pinah-notch-avatar:hover { transform: scale(1.1); }
+
+.pinah-notch-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1.5px solid rgba(155,114,176,0.3);
+  border-radius: 28px;
+  padding: 8px 10px 8px 16px;
+  width: 480px;
+  max-width: 70vw;
+  box-shadow: 0 2px 16px rgba(155,114,176,0.15);
+  transition: border-color .15s, box-shadow .15s;
+}
+.pinah-notch-pill:focus-within {
+  border-color: #9B72B0;
+  box-shadow: 0 4px 24px rgba(155,114,176,0.25);
+}
+.pinah-notch-textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 13px;
+  color: #2D2D2D;
+  font-family: inherit;
+  background: transparent;
+  line-height: 1.4;
+  max-height: 80px;
+  overflow-y: auto;
+}
+.pinah-notch-textarea::placeholder { color: #B0A8C0; }
+.pinah-notch-mic {
+  width: 30px; height: 30px;
+  border: none; background: none;
+  cursor: pointer; color: #A090B8;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background .12s, color .12s;
+}
+.pinah-notch-mic:hover { background: #F0EAF8; color: #7B5CF0; }
+.pinah-notch-send {
+  width: 32px; height: 32px;
+  border: none;
+  background: #9B72B0;
+  color: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background .12s, transform .12s;
+}
+.pinah-notch-send:hover { background: #7B5CF0; transform: scale(1.05); }
+
+/* Contexto ativo no placeholder */
+.pinah-notch[data-ctx="agenda"] .pinah-notch-textarea::placeholder {
+  content: 'Agenda — ex: "Maria amanhã 14h R$ 180"';
+}

@@ -3008,6 +3008,7 @@ function oneVoz()    { /* TODO */ }
 var oneAgWeekOffset = 0; // semana atual = 0, -1 = anterior, +1 = próxima
 
 function swapToCenter(target) {
+  pinahNotchUpdateCtx(target);
   // 1. Identifica painel central atualmente ativo
   var ativos = document.querySelectorAll('.one-desktop-main > [data-panel]:not([hidden])');
   var atual = ativos[0];
@@ -4159,6 +4160,136 @@ function oneExcluirCompromisso() {
 }
 
 
+
+/* ══════════════════════════════════════════════════════════════
+   PINAH NOTCH — prompt universal
+══════════════════════════════════════════════════════════════ */
+
+var PINAH_PLACEHOLDERS = {
+  chat:       'O que você quer capturar ou lembrar?',
+  agenda:     'Ex: "Maria amanhã 14h R$ 180" — Pinah abre o compromisso',
+  tarefas:    'Ex: "Ligar pro plano amanhã, alta prioridade"',
+  financeiro: 'Ex: "Recebi R$ 280 da Maria hoje" ou "Paguei aluguel R$ 1200"'
+};
+
+function pinahNotchShow() {
+  var el = document.getElementById('pinah-notch');
+  if (el) el.classList.add('visible');
+}
+
+function pinahNotchUpdateCtx(panel) {
+  var el   = document.getElementById('pinah-notch');
+  var inp  = document.getElementById('pinah-notch-input');
+  if (!el || !inp) return;
+  el.dataset.ctx = panel || 'chat';
+  inp.placeholder = PINAH_PLACEHOLDERS[panel] || PINAH_PLACEHOLDERS.chat;
+}
+
+function pinahNotchFocus() {
+  var inp = document.getElementById('pinah-notch-input');
+  if (inp) inp.focus();
+}
+
+function pinahNotchEnviar() {
+  var inp = document.getElementById('pinah-notch-input');
+  if (!inp) return;
+  var txt = (inp.value || '').trim();
+  if (!txt) return;
+
+  // Detectar painel ativo
+  var panel = 'chat';
+  var ativo = document.querySelector('.one-desktop-main [data-panel]:not([hidden])');
+  if (ativo) panel = ativo.dataset.panel || 'chat';
+
+  inp.value = '';
+
+  if (panel === 'agenda') {
+    // Reutiliza o parser do Pinah da agenda
+    var fakeInput = document.getElementById('one-ag-prompt-input');
+    if (!fakeInput) {
+      // fallback: cria elemento temporário
+      fakeInput = { value: txt };
+      var orig = document.getElementById;
+      // injetar txt no parser direto
+    }
+    // Simula o input e chama o parser
+    var saved = document.getElementById('one-ag-prompt-input');
+    if (saved) { saved.value = txt; onePromptPinah(); }
+    else {
+      // parser inline
+      _pinahAgendaParser(txt);
+    }
+  } else if (panel === 'tarefas') {
+    _pinahTarefaParser(txt);
+  } else if (panel === 'financeiro') {
+    _pinahFinanceiroParser(txt);
+  } else {
+    // Chat painel — envia como mensagem normal
+    var desk = document.getElementById('one-input-desk');
+    if (desk) { desk.value = txt; if (typeof oneEnviar === 'function') oneEnviar(); }
+  }
+}
+
+function _pinahAgendaParser(txt) {
+  // Mesmo parser do onePromptPinah — duplicado aqui para funcionar sem o textarea hidden
+  var nome = txt, hora = '', valor = '', tipo = '';
+  var data = new Date();
+  var mVal = txt.match(/r\$\s*([\d.,]+)|(\d+(?:[.,]\d{1,2})?)\s*(?:reais|r\$|RS)/i);
+  if (mVal) { valor = (mVal[1]||mVal[2]).replace(/\./g,'').replace(',','.'); txt = txt.replace(mVal[0],'').trim(); }
+  var mHora = txt.match(/(\d{1,2})\s*(?:h|:)\s*(\d{2})?/i);
+  if (mHora) { hora = mHora[1].padStart(2,'0')+':'+(mHora[2]||'00').padStart(2,'0'); txt = txt.replace(mHora[0],'').trim(); }
+  if (/amanhã/i.test(txt)) { data.setDate(data.getDate()+1); txt = txt.replace(/amanhã/i,'').trim(); }
+  else if (/hoje/i.test(txt)) { txt = txt.replace(/hoje/i,'').trim(); }
+  else { var mD = txt.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/); if(mD){ var ano=mD[3]?(mD[3].length===2?'20'+mD[3]:mD[3]):data.getFullYear(); data=new Date(parseInt(ano),parseInt(mD[2])-1,parseInt(mD[1])); txt=txt.replace(mD[0],'').trim(); } }
+  txt = txt.replace(/^(às|as|com|para|pra)\s+/i,'').replace(/\s+(às|as|com|para|pra)\s+/gi,' ').trim();
+  nome = txt || nome;
+  var ds = data.getFullYear()+'-'+String(data.getMonth()+1).padStart(2,'0')+'-'+String(data.getDate()).padStart(2,'0');
+  oneAgModalAbrir(ds);
+  setTimeout(function(){
+    document.getElementById('one-ag-modal-nome').value  = nome;
+    document.getElementById('one-ag-modal-hora').value  = hora;
+    document.getElementById('one-ag-modal-valor').value = valor;
+    document.getElementById('one-ag-modal-nome').focus();
+  }, 120);
+  if (typeof oneToast==='function') oneToast('Pinah entendeu — confira e salve!');
+}
+
+function _pinahTarefaParser(txt) {
+  var prio = 'Normal';
+  if (/alta/i.test(txt)) { prio = 'Alta'; txt = txt.replace(/alta/i,'').trim(); }
+  else if (/baixa/i.test(txt)) { prio = 'Baixa'; txt = txt.replace(/baixa/i,'').trim(); }
+  txt = txt.replace(/prioridade/i,'').trim();
+  var data = '';
+  if (/amanhã/i.test(txt)) { var d=new Date(); d.setDate(d.getDate()+1); data=d.toISOString().slice(0,10); txt=txt.replace(/amanhã/i,'').trim(); }
+  else if (/hoje/i.test(txt)) { data=new Date().toISOString().slice(0,10); txt=txt.replace(/hoje/i,'').trim(); }
+  var nome = txt.trim() || 'Nova tarefa';
+  oneTarModalAbrir();
+  setTimeout(function(){
+    document.getElementById('one-tar-modal-nome').value = nome;
+    document.getElementById('one-tar-modal-prio').value = prio;
+    if (data) document.getElementById('one-tar-modal-data').value = data;
+    document.getElementById('one-tar-modal-nome').focus();
+  }, 120);
+  if (typeof oneToast==='function') oneToast('Pinah entendeu — confira e salve!');
+}
+
+function _pinahFinanceiroParser(txt) {
+  var tipo = /pague?i|despesa|gastei|aluguel|farmácia/i.test(txt) ? 'despesa' : 'receita';
+  var valor = '';
+  var mVal = txt.match(/r\$\s*([\d.,]+)|(\d+(?:[.,]\d{1,2})?)/i);
+  if (mVal) { valor = (mVal[1]||mVal[2]).replace(/\./g,'').replace(',','.'); }
+  var data = new Date();
+  if (/amanhã/i.test(txt)) data.setDate(data.getDate()+1);
+  var ds = data.toISOString().slice(0,10);
+  // Preenche o form inline do financeiro
+  oneFinSetTipo(tipo);
+  var n = document.getElementById('one-fin-nome'); if(n) n.value = txt.replace(/r\$\s*[\d.,]+/gi,'').replace(/(hoje|amanhã|recebi|paguei|despesa|receita)/gi,'').trim();
+  var v = document.getElementById('one-fin-valor'); if(v) v.value = valor;
+  var d = document.getElementById('one-fin-data'); if(d) d.value = ds;
+  if (typeof oneToast==='function') oneToast('Pinah entendeu — confira e salve!');
+}
+
+
 /* ── Agenda Kanban: modal + toggle + excluir ── */
 function oneAgToggleRealizado(id) {
   var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos')||'[]'); } catch(e){}
@@ -4309,6 +4440,7 @@ function oneToast(msg) {
   }
 
   function activateOne() {
+  pinahNotchShow();
     oneInitDemo();
     var so = document.getElementById('screen-one');
     if (!so) return;
