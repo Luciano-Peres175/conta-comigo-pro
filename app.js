@@ -3308,7 +3308,7 @@ function oneTarModalAbrir(area) {
   var sel = document.getElementById('one-tar-modal-area');
   var areas = oneTarGetAreas();
   sel.innerHTML = areas.map(function(a){ return '<option value="' + a.replace(/"/g,'&quot;') + '"' + (a===(area||'Geral')?' selected':'') + '>' + a + '</option>'; }).join('');
-  modal.classList.remove('hidden');
+  modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-tar-modal-nome').focus(); }, 100);
 }
 
@@ -3328,13 +3328,13 @@ function oneTarModalEditar(id) {
   var sel = document.getElementById('one-tar-modal-area');
   var areas = oneTarGetAreas();
   sel.innerHTML = areas.map(function(a){ return '<option value="' + a.replace(/"/g,'&quot;') + '"' + (a===t.area?' selected':'') + '>' + a + '</option>'; }).join('');
-  modal.classList.remove('hidden');
+  modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-tar-modal-nome').focus(); }, 100);
 }
 
 function oneTarModalFechar() {
   var modal = document.getElementById('one-tar-modal');
-  if (modal) modal.classList.add('hidden');
+  if (modal) modal.classList.remove('open');
 }
 
 function oneTarModalSalvar() {
@@ -4198,7 +4198,7 @@ function oneAgModalAbrir(date) {
   document.getElementById('one-ag-modal-tipo').value = '';
   document.getElementById('one-ag-modal-valor').value = '';
   document.getElementById('one-ag-modal-obs').value  = '';
-  modal.classList.remove('hidden');
+  modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-ag-modal-nome').focus(); }, 100);
 }
 
@@ -4216,13 +4216,13 @@ function oneAgModalEditar(id) {
   document.getElementById('one-ag-modal-tipo').value  = c.tipo || '';
   document.getElementById('one-ag-modal-valor').value = c.valor || '';
   document.getElementById('one-ag-modal-obs').value   = c.observacoes || '';
-  modal.classList.remove('hidden');
+  modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-ag-modal-nome').focus(); }, 100);
 }
 
 function oneAgModalFechar() {
   var modal = document.getElementById('one-ag-modal');
-  if (modal) modal.classList.add('hidden');
+  if (modal) modal.classList.remove('open');
 }
 
 function oneAgModalSalvar() {
