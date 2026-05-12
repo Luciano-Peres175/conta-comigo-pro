@@ -3000,6 +3000,22 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 }
 .one-ag-nav-btn:hover { transform: translateY(-1px); }
 .one-ag-nav-btn:active { transform: translateY(1px); }
+.one-ag-content {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(220px, 1fr);
+  gap: 14px;
+}
+.one-ag-grid-col { min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+.one-ag-form-col {
+  display: flex; flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+.one-ag-form-col::-webkit-scrollbar { display: none; }
 .one-ag-week-grid {
   flex: 1;
   min-height: 0;
@@ -3008,6 +3024,129 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   gap: 8px;
   overflow: hidden;
 }
+
+/* Prompt da Pinah */
+.one-ag-prompt-box {
+  background: linear-gradient(180deg, #F4EBFA 0%, #EBDDF5 100%);
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow:
+    0 0 0 1.5px rgba(160,32,240,0.55),
+    0 0 0 4px rgba(160,32,240,0.12),
+    0 4px 10px rgba(0,0,0,.06);
+  flex-shrink: 0;
+}
+.one-ag-prompt-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.one-ag-prompt-pinah { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; }
+.one-ag-prompt-label { font-size: 11px; font-weight: 600; color: #6E4F87; letter-spacing: 0.3px; }
+.one-ag-prompt-row { display: flex; gap: 6px; }
+.one-ag-prompt-input {
+  flex: 1;
+  background: #fff;
+  border: 1px solid rgba(160,32,240,0.30);
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-size: 12px;
+  color: #2D2D2D;
+  outline: none;
+  font-family: system-ui;
+}
+.one-ag-prompt-input:focus { border-color: rgba(160,32,240,0.70); box-shadow: 0 0 0 3px rgba(160,32,240,0.12); }
+.one-ag-prompt-input::placeholder { color: #B0A0C0; font-style: italic; }
+.one-ag-prompt-btn {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  background: #7B5CF0;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow:
+    0 0 0 3px rgba(123,92,240,0.18),
+    0 3px 8px rgba(123,92,240,0.30);
+  transition: transform .12s ease;
+}
+.one-ag-prompt-btn:hover { transform: translateY(-1px); }
+.one-ag-prompt-btn:active { transform: translateY(1px); }
+
+/* Formulário inline */
+.one-ag-form-box {
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px 12px 10px;
+  box-shadow:
+    0 0 0 1.5px rgba(160,32,240,0.45),
+    0 0 0 4px rgba(160,32,240,0.10),
+    0 4px 10px rgba(0,0,0,.06);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.one-ag-form-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2D2D2D;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(160,32,240,0.10);
+  margin-bottom: 2px;
+}
+.one-ag-field {
+  width: 100%;
+  background: #FBF8F2;
+  border: 1px solid rgba(160,32,240,0.20);
+  border-radius: 8px;
+  padding: 6px 9px;
+  font-size: 12px;
+  color: #2D2D2D;
+  outline: none;
+  font-family: system-ui;
+  resize: vertical;
+  min-height: 30px;
+}
+.one-ag-field:focus { border-color: rgba(160,32,240,0.60); background: #fff; }
+.one-ag-field::placeholder { color: #B0AEA8; }
+.one-ag-field-row { display: flex; gap: 6px; }
+.one-ag-field-row > .one-ag-field { flex: 1; min-width: 0; }
+.one-ag-form-actions { display: flex; gap: 6px; margin-top: 4px; }
+.one-ag-form-cancel {
+  background: transparent;
+  border: 1px solid rgba(160,32,240,0.25);
+  color: #6E4F87;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: system-ui;
+}
+.one-ag-form-cancel:hover { background: rgba(160,32,240,0.05); }
+.one-ag-form-save {
+  flex: 1;
+  background: linear-gradient(180deg, #9B72B0 0%, #7B5CF0 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: system-ui;
+  box-shadow: 0 3px 8px rgba(123,92,240,0.25);
+}
+.one-ag-form-save:hover { box-shadow: 0 5px 12px rgba(123,92,240,0.35); }
+.one-ag-form-del {
+  background: #E87A7A;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: system-ui;
+}
+.one-ag-form-del:hover { background: #D86060; }
 .one-ag-day-col {
   background: #fff;
   border-radius: 12px;
@@ -3384,9 +3523,40 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
           <span class="one-ag-mes-label" id="one-ag-mes-label">—</span>
           <button class="one-ag-nav-btn" onclick="oneAgNavegar(1)" title="Próxima semana">›</button>
         </div>
-        <div class="one-ag-week-grid" id="one-ag-week-grid"></div>
-        <div class="one-ag-actions">
-          <button class="one-ag-novo-btn" onclick="oneAbrirCompromisso()">+ Novo Compromisso</button>
+        <div class="one-ag-content">
+          <div class="one-ag-grid-col">
+            <div class="one-ag-week-grid" id="one-ag-week-grid"></div>
+          </div>
+          <div class="one-ag-form-col">
+            <!-- Prompt Pinah -->
+            <div class="one-ag-prompt-box">
+              <div class="one-ag-prompt-head">
+                <img src="assets/icons/pinah-mascote.png" class="one-ag-prompt-pinah" alt="Pinah">
+                <span class="one-ag-prompt-label">Diga à Pinah</span>
+              </div>
+              <div class="one-ag-prompt-row">
+                <input type="text" id="one-ag-prompt-input" class="one-ag-prompt-input" placeholder='ex: "Maria amanhã 14h R$ 180"' onkeydown="if(event.key==='Enter')onePromptPinah()">
+                <button class="one-ag-prompt-btn" onclick="onePromptPinah()" title="Pedir pra Pinah">↗</button>
+              </div>
+            </div>
+            <!-- Formulário inline -->
+            <div class="one-ag-form-box">
+              <div class="one-ag-form-title" id="one-ag-form-title">Novo Compromisso</div>
+              <input type="text" class="one-ag-field" id="comp-nome" placeholder="Nome ou descrição">
+              <div class="one-ag-field-row">
+                <input type="date" class="one-ag-field" id="comp-data">
+                <input type="time" class="one-ag-field" id="comp-hora">
+              </div>
+              <input type="text" class="one-ag-field" id="comp-tipo" placeholder="Tipo (Atendimento, Reunião…)">
+              <input type="number" class="one-ag-field" id="comp-valor" placeholder="Valor previsto — vincula receita futura" inputmode="decimal" step="0.01">
+              <textarea class="one-ag-field" id="comp-obs" placeholder="Observações" rows="2"></textarea>
+              <div class="one-ag-form-actions">
+                <button class="one-ag-form-cancel" onclick="oneResetFormCompromisso()">Limpar</button>
+                <button class="one-ag-form-del" id="comp-del-btn" onclick="oneExcluirCompromisso()" hidden>Excluir</button>
+                <button class="one-ag-form-save" onclick="oneSalvarCompromisso()">Salvar</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -7988,16 +8158,19 @@ function oneSalvarLancamento() {
 var oneEditandoCompromissoId = null;
 
 function oneAbrirCompromisso(id) {
+  // Garante que estamos no painel Agenda no centro
+  if (typeof swapToCenter === 'function') swapToCenter('agenda');
+
   oneEditandoCompromissoId = id || null;
-  var title = document.getElementById('one-modal-comp-title');
+  var title = document.getElementById('one-ag-form-title');
   var del   = document.getElementById('comp-del-btn');
   var obsEl = document.getElementById('comp-obs');
 
   if (id) {
     var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
     var c = lista.find(function(x){ return x.id === id; });
-    if (!c) { oneToast('Compromisso não encontrado.'); return; }
-    title.textContent = 'Editar Compromisso';
+    if (!c) { if (typeof oneToast === 'function') oneToast('Compromisso não encontrado.'); return; }
+    if (title) title.textContent = 'Editar Compromisso';
     if (del) del.removeAttribute('hidden');
     document.getElementById('comp-data').value  = c.data || '';
     document.getElementById('comp-hora').value  = c.hora || '';
@@ -8005,20 +8178,89 @@ function oneAbrirCompromisso(id) {
     document.getElementById('comp-tipo').value  = c.tipo || '';
     document.getElementById('comp-valor').value = c.valor || '';
     if (obsEl) obsEl.value = c.observacoes || '';
+    // Foca no campo nome pra facilitar edição
+    setTimeout(function(){ document.getElementById('comp-nome').focus(); }, 50);
   } else {
-    var today = new Date();
-    title.textContent = 'Novo Compromisso';
-    if (del) del.setAttribute('hidden', '');
-    document.getElementById('comp-data').value = today.getFullYear() + '-'
-      + String(today.getMonth()+1).padStart(2,'0') + '-'
-      + String(today.getDate()).padStart(2,'0');
-    document.getElementById('comp-hora').value  = '';
-    document.getElementById('comp-nome').value  = '';
-    document.getElementById('comp-tipo').value  = '';
-    document.getElementById('comp-valor').value = '';
-    if (obsEl) obsEl.value = '';
+    oneResetFormCompromisso();
   }
-  document.getElementById('one-modal-compromisso').classList.add('open');
+}
+
+function oneResetFormCompromisso() {
+  oneEditandoCompromissoId = null;
+  var today = new Date();
+  var title = document.getElementById('one-ag-form-title');
+  var del   = document.getElementById('comp-del-btn');
+  var obsEl = document.getElementById('comp-obs');
+  if (title) title.textContent = 'Novo Compromisso';
+  if (del) del.setAttribute('hidden', '');
+  var dataEl = document.getElementById('comp-data');
+  if (dataEl) dataEl.value = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  var horaEl = document.getElementById('comp-hora'); if (horaEl) horaEl.value = '';
+  var nomeEl = document.getElementById('comp-nome'); if (nomeEl) nomeEl.value = '';
+  var tipoEl = document.getElementById('comp-tipo'); if (tipoEl) tipoEl.value = '';
+  var valEl  = document.getElementById('comp-valor'); if (valEl) valEl.value = '';
+  if (obsEl) obsEl.value = '';
+}
+
+/* ── Prompt da Pinah — parser simples (sem IA ainda) ─────── */
+function onePromptPinah() {
+  var input = document.getElementById('one-ag-prompt-input');
+  if (!input) return;
+  var txt = (input.value || '').trim();
+  if (!txt) return;
+
+  var nome = txt, hora = '', valor = '', tipo = '';
+  var data = new Date();
+
+  // Captura valor (R$ X ou só número grande precedido de "R$" ou "valor")
+  var mVal = txt.match(/r\$\s*([\d.,]+)|(\d+(?:[.,]\d{1,2})?)\s*(?:reais|r\$|RS)/i);
+  if (mVal) {
+    valor = (mVal[1] || mVal[2]).replace(/\./g,'').replace(',','.');
+    txt = txt.replace(mVal[0], '').trim();
+  }
+  // Captura hora "14h", "14:30", "14h30"
+  var mHora = txt.match(/(\d{1,2})\s*(?:h|:)\s*(\d{2})?/i);
+  if (mHora) {
+    var hh = mHora[1].padStart(2,'0');
+    var mm = (mHora[2] || '00').padStart(2,'0');
+    hora = hh + ':' + mm;
+    txt = txt.replace(mHora[0], '').trim();
+  }
+  // Captura data relativa
+  if (/\bamanhã\b/i.test(txt)) {
+    data.setDate(data.getDate() + 1);
+    txt = txt.replace(/\bamanhã\b/i, '').trim();
+  } else if (/\bhoje\b/i.test(txt)) {
+    txt = txt.replace(/\bhoje\b/i, '').trim();
+  } else if (/\bdepois\s+de\s+amanhã\b/i.test(txt)) {
+    data.setDate(data.getDate() + 2);
+    txt = txt.replace(/\bdepois\s+de\s+amanhã\b/i, '').trim();
+  } else {
+    // Captura data DD/MM
+    var mData = txt.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+    if (mData) {
+      var ano = mData[3] ? (mData[3].length === 2 ? '20'+mData[3] : mData[3]) : data.getFullYear();
+      data = new Date(parseInt(ano), parseInt(mData[2])-1, parseInt(mData[1]));
+      txt = txt.replace(mData[0], '').trim();
+    }
+  }
+  // Limpa palavras de cola
+  txt = txt.replace(/^(às|as|com|para|pra)\s+/i, '').replace(/\s+(às|as|com|para|pra)\s+/gi, ' ').trim();
+  nome = txt || nome;
+
+  // Preenche o formulário
+  oneEditandoCompromissoId = null;
+  var title = document.getElementById('one-ag-form-title');
+  var del   = document.getElementById('comp-del-btn');
+  if (title) title.textContent = 'Novo Compromisso (via Pinah)';
+  if (del) del.setAttribute('hidden', '');
+  document.getElementById('comp-nome').value = nome;
+  document.getElementById('comp-data').value = data.getFullYear() + '-' + String(data.getMonth()+1).padStart(2,'0') + '-' + String(data.getDate()).padStart(2,'0');
+  document.getElementById('comp-hora').value = hora;
+  document.getElementById('comp-tipo').value = tipo;
+  document.getElementById('comp-valor').value = valor;
+  input.value = '';
+  if (typeof oneToast === 'function') oneToast('Pinah entendeu — confira e salve.');
 }
 
 function oneSalvarCompromisso() {
@@ -8064,8 +8306,7 @@ function oneSalvarCompromisso() {
   }
 
   localStorage.setItem('compromissos', JSON.stringify(lista));
-  oneFecharModal('compromisso');
-  oneEditandoCompromissoId = null;
+  oneResetFormCompromisso();
   if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
   if (typeof renderOneAgenda === 'function') renderOneAgenda();
@@ -8084,9 +8325,8 @@ function oneExcluirCompromisso() {
   rec = rec.filter(function(r){ return r.compromissoId !== oneEditandoCompromissoId; });
   localStorage.setItem('receitas', JSON.stringify(rec));
 
-  oneFecharModal('compromisso');
-  oneEditandoCompromissoId = null;
-  oneToast('✓ Compromisso excluído.');
+  oneResetFormCompromisso();
+  if (typeof oneToast === 'function') oneToast('✓ Compromisso excluído.');
   if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
   if (typeof renderOneAgenda === 'function') renderOneAgenda();
