@@ -7839,7 +7839,7 @@ function renderOneTarefasPainel() {
     var prioBg  = prio === 'alta' ? '#FBEAEA' : prio === 'baixa' ? '#E6F5F0' : '#F0E8F8';
     var conc = !!t.concluida;
     return '<div class="one-tarefa-item" style="opacity:' + (conc?'.5':'1') + '">' +
-             '<div class="one-tarefa-check" onclick="oneTarToggle('' + t.id + '')" style="cursor:pointer;background:' + (conc?'#4CAF50':'transparent') + ';border-color:' + (conc?'#4CAF50':'#B0AEA8') + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px">' + (conc?'✓':'') + '</div>' +
+             '<div class="one-tarefa-check" data-tid="' + t.id + '" onclick="oneTarToggle(this.dataset.tid)" style="cursor:pointer;background:' + (conc?'#4CAF50':'transparent') + ';border-color:' + (conc?'#4CAF50':'#B0AEA8') + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px">' + (conc?'✓':'') + '</div>' +
              '<span class="one-tarefa-nome" style="text-decoration:' + (conc?'line-through':'none') + '">' + (t.nome || t.titulo || 'Sem nome').replace(/</g,'&lt;') + '</span>' +
              '<span class="one-tarefa-prio" style="background:' + prioBg + ';color:' + prioCor + '">' + (t.prioridade || 'Normal') + '</span>' +
            '</div>';
