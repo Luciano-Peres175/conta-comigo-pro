@@ -3515,15 +3515,19 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
     <div class="one-modal-overlay" id="one-modal-compromisso">
       <div class="one-modal">
         <div class="one-modal-header">
-          <span class="one-modal-title">Novo Compromisso</span>
+          <span class="one-modal-title" id="one-modal-comp-title">Novo Compromisso</span>
           <button class="one-modal-close" onclick="oneFecharModal('compromisso')">✕</button>
         </div>
         <input type="text" class="one-field" id="comp-nome" placeholder="Nome ou descrição">
         <input type="date" class="one-field" id="comp-data">
         <input type="time" class="one-field" id="comp-hora">
         <input type="text" class="one-field" id="comp-tipo" placeholder="Tipo (Atendimento, Reunião…)">
-        <input type="number" class="one-field" id="comp-valor" placeholder="Valor (opcional)" inputmode="decimal" step="0.01">
-        <button class="one-modal-save" onclick="oneSalvarCompromisso()">Salvar</button>
+        <input type="number" class="one-field" id="comp-valor" placeholder="Valor previsto — vincula como receita futura (opcional)" inputmode="decimal" step="0.01">
+        <textarea class="one-field" id="comp-obs" placeholder="Observações (opcional)" rows="2" style="resize:vertical;min-height:50px"></textarea>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button class="one-modal-save" id="comp-del-btn" onclick="oneExcluirCompromisso()" hidden style="background:#E87A7A;color:#fff;flex:0 0 auto;padding:0 20px">Excluir</button>
+          <button class="one-modal-save" onclick="oneSalvarCompromisso()" style="flex:1">Salvar</button>
+        </div>
       </div>
     </div>
 
@@ -7534,9 +7538,7 @@ function renderOneAgendaPainel() {
       events = doDia.map(function(c){
         var hora = (c.hora || '--:--');
         var nome = (c.nome || c.descricao || 'Compromisso');
-        return '<div class="one-ag-event" onclick="event.stopPropagation();' +
-               (typeof editarCompromisso === 'function' ? "editarCompromisso('" + (c.id || '') + "')" : '') +
-               '">' +
+        return '<div class="one-ag-event" onclick="event.stopPropagation();oneAbrirCompromisso(\'' + (c.id || '') + '\')">' +
                '<div class="one-ag-event-hora">' + hora + '</div>' +
                '<div class="one-ag-event-nome">' + nome.replace(/</g,'&lt;') + '</div>' +
                '</div>';
@@ -7983,15 +7985,39 @@ function oneSalvarLancamento() {
   oneToast(_lancTipo === 'receita' ? '✓ Receita salva!' : '✓ Despesa salva!');
 }
 
-function oneAbrirCompromisso() {
-  var today = new Date();
-  document.getElementById('comp-data').value = today.getFullYear() + '-'
-    + String(today.getMonth()+1).padStart(2,'0') + '-'
-    + String(today.getDate()).padStart(2,'0');
-  document.getElementById('comp-hora').value  = '';
-  document.getElementById('comp-nome').value  = '';
-  document.getElementById('comp-tipo').value  = '';
-  document.getElementById('comp-valor').value = '';
+var oneEditandoCompromissoId = null;
+
+function oneAbrirCompromisso(id) {
+  oneEditandoCompromissoId = id || null;
+  var title = document.getElementById('one-modal-comp-title');
+  var del   = document.getElementById('comp-del-btn');
+  var obsEl = document.getElementById('comp-obs');
+
+  if (id) {
+    var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
+    var c = lista.find(function(x){ return x.id === id; });
+    if (!c) { oneToast('Compromisso não encontrado.'); return; }
+    title.textContent = 'Editar Compromisso';
+    if (del) del.removeAttribute('hidden');
+    document.getElementById('comp-data').value  = c.data || '';
+    document.getElementById('comp-hora').value  = c.hora || '';
+    document.getElementById('comp-nome').value  = c.nome || '';
+    document.getElementById('comp-tipo').value  = c.tipo || '';
+    document.getElementById('comp-valor').value = c.valor || '';
+    if (obsEl) obsEl.value = c.observacoes || '';
+  } else {
+    var today = new Date();
+    title.textContent = 'Novo Compromisso';
+    if (del) del.setAttribute('hidden', '');
+    document.getElementById('comp-data').value = today.getFullYear() + '-'
+      + String(today.getMonth()+1).padStart(2,'0') + '-'
+      + String(today.getDate()).padStart(2,'0');
+    document.getElementById('comp-hora').value  = '';
+    document.getElementById('comp-nome').value  = '';
+    document.getElementById('comp-tipo').value  = '';
+    document.getElementById('comp-valor').value = '';
+    if (obsEl) obsEl.value = '';
+  }
   document.getElementById('one-modal-compromisso').classList.add('open');
 }
 
@@ -8001,13 +8027,69 @@ function oneSalvarCompromisso() {
   var hora  = document.getElementById('comp-hora').value;
   var tipo  = (document.getElementById('comp-tipo').value || '').trim() || 'Compromisso';
   var valor = parseFloat(document.getElementById('comp-valor').value) || 0;
+  var obs   = (document.getElementById('comp-obs') || {}).value || '';
   if (!nome || !data) { oneToast('Preencha nome e data.'); return; }
+
   var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
-  lista.push({ id: 'one-'+Date.now(), data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, status:'Pendente', duracao:45 });
+
+  if (oneEditandoCompromissoId) {
+    var idx = lista.findIndex(function(x){ return x.id === oneEditandoCompromissoId; });
+    if (idx !== -1) {
+      lista[idx] = Object.assign({}, lista[idx], { data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, observacoes:obs });
+    }
+    // Atualiza receita vinculada se existir
+    var rec = []; try { rec = JSON.parse(localStorage.getItem('receitas') || '[]'); } catch(e){}
+    var rIdx = rec.findIndex(function(r){ return r.compromissoId === oneEditandoCompromissoId; });
+    if (valor > 0) {
+      if (rIdx !== -1) {
+        rec[rIdx] = Object.assign({}, rec[rIdx], { data:data, nome:nome, tipo:tipo, valor:valor });
+      } else {
+        rec.push({ id:'r-'+Date.now(), compromissoId:oneEditandoCompromissoId, data:data, nome:nome, tipo:tipo, valor:valor, status:'Pendente', categoria:tipo });
+      }
+    } else if (rIdx !== -1) {
+      rec.splice(rIdx, 1); // remove receita se valor virou zero
+    }
+    localStorage.setItem('receitas', JSON.stringify(rec));
+    oneToast('✓ Compromisso atualizado!');
+  } else {
+    var novoId = 'one-'+Date.now();
+    lista.push({ id:novoId, data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, observacoes:obs, status:'Pendente', duracao:45 });
+    // Cria receita futura pendente se valor > 0
+    if (valor > 0) {
+      var rec = []; try { rec = JSON.parse(localStorage.getItem('receitas') || '[]'); } catch(e){}
+      rec.push({ id:'r-'+Date.now(), compromissoId:novoId, data:data, nome:nome, tipo:tipo, valor:valor, status:'Pendente', categoria:tipo });
+      localStorage.setItem('receitas', JSON.stringify(rec));
+    }
+    oneToast('✓ Compromisso salvo!');
+  }
+
   localStorage.setItem('compromissos', JSON.stringify(lista));
   oneFecharModal('compromisso');
-  renderOneAgenda();
-  oneToast('✓ Compromisso salvo!');
+  oneEditandoCompromissoId = null;
+  if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  if (typeof renderOneAgenda === 'function') renderOneAgenda();
+}
+
+function oneExcluirCompromisso() {
+  if (!oneEditandoCompromissoId) return;
+  if (!confirm('Excluir este compromisso? A receita vinculada (se houver) também será removida.')) return;
+
+  var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
+  lista = lista.filter(function(x){ return x.id !== oneEditandoCompromissoId; });
+  localStorage.setItem('compromissos', JSON.stringify(lista));
+
+  // Remove receita vinculada se existir
+  var rec = []; try { rec = JSON.parse(localStorage.getItem('receitas') || '[]'); } catch(e){}
+  rec = rec.filter(function(r){ return r.compromissoId !== oneEditandoCompromissoId; });
+  localStorage.setItem('receitas', JSON.stringify(rec));
+
+  oneFecharModal('compromisso');
+  oneEditandoCompromissoId = null;
+  oneToast('✓ Compromisso excluído.');
+  if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  if (typeof renderOneAgenda === 'function') renderOneAgenda();
 }
 
 function oneToast(msg) {
