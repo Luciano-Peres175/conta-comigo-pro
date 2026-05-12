@@ -3176,6 +3176,10 @@ function renderOneTarefasPainel() {
           '<span class="one-tar-prio-badge" style="background:' + cp.bg + ';color:' + cp.cor + '">' + (t.prioridade||'Normal') + '</span>' +
           (t.data ? '<div class="one-tar-card-data">' + t.data.split('-').reverse().join('/') + '</div>' : '') +
         '</div>' +
+        '<div class="one-tar-card-actions">' +
+          '<button class="one-tar-card-btn edit" data-tid="' + t.id + '" onclick="event.stopPropagation();oneTarModalEditar(this.dataset.tid)" title="Editar">✏️</button>' +
+          '<button class="one-tar-card-btn del" data-tid="' + t.id + '" onclick="event.stopPropagation();oneTarExcluir(this.dataset.tid)" title="Excluir">🗑️</button>' +
+        '</div>' +
       '</div>';
     }).join('');
 
@@ -3278,6 +3282,84 @@ function oneTarToggle(id) {
   var idx = lista.findIndex(function(t){ return t.id === id; });
   if (idx !== -1) { lista[idx].concluida = !lista[idx].concluida; localStorage.setItem('tarefas', JSON.stringify(lista)); }
   if (typeof renderOneTarefasPainel==='function') renderOneTarefasPainel();
+}
+
+
+function oneTarExcluir(id) {
+  if (!confirm('Excluir esta tarefa?')) return;
+  var lista = []; try { lista = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  lista = lista.filter(function(t){ return t.id !== id; });
+  localStorage.setItem('tarefas', JSON.stringify(lista));
+  if (typeof oneToast==='function') oneToast('Tarefa excluída.');
+  renderOneTarefasPainel();
+}
+
+function oneTarModalAbrir(area) {
+  var modal = document.getElementById('one-tar-modal');
+  if (!modal) return;
+  document.getElementById('one-tar-modal-title').textContent = 'Nova tarefa';
+  document.getElementById('one-tar-modal-id').value = '';
+  document.getElementById('one-tar-modal-nome').value = '';
+  document.getElementById('one-tar-modal-desc').value = '';
+  document.getElementById('one-tar-modal-prio').value = 'Normal';
+  document.getElementById('one-tar-modal-status').value = 'pendente';
+  document.getElementById('one-tar-modal-data').value = '';
+  // Preencher áreas no select
+  var sel = document.getElementById('one-tar-modal-area');
+  var areas = oneTarGetAreas();
+  sel.innerHTML = areas.map(function(a){ return '<option value="' + a.replace(/"/g,'&quot;') + '"' + (a===(area||'Geral')?' selected':'') + '>' + a + '</option>'; }).join('');
+  modal.classList.remove('hidden');
+  setTimeout(function(){ document.getElementById('one-tar-modal-nome').focus(); }, 100);
+}
+
+function oneTarModalEditar(id) {
+  var lista = []; try { lista = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  var t = lista.find(function(x){ return x.id === id; });
+  if (!t) return;
+  var modal = document.getElementById('one-tar-modal');
+  if (!modal) return;
+  document.getElementById('one-tar-modal-title').textContent = 'Editar tarefa';
+  document.getElementById('one-tar-modal-id').value = t.id;
+  document.getElementById('one-tar-modal-nome').value = t.nome || '';
+  document.getElementById('one-tar-modal-desc').value = t.descricao || '';
+  document.getElementById('one-tar-modal-prio').value = t.prioridade || 'Normal';
+  document.getElementById('one-tar-modal-status').value = t.concluida ? 'concluida' : 'pendente';
+  document.getElementById('one-tar-modal-data').value = t.data || '';
+  var sel = document.getElementById('one-tar-modal-area');
+  var areas = oneTarGetAreas();
+  sel.innerHTML = areas.map(function(a){ return '<option value="' + a.replace(/"/g,'&quot;') + '"' + (a===t.area?' selected':'') + '>' + a + '</option>'; }).join('');
+  modal.classList.remove('hidden');
+  setTimeout(function(){ document.getElementById('one-tar-modal-nome').focus(); }, 100);
+}
+
+function oneTarModalFechar() {
+  var modal = document.getElementById('one-tar-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function oneTarModalSalvar() {
+  var nome = (document.getElementById('one-tar-modal-nome').value || '').trim();
+  if (!nome) { if (typeof oneToast==='function') oneToast('Título é obrigatório.','error'); return; }
+  var id     = document.getElementById('one-tar-modal-id').value;
+  var desc   = document.getElementById('one-tar-modal-desc').value || '';
+  var area   = document.getElementById('one-tar-modal-area').value || 'Geral';
+  var prio   = document.getElementById('one-tar-modal-prio').value || 'Normal';
+  var status = document.getElementById('one-tar-modal-status').value;
+  var data   = document.getElementById('one-tar-modal-data').value || '';
+  var lista  = []; try { lista = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  if (id) {
+    var idx = lista.findIndex(function(t){ return t.id === id; });
+    if (idx !== -1) {
+      lista[idx] = Object.assign(lista[idx], { nome: nome, descricao: desc, area: area, prioridade: prio, concluida: status==='concluida', data: data });
+    }
+    if (typeof oneToast==='function') oneToast('✓ Tarefa atualizada!');
+  } else {
+    lista.push({ id: Date.now().toString(), nome: nome, descricao: desc, area: area, prioridade: prio, concluida: status==='concluida', data: data, criado: new Date().toISOString() });
+    if (typeof oneToast==='function') oneToast('✓ Tarefa criada!');
+  }
+  localStorage.setItem('tarefas', JSON.stringify(lista));
+  oneTarModalFechar();
+  renderOneTarefasPainel();
 }
 
 function oneTarPromptPinah() {

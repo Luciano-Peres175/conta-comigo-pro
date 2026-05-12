@@ -371,7 +371,7 @@
           </div>
           <div class="one-tar-bar-actions">
             <button class="one-tar-btn-area" onclick="oneTarNovaArea()">+ Nova área</button>
-            <button class="one-tar-btn-nova" onclick="oneTarFocarPrimeira()">+ Tarefa</button>
+            <button class="one-tar-btn-nova" onclick="oneTarModalAbrir()">+ Tarefa</button>
           </div>
         </div>
 
@@ -1403,5 +1403,57 @@
      SCRIPTS
 ═══════════════════════════════════════════════════════════════ -->
 <script src="app.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MODAL — Nova / Editar Tarefa
+═══════════════════════════════════════════════════════════════ -->
+<div id="one-tar-modal" class="one-modal-overlay hidden">
+  <div class="one-modal-box">
+    <div class="one-modal-title">
+      <span id="one-tar-modal-title">Nova tarefa</span>
+      <button class="one-modal-close" onclick="oneTarModalFechar()">✕</button>
+    </div>
+    <input type="hidden" id="one-tar-modal-id">
+    <div class="one-modal-field">
+      <label class="one-modal-label">Título</label>
+      <input id="one-tar-modal-nome" class="one-modal-input" placeholder="O que precisa ser feito?" autofocus>
+    </div>
+    <div class="one-modal-field">
+      <label class="one-modal-label">Descrição (opcional)</label>
+      <textarea id="one-tar-modal-desc" class="one-modal-textarea" placeholder="Detalhes..."></textarea>
+    </div>
+    <div class="one-modal-row">
+      <div class="one-modal-field">
+        <label class="one-modal-label">Área</label>
+        <select id="one-tar-modal-area" class="one-modal-select"></select>
+      </div>
+      <div class="one-modal-field">
+        <label class="one-modal-label">Prioridade</label>
+        <select id="one-tar-modal-prio" class="one-modal-select">
+          <option value="Normal">Normal</option>
+          <option value="Alta">Alta</option>
+          <option value="Baixa">Baixa</option>
+        </select>
+      </div>
+    </div>
+    <div class="one-modal-row">
+      <div class="one-modal-field">
+        <label class="one-modal-label">Status</label>
+        <select id="one-tar-modal-status" class="one-modal-select">
+          <option value="pendente">Pendente</option>
+          <option value="concluida">Concluída</option>
+        </select>
+      </div>
+      <div class="one-modal-field">
+        <label class="one-modal-label">Prazo (opcional)</label>
+        <input id="one-tar-modal-data" class="one-modal-input" type="date">
+      </div>
+    </div>
+    <div class="one-modal-footer">
+      <button class="one-modal-btn-cancel" onclick="oneTarModalFechar()">Cancelar</button>
+      <button class="one-modal-btn-save" onclick="oneTarModalSalvar()">Salvar tarefa</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
