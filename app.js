@@ -3420,16 +3420,16 @@ function oneAgNavegar(delta) {
 }
 
 function renderOneAgendaPainel() {
-  var grid = document.getElementById('one-ag-week-grid');
-  var label = document.getElementById('one-ag-mes-label');
-  if (!grid) return;
+  var kanban = document.getElementById('one-ag-kanban');
+  var label  = document.getElementById('one-ag-mes-label');
+  if (!kanban) return;
 
   var compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
   var hoje = new Date(); hoje.setHours(0,0,0,0);
-  var hojeStr = (typeof toDateStr === 'function') ? toDateStr(hoje) : hoje.toISOString().slice(0,10);
+  var hojeStr = hoje.toISOString().slice(0,10);
 
-  // segunda da semana corrente + offset
-  var dow = hoje.getDay(); // 0=dom, 1=seg, ...
+  // Segunda da semana + offset
+  var dow = hoje.getDay();
   var diffSeg = (dow === 0 ? -6 : 1 - dow);
   var seg = new Date(hoje);
   seg.setDate(hoje.getDate() + diffSeg + (oneAgWeekOffset * 7));
@@ -3440,54 +3440,67 @@ function renderOneAgendaPainel() {
     if (seg.getMonth() === domDaSemana.getMonth()) {
       label.textContent = meses[seg.getMonth()] + ' ' + seg.getFullYear();
     } else {
-      label.textContent = meses[seg.getMonth()] + ' / ' + meses[domDaSemana.getMonth()] + ' ' + domDaSemana.getFullYear();
+      label.textContent = meses[seg.getMonth()] + ' / ' + meses[domDaSemana.getMonth()];
     }
   }
 
-  var NOMES = ['seg','ter','qua','qui','sex','sáb','dom'];
+  var NOMES = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
   var html = '';
+
   for (var i = 0; i < 7; i++) {
     var d = new Date(seg); d.setDate(seg.getDate() + i);
-    var ds = (typeof toDateStr === 'function') ? toDateStr(d) : d.toISOString().slice(0,10);
+    var ds = d.toISOString().slice(0,10);
     var isHoje = ds === hojeStr;
-    var doDia = compromissos.filter(function(c){ return c.data === ds; })
-                            .sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
 
-    var events = doDia.map(function(c){
-      var hora = (c.hora || '');
-      var nome = (c.nome || c.descricao || 'Compromisso');
-      var top = oneHoraParaTop(hora);
-      var duracao = parseInt(c.duracao) || 45; // minutos
-      var height = Math.max(24, Math.round(duracao * 50 / 60)); // 50px/h
-      return '<div class="one-ag-event" data-event-id="' + (c.id || '') + '" style="top:' + top + 'px; height:' + height + 'px" onclick="event.stopPropagation();oneAbrirCompromisso(\'' + (c.id || '') + '\')">' +
-             '<div class="one-ag-event-hora">' + (hora || '--:--') + '</div>' +
-             '<div class="one-ag-event-nome">' + nome.replace(/</g,'&lt;') + '</div>' +
-             '</div>';
-    }).join('');
+    var doDia = compromissos
+      .filter(function(c){ return c.data === ds; })
+      .sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
 
-    html += '<div class="one-ag-day-col' + (isHoje ? ' today' : '') + '">' +
-              '<div class="one-ag-day-header">' +
-                '<div class="one-ag-day-name">' + NOMES[i] + '</div>' +
-                '<div class="one-ag-day-num">' + d.getDate() + '</div>' +
-              '</div>' +
-              '<div class="one-ag-day-events" data-date="' + ds + '">' + events + '</div>' +
-            '</div>';
+    var numDia = d.getDate();
+    var numHtml = isHoje
+      ? '<div class="one-ag-kday-num" style="background:#9B72B0;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px">' + numDia + '</div>'
+      : '<div class="one-ag-kday-num">' + numDia + '</div>';
+
+    var cards = doDia.length === 0
+      ? '<div class="one-ag-kday-empty">Livre</div>'
+      : doDia.map(function(c) {
+          var realizado = !!c.status && c.status.toLowerCase() === 'realizado';
+          var hora = c.hora || '';
+          var nome = (c.nome || c.descricao || 'Compromisso').replace(/</g,'&lt;');
+          var tipo = (c.tipo || '').replace(/</g,'&lt;');
+          var checkBg  = realizado ? '#4CAF50' : 'transparent';
+          var checkBdr = realizado ? '#4CAF50' : '#C0BAD0';
+          var checkTxt = realizado ? '✓' : '';
+          // Cor por tipo
+          var borderColor = '#9B72B0';
+          if (/atend|paciente|consulta/i.test(tipo)) borderColor = '#7EC8B8';
+          else if (/reuni|meeting/i.test(tipo))       borderColor = '#7AB8D4';
+          else if (/admin|treino|curso/i.test(tipo))  borderColor = '#E8C4D4';
+          return '<div class="one-ag-kcard' + (realizado ? ' realizado' : '') + '" style="border-left-color:' + borderColor + '">' +
+            '<div class="one-ag-kcard-check" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgToggleRealizado(this.dataset.cid)" style="background:' + checkBg + ';border-color:' + checkBdr + '">' + checkTxt + '</div>' +
+            '<div class="one-ag-kcard-body">' +
+              (hora ? '<div class="one-ag-kcard-hora">' + hora + '</div>' : '') +
+              '<div class="one-ag-kcard-nome">' + nome + '</div>' +
+              (tipo ? '<div class="one-ag-kcard-tipo">' + tipo + '</div>' : '') +
+            '</div>' +
+            '<div class="one-ag-kcard-actions">' +
+              '<button class="one-tar-card-btn edit" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgModalEditar(this.dataset.cid)" title="Editar">✏️</button>' +
+              '<button class="one-tar-card-btn del"  data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgExcluir(this.dataset.cid)"    title="Excluir">🗑️</button>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+    html += '<div class="one-ag-kday-col' + (isHoje ? ' today' : '') + '" data-date="' + ds + '">' +
+      '<div class="one-ag-kday-header">' +
+        '<div class="one-ag-kday-name">' + NOMES[i] + '</div>' +
+        numHtml +
+      '</div>' +
+      '<div class="one-ag-kday-body">' + cards + '</div>' +
+      '<button class="one-ag-kday-add" data-date="' + ds + '" onclick="oneAgModalAbrir(this.dataset.date)">+ Novo</button>' +
+    '</div>';
   }
 
-  // Coluna lateral de horas (07h–22h, 60px/h = 900px total)
-  var hoursHtml = '<div class="one-ag-hours-rail">';
-  for (var h = 8; h <= 19; h++) {
-    var top = 46 + (h - 8) * 50;
-    hoursHtml += '<div class="one-ag-hour-mark" style="top:' + top + 'px">' + (h < 10 ? '0' + h : h) + 'h</div>';
-    if (h < 19) {
-      hoursHtml += '<div class="one-ag-half-mark" style="top:' + (top + 25) + 'px"></div>';
-    }
-  }
-  hoursHtml += '</div>';
-
-  grid.innerHTML = hoursHtml + html;
-  grid.scrollTop = 0;
-  oneInitAgendaSortable();
+  kanban.innerHTML = html;
 }
 
 function oneHoraParaTop(hora) {
@@ -4062,19 +4075,18 @@ function onePromptPinah() {
   txt = txt.replace(/^(às|as|com|para|pra)\s+/i, '').replace(/\s+(às|as|com|para|pra)\s+/gi, ' ').trim();
   nome = txt || nome;
 
-  // Preenche o formulário
-  oneEditandoCompromissoId = null;
-  var title = document.getElementById('one-ag-form-title');
-  var del   = document.getElementById('comp-del-btn');
-  if (title) title.textContent = 'Novo Compromisso (via Pinah)';
-  if (del) del.setAttribute('hidden', '');
-  document.getElementById('comp-nome').value = nome;
-  document.getElementById('comp-data').value = data.getFullYear() + '-' + String(data.getMonth()+1).padStart(2,'0') + '-' + String(data.getDate()).padStart(2,'0');
-  document.getElementById('comp-hora').value = hora;
-  document.getElementById('comp-tipo').value = tipo;
-  document.getElementById('comp-valor').value = valor;
+  // Abre modal pré-preenchido
+  var ds = data.getFullYear() + '-' + String(data.getMonth()+1).padStart(2,'0') + '-' + String(data.getDate()).padStart(2,'0');
+  oneAgModalAbrir(ds);
+  setTimeout(function() {
+    document.getElementById('one-ag-modal-nome').value  = nome;
+    document.getElementById('one-ag-modal-hora').value  = hora;
+    document.getElementById('one-ag-modal-tipo').value  = tipo;
+    document.getElementById('one-ag-modal-valor').value = valor;
+    document.getElementById('one-ag-modal-nome').focus();
+  }, 120);
   input.value = '';
-  if (typeof oneToast === 'function') oneToast('Pinah entendeu — confira e salve.');
+  if (typeof oneToast === 'function') oneToast('Pinah entendeu — confira e salve!');
 }
 
 function oneSalvarCompromisso() {
@@ -4142,6 +4154,110 @@ function oneExcluirCompromisso() {
   oneResetFormCompromisso();
   if (typeof oneToast === 'function') oneToast('✓ Compromisso excluído.');
   if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  if (typeof renderOneAgenda === 'function') renderOneAgenda();
+}
+
+
+/* ── Agenda Kanban: modal + toggle + excluir ── */
+function oneAgToggleRealizado(id) {
+  var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos')||'[]'); } catch(e){}
+  var idx = lista.findIndex(function(c){ return c.id === id; });
+  if (idx !== -1) {
+    lista[idx].status = (lista[idx].status === 'Realizado') ? 'Pendente' : 'Realizado';
+    localStorage.setItem('compromissos', JSON.stringify(lista));
+  }
+  renderOneAgendaPainel();
+  if (typeof renderOneAgenda === 'function') renderOneAgenda();
+}
+
+function oneAgExcluir(id) {
+  if (!confirm('Excluir este compromisso? A receita vinculada (se houver) também será removida.')) return;
+  var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos')||'[]'); } catch(e){}
+  lista = lista.filter(function(c){ return c.id !== id; });
+  localStorage.setItem('compromissos', JSON.stringify(lista));
+  var rec = []; try { rec = JSON.parse(localStorage.getItem('receitas')||'[]'); } catch(e){}
+  rec = rec.filter(function(r){ return r.compromissoId !== id; });
+  localStorage.setItem('receitas', JSON.stringify(rec));
+  if (typeof oneToast === 'function') oneToast('✓ Compromisso excluído.');
+  renderOneAgendaPainel();
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  if (typeof renderOneAgenda === 'function') renderOneAgenda();
+}
+
+function oneAgModalAbrir(date) {
+  var modal = document.getElementById('one-ag-modal');
+  if (!modal) return;
+  var hoje = new Date();
+  var ds = date || (hoje.toISOString().slice(0,10));
+  document.getElementById('one-ag-modal-title').textContent = 'Novo compromisso';
+  document.getElementById('one-ag-modal-id').value   = '';
+  document.getElementById('one-ag-modal-nome').value = '';
+  document.getElementById('one-ag-modal-data').value = ds;
+  document.getElementById('one-ag-modal-hora').value = '';
+  document.getElementById('one-ag-modal-tipo').value = '';
+  document.getElementById('one-ag-modal-valor').value = '';
+  document.getElementById('one-ag-modal-obs').value  = '';
+  modal.classList.remove('hidden');
+  setTimeout(function(){ document.getElementById('one-ag-modal-nome').focus(); }, 100);
+}
+
+function oneAgModalEditar(id) {
+  var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos')||'[]'); } catch(e){}
+  var c = lista.find(function(x){ return x.id === id; });
+  if (!c) return;
+  var modal = document.getElementById('one-ag-modal');
+  if (!modal) return;
+  document.getElementById('one-ag-modal-title').textContent = 'Editar compromisso';
+  document.getElementById('one-ag-modal-id').value    = c.id;
+  document.getElementById('one-ag-modal-nome').value  = c.nome || c.descricao || '';
+  document.getElementById('one-ag-modal-data').value  = c.data || '';
+  document.getElementById('one-ag-modal-hora').value  = c.hora || '';
+  document.getElementById('one-ag-modal-tipo').value  = c.tipo || '';
+  document.getElementById('one-ag-modal-valor').value = c.valor || '';
+  document.getElementById('one-ag-modal-obs').value   = c.observacoes || '';
+  modal.classList.remove('hidden');
+  setTimeout(function(){ document.getElementById('one-ag-modal-nome').focus(); }, 100);
+}
+
+function oneAgModalFechar() {
+  var modal = document.getElementById('one-ag-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function oneAgModalSalvar() {
+  var nome  = (document.getElementById('one-ag-modal-nome').value || '').trim();
+  var data  = document.getElementById('one-ag-modal-data').value;
+  if (!nome || !data) { if (typeof oneToast==='function') oneToast('Nome e data são obrigatórios.','error'); return; }
+  var id    = document.getElementById('one-ag-modal-id').value;
+  var hora  = document.getElementById('one-ag-modal-hora').value || '';
+  var tipo  = (document.getElementById('one-ag-modal-tipo').value || '').trim() || 'Compromisso';
+  var valor = parseFloat(document.getElementById('one-ag-modal-valor').value) || 0;
+  var obs   = document.getElementById('one-ag-modal-obs').value || '';
+
+  var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos')||'[]'); } catch(e){}
+  var rec   = []; try { rec   = JSON.parse(localStorage.getItem('receitas')   ||'[]'); } catch(e){}
+
+  if (id) {
+    var idx = lista.findIndex(function(x){ return x.id === id; });
+    if (idx !== -1) lista[idx] = Object.assign(lista[idx], { data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, observacoes:obs });
+    var rIdx = rec.findIndex(function(r){ return r.compromissoId === id; });
+    if (valor > 0) {
+      if (rIdx !== -1) rec[rIdx] = Object.assign(rec[rIdx], { data:data, nome:nome, tipo:tipo, valor:valor });
+      else rec.push({ id:'r-'+Date.now(), compromissoId:id, data:data, nome:nome, tipo:tipo, valor:valor, status:'Pendente', categoria:tipo });
+    } else if (rIdx !== -1) { rec.splice(rIdx, 1); }
+    if (typeof oneToast==='function') oneToast('✓ Compromisso atualizado!');
+  } else {
+    var novoId = 'one-'+Date.now();
+    lista.push({ id:novoId, data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, observacoes:obs, status:'Pendente', duracao:45 });
+    if (valor > 0) rec.push({ id:'r-'+Date.now(), compromissoId:novoId, data:data, nome:nome, tipo:tipo, valor:valor, status:'Pendente', categoria:tipo });
+    if (typeof oneToast==='function') oneToast('✓ Compromisso salvo!');
+  }
+
+  localStorage.setItem('compromissos', JSON.stringify(lista));
+  localStorage.setItem('receitas', JSON.stringify(rec));
+  oneAgModalFechar();
+  renderOneAgendaPainel();
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
   if (typeof renderOneAgenda === 'function') renderOneAgenda();
 }

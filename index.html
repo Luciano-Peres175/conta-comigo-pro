@@ -304,54 +304,41 @@
 
       <!-- Variante Agenda (escondida por default — aparece via swapToCenter('agenda')) -->
       <div class="one-desktop-agenda" data-panel="agenda" hidden>
-        <div class="one-ag-header">
-          <button class="one-ag-nav-btn" onclick="oneAgNavegar(-1)" title="Semana anterior">‹</button>
-          <span class="one-ag-mes-label" id="one-ag-mes-label">—</span>
-          <button class="one-ag-nav-btn" onclick="oneAgNavegar(1)" title="Próxima semana">›</button>
-        </div>
-        <div class="one-ag-content">
-          <!-- Agenda em cima (2/3) -->
-          <div class="one-ag-grid-wrap">
-            <div class="one-ag-week-grid" id="one-ag-week-grid"></div>
+
+        <!-- Header kanban -->
+        <div class="one-ag-kheader">
+          <div class="one-ag-knav">
+            <button class="one-ag-nav-btn" onclick="oneAgNavegar(-1)" title="Semana anterior">‹</button>
+            <span class="one-ag-mes-label" id="one-ag-mes-label">—</span>
+            <button class="one-ag-nav-btn" onclick="oneAgNavegar(1)" title="Próxima semana">›</button>
           </div>
-          <!-- Embaixo (1/3): form à esquerda + prompt Pinah à direita -->
-          <div class="one-ag-bottom-row">
-            <!-- Formulário Novo/Editar Compromisso -->
-            <div class="one-ag-form-box">
-              <div class="one-ag-form-title" id="one-ag-form-title">Novo Compromisso</div>
-              <input type="text" class="one-ag-field" id="comp-nome" placeholder="Nome ou descrição">
-              <div class="one-ag-field-row">
-                <input type="date" class="one-ag-field" id="comp-data">
-                <input type="time" class="one-ag-field" id="comp-hora">
-              </div>
-              <input type="text" class="one-ag-field" id="comp-tipo" placeholder="Tipo (Atendimento, Reunião…)">
-              <input type="number" class="one-ag-field" id="comp-valor" placeholder="Valor previsto — vincula receita futura" inputmode="decimal" step="0.01">
-              <textarea class="one-ag-field" id="comp-obs" placeholder="Observações" rows="1"></textarea>
-              <div class="one-ag-form-actions">
-                <button class="one-ag-form-cancel" onclick="oneResetFormCompromisso()">Limpar</button>
-                <button class="one-ag-form-del" id="comp-del-btn" onclick="oneExcluirCompromisso()" hidden>Excluir</button>
-                <button class="one-ag-form-save" onclick="oneSalvarCompromisso()">Salvar</button>
-              </div>
-            </div>
-            <!-- Prompt da Pinah -->
-            <div class="one-ag-prompt-box">
-              <div class="one-ag-prompt-head">
-                <img src="assets/icons/pinah-mascote.png" class="one-ag-prompt-pinah" alt="Pinah">
-                <span class="one-ag-prompt-label">Diga à Pinah</span>
-              </div>
-              <p class="one-ag-prompt-hint">Conversa rápida — a Pinah preenche o formulário pra você. Exemplos:</p>
-              <ul class="one-ag-prompt-examples">
-                <li>"Maria amanhã 14h R$ 180"</li>
-                <li>"Reunião pediatra dia 15/05 às 11h"</li>
-                <li>"Beatriz hoje 15:30 atendimento R$ 280"</li>
-              </ul>
-              <div class="one-ag-prompt-row">
-                <textarea id="one-ag-prompt-input" class="one-ag-prompt-input" rows="3" placeholder='Digite aqui…' onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();onePromptPinah();}"></textarea>
-                <button class="one-ag-prompt-btn" onclick="onePromptPinah()" title="Pedir pra Pinah">↗</button>
-              </div>
-            </div>
-          </div>
+          <button class="one-tar-btn-nova" onclick="oneAgModalAbrir()">+ Compromisso</button>
         </div>
+
+        <!-- Kanban de dias -->
+        <div class="one-fin-content">
+          <div id="one-ag-kanban" style="display:flex;gap:8px;overflow-x:auto;flex:1;min-height:0;padding-bottom:4px"></div>
+        </div>
+
+        <!-- Prompt Pinah compacto -->
+        <div class="one-tar-pinah-row">
+          <img src="assets/icons/pinah-mascote.png" class="one-ag-prompt-pinah" alt="Pinah" style="width:26px;height:26px;flex-shrink:0">
+          <textarea id="one-ag-prompt-input" class="one-tar-pinah-input" rows="1"
+            placeholder='Diga à Pinah: "Maria amanhã 14h R$ 180" — ela abre o compromisso pra você'
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();onePromptPinah();}"></textarea>
+          <button class="one-ag-prompt-btn" onclick="onePromptPinah()" title="Pedir pra Pinah" style="flex-shrink:0">↗</button>
+        </div>
+
+        <!-- Campos ocultos para parser Pinah -->
+        <input type="hidden" id="comp-nome">
+        <input type="hidden" id="comp-data">
+        <input type="hidden" id="comp-hora">
+        <input type="hidden" id="comp-tipo">
+        <input type="hidden" id="comp-valor">
+        <input type="hidden" id="comp-obs">
+        <div id="comp-del-btn" hidden></div>
+        <div id="one-ag-form-title" hidden></div>
+
       </div>
 
       <!-- Variante Tarefas -->
@@ -1452,6 +1439,51 @@
     <div class="one-modal-footer">
       <button class="one-modal-btn-cancel" onclick="oneTarModalFechar()">Cancelar</button>
       <button class="one-modal-btn-save" onclick="oneTarModalSalvar()">Salvar tarefa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MODAL — Novo / Editar Compromisso
+═══════════════════════════════════════════════════════════════ -->
+<div id="one-ag-modal" class="one-modal-overlay hidden">
+  <div class="one-modal-box">
+    <div class="one-modal-title">
+      <span id="one-ag-modal-title">Novo compromisso</span>
+      <button class="one-modal-close" onclick="oneAgModalFechar()">✕</button>
+    </div>
+    <input type="hidden" id="one-ag-modal-id">
+    <div class="one-modal-field">
+      <label class="one-modal-label">Nome / Paciente</label>
+      <input id="one-ag-modal-nome" class="one-modal-input" placeholder="Nome ou descrição">
+    </div>
+    <div class="one-modal-row">
+      <div class="one-modal-field">
+        <label class="one-modal-label">Data</label>
+        <input id="one-ag-modal-data" class="one-modal-input" type="date">
+      </div>
+      <div class="one-modal-field">
+        <label class="one-modal-label">Hora</label>
+        <input id="one-ag-modal-hora" class="one-modal-input" type="time">
+      </div>
+    </div>
+    <div class="one-modal-row">
+      <div class="one-modal-field">
+        <label class="one-modal-label">Tipo</label>
+        <input id="one-ag-modal-tipo" class="one-modal-input" placeholder="Atendimento, Reunião…">
+      </div>
+      <div class="one-modal-field">
+        <label class="one-modal-label">Valor previsto (R$)</label>
+        <input id="one-ag-modal-valor" class="one-modal-input" type="number" step="0.01" placeholder="0,00">
+      </div>
+    </div>
+    <div class="one-modal-field">
+      <label class="one-modal-label">Observações</label>
+      <textarea id="one-ag-modal-obs" class="one-modal-textarea" placeholder="Detalhes opcionais…"></textarea>
+    </div>
+    <div class="one-modal-footer">
+      <button class="one-modal-btn-cancel" onclick="oneAgModalFechar()">Cancelar</button>
+      <button class="one-modal-btn-save" onclick="oneAgModalSalvar()">Salvar compromisso</button>
     </div>
   </div>
 </div>

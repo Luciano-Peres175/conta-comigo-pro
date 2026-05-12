@@ -3646,3 +3646,156 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   transition: background .15s;
 }
 .one-modal-btn-save:hover { background: #7B5CF0; }
+
+/* ══════════════════════════════════════════════════════════════
+   AGENDA KANBAN — redesign (semana como colunas de dias)
+══════════════════════════════════════════════════════════════ */
+
+.one-ag-kheader {
+  display: flex;
+  align-items: center;
+  padding: 6px 0 10px;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.one-ag-knav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Coluna de dia */
+.one-ag-kday-col {
+  flex: 0 0 160px;
+  min-width: 140px;
+  max-width: 200px;
+  background: #F7F3FA;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1.5px solid rgba(155,114,176,0.12);
+}
+.one-ag-kday-col.today {
+  border-color: #9B72B0;
+  background: #F0EAF8;
+}
+.one-ag-kday-header {
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid rgba(155,114,176,0.12);
+  cursor: default;
+}
+.one-ag-kday-name {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #9B72B0;
+  font-family: system-ui;
+}
+.one-ag-kday-col.today .one-ag-kday-name { color: #7B5CF0; }
+.one-ag-kday-num {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2D1B4E;
+  line-height: 1.1;
+}
+.one-ag-kday-col.today .one-ag-kday-num {
+  background: #9B72B0;
+  color: #fff;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.one-ag-kday-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.one-ag-kday-body::-webkit-scrollbar { width: 3px; }
+.one-ag-kday-body::-webkit-scrollbar-thumb { background: rgba(155,114,176,0.2); border-radius: 2px; }
+.one-ag-kday-empty {
+  font-size: 11px;
+  color: #C0BAD0;
+  text-align: center;
+  padding: 12px 0;
+  font-family: system-ui;
+}
+.one-ag-kday-add {
+  margin: 4px 8px 8px;
+  padding: 6px;
+  border: 1.5px dashed rgba(155,114,176,0.3);
+  border-radius: 8px;
+  background: transparent;
+  color: #9B72B0;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .12s, border-color .12s;
+  flex-shrink: 0;
+}
+.one-ag-kday-add:hover {
+  background: rgba(155,114,176,0.08);
+  border-color: #9B72B0;
+}
+
+/* Card de compromisso */
+.one-ag-kcard {
+  background: #fff;
+  border-radius: 8px;
+  padding: 7px 8px;
+  border-left: 3px solid #9B72B0;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  position: relative;
+  cursor: default;
+  box-shadow: 0 1px 4px rgba(80,40,120,0.07);
+  transition: box-shadow .15s;
+}
+.one-ag-kcard:hover { box-shadow: 0 3px 10px rgba(80,40,120,0.13); }
+.one-ag-kcard.realizado { opacity: 0.45; }
+.one-ag-kcard.realizado .one-ag-kcard-nome { text-decoration: line-through; color: #8A8480; }
+.one-ag-kcard-check {
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  border: 1.5px solid #C0BAD0;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; color: #fff;
+  margin-top: 2px;
+  transition: background .12s, border-color .12s;
+}
+.one-ag-kcard-body { flex: 1; min-width: 0; }
+.one-ag-kcard-hora {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9B72B0;
+  font-family: system-ui;
+  margin-bottom: 2px;
+}
+.one-ag-kcard-nome {
+  font-size: 11.5px;
+  color: #2D2D2D;
+  line-height: 1.3;
+  word-break: break-word;
+}
+.one-ag-kcard-tipo {
+  font-size: 10px;
+  color: #9A94A4;
+  margin-top: 2px;
+  font-family: system-ui;
+}
+.one-ag-kcard-actions {
+  position: absolute;
+  top: 5px; right: 5px;
+  display: none;
+  gap: 3px;
+  z-index: 2;
+}
+.one-ag-kcard:hover .one-ag-kcard-actions { display: flex; }
