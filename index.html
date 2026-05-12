@@ -3032,9 +3032,33 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 16px;
-  overflow: hidden;
+  grid-template-columns: 36px repeat(7, minmax(0, 1fr));
+  gap: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(123,92,240,0.30) transparent;
+}
+.one-ag-week-grid::-webkit-scrollbar { width: 6px; }
+.one-ag-week-grid::-webkit-scrollbar-thumb { background: rgba(123,92,240,0.30); border-radius: 3px; }
+
+/* Coluna lateral de horas */
+.one-ag-hours-rail {
+  position: relative;
+  height: 950px; /* header ~46px + body 900px + folga */
+  padding-top: 46px; /* alinha com o body do dia (depois do header) */
+}
+.one-ag-hour-mark {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  text-align: right;
+  padding-right: 4px;
+  font-size: 10px;
+  color: rgba(110,79,135,0.55);
+  font-weight: 600;
+  font-family: system-ui;
+  transform: translateY(-6px);
 }
 
 /* Prompt da Pinah */
@@ -3218,29 +3242,37 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .one-ag-day-col.today .one-ag-day-name { color: #7B5CF0; }
 .one-ag-day-col.today .one-ag-day-num { color: #7B5CF0; }
 .one-ag-day-events {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 0 3px;
+  position: relative;
+  height: 900px; /* 15h × 60px (07h-22h) — wait: agora 50px × 15 = 750? */
+  /* Cuidado: vamos usar 60px × 15 = 900 pra ter mais respiro */
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(160,32,240,0.06) 0,
+      rgba(160,32,240,0.06) 1px,
+      transparent 1px,
+      transparent 60px
+    );
+  border-radius: 8px;
+  padding: 0 4px;
 }
-.one-ag-day-events::-webkit-scrollbar { width: 3px; }
-.one-ag-day-events::-webkit-scrollbar-track { background: transparent; }
-.one-ag-day-events::-webkit-scrollbar-thumb { background: rgba(123,92,240,0.30); border-radius: 2px; }
 .one-ag-event {
+  position: absolute;
+  left: 4px;
+  right: 4px;
   background: #F0E8F8;
   border-left: 3px solid #7B5CF0;
   border-radius: 7px;
-  padding: 6px 8px;
-  cursor: pointer;
+  padding: 4px 6px;
+  cursor: grab;
   min-width: 0;
-  transition: transform .12s ease, box-shadow .12s ease;
+  transition: box-shadow .12s ease;
+  min-height: 28px;
+  overflow: hidden;
 }
 .one-ag-event:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(123,92,240,0.18);
+  box-shadow: 0 3px 8px rgba(123,92,240,0.22);
+  z-index: 2;
 }
 /* Estados de drag-and-drop */
 .one-ag-event-ghost {
@@ -7778,19 +7810,17 @@ function renderOneAgendaPainel() {
     var doDia = compromissos.filter(function(c){ return c.data === ds; })
                             .sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
 
-    var events = '';
-    if (doDia.length === 0) {
-      events = '<div class="one-ag-day-livre">livre</div>';
-    } else {
-      events = doDia.map(function(c){
-        var hora = (c.hora || '--:--');
-        var nome = (c.nome || c.descricao || 'Compromisso');
-        return '<div class="one-ag-event" data-event-id="' + (c.id || '') + '" onclick="event.stopPropagation();oneAbrirCompromisso(\'' + (c.id || '') + '\')">' +
-               '<div class="one-ag-event-hora">' + hora + '</div>' +
-               '<div class="one-ag-event-nome">' + nome.replace(/</g,'&lt;') + '</div>' +
-               '</div>';
-      }).join('');
-    }
+    var events = doDia.map(function(c){
+      var hora = (c.hora || '');
+      var nome = (c.nome || c.descricao || 'Compromisso');
+      var top = oneHoraParaTop(hora);
+      var duracao = parseInt(c.duracao) || 45; // minutos
+      var height = Math.max(28, duracao); // 1min = 1px (60px = 1h)
+      return '<div class="one-ag-event" data-event-id="' + (c.id || '') + '" style="top:' + top + 'px; height:' + height + 'px" onclick="event.stopPropagation();oneAbrirCompromisso(\'' + (c.id || '') + '\')">' +
+             '<div class="one-ag-event-hora">' + (hora || '--:--') + '</div>' +
+             '<div class="one-ag-event-nome">' + nome.replace(/</g,'&lt;') + '</div>' +
+             '</div>';
+    }).join('');
 
     html += '<div class="one-ag-day-col' + (isHoje ? ' today' : '') + '">' +
               '<div class="one-ag-day-header">' +
@@ -7800,8 +7830,28 @@ function renderOneAgendaPainel() {
               '<div class="one-ag-day-events" data-date="' + ds + '">' + events + '</div>' +
             '</div>';
   }
-  grid.innerHTML = html;
+
+  // Coluna lateral de horas (07h–22h, 60px/h = 900px total)
+  var hoursHtml = '<div class="one-ag-hours-rail">';
+  for (var h = 7; h <= 22; h++) {
+    var top = (h - 7) * 60;
+    hoursHtml += '<div class="one-ag-hour-mark" style="top:' + top + 'px">' + (h < 10 ? '0' + h : h) + 'h</div>';
+  }
+  hoursHtml += '</div>';
+
+  grid.innerHTML = hoursHtml + html;
   oneInitAgendaSortable();
+}
+
+function oneHoraParaTop(hora) {
+  if (!hora) return 0;
+  var parts = String(hora).split(':');
+  var h = parseInt(parts[0]) || 0;
+  var m = parseInt(parts[1]) || 0;
+  var totalMin = (h - 7) * 60 + m;
+  if (totalMin < 0) totalMin = 0;
+  if (totalMin > (22 - 7) * 60 - 30) totalMin = (22 - 7) * 60 - 30;
+  return totalMin; // 1min = 1px
 }
 
 /* ── Kanban drag-and-drop dos compromissos ──────────────── */
