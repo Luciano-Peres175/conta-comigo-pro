@@ -4173,8 +4173,10 @@ var PINAH_PLACEHOLDERS = {
 };
 
 function pinahNotchShow() {
-  var el = document.getElementById('pinah-notch');
-  if (el) el.classList.add('visible');
+  var el  = document.getElementById('pinah-notch');
+  var bay = document.getElementById('one-notch-bay');
+  if (el)  el.classList.add('visible');
+  if (bay) bay.classList.add('visible');
 }
 
 function pinahNotchUpdateCtx(panel) {

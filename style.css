@@ -3914,5 +3914,26 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 
 /* Dar espaço no rodapé da área de trabalho para o notch não sobrepor */
 .one-desktop-layout {
-  padding-bottom: 90px;
+  padding-bottom: 74px;
+}
+
+/* ── Notch Bay: recorte na área de trabalho para encaixe do prompt ── */
+.one-notch-bay {
+  position: fixed;
+  bottom: 56px;          /* encima do prompt — vai "cortar" a borda da área */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 560px;          /* mesma largura do prompt card */
+  max-width: 70vw;
+  height: 36px;
+  background: #F4ECF7;   /* mesma cor do fundo da página */
+  border-radius: 28px 28px 0 0;  /* domo — topo arredondado */
+  z-index: 498;
+  display: none;         /* aparece junto com o notch */
+}
+.one-notch-bay.visible { display: block; }
+
+/* Prompt senta no recorte sem folga */
+.one-prompt-notch {
+  bottom: 0;
 }
