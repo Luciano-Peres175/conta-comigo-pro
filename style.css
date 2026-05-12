@@ -3914,26 +3914,39 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 
 /* Dar espaço no rodapé da área de trabalho para o notch não sobrepor */
 .one-desktop-layout {
-  padding-bottom: 74px;
+  padding-bottom: 128px;
 }
 
-/* ── Notch Bay: recorte na área de trabalho para encaixe do prompt ── */
+/* ── Notch Bay: recorte encaixado para o prompt ── */
 .one-notch-bay {
   position: fixed;
-  bottom: 56px;          /* encima do prompt — vai "cortar" a borda da área */
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 560px;          /* mesma largura do prompt card */
-  max-width: 70vw;
-  height: 36px;
-  background: #F4ECF7;   /* mesma cor do fundo da página */
-  border-radius: 28px 28px 0 0;  /* domo — topo arredondado */
+  width: calc(66.66vw + 20px);   /* prompt + 10px gap cada lado */
+  max-width: 880px;
+  height: 120px;                  /* cobre do fundo até 8px acima do topo do card */
+  background: #F4ECF7;
+  border-radius: 28px 28px 0 0;   /* cantos superiores do recorte */
   z-index: 498;
-  display: none;         /* aparece junto com o notch */
+  display: none;
 }
 .one-notch-bay.visible { display: block; }
 
-/* Prompt senta no recorte sem folga */
-.one-prompt-notch {
-  bottom: 0;
+/* Curvas suaves onde as paredes do recorte encontram a borda inferior da área de trabalho */
+.one-notch-bay::before,
+.one-notch-bay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 12px;
+  height: 12px;
+}
+.one-notch-bay::before {
+  left: -12px;
+  background: radial-gradient(circle at 100% 100%, transparent 69%, #F4ECF7 70%);
+}
+.one-notch-bay::after {
+  right: -12px;
+  background: radial-gradient(circle at 0% 100%, transparent 69%, #F4ECF7 70%);
 }
