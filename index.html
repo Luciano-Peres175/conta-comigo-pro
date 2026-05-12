@@ -2850,7 +2850,10 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   flex-direction: column;
   position: relative;
 }
-.one-desktop-main > [data-panel][hidden] { display: none !important; }
+.one-desktop-main > [data-panel][hidden],
+.one-desktop-sidebar > [data-panel][hidden] { display: none !important; }
+.one-desktop-main > .one-desktop-agenda:not([hidden]) { display: flex !important; }
+.one-desktop-main > .one-desktop-chat:not([hidden]) { display: flex !important; }
 .one-desktop-main > .one-desktop-chat,
 .one-desktop-main > .one-desktop-agenda {
   flex: 1;
