@@ -3015,7 +3015,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 }
 .one-ag-bottom-row {
   flex: 0 0 auto;
-  height: 240px;
+  height: 320px;
   min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3031,7 +3031,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
+  gap: 16px;
   overflow: hidden;
 }
 
@@ -3075,17 +3075,20 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .one-ag-prompt-head { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
 .one-ag-prompt-pinah { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; }
 .one-ag-prompt-label { font-size: 11px; font-weight: 600; color: #6E4F87; letter-spacing: 0.3px; }
-.one-ag-prompt-row { display: flex; gap: 6px; }
+.one-ag-prompt-row { display: flex; gap: 6px; align-items: flex-end; }
 .one-ag-prompt-input {
   flex: 1;
   background: #fff;
   border: 1px solid rgba(160,32,240,0.30);
   border-radius: 10px;
-  padding: 7px 10px;
-  font-size: 12px;
+  padding: 9px 12px;
+  font-size: 12.5px;
   color: #2D2D2D;
   outline: none;
   font-family: system-ui;
+  resize: none;
+  line-height: 1.45;
+  min-height: 70px;
 }
 .one-ag-prompt-input:focus { border-color: rgba(160,32,240,0.70); box-shadow: 0 0 0 3px rgba(160,32,240,0.12); }
 .one-ag-prompt-input::placeholder { color: #B0A0C0; font-style: italic; }
@@ -3110,21 +3113,21 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .one-ag-form-box {
   background: #fff;
   border-radius: 14px;
-  padding: 12px 12px 10px;
+  padding: 14px 16px 14px;
   box-shadow:
     0 0 0 1.5px rgba(160,32,240,0.45),
     0 0 0 4px rgba(160,32,240,0.10),
     0 4px 10px rgba(0,0,0,.06);
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 9px;
 }
 .one-ag-form-title {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 14px;
   font-weight: 500;
   color: #2D2D2D;
-  padding-bottom: 4px;
+  padding-bottom: 6px;
   border-bottom: 1px solid rgba(160,32,240,0.10);
   margin-bottom: 2px;
 }
@@ -3133,13 +3136,13 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   background: #FBF8F2;
   border: 1px solid rgba(160,32,240,0.20);
   border-radius: 8px;
-  padding: 6px 9px;
-  font-size: 12px;
+  padding: 8px 11px;
+  font-size: 12.5px;
   color: #2D2D2D;
   outline: none;
   font-family: system-ui;
   resize: vertical;
-  min-height: 30px;
+  min-height: 34px;
 }
 .one-ag-field:focus { border-color: rgba(160,32,240,0.60); background: #fff; }
 .one-ag-field::placeholder { color: #B0AEA8; }
@@ -3603,7 +3606,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
                 <li>"Beatriz hoje 15:30 atendimento R$ 280"</li>
               </ul>
               <div class="one-ag-prompt-row">
-                <input type="text" id="one-ag-prompt-input" class="one-ag-prompt-input" placeholder='Digite aqui…' onkeydown="if(event.key==='Enter')onePromptPinah()">
+                <textarea id="one-ag-prompt-input" class="one-ag-prompt-input" rows="3" placeholder='Digite aqui…' onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();onePromptPinah();}"></textarea>
                 <button class="one-ag-prompt-btn" onclick="onePromptPinah()" title="Pedir pra Pinah">↗</button>
               </div>
             </div>
