@@ -3350,21 +3350,101 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   font-family: system-ui;
   display: inline-block;
 }
-.one-tar-col-add {
-  padding: 7px 12px;
-  font-size: 11px;
-  color: #9B72B0;
-  cursor: pointer;
-  border: none;
-  background: transparent;
-  width: 100%;
-  text-align: left;
-  font-family: system-ui;
-  border-top: 1px dashed rgba(160,32,240,0.15);
+
+/* ── Tarefas TaskAreas style ── */
+.one-tar-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   flex-shrink: 0;
+  gap: 8px;
+  padding-bottom: 10px;
+}
+.one-tar-filters {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.one-tar-filter {
+  padding: 4px 11px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(160,32,240,0.20);
+  background: transparent;
+  color: #6E4F87;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui;
+  transition: all .12s;
+  white-space: nowrap;
+}
+.one-tar-filter:hover { background: rgba(160,32,240,0.06); }
+.one-tar-filter.active {
+  background: #7B5CF0;
+  color: #fff;
+  border-color: #7B5CF0;
+}
+.one-tar-filter.prio.active { background: #9B72B0; border-color: #9B72B0; }
+.one-tar-sep { width: 1px; height: 18px; background: rgba(160,32,240,0.20); margin: 0 2px; flex-shrink: 0; }
+.one-tar-bar-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.one-tar-btn-area {
+  padding: 5px 12px; border-radius: 10px;
+  border: 1.5px solid rgba(160,32,240,0.35);
+  background: transparent; color: #7B5CF0;
+  font-size: 11px; font-weight: 600; cursor: pointer; font-family: system-ui;
   transition: background .12s;
 }
+.one-tar-btn-area:hover { background: rgba(160,32,240,0.07); }
+.one-tar-btn-nova {
+  padding: 5px 12px; border-radius: 10px;
+  background: #7B5CF0; color: #fff; border: none;
+  font-size: 11px; font-weight: 600; cursor: pointer; font-family: system-ui;
+  box-shadow: 0 2px 8px rgba(123,92,240,.25);
+}
+.one-tar-pinah-row {
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0; padding-top: 10px;
+  border-top: 1px solid rgba(160,32,240,0.12);
+  margin-top: 4px;
+}
+.one-tar-pinah-input {
+  flex: 1;
+  background: #fff;
+  border: 1px solid rgba(160,32,240,0.25);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px; color: #2D2D2D;
+  outline: none; font-family: system-ui;
+  resize: none; line-height: 1.4; min-height: 36px;
+}
+.one-tar-pinah-input:focus { border-color: rgba(160,32,240,0.60); box-shadow: 0 0 0 3px rgba(160,32,240,0.10); }
+.one-tar-pinah-input::placeholder { color: #B0A0C0; font-style: italic; }
+/* Inline add na coluna */
+.one-tar-inline-wrap { flex-shrink: 0; border-top: 1px dashed rgba(160,32,240,0.15); }
+.one-tar-col-add {
+  padding: 7px 12px; font-size: 11px; color: #9B72B0;
+  cursor: pointer; border: none; background: transparent;
+  width: 100%; text-align: left; font-family: system-ui; transition: background .12s;
+}
 .one-tar-col-add:hover { background: rgba(160,32,240,0.05); }
+.one-tar-inline-form { padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
+.one-tar-inline-input {
+  width: 100%; border: 1.5px solid rgba(160,32,240,0.40); border-radius: 7px;
+  padding: 6px 9px; font-size: 12px; color: #2D2D2D; font-family: system-ui;
+  background: #fff; outline: none; box-sizing: border-box;
+}
+.one-tar-inline-input:focus { border-color: #7B5CF0; }
+.one-tar-inline-btns { display: flex; gap: 4px; }
+.one-tar-inline-save {
+  flex: 1; background: #7B5CF0; color: #fff; border: none;
+  border-radius: 6px; padding: 4px 8px; font-size: 11px; cursor: pointer; font-family: system-ui;
+}
+.one-tar-inline-cancel {
+  background: transparent; border: 1px solid rgba(160,32,240,0.25); color: #9B72B0;
+  border-radius: 6px; padding: 4px 8px; font-size: 11px; cursor: pointer; font-family: system-ui;
+}
+
 
 
 .one-ag-form-del {
@@ -3841,50 +3921,39 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 
       <!-- Variante Tarefas -->
       <div class="one-desktop-tarefas" data-panel="tarefas" hidden>
-        <div class="one-ag-header" style="flex-shrink:0">
-          <div style="display:flex;align-items:baseline;gap:8px">
-            <span class="one-ag-mes-label">✅ Tarefas</span>
-            <span class="one-pn-sub" id="one-tarefas-count">—</span>
+
+        <!-- Barra de controle -->
+        <div class="one-tar-bar">
+          <div class="one-tar-filters" id="one-tar-filters">
+            <button class="one-tar-filter active" data-f="todos"     onclick="oneTarSetFilter(this)">Todos</button>
+            <button class="one-tar-filter"         data-f="pendente" onclick="oneTarSetFilter(this)">Pendente</button>
+            <button class="one-tar-filter"         data-f="concluida" onclick="oneTarSetFilter(this)">Concluída</button>
+            <div class="one-tar-sep"></div>
+            <button class="one-tar-filter prio"    data-p="qualquer" onclick="oneTarSetPrio(this)">Qualquer prioridade</button>
+            <button class="one-tar-filter prio"    data-p="Alta"     onclick="oneTarSetPrio(this)">Alta</button>
+            <button class="one-tar-filter prio"    data-p="Normal"   onclick="oneTarSetPrio(this)">Normal</button>
+            <button class="one-tar-filter prio"    data-p="Baixa"    onclick="oneTarSetPrio(this)">Baixa</button>
+          </div>
+          <div class="one-tar-bar-actions">
+            <button class="one-tar-btn-area" onclick="oneTarNovaArea()">+ Nova área</button>
+            <button class="one-tar-btn-nova" onclick="oneTarFocarPrimeira()">+ Tarefa</button>
           </div>
         </div>
+
+        <!-- Kanban -->
         <div class="one-fin-content">
-          <div class="one-pn-body" id="one-tarefas-list" style="background:transparent;box-shadow:none;padding:0;overflow:hidden;display:flex;flex-direction:column"></div>
+          <div id="one-tarefas-list" style="background:transparent;box-shadow:none;padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;min-height:0"></div>
         </div>
-        <div class="one-ag-bottom-row" style="margin-left:0">
-          <div class="one-ag-form-box">
-            <div class="one-ag-form-title">Nova Tarefa</div>
-            <input type="text" class="one-ag-field" id="one-tar-nome" placeholder="Nome da tarefa">
-            <div class="one-ag-field-row">
-              <input type="text" class="one-ag-field" id="one-tar-area" placeholder="Área (ex: Clínica, Pessoal…)">
-              <select class="one-ag-field" id="one-tar-prio">
-                <option value="Normal">Normal</option>
-                <option value="Alta">Alta</option>
-                <option value="Baixa">Baixa</option>
-              </select>
-            </div>
-            <input type="date" class="one-ag-field" id="one-tar-data">
-            <div class="one-ag-form-actions">
-              <button class="one-ag-form-cancel" onclick="oneTarLimpar()">Limpar</button>
-              <button class="one-ag-form-save" onclick="oneTarSalvar()">Salvar</button>
-            </div>
-          </div>
-          <div class="one-ag-prompt-box">
-            <div class="one-ag-prompt-head">
-              <img src="assets/icons/pinah-mascote.png" class="one-ag-prompt-pinah" alt="Pinah">
-              <span class="one-ag-prompt-label">Diga à Pinah</span>
-            </div>
-            <p class="one-ag-prompt-hint">Conversa rápida — a Pinah cria a tarefa pra você. Exemplos:</p>
-            <ul class="one-ag-prompt-examples">
-              <li>"Ligar pro plano de saúde amanhã"</li>
-              <li>"Reunião de equipe sexta, prioridade alta"</li>
-              <li>"Renovar alvará até dia 20"</li>
-            </ul>
-            <div class="one-ag-prompt-row">
-              <textarea id="one-tar-prompt-input" class="one-ag-prompt-input" rows="3" placeholder="Digite aqui…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();oneTarPromptPinah();}"></textarea>
-              <button class="one-ag-prompt-btn" onclick="oneTarPromptPinah()" title="Pedir pra Pinah">↗</button>
-            </div>
-          </div>
+
+        <!-- Pinah prompt compacto -->
+        <div class="one-tar-pinah-row">
+          <img src="assets/icons/pinah-mascote.png" class="one-ag-prompt-pinah" alt="Pinah" style="width:26px;height:26px;flex-shrink:0">
+          <textarea id="one-tar-prompt-input" class="one-tar-pinah-input" rows="1"
+            placeholder='Diga à Pinah: "Ligar pro plano amanhã, alta" — ela cria a tarefa pra você'
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();oneTarPromptPinah();}"></textarea>
+          <button class="one-ag-prompt-btn" onclick="oneTarPromptPinah()" title="Pedir pra Pinah" style="flex-shrink:0">↗</button>
         </div>
+
       </div>
 
       <!-- Variante Financeiro -->
@@ -7946,12 +8015,76 @@ function oneNovaTarefa() {
   setTimeout(function(){ var el = document.getElementById('one-tar-nome'); if(el) el.focus(); }, 200);
 }
 
+/* ── Estado dos filtros de Tarefas ── */
+var oneTarFilterStatus = 'todos';
+var oneTarFilterPrio   = 'qualquer';
+
+function oneTarSetFilter(btn) {
+  oneTarFilterStatus = btn.dataset.f;
+  document.querySelectorAll('#one-tar-filters .one-tar-filter:not(.prio)').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderOneTarefasPainel();
+}
+function oneTarSetPrio(btn) {
+  oneTarFilterPrio = btn.dataset.p;
+  document.querySelectorAll('#one-tar-filters .one-tar-filter.prio').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderOneTarefasPainel();
+}
+function oneTarGetAreas() {
+  try { return JSON.parse(localStorage.getItem('tarefas_areas') || '["Geral"]'); } catch(e) { return ['Geral']; }
+}
+function oneTarSaveAreas(a) { localStorage.setItem('tarefas_areas', JSON.stringify(a)); }
+
+function oneTarNovaArea() {
+  var nome = prompt('Nome da nova área:');
+  if (!nome || !nome.trim()) return;
+  var areas = oneTarGetAreas();
+  nome = nome.trim();
+  if (areas.indexOf(nome) === -1) { areas.push(nome); oneTarSaveAreas(areas); }
+  renderOneTarefasPainel();
+}
+function oneTarFocarPrimeira() {
+  var first = document.querySelector('.one-tar-col-add');
+  if (first) first.click();
+}
+function oneTarShowInline(btn) {
+  var wrap = btn.closest('.one-tar-inline-wrap');
+  btn.style.display = 'none';
+  wrap.querySelector('.one-tar-inline-form').style.display = 'flex';
+  wrap.querySelector('.one-tar-inline-input').focus();
+}
+function oneTarHideInline(el) {
+  var wrap = el.closest('.one-tar-inline-wrap');
+  wrap.querySelector('.one-tar-inline-form').style.display = 'none';
+  wrap.querySelector('.one-tar-col-add').style.display = '';
+  wrap.querySelector('.one-tar-inline-input').value = '';
+}
+function oneTarInlineKey(e, input) {
+  if (e.key === 'Enter') { e.preventDefault(); oneTarInlineSave(input); }
+  if (e.key === 'Escape') { oneTarHideInline(input); }
+}
+function oneTarInlineSave(el) {
+  var wrap = el.closest ? el.closest('.one-tar-inline-wrap') : el.parentElement.parentElement;
+  var input = wrap.querySelector('.one-tar-inline-input');
+  var col = wrap.closest('.one-tar-col');
+  var area = col ? col.dataset.area : 'Geral';
+  var nome = input ? input.value.trim() : '';
+  if (!nome) { oneTarHideInline(el); return; }
+  var lista = []; try { lista = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  lista.push({ id: Date.now().toString(), nome: nome, area: area, prioridade: 'Normal', concluida: false, criado: new Date().toISOString() });
+  localStorage.setItem('tarefas', JSON.stringify(lista));
+  if (typeof oneToast === 'function') oneToast('✓ Tarefa adicionada!');
+  renderOneTarefasPainel();
+  if (typeof renderDesktopSidebar === 'function') renderDesktopSidebar();
+}
+
 function renderOneTarefasPainel() {
   var el = document.getElementById('one-tarefas-list');
   var count = document.getElementById('one-tarefas-count');
   if (!el) return;
-  var tarefas = JSON.parse(localStorage.getItem('tarefas') || '[]');
-  var pendentes = tarefas.filter(function(t){ return !t.concluida; });
+  var todasTarefas = []; try { todasTarefas = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  var pendentes = todasTarefas.filter(function(t){ return !t.concluida; });
   if (count) count.textContent = pendentes.length + ' pendente' + (pendentes.length === 1 ? '' : 's');
 
   function emojiArea(a) {
@@ -7966,14 +8099,12 @@ function renderOneTarefasPainel() {
     if (/compra|mercado/.test(s)) return '🛒';
     return '📋';
   }
-
   function corArea(a) {
     var paleta = ['#7B5CF0','#E87A7A','#5EB585','#F0A830','#5BA8D8','#C97DD4','#7EC8B8','#E0835C'];
     var h = 0;
     for (var i = 0; i < a.length; i++) h = a.charCodeAt(i) + ((h << 5) - h);
     return paleta[Math.abs(h) % paleta.length];
   }
-
   function corPrio(prio) {
     var p = (prio||'normal').toLowerCase();
     return p === 'alta'  ? {cor:'#C0392B', bg:'#FDECEA'} :
@@ -7981,32 +8112,27 @@ function renderOneTarefasPainel() {
                            {cor:'#5A6A8A', bg:'#EEF1F7'};
   }
 
-  // Agrupar por área
-  var areas = {};
-  tarefas.forEach(function(t){
-    var area = t.area || 'Geral';
-    if (!areas[area]) areas[area] = [];
-    areas[area].push(t);
+  // Áreas persistidas
+  var areaNames = oneTarGetAreas();
+  // Garantir que áreas de tarefas existentes também aparecem
+  todasTarefas.forEach(function(t){
+    var a = t.area || 'Geral';
+    if (areaNames.indexOf(a) === -1) { areaNames.push(a); oneTarSaveAreas(areaNames); }
   });
 
-  // Estado vazio
-  if (!tarefas.length) {
-    el.innerHTML = '<div class="one-tar-kanban">' +
-      '<div class="one-tar-col">' +
-        '<div class="one-tar-col-header" style="border-top:3px solid #9B72B0">' +
-          '<div style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">📋</span><span class="one-tar-col-nome">Geral</span></div>' +
-          '<span class="one-tar-col-count">0/0</span>' +
-        '</div>' +
-        '<div class="one-tar-col-body" style="color:#B0AEA8;font-size:11px;font-style:italic;align-items:center;justify-content:center;display:flex;flex:1">Nenhuma tarefa ainda</div>' +
-        '<button class="one-tar-col-add" data-area="Geral" onclick="oneTarQuickAdd(this.dataset.area)">+ Nova tarefa</button>' +
-      '</div></div>';
-    return;
-  }
+  // Filtrar tarefas
+  var tarefas = todasTarefas.filter(function(t){
+    if (oneTarFilterStatus === 'pendente'  && !!t.concluida) return false;
+    if (oneTarFilterStatus === 'concluida' && !t.concluida)  return false;
+    if (oneTarFilterPrio !== 'qualquer' && (t.prioridade||'Normal') !== oneTarFilterPrio) return false;
+    return true;
+  });
 
   var html = '<div class="one-tar-kanban">';
-  Object.keys(areas).forEach(function(area) {
-    var tasks = areas[area];
-    var concluidasN = tasks.filter(function(t){ return !!t.concluida; }).length;
+  areaNames.forEach(function(area) {
+    var tasks = tarefas.filter(function(t){ return (t.area||'Geral') === area; });
+    var total = todasTarefas.filter(function(t){ return (t.area||'Geral') === area; });
+    var conclN = total.filter(function(t){ return !!t.concluida; }).length;
     var cor = corArea(area);
     var emoji = emojiArea(area);
 
@@ -8014,36 +8140,40 @@ function renderOneTarefasPainel() {
       var conc = !!t.concluida;
       var cp = corPrio(t.prioridade);
       return '<div class="one-tar-card' + (conc ? ' concluida' : '') + '" style="border-left-color:' + (conc ? '#4CAF50' : cor) + '">' +
-        '<div class="one-tar-check" data-tid="' + t.id + '" onclick="oneTarToggle(this.dataset.tid)" style="background:' + (conc ? '#4CAF50' : 'transparent') + ';border-color:' + (conc ? '#4CAF50' : '#C0BAD0') + '">' + (conc ? '✓' : '') + '</div>' +
+        '<div class="one-tar-check" data-tid="' + t.id + '" onclick="oneTarToggle(this.dataset.tid)" style="background:' + (conc?'#4CAF50':'transparent') + ';border-color:' + (conc?'#4CAF50':'#C0BAD0') + '">' + (conc?'✓':'') + '</div>' +
         '<div class="one-tar-card-body">' +
-          '<div class="one-tar-card-nome">' + (t.nome || 'Sem nome').replace(/</g, '&lt;') + '</div>' +
-          '<span class="one-tar-prio-badge" style="background:' + cp.bg + ';color:' + cp.cor + '">' + (t.prioridade || 'Normal') + '</span>' +
+          '<div class="one-tar-card-nome">' + (t.nome||'Sem nome').replace(/</g,'&lt;') + '</div>' +
+          '<span class="one-tar-prio-badge" style="background:' + cp.bg + ';color:' + cp.cor + '">' + (t.prioridade||'Normal') + '</span>' +
           (t.data ? '<div class="one-tar-card-data">' + t.data.split('-').reverse().join('/') + '</div>' : '') +
         '</div>' +
       '</div>';
     }).join('');
 
-    html += '<div class="one-tar-col">' +
+    var emptyMsg = tasks.length === 0 ? '<div style="color:#C0BAD0;font-size:11px;font-style:italic;padding:8px 4px;text-align:center">Nenhuma tarefa</div>' : '';
+
+    html += '<div class="one-tar-col" data-area="' + area.replace(/"/g,'&quot;') + '">' +
       '<div class="one-tar-col-header" style="border-top:3px solid ' + cor + '">' +
         '<div style="display:flex;align-items:center;gap:6px">' +
           '<span style="font-size:15px">' + emoji + '</span>' +
           '<span class="one-tar-col-nome">' + area + '</span>' +
         '</div>' +
-        '<span class="one-tar-col-count">' + concluidasN + '/' + tasks.length + '</span>' +
+        '<span class="one-tar-col-count">' + conclN + '/' + total.length + '</span>' +
       '</div>' +
-      '<div class="one-tar-col-body">' + cards + '</div>' +
-      '<button class="one-tar-col-add" data-area="' + area.replace(/"/g, '&quot;') + '" onclick="oneTarQuickAdd(this.dataset.area)">+ Nova tarefa</button>' +
+      '<div class="one-tar-col-body">' + emptyMsg + cards + '</div>' +
+      '<div class="one-tar-inline-wrap">' +
+        '<button class="one-tar-col-add" onclick="oneTarShowInline(this)">+ Nova tarefa</button>' +
+        '<div class="one-tar-inline-form" style="display:none;flex-direction:column;gap:4px">' +
+          '<input class="one-tar-inline-input" placeholder="Nome da tarefa…" onkeydown="oneTarInlineKey(event,this)">' +
+          '<div class="one-tar-inline-btns">' +
+            '<button class="one-tar-inline-save" onclick="oneTarInlineSave(this)">Adicionar</button>' +
+            '<button class="one-tar-inline-cancel" onclick="oneTarHideInline(this)">✕</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
     '</div>';
   });
   html += '</div>';
   el.innerHTML = html;
-}
-
-function oneTarQuickAdd(area) {
-  var areaField = document.getElementById('one-tar-area');
-  var nomeField = document.getElementById('one-tar-nome');
-  if (areaField) areaField.value = area;
-  if (nomeField) nomeField.focus();
 }
 
 /* ── Financeiro inline ──────────────────────────────── */
