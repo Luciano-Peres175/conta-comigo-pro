@@ -3017,7 +3017,8 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 }
 .one-ag-bottom-row {
   flex: 0 0 auto;
-  height: 320px;
+  height: 200px;
+  margin-left: 48px;
   min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3045,7 +3046,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 /* Coluna lateral de horas */
 .one-ag-hours-rail {
   position: relative;
-  height: 950px; /* header ~46px + body 900px + folga */
+  height: 596px; /* 46px padding-top + 11h × 50px = 596px */
   padding-top: 46px; /* alinha com o body do dia (depois do header) */
 }
 .one-ag-hour-mark {
@@ -3114,7 +3115,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   font-family: system-ui;
   resize: none;
   line-height: 1.45;
-  min-height: 70px;
+  min-height: 44px;
 }
 .one-ag-prompt-input:focus { border-color: rgba(160,32,240,0.70); box-shadow: 0 0 0 3px rgba(160,32,240,0.12); }
 .one-ag-prompt-input::placeholder { color: #B0A0C0; font-style: italic; }
@@ -3139,21 +3140,21 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .one-ag-form-box {
   background: #fff;
   border-radius: 14px;
-  padding: 14px 16px 14px;
+  padding: 10px 12px 10px;
   box-shadow:
     0 0 0 1.5px rgba(160,32,240,0.45),
     0 0 0 4px rgba(160,32,240,0.10),
     0 4px 10px rgba(0,0,0,.06);
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 5px;
 }
 .one-ag-form-title {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #2D2D2D;
-  padding-bottom: 6px;
+  padding-bottom: 4px;
   border-bottom: 1px solid rgba(160,32,240,0.10);
   margin-bottom: 2px;
 }
@@ -3162,13 +3163,13 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   background: #FBF8F2;
   border: 1px solid rgba(160,32,240,0.20);
   border-radius: 8px;
-  padding: 8px 11px;
-  font-size: 12.5px;
+  padding: 5px 9px;
+  font-size: 12px;
   color: #2D2D2D;
   outline: none;
   font-family: system-ui;
   resize: vertical;
-  min-height: 34px;
+  min-height: 28px;
 }
 .one-ag-field:focus { border-color: rgba(160,32,240,0.60); background: #fff; }
 .one-ag-field::placeholder { color: #B0AEA8; }
@@ -3243,15 +3244,14 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .one-ag-day-col.today .one-ag-day-num { color: #7B5CF0; }
 .one-ag-day-events {
   position: relative;
-  height: 900px; /* 15h × 60px (07h-22h) — wait: agora 50px × 15 = 750? */
-  /* Cuidado: vamos usar 60px × 15 = 900 pra ter mais respiro */
+  height: 550px; /* 11h × 50px (08h-19h) */
   background:
     repeating-linear-gradient(
       to bottom,
       rgba(160,32,240,0.06) 0,
       rgba(160,32,240,0.06) 1px,
       transparent 1px,
-      transparent 60px
+      transparent 50px
     );
   border-radius: 8px;
   padding: 0 4px;
@@ -7815,7 +7815,7 @@ function renderOneAgendaPainel() {
       var nome = (c.nome || c.descricao || 'Compromisso');
       var top = oneHoraParaTop(hora);
       var duracao = parseInt(c.duracao) || 45; // minutos
-      var height = Math.max(28, duracao); // 1min = 1px (60px = 1h)
+      var height = Math.max(24, Math.round(duracao * 50 / 60)); // 50px/h
       return '<div class="one-ag-event" data-event-id="' + (c.id || '') + '" style="top:' + top + 'px; height:' + height + 'px" onclick="event.stopPropagation();oneAbrirCompromisso(\'' + (c.id || '') + '\')">' +
              '<div class="one-ag-event-hora">' + (hora || '--:--') + '</div>' +
              '<div class="one-ag-event-nome">' + nome.replace(/</g,'&lt;') + '</div>' +
@@ -7833,8 +7833,8 @@ function renderOneAgendaPainel() {
 
   // Coluna lateral de horas (07h–22h, 60px/h = 900px total)
   var hoursHtml = '<div class="one-ag-hours-rail">';
-  for (var h = 7; h <= 22; h++) {
-    var top = (h - 7) * 60;
+  for (var h = 8; h <= 19; h++) {
+    var top = (h - 8) * 50;
     hoursHtml += '<div class="one-ag-hour-mark" style="top:' + top + 'px">' + (h < 10 ? '0' + h : h) + 'h</div>';
   }
   hoursHtml += '</div>';
@@ -7848,10 +7848,10 @@ function oneHoraParaTop(hora) {
   var parts = String(hora).split(':');
   var h = parseInt(parts[0]) || 0;
   var m = parseInt(parts[1]) || 0;
-  var totalMin = (h - 7) * 60 + m;
-  if (totalMin < 0) totalMin = 0;
-  if (totalMin > (22 - 7) * 60 - 30) totalMin = (22 - 7) * 60 - 30;
-  return totalMin; // 1min = 1px
+  var px = (h - 8) * 50 + m * (50 / 60);
+  if (px < 0) px = 0;
+  if (px > (19 - 8) * 50 - 28) px = (19 - 8) * 50 - 28;
+  return Math.round(px); // 50px/h, range 08h-19h
 }
 
 /* ── Kanban drag-and-drop dos compromissos ──────────────── */
