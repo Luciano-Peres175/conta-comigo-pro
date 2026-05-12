@@ -3008,17 +3008,23 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   gap: 14px;
 }
 .one-ag-grid-wrap {
-  flex: 2;
+  flex: 3;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
 .one-ag-bottom-row {
-  flex: 1;
+  flex: 0 0 auto;
+  height: 240px;
   min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+}
+.one-ag-bottom-row > .one-ag-form-box,
+.one-ag-bottom-row > .one-ag-prompt-box {
+  min-height: 0;
+  overflow: hidden;
 }
 .one-ag-week-grid {
   flex: 1;
