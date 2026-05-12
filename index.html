@@ -3246,6 +3246,109 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   border-color: #E87A7A;
 }
 
+/* ── Kanban Tarefas ── */
+.one-tar-kanban {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(123,92,240,0.25) transparent;
+  padding-bottom: 2px;
+}
+.one-tar-kanban::-webkit-scrollbar { height: 4px; }
+.one-tar-kanban::-webkit-scrollbar-thumb { background: rgba(123,92,240,0.25); border-radius: 2px; }
+.one-tar-col {
+  flex: 0 0 190px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1.5px rgba(160,32,240,0.45),
+    0 0 0 4px rgba(160,32,240,0.10),
+    0 4px 10px rgba(0,0,0,.06);
+  overflow: hidden;
+  max-height: 100%;
+}
+.one-tar-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px 8px;
+  border-bottom: 1px solid rgba(160,32,240,0.10);
+  flex-shrink: 0;
+  background: #FDFAFF;
+}
+.one-tar-col-nome {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2D2D2D;
+}
+.one-tar-col-count {
+  background: #F0E8F8;
+  color: #7B5CF0;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-family: system-ui;
+}
+.one-tar-col-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  scrollbar-width: none;
+}
+.one-tar-col-body::-webkit-scrollbar { display: none; }
+.one-tar-card {
+  background: #FBF8F2;
+  border-radius: 8px;
+  padding: 7px 8px 7px 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  border-left: 3px solid #9B72B0;
+  transition: opacity .15s;
+}
+.one-tar-card.concluida { opacity: 0.45; }
+.one-tar-check {
+  width: 15px; height: 15px;
+  border-radius: 4px;
+  border: 1.5px solid #B0AEA8;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #fff;
+  margin-top: 1px;
+  transition: background .12s, border-color .12s;
+}
+.one-tar-card-body { flex: 1; min-width: 0; }
+.one-tar-card-nome {
+  font-size: 11.5px;
+  color: #2D2D2D;
+  line-height: 1.35;
+  word-break: break-word;
+}
+.one-tar-card.concluida .one-tar-card-nome { text-decoration: line-through; color: #8A8480; }
+.one-tar-card-data { font-size: 10px; color: #9A94A4; margin-top: 2px; font-family: system-ui; }
+.one-tar-prio-badge {
+  font-size: 9px; font-weight: 700;
+  padding: 2px 6px; border-radius: 6px;
+  flex-shrink: 0; font-family: system-ui;
+  align-self: flex-start; margin-top: 1px;
+}
+
+
 .one-ag-form-del {
   background: #E87A7A;
   color: #fff;
@@ -3727,7 +3830,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
           </div>
         </div>
         <div class="one-fin-content">
-          <div class="one-pn-body" id="one-tarefas-list"></div>
+          <div class="one-pn-body" id="one-tarefas-list" style="background:transparent;box-shadow:none;padding:0;overflow:hidden;display:flex;flex-direction:column"></div>
         </div>
         <div class="one-ag-bottom-row" style="margin-left:0">
           <div class="one-ag-form-box">
@@ -7832,18 +7935,53 @@ function renderOneTarefasPainel() {
   var tarefas = JSON.parse(localStorage.getItem('tarefas') || '[]');
   var pendentes = tarefas.filter(function(t){ return !t.concluida; });
   if (count) count.textContent = pendentes.length + ' pendente' + (pendentes.length === 1 ? '' : 's');
-  if (!tarefas.length) { el.innerHTML = ''; return; }
-  var html = tarefas.map(function(t){
-    var prio = (t.prioridade || 'normal').toLowerCase();
-    var prioCor = prio === 'alta' ? '#E87A7A' : prio === 'baixa' ? '#7EC8B8' : '#9B72B0';
-    var prioBg  = prio === 'alta' ? '#FBEAEA' : prio === 'baixa' ? '#E6F5F0' : '#F0E8F8';
-    var conc = !!t.concluida;
-    return '<div class="one-tarefa-item" style="opacity:' + (conc?'.5':'1') + '">' +
-             '<div class="one-tarefa-check" data-tid="' + t.id + '" onclick="oneTarToggle(this.dataset.tid)" style="cursor:pointer;background:' + (conc?'#4CAF50':'transparent') + ';border-color:' + (conc?'#4CAF50':'#B0AEA8') + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px">' + (conc?'✓':'') + '</div>' +
-             '<span class="one-tarefa-nome" style="text-decoration:' + (conc?'line-through':'none') + '">' + (t.nome || t.titulo || 'Sem nome').replace(/</g,'&lt;') + '</span>' +
-             '<span class="one-tarefa-prio" style="background:' + prioBg + ';color:' + prioCor + '">' + (t.prioridade || 'Normal') + '</span>' +
-           '</div>';
-  }).join('');
+
+  // Agrupar por área (livre)
+  var areas = {};
+  tarefas.forEach(function(t){
+    var area = (t.area || 'Geral');
+    if (!areas[area]) areas[area] = [];
+    areas[area].push(t);
+  });
+
+  // Estado vazio — mostra coluna Geral vazia
+  if (!tarefas.length) {
+    el.innerHTML = '<div class="one-tar-kanban"><div class="one-tar-col"><div class="one-tar-col-header"><span class="one-tar-col-nome">Geral</span><span class="one-tar-col-count">0</span></div><div class="one-tar-col-body" style="color:#B0AEA8;font-size:11px;font-style:italic;padding:12px 8px">Nenhuma tarefa ainda</div></div></div>';
+    return;
+  }
+
+  function corPrio(prio) {
+    var p = (prio||'normal').toLowerCase();
+    return p === 'alta'  ? {cor:'#E87A7A',bg:'#FBEAEA',border:'#E87A7A'} :
+           p === 'baixa' ? {cor:'#7EC8B8',bg:'#E6F5F0',border:'#7EC8B8'} :
+                           {cor:'#9B72B0',bg:'#F0E8F8',border:'#9B72B0'};
+  }
+
+  var html = '<div class="one-tar-kanban">';
+  Object.keys(areas).forEach(function(area) {
+    var tasks = areas[area];
+    var cards = tasks.map(function(t) {
+      var conc = !!t.concluida;
+      var cp = corPrio(t.prioridade);
+      return '<div class="one-tar-card' + (conc ? ' concluida' : '') + '" style="border-left-color:' + (conc?'#4CAF50':cp.border) + '">' +
+        '<div class="one-tar-check" data-tid="' + t.id + '" onclick="oneTarToggle(this.dataset.tid)" style="background:' + (conc?'#4CAF50':'transparent') + ';border-color:' + (conc?'#4CAF50':'#B0AEA8') + '">' + (conc?'✓':'') + '</div>' +
+        '<div class="one-tar-card-body">' +
+          '<div class="one-tar-card-nome">' + (t.nome||'Sem nome').replace(/</g,'&lt;') + '</div>' +
+          (t.data ? '<div class="one-tar-card-data">' + t.data.split('-').reverse().join('/') + '</div>' : '') +
+        '</div>' +
+        '<span class="one-tar-prio-badge" style="background:' + cp.bg + ';color:' + cp.cor + '">' + (t.prioridade||'Normal') + '</span>' +
+      '</div>';
+    }).join('');
+
+    html += '<div class="one-tar-col">' +
+      '<div class="one-tar-col-header">' +
+        '<span class="one-tar-col-nome">' + area + '</span>' +
+        '<span class="one-tar-col-count">' + tasks.length + '</span>' +
+      '</div>' +
+      '<div class="one-tar-col-body">' + cards + '</div>' +
+    '</div>';
+  });
+  html += '</div>';
   el.innerHTML = html;
 }
 
