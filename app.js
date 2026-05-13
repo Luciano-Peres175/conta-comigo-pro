@@ -274,7 +274,7 @@
 
     const recognition = new SR();
     recognition.lang = 'pt-BR';
-    recognition.continuous = false;     // ate o usuario parar de falar
+    recognition.continuous = (opts.continuous === true); // true = grava até o user parar manualmente
     recognition.interimResults = true;  // resultados parciais durante a fala
     recognition.maxAlternatives = 1;
 
@@ -333,6 +333,9 @@
   }
   // Expõe pro escopo global (usada por oneVoz que vive fora do IIFE)
   window.iniciarReconhecimentoVoz = iniciarReconhecimentoVoz;
+
+  // Expõe toast para uso fora do IIFE (pinahEnviar global precisa mostrar confirmações)
+  window.toast = toast;
 
   // Expõe funções de re-render para os executores da Pinah (pinahCriar* vive fora do IIFE)
   // Usadas após a Pinah escrever no localStorage para atualizar painéis imediatamente
@@ -3262,24 +3265,26 @@ async function pinahEnviar(texto) {
   texto = texto.trim();
   if (!texto) return;
 
-  // 1. Adiciona ao histórico e mostra bolha do user
+  // 1. Adiciona ao histórico
   pinahHistory.push({ role: 'user', content: texto });
 
-  var welcome = document.getElementById('pinah-welcome');
-  var msgs    = document.getElementById('pinah-msgs');
+  // Detecta se o painel de chat está visível agora
+  var chatPanel = document.querySelector('.one-desktop-main > [data-panel="chat"]:not([hidden])');
+  var emChat    = !!chatPanel;
 
-  if (welcome) welcome.hidden = true;
-  if (msgs)    msgs.hidden    = false;
-  var clearRow = document.getElementById('pinah-clear-row');
-  if (clearRow) clearRow.hidden = false;
+  var msgs = document.getElementById('pinah-msgs');
 
-  pinahAddBubble('user', texto);
-
-  // 2. Swap pro painel Chat (se não estiver nele)
-  swapToCenter('chat');
-
-  // 3. Bolha de "digitando" no fluxo das mensagens
-  pinahTypingShow();
+  if (emChat) {
+    // Modo chat: fluxo completo com bolhas
+    var welcome  = document.getElementById('pinah-welcome');
+    var clearRow = document.getElementById('pinah-clear-row');
+    if (welcome)  welcome.hidden  = true;
+    if (msgs)     msgs.hidden     = false;
+    if (clearRow) clearRow.hidden = false;
+    pinahAddBubble('user', texto);
+    pinahTypingShow();
+  }
+  // Se não estiver no chat: executa silenciosamente na tela atual, sem trocar de painel
 
   try {
     const resp = await fetch('/api/pinah-chat', {
@@ -3293,10 +3298,10 @@ async function pinahEnviar(texto) {
 
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
 
-    // 4. Remove "digitando" e cria bolha real (vai sendo preenchida pelo stream)
-    pinahTypingHide();
-    var bubble = pinahAddBubble('pinah', '');
+    var bubble   = emChat ? pinahAddBubble('pinah', '') : null;
     var fullText = '';
+
+    if (emChat) pinahTypingHide();
 
     const reader  = resp.body.getReader();
     const decoder = new TextDecoder();
@@ -3315,27 +3320,39 @@ async function pinahEnviar(texto) {
         try {
           const ev = JSON.parse(line.slice(6));
           if (ev.tool) {
-            // Ferramenta chamada pela Pinah — executa localmente e atualiza UI
             pinahExecutarTool(ev.tool, ev.input || {});
           }
           if (ev.text) {
             fullText += ev.text;
-            if (bubble) bubble.innerHTML = pinahRenderText(fullText);
-            if (msgs) msgs.scrollTop = msgs.scrollHeight;
+            if (emChat && bubble) {
+              bubble.innerHTML = pinahRenderText(fullText);
+              if (msgs) msgs.scrollTop = msgs.scrollHeight;
+            }
           }
           if (ev.done) {
             pinahHistory.push({ role: 'assistant', content: fullText });
+            // Fora do chat: mostra resposta da Pinah como toast
+            if (!emChat && fullText.trim()) {
+              var resumo = fullText.trim().replace(/\n/g, ' ');
+              if (resumo.length > 120) resumo = resumo.slice(0, 117) + '…';
+              if (window.toast) window.toast('Pinah: ' + resumo, null, { duration: 6000 });
+            }
           }
           if (ev.error) {
-            if (bubble) bubble.innerHTML = '⚠️ ' + pinahRenderText(ev.error);
+            if (emChat && bubble) bubble.innerHTML = '⚠️ ' + pinahRenderText(ev.error);
+            else if (window.toast) window.toast('⚠️ ' + ev.error, 'error');
           }
         } catch (e) { /* linha mal formada — ignora */ }
       }
     }
 
   } catch (err) {
-    pinahTypingHide();
-    pinahAddBubble('pinah', '⚠️ Não consegui conectar com a Pinah. Verifique a conexão e tente de novo.');
+    if (emChat) {
+      pinahTypingHide();
+      pinahAddBubble('pinah', '⚠️ Não consegui conectar com a Pinah. Verifique a conexão e tente de novo.');
+    } else {
+      if (window.toast) window.toast('⚠️ Erro ao conectar com a Pinah.', 'error');
+    }
     console.error('[pinahEnviar]', err);
   }
 }
@@ -3371,24 +3388,31 @@ function oneVoz() {
   }
 
   __pinahMicControle = iniciarReconhecimentoVoz({
+    continuous: true, // grava até o user tocar para parar — sem auto-stop na pausa
     onStateChange: function (estado) {
       // Acende/apaga o botão de mic
       var btns = document.querySelectorAll('.one-prompt-btn[onclick="oneVoz()"]');
       btns.forEach(function (btn) {
-        btn.style.background = (estado === 'listening')
-          ? 'rgba(92,136,112,0.25)' : '';
+        if (estado === 'listening') {
+          btn.style.background = 'rgba(220,60,60,0.18)';
+          btn.title = 'Tocque para parar e enviar';
+        } else {
+          btn.style.background = '';
+          btn.title = 'Falar';
+        }
       });
       if (estado === 'result' || estado === 'error') {
         __pinahMicControle = null;
       }
     },
     onPartial: function (texto) {
-      input.value = texto; // mostra transcrição parcial no input
+      input.value = texto; // mostra transcrição parcial no input enquanto fala
     },
     onResult: function (texto) {
-      input.value = texto;
-      // Auto-envia após transcrição finalizada
-      setTimeout(function () { oneEnviar(); }, 300);
+      // Só chega aqui quando o usuário toca para parar
+      input.value = '';
+      input.style.height = 'auto';
+      if (texto.trim()) pinahEnviar(texto.trim());
     },
     onError: function (msg) {
       console.warn('[oneVoz]', msg);
