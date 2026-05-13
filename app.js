@@ -3251,14 +3251,7 @@ function renderOneTarefasPainel() {
       '</div>' +
       '<div class="one-tar-col-body">' + emptyMsg + cards + '</div>' +
       '<div class="one-tar-inline-wrap">' +
-        '<button class="one-tar-col-add" onclick="oneTarShowInline(this)">+ Nova tarefa</button>' +
-        '<div class="one-tar-inline-form" style="display:none;flex-direction:column;gap:4px">' +
-          '<input class="one-tar-inline-input" placeholder="Nome da tarefa…" onkeydown="oneTarInlineKey(event,this)">' +
-          '<div class="one-tar-inline-btns">' +
-            '<button class="one-tar-inline-save" onclick="oneTarInlineSave(this)">Adicionar</button>' +
-            '<button class="one-tar-inline-cancel" onclick="oneTarHideInline(this)">✕</button>' +
-          '</div>' +
-        '</div>' +
+        '<button class="one-tar-col-add" onclick="oneTarModalAbrir(\'' + area.replace(/'/g,"\\'") + '\')">+ Nova tarefa</button>' +
       '</div>' +
     '</div>';
   });
