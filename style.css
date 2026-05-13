@@ -4141,8 +4141,15 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   padding-left: 24px !important;
   padding-right: 32px !important;
   gap: 22px !important;
+  align-items: center !important;
 }
 .one-prompt-row-global .one-prompt-outer.one-prompt-global {
   max-width: 720px;
   margin-right: auto;
+}
+
+/* Centralizar verticalmente o avatar Pinah Neon dentro da célula da grid */
+.one-prompt-row-global .one-prompt-avatar-btn {
+  align-self: center !important;
+  margin: auto 0 !important;
 }
