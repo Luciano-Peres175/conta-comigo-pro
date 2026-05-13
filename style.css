@@ -2780,6 +2780,27 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .pinah-typing-inline .one-chat-typing-dots {
   margin: 0;
 }
+.pinah-clear-row {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 2px;
+  flex-shrink: 0;
+}
+#pinah-clear-row[hidden] { display: none !important; }
+.pinah-clear-btn {
+  background: none;
+  border: 1px solid rgba(92,136,112,.3);
+  border-radius: 20px;
+  color: #7FA88E;
+  font-size: 11px;
+  padding: 4px 14px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.pinah-clear-btn:hover {
+  background: rgba(92,136,112,.1);
+  color: #5C8870;
+}
 /* ── fim bolhas ─────────────────────────────────────────── */
 
 .one-desktop-chat .one-prompt-outer { flex-shrink:0; padding:8px 0 0; max-width:66.66%; margin:0 auto; width:100%; }

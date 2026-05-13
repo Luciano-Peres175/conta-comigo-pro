@@ -165,7 +165,7 @@
         </div>
         <div class="one-prompt-outer">
           <div class="one-prompt-card">
-            <textarea class="one-prompt-input" id="one-input" rows="1" placeholder="O que você quer capturar ou lembrar?"></textarea>
+            <textarea class="one-prompt-input" id="one-input" rows="1" placeholder="Fale com a Pinah…"></textarea>
             <button class="one-prompt-btn" onclick="oneAnexar()">
               <div class="one-prompt-btn-glow"></div>
               <img src="assets/icons/ic-anexar.png" alt="anexar">
@@ -280,6 +280,10 @@
         <!-- Área de mensagens (oculta até a primeira mensagem) -->
         <!-- O indicador "digitando" é inserido dinamicamente pelo JS dentro desta div -->
         <div class="one-chat-msgs" id="pinah-msgs" hidden></div>
+        <!-- Botão limpar conversa (aparece junto com as mensagens) -->
+        <div class="pinah-clear-row" id="pinah-clear-row" hidden>
+          <button class="pinah-clear-btn" onclick="pinahLimpar()">↺ Nova conversa</button>
+        </div>
       </div>
 
       <!-- Variante Agenda (escondida por default — aparece via swapToCenter('agenda')) -->
@@ -427,7 +431,7 @@
         <!-- Prompt da Pinah GLOBAL — comum a todos os módulos -->
         <div class="one-prompt-outer one-prompt-global">
           <div class="one-prompt-card">
-            <textarea class="one-prompt-input" id="one-input-desk" rows="1" placeholder="O que você quer capturar ou lembrar?"></textarea>
+            <textarea class="one-prompt-input" id="one-input-desk" rows="1" placeholder="Fale com a Pinah…"></textarea>
             <button class="one-prompt-btn" onclick="oneAnexar()">
               <div class="one-prompt-btn-glow"></div>
               <img src="assets/icons/ic-anexar.png" alt="anexar">

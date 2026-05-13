@@ -3117,6 +3117,16 @@ function pinahGetContext() {
   };
 }
 
+function pinahLimpar() {
+  pinahHistory = [];
+  var msgs    = document.getElementById('pinah-msgs');
+  var welcome = document.getElementById('pinah-welcome');
+  var clearRow = document.getElementById('pinah-clear-row');
+  if (msgs)    { msgs.innerHTML = ''; msgs.hidden = true; }
+  if (welcome) welcome.hidden = false;
+  if (clearRow) clearRow.hidden = true;
+}
+
 /* Cria/remove a bolha de "digitando" dentro do #pinah-msgs (não elemento externo) */
 function pinahTypingShow() {
   var msgs = document.getElementById('pinah-msgs');
@@ -3149,6 +3159,8 @@ async function pinahEnviar(texto) {
 
   if (welcome) welcome.hidden = true;
   if (msgs)    msgs.hidden    = false;
+  var clearRow = document.getElementById('pinah-clear-row');
+  if (clearRow) clearRow.hidden = false;
 
   pinahAddBubble('user', texto);
 
