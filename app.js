@@ -3062,7 +3062,14 @@ function oneTarSetPrio(btn) {
   renderOneTarefasPainel();
 }
 function oneTarGetAreas() {
-  try { return JSON.parse(localStorage.getItem('tarefas_areas') || '["Geral"]'); } catch(e) { return ['Geral']; }
+  try {
+    var stored = JSON.parse(localStorage.getItem('tarefas_areas') || 'null');
+    if (stored && Array.isArray(stored) && stored.length) return stored;
+  } catch(e) {}
+  // Áreas padrão estilo TaskAreas
+  var defaults = ['Pinah','Enroscos','Ideias PA','Casa','Baú do Milhão'];
+  oneTarSaveAreas(defaults);
+  return defaults;
 }
 function oneTarSaveAreas(a) { localStorage.setItem('tarefas_areas', JSON.stringify(a)); }
 
@@ -3117,15 +3124,27 @@ function renderOneTarefasPainel() {
   var pendentes = todasTarefas.filter(function(t){ return !t.concluida; });
   if (count) count.textContent = pendentes.length + ' pendente' + (pendentes.length === 1 ? '' : 's');
 
+  // Contadores do header TaskAreas
+  var elTotal = document.getElementById('one-tar-total');
+  var elEm    = document.getElementById('one-tar-em-and');
+  var elConc  = document.getElementById('one-tar-concluidas');
+  var totalQ  = todasTarefas.length;
+  var emAndQ  = todasTarefas.filter(function(t){ return t.status === 'em-andamento' && !t.concluida; }).length;
+  var concQ   = todasTarefas.filter(function(t){ return !!t.concluida; }).length;
+  if (elTotal) elTotal.textContent = totalQ + ' tarefa' + (totalQ === 1 ? '' : 's');
+  if (elEm)    elEm.textContent    = emAndQ + ' em andamento';
+  if (elConc)  elConc.textContent  = concQ + ' concluída' + (concQ === 1 ? '' : 's');
+
   function emojiArea(a) {
     var s = (a||'').toLowerCase();
-    if (/clin|saúde|saude|médic|medic|fonoaud|terapeut/.test(s)) return '🩺';
-    if (/pessoal|casa|famil/.test(s)) return '🏠';
-    if (/trabalho|cap|escrit|negócio|negocio/.test(s)) return '💼';
-    if (/financ|dinheiro|conta/.test(s)) return '💰';
-    if (/estudo|curso|aprend|escola/.test(s)) return '📚';
     if (/pinah|app|produto|one|tech/.test(s)) return '🐾';
-    if (/ideia|projeto|criativ/.test(s)) return '💡';
+    if (/enrosco|problema|pendência|pendencia/.test(s)) return '🍅';
+    if (/ideia|ideias\s*pa|projeto|criativ/.test(s)) return '💡';
+    if (/casa|famil|lar/.test(s)) return '🏠';
+    if (/baú|bau|milhão|milhao|dinheiro|financ|conta/.test(s)) return '💰';
+    if (/clin|saúde|saude|médic|medic|fonoaud|terapeut/.test(s)) return '🩺';
+    if (/trabalho|cap|escrit|negócio|negocio/.test(s)) return '💼';
+    if (/estudo|curso|aprend|escola/.test(s)) return '📚';
     if (/compra|mercado/.test(s)) return '🛒';
     return '📋';
   }

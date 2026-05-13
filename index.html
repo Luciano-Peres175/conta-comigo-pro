@@ -269,36 +269,12 @@
       <!-- Coluna central: wrapper com variantes (swap entre Chat / Agenda / Financeiro / Tarefas) -->
       <div class="one-desktop-main">
 
-      <!-- Variante Chat (default ativa) -->
+      <!-- Variante Chat (default ativa) — só a área visual, prompt foi extraído pra global -->
       <div class="one-desktop-chat" data-panel="chat">
         <div class="one-chat-area">
           <div class="one-pinah-glow-pool"></div>
           <img src="assets/icons/pinah-mascote.png" class="one-pinah-img" alt="Pinah">
           <p class="one-pinah-phrase">Sua mente livre<br>para o que importa.</p>
-        </div>
-        <div class="one-prompt-outer">
-          <div class="one-prompt-card">
-            <textarea class="one-prompt-input" id="one-input-desk" rows="1" placeholder="O que você quer capturar ou lembrar?"></textarea>
-            <button class="one-prompt-btn" onclick="oneAnexar()">
-              <div class="one-prompt-btn-glow"></div>
-              <img src="assets/icons/ic-anexar.png" alt="anexar">
-            </button>
-            <button class="one-prompt-btn" onclick="oneVoz()">
-              <div class="one-prompt-btn-glow"></div>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round" style="position:relative;z-index:1">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" y1="19" x2="12" y2="23"/>
-                <line x1="8" y1="23" x2="16" y2="23"/>
-              </svg>
-            </button>
-            <div class="one-send-wrap">
-              <div class="one-send-glow"></div>
-              <button class="one-send-btn" onclick="oneEnviar()">
-                <img src="assets/icons/ic-enviar.png" alt="enviar">
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -333,39 +309,40 @@
 
       </div>
 
-      <!-- Variante Tarefas -->
+      <!-- Variante Tarefas — Kanban TaskAreas (5 colunas padrão) -->
       <div class="one-desktop-tarefas" data-panel="tarefas" hidden>
 
-        <!-- Barra de controle -->
+        <!-- Header estilo TaskAreas: logo + contadores + ações -->
+        <div class="one-tar-header">
+          <div class="one-tar-header-left">
+            <span class="one-tar-logo">📋 TaskAreas</span>
+            <span class="one-tar-pill" id="one-tar-total">0 tarefas</span>
+            <span class="one-tar-pill em-and" id="one-tar-em-and">0 em andamento</span>
+            <span class="one-tar-pill conc" id="one-tar-concluidas">0 concluídas</span>
+          </div>
+          <div class="one-tar-header-right">
+            <button class="one-tar-btn-area" onclick="oneTarNovaArea()">+ Nova área</button>
+            <button class="one-tar-btn-nova" onclick="oneTarModalAbrir()">+ Tarefa</button>
+          </div>
+        </div>
+
+        <!-- Filtros -->
         <div class="one-tar-bar">
           <div class="one-tar-filters" id="one-tar-filters">
             <button class="one-tar-filter active" data-f="todos"     onclick="oneTarSetFilter(this)">Todos</button>
             <button class="one-tar-filter"         data-f="pendente" onclick="oneTarSetFilter(this)">Pendente</button>
             <button class="one-tar-filter"         data-f="concluida" onclick="oneTarSetFilter(this)">Concluída</button>
             <div class="one-tar-sep"></div>
-            <button class="one-tar-filter prio"    data-p="qualquer" onclick="oneTarSetPrio(this)">Qualquer prioridade</button>
+            <button class="one-tar-filter prio active" data-p="qualquer" onclick="oneTarSetPrio(this)">Qualquer prioridade</button>
             <button class="one-tar-filter prio"    data-p="Alta"     onclick="oneTarSetPrio(this)">Alta</button>
             <button class="one-tar-filter prio"    data-p="Normal"   onclick="oneTarSetPrio(this)">Normal</button>
             <button class="one-tar-filter prio"    data-p="Baixa"    onclick="oneTarSetPrio(this)">Baixa</button>
           </div>
-          <div class="one-tar-bar-actions">
-            <button class="one-tar-btn-area" onclick="oneTarNovaArea()">+ Nova área</button>
-            <button class="one-tar-btn-nova" onclick="oneTarModalAbrir()">+ Tarefa</button>
-          </div>
         </div>
 
-        <!-- Kanban -->
+        <!-- Kanban — 5 colunas (Pinah / Enroscos / Ideias PA / Casa / Baú do Milhão) -->
         <div class="one-fin-content">
           <div id="one-tarefas-list" style="background:transparent;box-shadow:none;padding:0;overflow:hidden;display:flex;flex-direction:column;flex:1;min-height:0"></div>
-        </div>
-
-        <!-- Pinah prompt compacto -->
-        <div class="one-tar-pinah-row">
-          <img src="assets/icons/pinah-mascote.png" class="one-ag-prompt-pinah" alt="Pinah" style="width:26px;height:26px;flex-shrink:0">
-          <textarea id="one-tar-prompt-input" class="one-tar-pinah-input" rows="1"
-            placeholder='Diga à Pinah: "Ligar pro plano amanhã, alta" — ela cria a tarefa pra você'
-            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();oneTarPromptPinah();}"></textarea>
-          <button class="one-ag-prompt-btn" onclick="oneTarPromptPinah()" title="Pedir pra Pinah" style="flex-shrink:0">↗</button>
         </div>
 
       </div>
@@ -423,6 +400,35 @@
               <textarea id="one-fin-prompt-input" class="one-ag-prompt-input" rows="3" placeholder="Digite aqui…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();oneFinPromptPinah();}"></textarea>
               <button class="one-ag-prompt-btn" onclick="oneFinPromptPinah()" title="Pedir pra Pinah">↗</button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Traço fino delimitando a área de trabalho -->
+      <div class="one-area-divider"></div>
+
+      <!-- Prompt da Pinah GLOBAL — comum a todos os módulos -->
+      <div class="one-prompt-outer one-prompt-global">
+        <div class="one-prompt-card">
+          <textarea class="one-prompt-input" id="one-input-desk" rows="1" placeholder="O que você quer capturar ou lembrar?"></textarea>
+          <button class="one-prompt-btn" onclick="oneAnexar()">
+            <div class="one-prompt-btn-glow"></div>
+            <img src="assets/icons/ic-anexar.png" alt="anexar">
+          </button>
+          <button class="one-prompt-btn" onclick="oneVoz()">
+            <div class="one-prompt-btn-glow"></div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round" style="position:relative;z-index:1">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </button>
+          <div class="one-send-wrap">
+            <div class="one-send-glow"></div>
+            <button class="one-send-btn" onclick="oneEnviar()">
+              <img src="assets/icons/ic-enviar.png" alt="enviar">
+            </button>
           </div>
         </div>
       </div>

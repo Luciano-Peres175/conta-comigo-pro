@@ -3799,3 +3799,72 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   z-index: 2;
 }
 .one-ag-kcard:hover .one-ag-kcard-actions { display: flex; }
+
+/* ════════════════════════════════════════════════════════════
+   ÁREA DE TRABALHO + PROMPT GLOBAL (comum a todos os módulos)
+════════════════════════════════════════════════════════════ */
+.one-area-divider {
+  flex-shrink: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent 0%, rgba(160,32,240,0.25) 15%, rgba(160,32,240,0.40) 50%, rgba(160,32,240,0.25) 85%, transparent 100%);
+  margin: 8px 0 0;
+}
+.one-prompt-outer.one-prompt-global {
+  flex-shrink: 0;
+  padding: 10px 0 14px;
+  max-width: 66.66%;
+  margin: 0 auto;
+  width: 100%;
+}
+/* Override pro prompt antigo que estava dentro do chat (caso ainda exista em algum lugar): garantir que o global tem precedência visual */
+
+/* ════════════════════════════════════════════════════════════
+   TASKAREAS HEADER — 5 colunas estilo Perplexity
+════════════════════════════════════════════════════════════ */
+.one-tar-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px 10px;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.one-tar-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.one-tar-header-right {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.one-tar-logo {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #2D2D2D;
+  letter-spacing: 0.2px;
+}
+.one-tar-pill {
+  font-size: 11px;
+  font-weight: 600;
+  color: #7B5CF0;
+  background: #F0E8F8;
+  border-radius: 999px;
+  padding: 4px 10px;
+  border: 1px solid rgba(123,92,240,0.20);
+}
+.one-tar-pill.em-and {
+  color: #B97500;
+  background: #FFF4DA;
+  border-color: rgba(185,117,0,0.20);
+}
+.one-tar-pill.conc {
+  color: #27856A;
+  background: #E3F5F0;
+  border-color: rgba(39,133,106,0.20);
+}
