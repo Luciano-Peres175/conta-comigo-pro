@@ -15,13 +15,13 @@
     const formSignup = document.getElementById('auth-form-signup');
     const subtitle   = document.getElementById('auth-subtitle');
     if (tab === 'login') {
-      tabLogin.style.cssText  = 'flex:1;padding:10px;background:none;border:none;border-bottom:2px solid #9B72B0;color:#9B72B0;font-weight:600;font-size:14px;cursor:pointer';
+      tabLogin.style.cssText  = 'flex:1;padding:10px;background:none;border:none;border-bottom:2px solid #7FA88E;color:#7FA88E;font-weight:600;font-size:14px;cursor:pointer';
       tabSignup.style.cssText = 'flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:#888;font-weight:500;font-size:14px;cursor:pointer';
       formLogin.style.display  = '';
       formSignup.style.display = 'none';
       if (subtitle) subtitle.textContent = 'Entre na sua conta';
     } else {
-      tabSignup.style.cssText = 'flex:1;padding:10px;background:none;border:none;border-bottom:2px solid #9B72B0;color:#9B72B0;font-weight:600;font-size:14px;cursor:pointer';
+      tabSignup.style.cssText = 'flex:1;padding:10px;background:none;border:none;border-bottom:2px solid #7FA88E;color:#7FA88E;font-weight:600;font-size:14px;cursor:pointer';
       tabLogin.style.cssText  = 'flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:#888;font-weight:500;font-size:14px;cursor:pointer';
       formLogin.style.display  = 'none';
       formSignup.style.display = '';
@@ -34,10 +34,10 @@
     const fam = document.getElementById('auth-grupo-familia-label');
     const ami = document.getElementById('auth-grupo-amigas-label');
     if (grupo === 'familia') {
-      fam.style.cssText = 'flex:1;padding:10px;border:2px solid #9B72B0;background:#EDE3F4;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:#9B72B0';
+      fam.style.cssText = 'flex:1;padding:10px;border:2px solid #7FA88E;background:#EDE3F4;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:#7FA88E';
       ami.style.cssText = 'flex:1;padding:10px;border:2px solid #e6e0ed;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:500';
     } else {
-      ami.style.cssText = 'flex:1;padding:10px;border:2px solid #9B72B0;background:#EDE3F4;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:#9B72B0';
+      ami.style.cssText = 'flex:1;padding:10px;border:2px solid #7FA88E;background:#EDE3F4;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:#7FA88E';
       fam.style.cssText = 'flex:1;padding:10px;border:2px solid #e6e0ed;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:500';
     }
   }
@@ -518,7 +518,7 @@
 
   /* ── Segundo Cerebro — categorias e estado ──────────────────── */
   const CEREBRO_CATEGORIAS = [
-    { id: 'casos',      nome: 'Cases Clínicos', icone: 'clipboard-list', cor: '#9B72B0' },
+    { id: 'casos',      nome: 'Cases Clínicos', icone: 'clipboard-list', cor: '#7FA88E' },
     { id: 'protocolos', nome: 'Protocolos',     icone: 'pin',            cor: '#7B9BC8' },
     { id: 'artigos',    nome: 'Artigos',        icone: 'newspaper',      cor: '#7EC8B8' },
     { id: 'tecnicas',   nome: 'Técnicas',       icone: 'lightbulb',      cor: '#E8C4A0' },
@@ -949,11 +949,11 @@
   /* ── Lançamentos recentes ────────────────────────────────────── */
   function avatarColor(cat) {
     const map = {
-      'Receita':'#7EC8B8', 'Consulta':'#9B72B0', 'Alimentação':'#E8C4D4',
+      'Receita':'#7EC8B8', 'Consulta':'#7FA88E', 'Alimentação':'#E8C4D4',
       'Transporte':'#7AB8D4', 'Saúde':'#E87A7A', 'Fixo':'#C9A8D8', 'Despesa':'#E87A7A'
     };
     if (map[cat]) return map[cat];
-    const pal = ['#9B72B0','#7EC8B8','#7AB8D4','#E8C4D4','#C9A8D8','#F0B860'];
+    const pal = ['#7FA88E','#7EC8B8','#7AB8D4','#E8C4D4','#C9A8D8','#F0B860'];
     let h = 0;
     for (const c of (cat || '')) h = (h * 31 + c.charCodeAt(0)) % pal.length;
     return pal[h];
@@ -1053,11 +1053,11 @@
   }
 
   function corBarraTipo(tipo) {
-    if (!tipo) return '#9B72B0';
+    if (!tipo) return '#7FA88E';
     const t = tipo.toLowerCase();
     if (t.includes('profissional')) return '#7B9BC8';
     if (t.includes('pessoal'))      return '#999';
-    return '#9B72B0'; // Atendimento (padrão)
+    return '#7FA88E'; // Atendimento (padrão)
   }
 
   function badgeClass(status) {
@@ -1097,7 +1097,7 @@
 
     el.innerHTML = '<div class="home-comp-list">' + doDia.map(c => {
       const cor     = corBarraTipo(c.tipo);
-      const bg      = cor === '#9B72B0' ? '#E8D5F5' :
+      const bg      = cor === '#7FA88E' ? '#E8D5F5' :
                       cor === '#7B9BC8' ? '#D5E8F5' : '#EBEBEB';
       const txtCor  = cor === '#999' ? '#555' : cor;
       const hora    = escHtml(c.hora || '--:--');
@@ -1182,8 +1182,8 @@
     // Resumo de contagens (mantido)
     const sumario = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:6px 12px 10px">
       <div style="background:#F0E8F8;border-radius:8px;padding:10px 4px;text-align:center">
-        <div style="font-size:22px;font-weight:700;color:#9B72B0;line-height:1">${atend}</div>
-        <div style="font-size:9px;color:#9B72B0;font-weight:600;margin-top:4px;line-height:1.2">Atendimentos</div>
+        <div style="font-size:22px;font-weight:700;color:#7FA88E;line-height:1">${atend}</div>
+        <div style="font-size:9px;color:#7FA88E;font-weight:600;margin-top:4px;line-height:1.2">Atendimentos</div>
       </div>
       <div style="background:#E8F0F8;border-radius:8px;padding:10px 4px;text-align:center">
         <div style="font-size:22px;font-weight:700;color:#7B9BC8;line-height:1">${prof}</div>
@@ -1257,14 +1257,14 @@
         .reduce((s, c) => s + (Number(c.valor) || 0), 0);
 
       const headerBg  = isHoje ? '#F0E8F8' : '#fff';
-      const headerBor = isHoje ? '1.5px solid #9B72B0' : '1px solid #eee';
-      const numColor  = isHoje ? '#9B72B0' : '#333';
-      const nomColor  = isHoje ? '#9B72B0' : '#aaa';
+      const headerBor = isHoje ? '1.5px solid #7FA88E' : '1px solid #eee';
+      const numColor  = isHoje ? '#7FA88E' : '#333';
+      const nomColor  = isHoje ? '#7FA88E' : '#aaa';
 
       const miniCards = doDia.map(c => {
         const cor   = corBarraTipo(c.tipo);
-        const bg    = cor === '#9B72B0' ? '#F0E8F8' : cor === '#7B9BC8' ? '#E8F0F8' : '#F0F0F0';
-        const borda = cor === '#9B72B0' ? '#9B72B0' : cor === '#7B9BC8' ? '#7B9BC8' : '#999999';
+        const bg    = cor === '#7FA88E' ? '#F0E8F8' : cor === '#7B9BC8' ? '#E8F0F8' : '#F0F0F0';
+        const borda = cor === '#7FA88E' ? '#7FA88E' : cor === '#7B9BC8' ? '#7B9BC8' : '#999999';
         const txt   = cor === '#999' ? '#555' : cor;
         return `<div style="background:${bg};border-left:3px solid ${borda};border-radius:4px;padding:4px 5px;color:${txt};min-width:0">
           <div style="font-size:9px;font-weight:700;opacity:.72;white-space:nowrap">${escHtml(c.hora||'--:--')}</div>
@@ -2370,7 +2370,7 @@
       if (chips.length) {
         filtrosEl.style.display = 'flex';
         filtrosEl.innerHTML = chips.join('') +
-          '<button onclick="limparFiltros()" style="background:none;border:none;color:#9B72B0;font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;margin-left:6px">Limpar</button>';
+          '<button onclick="limparFiltros()" style="background:none;border:none;color:#7FA88E;font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;margin-left:6px">Limpar</button>';
       } else {
         filtrosEl.style.display = 'none';
         filtrosEl.innerHTML = '';
@@ -2866,7 +2866,7 @@
         // Se realizado, sobrepoe estilos com tom verde
         const bg  = realizado
           ? '#EAF7E8'
-          : (cor === '#9B72B0' ? '#E8D5F5' :
+          : (cor === '#7FA88E' ? '#E8D5F5' :
              cor === '#7B9BC8' ? '#D5E8F5' : '#EBEBEB');
         const borderColor = realizado ? '#4CAF50' : cor;
         const txtCor = realizado ? '#2E7D32' : (cor === '#999' ? '#555' : cor);
@@ -3186,7 +3186,7 @@ function renderOneTarefasPainel() {
     return '📋';
   }
   function corArea(a) {
-    var paleta = ['#7B5CF0','#E87A7A','#5EB585','#F0A830','#5BA8D8','#C97DD4','#7EC8B8','#E0835C'];
+    var paleta = ['#5C8870','#E87A7A','#5EB585','#F0A830','#5BA8D8','#C97DD4','#7EC8B8','#E0835C'];
     var h = 0;
     for (var i = 0; i < a.length; i++) h = a.charCodeAt(i) + ((h << 5) - h);
     return paleta[Math.abs(h) % paleta.length];
@@ -3479,9 +3479,9 @@ function oneAgCorCategoria(tipo) {
   if (/fam[ií]lia|filho|pai|m[aã]e|filha|av[oó]/.test(t))    return { cor: '#E67BB0', bg: '#FBEDF4' }; // rosa
   if (/financ|pagam|cobran|recebim|caixa/.test(t))           return { cor: '#B8860B', bg: '#FAF1DE' }; // ocre
   if (/lazer|cinema|jantar|passeio|viagem|hobby/.test(t))    return { cor: '#FF8B5A', bg: '#FCEFE5' }; // laranja
-  if (/curso|estudo|aula|treino|workshop/.test(t))           return { cor: '#7B5CF0', bg: '#EFEAFB' }; // roxo
-  if (/pessoal/.test(t))                                     return { cor: '#9B72B0', bg: '#F0E8F4' }; // lilás Pinah
-  return { cor: '#9B72B0', bg: '#F4ECF7' }; // default lilás
+  if (/curso|estudo|aula|treino|workshop/.test(t))           return { cor: '#5C8870', bg: '#EFEAFB' }; // roxo
+  if (/pessoal/.test(t))                                     return { cor: '#7FA88E', bg: '#F0E8F4' }; // lilás Pinah
+  return { cor: '#7FA88E', bg: '#F4ECF7' }; // default lilás
 }
 
 function renderOneAgendaPainel() {
@@ -3532,7 +3532,7 @@ function renderOneAgendaPainel() {
 
     var numDia = d.getDate();
     var numHtml = isHoje
-      ? '<div class="one-ag-kday-num" style="background:#9B72B0;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px">' + numDia + '</div>'
+      ? '<div class="one-ag-kday-num" style="background:#7FA88E;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px">' + numDia + '</div>'
       : '<div class="one-ag-kday-num">' + numDia + '</div>';
 
     var cards = doDia.map(function(c) {
