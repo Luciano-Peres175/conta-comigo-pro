@@ -313,7 +313,8 @@
       if (cancelado) return;
       if (opts.onStateChange) opts.onStateChange('processing');
       const texto = textoFinal.trim();
-      if (texto && opts.onResult) opts.onResult(texto);
+      // Sempre chama onResult — mesmo vazio; o caller usa o campo como fallback
+      if (opts.onResult) opts.onResult(texto);
       if (opts.onStateChange) opts.onStateChange('result');
     };
 
@@ -3409,10 +3410,11 @@ function oneVoz() {
       input.value = texto; // mostra transcrição parcial no input enquanto fala
     },
     onResult: function (texto) {
-      // Só chega aqui quando o usuário toca para parar
+      // textoFinal pode estar vazio se o último trecho era interim — usa o campo como fallback
+      var toSend = texto.trim() || input.value.trim();
       input.value = '';
       input.style.height = 'auto';
-      if (texto.trim()) pinahEnviar(texto.trim());
+      if (toSend) pinahEnviar(toSend);
     },
     onError: function (msg) {
       console.warn('[oneVoz]', msg);
