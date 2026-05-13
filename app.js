@@ -3314,16 +3314,12 @@ function oneNovaTarefa() {
 /* Hint do prompt global — clica numa sugestão e preenche o input */
 function oneHintClick(el) {
   if (!el) return;
-  var texto = (el.textContent || '').replace(/^[\s"'“”]+|[\s"'“”]+$/g, '');
-  var input = document.getElementById('one-input-desk');
-  if (input) {
-    input.value = texto;
-    input.focus();
-    try { input.setSelectionRange(texto.length, texto.length); } catch(e){}
-  }
-  // Fecha o popup depois de escolher
+  var texto = (el.textContent || '').replace(/^[\s”'””]+|[\s”'””]+$/g, '');
+  // Fecha o popup
   var popup = document.getElementById('one-hints-popup');
   if (popup) popup.setAttribute('hidden', '');
+  // Envia direto para a Pinah, sem passar pelo input
+  pinahEnviar(texto);
 }
 
 /* Toggle do popup de sugestões (clica no avatar da Pinah) */
