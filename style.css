@@ -3902,83 +3902,102 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 }
 .one-ag-view-tab:hover:not(.active) { color: #5C8870; }
 
-/* ── Visão DIA: card de largura total ───────────────────── */
-.one-ag-dia-cols {
-  flex: 1;
-  min-width: 0;
-}
-.one-ag-dia-card {
-  left: 0 !important;
-  right: 12px !important;
-  width: auto !important;
-}
-
-/* ── Visão MÊS: grid calendário ─────────────────────────── */
+/* ── Visão MÊS: panorâmica de mini-semanas ───────────────── */
 .one-ag-mes-wrapper {
   flex: 1;
   overflow-y: auto;
-  padding: 4px 0 12px;
+  padding: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
 }
-.one-ag-mes-grid {
+.one-ag-mes-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  background: rgba(92,136,112,0.08);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.one-ag-mes-dow {
   background: rgba(92,136,112,0.06);
+  border-bottom: 1px solid rgba(92,136,112,0.12);
+  flex-shrink: 0;
+}
+.one-ag-mes-colhead {
   text-align: center;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: .04em;
+  letter-spacing: .05em;
   color: #9A96A8;
-  padding: 8px 0 6px;
+  padding: 7px 0 6px;
 }
-.one-ag-mes-cell {
-  background: #fff;
-  min-height: 80px;
-  padding: 6px 6px 4px;
-  cursor: pointer;
-  transition: background .12s;
+.one-ag-mes-semanas {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
+  flex: 1;
 }
-.one-ag-mes-cell:hover { background: #f8f5fc; }
-.one-ag-mes-cell.outro-mes .one-ag-mes-num { color: #C8C4D4; }
-.one-ag-mes-cell.outro-mes { background: rgba(250,248,254,0.5); }
-.one-ag-mes-cell.hoje .one-ag-mes-num {
-  background: #7FA88E;
-  color: #fff;
-  border-radius: 50%;
-  width: 24px; height: 24px;
-  display: flex; align-items: center; justify-content: center;
+/* Cada semana é uma linha clicável */
+.one-ag-mes-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid rgba(92,136,112,0.08);
+  cursor: pointer;
+  transition: background .12s;
+  min-height: 72px;
 }
-.one-ag-mes-num {
-  font-size: 13px;
+.one-ag-mes-semana:hover {
+  background: rgba(92,136,112,0.04);
+}
+.one-ag-mes-semana:hover::before {
+  content: '→ ver semana';
+  position: absolute;
+  font-size: 10px;
+  color: #7FA88E;
+  opacity: .7;
+}
+/* Célula de cada dia dentro da mini-semana */
+.one-ag-mes-mini-day {
+  padding: 5px 4px 4px;
+  border-right: 1px solid rgba(92,136,112,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+.one-ag-mes-mini-day.outro-mes {
+  background: rgba(250,248,254,0.4);
+}
+.one-ag-mes-mini-day:last-child { border-right: none; }
+.one-ag-mes-mini-num {
+  font-size: 12px;
   font-weight: 600;
   color: #3D3550;
-  width: 24px; height: 24px;
+  width: 22px; height: 22px;
   display: flex; align-items: center; justify-content: center;
-}
-.one-ag-mes-dots {
-  display: flex;
-  gap: 3px;
-  flex-wrap: wrap;
-  padding: 0 2px;
-}
-.one-ag-mes-dot {
-  display: inline-block;
-  width: 7px; height: 7px;
-  border-radius: 50%;
   flex-shrink: 0;
+  border-radius: 50%;
 }
-.one-ag-mes-dot-more {
+.one-ag-mes-mini-num.hoje {
+  background: #7FA88E;
+  color: #fff;
+}
+.one-ag-mes-mini-num.outro-mes { color: #C0BAD0; }
+/* Mini-card de evento */
+.one-ag-mes-mini-ev {
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 10px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #3D3550;
+}
+.one-ag-mes-mini-ev-nome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.one-ag-mes-mini-mais {
   font-size: 9px;
   color: #9A96A8;
-  line-height: 7px;
+  padding-left: 4px;
 }
 
 /* ── Drag & Drop ─────────────────────────────────────────── */

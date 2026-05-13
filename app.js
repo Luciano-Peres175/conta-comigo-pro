@@ -3957,33 +3957,25 @@ var oneAgMonthOffset  = 0;         // deslocamento de mês na visão Mês
 
 function oneAgSetView(view) {
   oneAgView = view;
-  // Atualiza tabs
   document.querySelectorAll('.one-ag-view-tab').forEach(function(t) {
     t.classList.toggle('active', t.dataset.view === view);
   });
-  // Mostra só o container correto
   var kanban = document.getElementById('one-ag-kanban');
-  var dia    = document.getElementById('one-ag-dia');
   var mes    = document.getElementById('one-ag-mes');
   if (kanban) kanban.hidden = view !== 'semana';
-  if (dia)    dia.hidden    = view !== 'dia';
   if (mes)    mes.hidden    = view !== 'mes';
   renderOneAgendaPainel();
 }
 
-/* Clicar num dia no Mês → vai pra Dia */
-function oneAgGoToDia(dateStr) {
-  oneAgSelectedDate = dateStr;
-  oneAgSetView('dia');
+/* Clicar numa semana no Mês → vai pra semana correspondente */
+function oneAgGoToSemana(weekOffset) {
+  oneAgWeekOffset = weekOffset;
+  oneAgSetView('semana');
 }
 
 function oneAgNavegar(delta) {
   if (oneAgView === 'semana') {
     oneAgWeekOffset += delta;
-  } else if (oneAgView === 'dia') {
-    var d = new Date(oneAgSelectedDate + 'T12:00:00');
-    d.setDate(d.getDate() + delta);
-    oneAgSelectedDate = d.toISOString().slice(0,10);
   } else if (oneAgView === 'mes') {
     oneAgMonthOffset += delta;
   }
@@ -4194,7 +4186,7 @@ function renderOneAgDia() {
   oneInitDragDrop('one-ag-dia');
 }
 
-/* ── Visão MÊS ─────────────────────────────────────────────────── */
+/* ── Visão MÊS: panorâmica de mini-semanas ──────────────────────── */
 function renderOneAgMes() {
   var el    = document.getElementById('one-ag-mes');
   var label = document.getElementById('one-ag-mes-label');
@@ -4211,46 +4203,74 @@ function renderOneAgMes() {
   var MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   if (label) label.textContent = MESES[mes] + ' ' + ano;
 
+  // Segunda da semana que contém o primeiro dia do mês
   var primeiroDia = new Date(ano, mes, 1);
   var ultimoDia   = new Date(ano, mes + 1, 0);
-  var startDow    = primeiroDia.getDay(); // 0=Dom
-  var offsetStart = startDow === 0 ? -6 : 1 - startDow; // recua até segunda
-  var startDate   = new Date(primeiroDia);
-  startDate.setDate(1 + offsetStart);
+  var dow = primeiroDia.getDay();
+  var startDate = new Date(primeiroDia);
+  startDate.setDate(1 + (dow === 0 ? -6 : 1 - dow));
 
-  var DIAS_SEMANA = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+  // Segunda da semana atual (para calcular weekOffset)
+  var dowHoje = hoje.getDay();
+  var segHoje = new Date(hoje);
+  segHoje.setDate(hoje.getDate() + (dowHoje === 0 ? -6 : 1 - dowHoje));
 
-  var html = '<div class="one-ag-mes-grid">';
-  // Cabeçalho dias da semana
-  DIAS_SEMANA.forEach(function(d){ html += '<div class="one-ag-mes-dow">' + d + '</div>'; });
+  var NOMES = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
 
-  // Células do mês
+  // Cabeçalho fixo dos dias
+  var headerHtml = '<div class="one-ag-mes-header">' +
+    NOMES.map(function(n){ return '<div class="one-ag-mes-colhead">' + n + '</div>'; }).join('') +
+  '</div>';
+
+  // Semanas
+  var semanasHtml = '';
   var cur = new Date(startDate);
-  var maxIter = 42; // 6 semanas máximo
-  for (var i = 0; i < maxIter; i++) {
-    if (i > 0 && cur > ultimoDia && cur.getDay() === 1) break; // fim da última semana
-    var ds      = cur.toISOString().slice(0,10);
-    var doMes   = cur.getMonth() === mes;
-    var isHoje  = ds === hojeStr;
-    var eventos = compromissos.filter(function(c){ return c.data === ds; });
+  var semIdx = 0;
 
-    html += '<div class="one-ag-mes-cell' + (!doMes?' outro-mes':'') + (isHoje?' hoje':'') + '" onclick="oneAgGoToDia(\'' + ds + '\')">';
-    html += '<div class="one-ag-mes-num">' + cur.getDate() + '</div>';
-    if (eventos.length > 0) {
-      html += '<div class="one-ag-mes-dots">';
-      eventos.slice(0,3).forEach(function(ev){
+  while (cur <= ultimoDia || semIdx === 0) {
+    var segDaSemana = new Date(cur); // segunda desta semana
+    // Calcula o weekOffset desta semana em relação à semana atual
+    var diffMs = segDaSemana.getTime() - segHoje.getTime();
+    var weekOffset = Math.round(diffMs / (7 * 24 * 3600 * 1000));
+
+    // Células dos 7 dias
+    var celulas = '';
+    for (var i = 0; i < 7; i++) {
+      var d   = new Date(cur);
+      var ds  = d.toISOString().slice(0,10);
+      var doMes  = d.getMonth() === mes;
+      var isHoje = ds === hojeStr;
+      var evs = compromissos.filter(function(c){ return c.data === ds; });
+
+      var numHtml = isHoje
+        ? '<div class="one-ag-mes-mini-num hoje">' + d.getDate() + '</div>'
+        : '<div class="one-ag-mes-mini-num' + (!doMes ? ' outro-mes' : '') + '">' + d.getDate() + '</div>';
+
+      var evHtml = evs.slice(0,3).map(function(ev){
         var cat = oneAgCorCategoria(ev.tipo || '');
-        html += '<span class="one-ag-mes-dot" style="background:' + cat.cor + '" title="' + (ev.nome||'').replace(/"/g,'&quot;') + '"></span>';
-      });
-      if (eventos.length > 3) html += '<span class="one-ag-mes-dot-more">+' + (eventos.length-3) + '</span>';
-      html += '</div>';
-    }
-    html += '</div>';
-    cur.setDate(cur.getDate() + 1);
-  }
-  html += '</div>';
+        var nome = (ev.nome || ev.descricao || '').replace(/</g,'&lt;');
+        return '<div class="one-ag-mes-mini-ev" style="background:' + cat.bg + ';border-left:2px solid ' + cat.cor + '" title="' + (ev.hora||'') + ' ' + nome + '">' +
+          (ev.hora ? '<span style="color:' + cat.cor + ';font-weight:600">' + ev.hora + '</span> ' : '') +
+          '<span class="one-ag-mes-mini-ev-nome">' + nome + '</span>' +
+        '</div>';
+      }).join('');
 
-  el.innerHTML = html;
+      if (evs.length > 3) evHtml += '<div class="one-ag-mes-mini-mais">+' + (evs.length-3) + ' mais</div>';
+
+      celulas += '<div class="one-ag-mes-mini-day' + (!doMes ? ' outro-mes' : '') + '">' + numHtml + evHtml + '</div>';
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    semanasHtml += '<div class="one-ag-mes-semana" onclick="oneAgGoToSemana(' + weekOffset + ')" title="Ver esta semana">' +
+      celulas +
+    '</div>';
+
+    semIdx++;
+    if (semIdx > 5) break; // máximo 6 semanas
+    if (cur > ultimoDia) break;
+  }
+
+  el.innerHTML = headerHtml + '<div class="one-ag-mes-semanas">' + semanasHtml + '</div>';
 }
 
 /* ── Drag & Drop ────────────────────────────────────────────────── */
