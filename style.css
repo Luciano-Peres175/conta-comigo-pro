@@ -4103,3 +4103,14 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 
 /* Esconde a antiga coluna direita de hints (se ainda existir em algum lugar) */
 .one-prompt-row-global .one-prompt-hints { display: none !important; }
+
+/* Respiro lateral na linha do prompt global — encolhe o prompt e dá ar nas pontas */
+.one-prompt-row-global {
+  padding-left: 24px !important;
+  padding-right: 32px !important;
+  gap: 22px !important;
+}
+.one-prompt-row-global .one-prompt-outer.one-prompt-global {
+  max-width: 720px;
+  margin-right: auto;
+}
