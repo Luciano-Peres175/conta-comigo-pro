@@ -3582,6 +3582,12 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   transition: box-shadow .12s ease;
   min-height: 28px;
   overflow: hidden;
+  /* altura calculada pelo JS via duracao; garante que o conteúdo
+     não fica cortado em eventos curtos */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 .one-ag-event:hover {
   box-shadow: 0 3px 8px rgba(92,136,112,0.22);
@@ -3955,6 +3961,7 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   transition: box-shadow .15s, transform .15s, z-index .01s;
   overflow: hidden;
   z-index: 2;
+  box-sizing: border-box; /* garante que padding não extrapola a altura calculada */
 }
 .one-ag-kcard:hover {
   box-shadow: 0 8px 20px rgba(58,88,72,0.25);

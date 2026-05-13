@@ -3812,7 +3812,8 @@ function renderOneAgendaPainel() {
       var cat = oneAgCorCategoria(tipo);
       var top = oneHoraParaTop(hora);
       var dur = parseInt(c.duracao) || 50; // duração em min (default 50)
-      var hPx = Math.max(34, Math.round(dur * (50/60)));
+      // 50px/hora → 1min = 0.833px. Mínimo 56px pra caber hora + nome + tipo sem cortar
+      var hPx = Math.max(56, Math.round(dur * (50/60)));
       return '<div class="one-ag-kcard' + (realizado ? ' realizado' : '') + '" data-event-id="' + c.id + '" data-cid="' + c.id + '" onclick="oneAgModalEditar(this.dataset.cid)" style="top:' + top + 'px;height:' + hPx + 'px;border-left-color:' + cat.cor + ';background:' + cat.bg + '">' +
         '<div class="one-ag-kcard-check" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgToggleRealizado(this.dataset.cid)" style="background:' + checkBg + ';border-color:' + checkBdr + '">' + checkTxt + '</div>' +
         '<div class="one-ag-kcard-body">' +
@@ -4326,9 +4327,22 @@ function renderOneDesktop() {
       this.style.height = Math.min(this.scrollHeight, 180) + 'px';
     });
   }
+  function setupEnterEnvia(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('keydown', function(e) {
+      // Enter sem Shift envia; Shift+Enter insere quebra de linha
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        oneEnviar();
+      }
+    });
+  }
   document.addEventListener('DOMContentLoaded', function() {
     setupAutoGrow(document.getElementById('one-input'));
     setupAutoGrow(document.getElementById('one-input-desk'));
+    setupEnterEnvia('one-input');
+    setupEnterEnvia('one-input-desk');
   });
 })();
 
