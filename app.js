@@ -3459,8 +3459,27 @@ function pinahExecutarTool(nome, input) {
     case 'criar_compromisso':   pinahCriarCompromisso(input);   break;
     case 'criar_tarefa':        pinahCriarTarefa(input);        break;
     case 'registrar_transacao': pinahRegistrarTransacao(input); break;
+    case 'criar_nota':          pinahCriarNota(input);          break;
     default: console.warn('[Pinah] tool desconhecida:', nome);
   }
+}
+
+function pinahCriarNota(input) {
+  var store = _pinahGetSet('notas_cerebro');
+  var lista = store.get();
+  var novo = {
+    id:        String(Date.now()),
+    titulo:    input.titulo    || 'Nota importada',
+    conteudo:  input.conteudo  || '',
+    categoria: input.categoria || 'artigos',
+    tags:      Array.isArray(input.tags) ? input.tags : [],
+    criadoEm:  new Date().toISOString()
+  };
+  lista.push(novo);
+  store.set(lista);
+  // Re-render do Segundo Cérebro se estiver visível
+  if (typeof renderCerebro === 'function') renderCerebro();
+  if (typeof renderNotasCerebro === 'function') renderNotasCerebro();
 }
 
 function _pinahGetSet(chave) {
@@ -3559,37 +3578,62 @@ function pinahTypingHide() {
   if (el) el.remove();
 }
 
-async function pinahEnviar(texto) {
-  texto = texto.trim();
-  if (!texto) return;
+async function pinahEnviar(texto, arquivo) {
+  texto = (texto || '').trim();
+  if (!texto && !arquivo) return;
 
-  // 1. Adiciona ao histórico
-  pinahHistory.push({ role: 'user', content: texto });
+  // Texto de exibição (bolha + histórico)
+  var displayText = texto;
+  if (arquivo) displayText = (texto ? texto + '\n' : '') + '📎 ' + arquivo.nome;
 
-  // Detecta se o painel de chat está visível agora
+  // Content para a API (pode ter bloco de arquivo)
+  var apiContent;
+  if (arquivo) {
+    if (arquivo.tipo === 'texto') {
+      // DOCX extraído como texto
+      apiContent = (texto || 'Analise este documento e salve como nota no Segundo Cérebro.') +
+        '\n\n[Arquivo: ' + arquivo.nome + ']\n\n' + arquivo.textoExtraido;
+    } else {
+      var fileBlock = arquivo.tipo === 'pdf'
+        ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: arquivo.base64 } }
+        : { type: 'image',    source: { type: 'base64', media_type: arquivo.mimeType,   data: arquivo.base64 } };
+      apiContent = [
+        fileBlock,
+        { type: 'text', text: texto || 'Analise este arquivo e salve o conteúdo como nota no Segundo Cérebro.' }
+      ];
+    }
+  } else {
+    apiContent = texto;
+  }
+
+  // Histórico guarda versão texto (sem base64 gigante)
+  pinahHistory.push({ role: 'user', content: displayText });
+
+  // Para a chamada API, substitui última mensagem pelo conteúdo completo
+  var apiMessages = pinahHistory.slice(0, -1).concat([{ role: 'user', content: apiContent }]);
+
+  // Detecta se o painel de chat está visível
   var chatPanel = document.querySelector('.one-desktop-main > [data-panel="chat"]:not([hidden])');
   var emChat    = !!chatPanel;
 
   var msgs = document.getElementById('pinah-msgs');
 
   if (emChat) {
-    // Modo chat: fluxo completo com bolhas
     var welcome  = document.getElementById('pinah-welcome');
     var clearRow = document.getElementById('pinah-clear-row');
     if (welcome)  welcome.hidden  = true;
     if (msgs)     msgs.hidden     = false;
     if (clearRow) clearRow.hidden = false;
-    pinahAddBubble('user', texto);
+    pinahAddBubble('user', displayText);
     pinahTypingShow();
   }
-  // Se não estiver no chat: executa silenciosamente na tela atual, sem trocar de painel
 
   try {
     const resp = await fetch('/api/pinah-chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        messages: pinahHistory,
+        messages: apiMessages,
         context: pinahGetContext()
       })
     });
@@ -3656,20 +3700,105 @@ async function pinahEnviar(texto) {
 }
 
 function oneEnviar() {
-  // Detecta qual input está ativo (desktop ou mobile)
   var inputDesk = document.getElementById('one-input-desk');
   var inputMob  = document.getElementById('one-input');
   var input = (inputDesk && inputDesk.value.trim()) ? inputDesk : inputMob;
-  if (!input || !input.value.trim()) return;
 
-  var texto = input.value.trim();
-  input.value = '';
-  input.style.height = 'auto';
+  var texto  = input ? input.value.trim() : '';
+  var arquivo = _chatArquivoAtual;
 
-  pinahEnviar(texto);
+  // Precisa de texto OU arquivo para enviar
+  if (!texto && !arquivo) return;
+
+  if (input) { input.value = ''; input.style.height = 'auto'; }
+  _chatLimparArquivo();
+
+  pinahEnviar(texto, arquivo);
 }
 
-function oneAnexar() { /* TODO */ }
+// ── Anexar arquivo no chat ────────────────────────────────────────
+var _chatArquivoAtual = null;
+
+function oneAnexar() {
+  var input = document.getElementById('chat-file-input');
+  if (input) input.click();
+}
+window.oneAnexar = oneAnexar;
+
+function _chatOnFileSelect(input) {
+  var file = input && input.files && input.files[0];
+  if (!file) return;
+  input.value = ''; // permite re-selecionar o mesmo arquivo
+  var ext = (file.name || '').split('.').pop().toLowerCase();
+  var extOk = ['pdf','docx','jpg','jpeg','png','webp'];
+  if (!extOk.includes(ext)) { toast('Use PDF, DOCX, JPG ou PNG.', 'error'); return; }
+  if (file.size > 20 * 1024 * 1024) { toast('Arquivo muito grande (máx 20MB).', 'error'); return; }
+
+  _chatMostrarChip(file.name, true); // loading
+
+  if (ext === 'docx') {
+    // DOCX: extração client-side com mammoth
+    if (!window.mammoth) {
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+      s.onload = function() { _chatLerDOCX(file); };
+      s.onerror = function() { toast('Falha ao carregar leitor de DOCX.', 'error'); _chatLimparArquivo(); };
+      document.head.appendChild(s);
+    } else {
+      _chatLerDOCX(file);
+    }
+  } else {
+    // PDF ou imagem — lê como base64
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var dataUrl = e.target.result;
+      var base64  = dataUrl.split(',')[1];
+      _chatArquivoAtual = {
+        nome:     file.name,
+        tipo:     ext === 'pdf' ? 'pdf' : 'imagem',
+        base64:   base64,
+        mimeType: ext === 'pdf' ? 'application/pdf' : file.type
+      };
+      _chatMostrarChip(file.name, false);
+    };
+    reader.onerror = function() { toast('Erro ao ler arquivo.', 'error'); _chatLimparArquivo(); };
+    reader.readAsDataURL(file);
+  }
+}
+window._chatOnFileSelect = _chatOnFileSelect;
+
+function _chatLerDOCX(file) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    window.mammoth.extractRawText({ arrayBuffer: e.target.result })
+      .then(function(result) {
+        _chatArquivoAtual = { nome: file.name, tipo: 'texto', textoExtraido: result.value || '' };
+        _chatMostrarChip(file.name, false);
+      })
+      .catch(function() { toast('Erro ao ler DOCX.', 'error'); _chatLimparArquivo(); });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function _chatMostrarChip(nome, loading) {
+  ['mob','desk'].forEach(function(v) {
+    var chip = document.getElementById('chat-file-chip-' + v);
+    var span = document.getElementById('chat-file-chip-' + v + '-nome');
+    if (!chip) return;
+    chip.style.display = 'flex';
+    chip.classList.toggle('loading', !!loading);
+    if (span) span.textContent = '📎 ' + nome;
+  });
+}
+
+function _chatLimparArquivo() {
+  _chatArquivoAtual = null;
+  ['mob','desk'].forEach(function(v) {
+    var chip = document.getElementById('chat-file-chip-' + v);
+    if (chip) chip.style.display = 'none';
+  });
+}
+window._chatLimparArquivo = _chatLimparArquivo;
 
 function oneVoz() {
   // Detecta qual input preencher

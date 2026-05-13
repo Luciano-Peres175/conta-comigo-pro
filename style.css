@@ -4566,3 +4566,253 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   align-self: center !important;
   margin: auto 0 !important;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   MODAL DE IMPORTAÇÃO — Segundo Cérebro
+   Abas: URL · Arquivo · Imagem · CSV
+   ══════════════════════════════════════════════════════════════════ */
+
+.importar-box {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px 24px 20px;
+  max-width: 540px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(107,63,138,.25);
+  position: relative;
+}
+
+.importar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.importar-title {
+  font-family: var(--font-title, 'Nunito', sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--lilas, #7B5EA7);
+}
+.importar-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #aaa;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+}
+.importar-close:hover { background: #f3f3f3; color: #555; }
+
+/* Tabs */
+.imp-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  background: #f6f3fa;
+  border-radius: 12px;
+  padding: 4px;
+}
+.imp-tab {
+  flex: 1;
+  padding: 8px 4px;
+  border: none;
+  background: none;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  cursor: pointer;
+  transition: all .18s;
+  white-space: nowrap;
+}
+.imp-tab.active {
+  background: #fff;
+  color: var(--lilas, #7B5EA7);
+  box-shadow: 0 1px 6px rgba(107,63,138,.15);
+}
+
+/* Hint text */
+.imp-hint {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+/* URL field */
+.imp-url-field {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #e0d9ed;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color .2s;
+}
+.imp-url-field:focus { border-color: var(--lilas, #7B5EA7); }
+
+/* Drop zone */
+.imp-drop-zone {
+  border: 2px dashed #d5cbe8;
+  border-radius: 14px;
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: #faf8fd;
+  user-select: none;
+}
+.imp-drop-zone:hover,
+.imp-drop-zone.drag-over {
+  border-color: var(--lilas, #7B5EA7);
+  background: #f1ebfa;
+}
+.imp-drop-icon { font-size: 36px; margin-bottom: 8px; }
+.imp-drop-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  margin: 0 0 4px;
+}
+.imp-drop-sub {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+/* Loading */
+.imp-loading-wrap {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+  gap: 14px;
+}
+.imp-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e8dff5;
+  border-top-color: var(--lilas, #7B5EA7);
+  border-radius: 50%;
+  animation: spin .75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.imp-loading-txt {
+  font-size: 14px;
+  color: #888;
+  margin: 0;
+}
+
+/* Step 2 — Preview nota */
+.imp-preview-titulo {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1.5px solid #e0d9ed;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  outline: none;
+  box-sizing: border-box;
+}
+.imp-preview-titulo:focus { border-color: var(--lilas, #7B5EA7); }
+.imp-preview-conteudo {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1.5px solid #e0d9ed;
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+  min-height: 180px;
+}
+.imp-preview-conteudo:focus { border-color: var(--lilas, #7B5EA7); }
+
+.imp-step2-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+/* Step 2 — CSV */
+.imp-csv-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lilas, #7B5EA7);
+  margin: 0 0 10px;
+}
+.imp-csv-scroll {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #e8dff5;
+  border-radius: 10px;
+}
+.imp-csv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.imp-csv-table th {
+  background: #f6f3fa;
+  padding: 7px 10px;
+  text-align: left;
+  font-weight: 700;
+  color: #555;
+  position: sticky;
+  top: 0;
+}
+.imp-csv-table td {
+  padding: 6px 10px;
+  border-top: 1px solid #f0ebf8;
+  color: #444;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.imp-csv-table tr:hover td { background: #faf8fd; }
+
+/* ── Chat file chip ─────────────────────────────────────────────── */
+.chat-file-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(127,168,142,0.13);
+  border: 1px solid rgba(127,168,142,0.35);
+  border-radius: 20px;
+  padding: 5px 10px 5px 12px;
+  font-size: 12px;
+  color: #7FA88E;
+  margin-bottom: 6px;
+  max-width: 320px;
+}
+.chat-file-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.chat-file-chip-x {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9090A0;
+  font-size: 11px;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.chat-file-chip-x:hover { color: #E87A7A; }
+.chat-file-chip.loading span::after {
+  content: ' ⏳';
+}

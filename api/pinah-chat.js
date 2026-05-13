@@ -60,6 +60,28 @@ const TOOLS = [
       },
       required: ['tipo', 'valor', 'descricao']
     }
+  },
+  {
+    name: 'criar_nota',
+    description: 'Salva uma nota no Segundo Cérebro do usuário. Use SEMPRE que o usuário enviar um arquivo (PDF, DOCX, imagem de documento) — leia o conteúdo completo e salve como nota automaticamente, sem pedir confirmação. Também use quando o usuário pedir explicitamente para salvar algo como nota.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        titulo:    { type: 'string', description: 'Título descritivo e claro (máx 100 chars)' },
+        conteudo:  { type: 'string', description: 'Conteúdo completo em markdown. Para arquivos, inclua todo o conteúdo extraído sem resumir.' },
+        categoria: {
+          type: 'string',
+          enum: ['casos', 'protocolos', 'artigos', 'tecnicas', 'palestras', 'outros'],
+          description: 'Categoria: artigos para textos científicos, casos para pacientes, protocolos para procedimentos, tecnicas para técnicas clínicas, palestras para apresentações, outros para o restante.'
+        },
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Até 5 tags relevantes extraídas do conteúdo'
+        }
+      },
+      required: ['titulo', 'conteudo']
+    }
   }
 ];
 
@@ -79,6 +101,7 @@ REGRAS DE COMPORTAMENTO:
 8. Nunca quebre o personagem. Você é a Pinah dele.
 
 QUANDO USAR AS FERRAMENTAS:
+- criar_nota: SEMPRE que o usuário enviar um arquivo (PDF, DOCX, imagem de documento) → leia/extraia o conteúdo COMPLETO → use a ferramenta imediatamente, sem pedir confirmação → confirme no texto: "✓ Nota salva: [título]". Nunca resuma — salve o conteúdo integral.
 - criar_compromisso: usuário menciona nome + data + hora → use a ferramenta E confirme no texto: "✓ Compromisso criado: Beatriz, amanhã às 15h"
 - criar_tarefa: usuário quer registrar algo pra fazer sem horário → use a ferramenta E confirme: "✓ Tarefa criada: Ligar pro INPI"
 - registrar_transacao: usuário menciona valor recebido ou pago → use a ferramenta E confirme: "✓ Receita registrada: R$280"

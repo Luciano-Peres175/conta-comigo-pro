@@ -164,6 +164,10 @@
           <p class="one-pinah-phrase">Sua mente livre<br>para o que importa.</p>
         </div>
         <div class="one-prompt-outer">
+          <div id="chat-file-chip-mob" class="chat-file-chip" style="display:none">
+            <span id="chat-file-chip-mob-nome">📎 arquivo.pdf</span>
+            <button onclick="_chatLimparArquivo()" class="chat-file-chip-x">✕</button>
+          </div>
           <div class="one-prompt-card">
             <textarea class="one-prompt-input" id="one-input" rows="1" placeholder="Fale com a Pinah…"></textarea>
             <button class="one-prompt-btn" onclick="oneAnexar()">
@@ -435,6 +439,12 @@
         </button>
 
         <!-- Prompt da Pinah GLOBAL — comum a todos os módulos -->
+        <!-- Input file oculto — único, compartilhado por mobile e desktop -->
+        <input type="file" id="chat-file-input" accept=".pdf,.docx,image/jpeg,image/png,image/webp" style="display:none" onchange="_chatOnFileSelect(this)">
+        <div id="chat-file-chip-desk" class="chat-file-chip" style="display:none">
+          <span id="chat-file-chip-desk-nome">📎 arquivo.pdf</span>
+          <button onclick="_chatLimparArquivo()" class="chat-file-chip-x">✕</button>
+        </div>
         <div class="one-prompt-outer one-prompt-global">
           <div class="one-prompt-card">
             <textarea class="one-prompt-input" id="one-input-desk" rows="1" placeholder="Fale com a Pinah…"></textarea>
@@ -993,7 +1003,8 @@
           <span>Perguntar à IA</span>
           <span class="btn-ia-contador" id="btn-ia-contador">50/50</span>
         </button>
-        <button class="btn-primary" style="white-space:nowrap" onclick="abrirModalNota()">+ Nova Nota</button>
+        <button class="btn-secondary" style="white-space:nowrap;display:flex;align-items:center;gap:6px" onclick="importarAbrir()">📥 Importar</button>
+        <button class="btn-primary"   style="white-space:nowrap" onclick="abrirModalNota()">+ Nova Nota</button>
       </div>
 
       <!-- Categorias (clicaveis, com contagem dinamica) -->
@@ -1305,6 +1316,104 @@
         <button class="btn-primary" onclick="salvarNota()" style="padding:10px 22px">Salvar</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- MODAL — Importar para o Segundo Cérebro (URL / Arquivo / Imagem / CSV) -->
+<div id="modal-importar" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.5);z-index:600;align-items:center;justify-content:center;padding:16px">
+  <div class="importar-box">
+
+    <!-- Header -->
+    <div class="importar-header">
+      <span class="importar-title">📥 Adicionar ao Segundo Cérebro</span>
+      <button onclick="importarFechar()" class="importar-close">✕</button>
+    </div>
+
+    <!-- STEP 1 — Escolha da fonte -->
+    <div id="imp-step1">
+      <!-- Tabs -->
+      <div class="imp-tabs">
+        <button class="imp-tab active" data-tab="url"     onclick="importarSetTab('url')">🔗 URL</button>
+        <button class="imp-tab"        data-tab="arquivo" onclick="importarSetTab('arquivo')">📄 Arquivo</button>
+        <button class="imp-tab"        data-tab="imagem"  onclick="importarSetTab('imagem')">📷 Imagem</button>
+        <button class="imp-tab"        data-tab="csv"     onclick="importarSetTab('csv')">📊 CSV</button>
+      </div>
+
+      <!-- Conteúdo das tabs -->
+      <div id="imp-step1-inputs">
+
+        <!-- URL -->
+        <div id="imp-tab-url" class="imp-tab-content">
+          <p class="imp-hint">Cole o link de qualquer artigo, post, página ou documento online.</p>
+          <input type="url" id="imp-url-input" class="imp-url-field" placeholder="https://www.scielo.br/...">
+          <button class="btn-primary" onclick="importarProcessarURL()" style="width:100%;margin-top:10px">Buscar e estruturar</button>
+        </div>
+
+        <!-- Arquivo -->
+        <div id="imp-tab-arquivo" class="imp-tab-content" style="display:none">
+          <p class="imp-hint">Formatos suportados: <strong>PDF, TXT, MD, DOCX</strong></p>
+          <div class="imp-drop-zone" id="imp-dropzone-arquivo" onclick="document.getElementById('imp-file-input').click()" ondragover="impDragOver(event,'imp-dropzone-arquivo')" ondragleave="impDragLeave('imp-dropzone-arquivo')" ondrop="impDropArquivo(event)">
+            <input type="file" id="imp-file-input" accept=".pdf,.txt,.md,.docx,.doc" style="display:none" onchange="importarProcessarArquivo(this)">
+            <div class="imp-drop-icon">📄</div>
+            <p class="imp-drop-label">Clique ou arraste o arquivo aqui</p>
+            <p class="imp-drop-sub">PDF · TXT · Markdown · Word</p>
+          </div>
+        </div>
+
+        <!-- Imagem -->
+        <div id="imp-tab-imagem" class="imp-tab-content" style="display:none">
+          <p class="imp-hint">Fotos de receituários, laudos, prints, slides — Claude transcreve o conteúdo.</p>
+          <div class="imp-drop-zone" id="imp-dropzone-imagem" onclick="document.getElementById('imp-img-input').click()" ondragover="impDragOver(event,'imp-dropzone-imagem')" ondragleave="impDragLeave('imp-dropzone-imagem')" ondrop="impDropImagem(event)">
+            <input type="file" id="imp-img-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="importarProcessarImagem(this)">
+            <div class="imp-drop-icon">📷</div>
+            <p class="imp-drop-label">Clique ou arraste a imagem</p>
+            <p class="imp-drop-sub">JPG · PNG · WebP (até 5 MB)</p>
+          </div>
+        </div>
+
+        <!-- CSV -->
+        <div id="imp-tab-csv" class="imp-tab-content" style="display:none">
+          <p class="imp-hint">Importe um extrato bancário ou planilha de transações diretamente no financeiro.</p>
+          <div class="imp-drop-zone" id="imp-dropzone-csv" onclick="document.getElementById('imp-csv-input').click()" ondragover="impDragOver(event,'imp-dropzone-csv')" ondragleave="impDragLeave('imp-dropzone-csv')" ondrop="impDropCSV(event)">
+            <input type="file" id="imp-csv-input" accept=".csv,.txt,.tsv" style="display:none" onchange="importarProcessarCSV(this)">
+            <div class="imp-drop-icon">📊</div>
+            <p class="imp-drop-label">Clique ou arraste o arquivo</p>
+            <p class="imp-drop-sub">CSV · TSV · TXT (exportado do banco ou planilha)</p>
+          </div>
+        </div>
+
+      </div><!-- /imp-step1-inputs -->
+
+      <!-- Loading -->
+      <div id="imp-loading" style="display:none" class="imp-loading-wrap">
+        <div class="imp-spinner"></div>
+        <p class="imp-loading-txt" id="imp-loading-txt">Processando…</p>
+      </div>
+    </div><!-- /imp-step1 -->
+
+    <!-- STEP 2 — Preview nota (URL / Arquivo / Imagem) -->
+    <div id="imp-step2" style="display:none">
+      <p class="imp-hint" style="margin-bottom:10px">Revise e edite antes de salvar:</p>
+      <input type="text" id="imp-preview-titulo" class="imp-preview-titulo" placeholder="Título da nota">
+      <textarea id="imp-preview-conteudo" class="imp-preview-conteudo" rows="9" placeholder="Conteúdo extraído…"></textarea>
+      <div class="imp-step2-actions">
+        <button class="btn-secondary" onclick="importarVoltarStep1()">← Voltar</button>
+        <button class="btn-primary"   onclick="importarUsarConteudo()">Adicionar ao Segundo Cérebro</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 — Preview CSV -->
+    <div id="imp-step2-csv" style="display:none">
+      <p class="imp-csv-count" id="imp-csv-count">0 transações detectadas</p>
+      <div class="imp-csv-scroll">
+        <div id="imp-csv-preview"></div>
+      </div>
+      <div class="imp-step2-actions">
+        <button class="btn-secondary" onclick="importarVoltarStep1()">← Voltar</button>
+        <button class="btn-primary"   onclick="importarConfirmarCSV()">Importar para o Financeiro</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
