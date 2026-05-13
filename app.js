@@ -537,14 +537,35 @@
     migrarDadosLegado();
     const primeiraVez = !localStorage.getItem(oneU('ccp_initialized'));
     if (primeiraVez) {
-      // Apenas admin recebe dados demo. familia/fono começam do zero.
+      // Seed por grupo — cada perfil recebe dados adequados ao seu contexto.
       const grupo = (window.authProfile && window.authProfile.grupo) || 'admin';
+
       if (grupo === 'admin') {
+        // Luciano — fonoaudiologia (dados demo)
         localStorage.setItem(oneU('receitas'),      JSON.stringify(getReceitasDemo()));
         localStorage.setItem(oneU('despesas'),      JSON.stringify(getDespesasDemo()));
         localStorage.setItem(oneU('compromissos'),  JSON.stringify(getCompromissosDemo()));
         localStorage.setItem(oneU('notas_cerebro'), JSON.stringify(getNotasDemo()));
+        localStorage.setItem(oneU('tarefas'),       JSON.stringify([]));
+
+      } else if (grupo === 'familia') {
+        // Cátia — Conta Comigo Pinah: histórico real do pet + notas do vault Obsidian
+        localStorage.setItem(oneU('receitas'),      JSON.stringify([]));
+        localStorage.setItem(oneU('despesas'),      JSON.stringify(getDespesasPinah()));
+        localStorage.setItem(oneU('compromissos'),  JSON.stringify(getCompromissosPinah()));
+        localStorage.setItem(oneU('tarefas'),       JSON.stringify(getTarefasPinah()));
+        localStorage.setItem(oneU('notas_cerebro'), JSON.stringify(getNotasPinah()));
+
+      } else if (grupo === 'fono') {
+        // Letícia — fonoaudióloga: 9 artigos reais do vault (amamentação, frênulo, desenvolvimento)
+        localStorage.setItem(oneU('receitas'),      JSON.stringify(getReceitasFono()));
+        localStorage.setItem(oneU('despesas'),      JSON.stringify(getDespesasFono()));
+        localStorage.setItem(oneU('compromissos'),  JSON.stringify(getCompromissosFono()));
+        localStorage.setItem(oneU('tarefas'),       JSON.stringify(getTarefasFono()));
+        localStorage.setItem(oneU('notas_cerebro'), JSON.stringify(getNotasFono()));
+
       } else {
+        // Grupo desconhecido — zero
         localStorage.setItem(oneU('receitas'),      JSON.stringify([]));
         localStorage.setItem(oneU('despesas'),      JSON.stringify([]));
         localStorage.setItem(oneU('compromissos'),  JSON.stringify([]));
@@ -818,6 +839,251 @@
       // Próximos dias
       { id: 'demo-comp-5', data: d(Math.min(28, hoje + 1)), hora: '09:00', nome: 'Maria S. (M.S.)', tipo: 'Atendimento', valor: 280, status: 'Pendente', duracao: 45 },
       { id: 'demo-comp-6', data: d(Math.min(28, hoje + 3)), hora: '11:00', nome: 'Reunião com pediatra parceira', tipo: 'Compromisso Profissional', valor: 0, status: 'Pendente', duracao: 60 }
+    ];
+  }
+
+  /* ─── Seed data: Cátia — Conta Comigo Pinah ────────────────────────
+     Dados reais da Pinah Tereza (pet), extraídos do vault Obsidian.
+     Cátia é a tutora que acompanha consultas veterinárias.
+  ─────────────────────────────────────────────────────────────────── */
+
+  function getCompromissosPinah() {
+    const hoje = new Date();
+    const ano  = hoje.getFullYear();
+    const add  = (dias) => {
+      const d = new Date(hoje); d.setDate(hoje.getDate() + dias);
+      return d.toISOString().slice(0,10);
+    };
+    return [
+      // Retorno Dra. Keylla — 25 dias após 30/04/2026
+      { id: 'pinah-comp-1', data: '2026-05-25', hora: '10:00', nome: 'Retorno Dra. Keylla — feridas perivulvares (Pinah)', tipo: 'consulta', valor: 280, status: 'Confirmado', duracao: 40 },
+      // Cytopoint próximo — ciclo 6 semanas (última: 30/09/2025)
+      { id: 'pinah-comp-2', data: '2026-06-09', hora: '09:00', nome: 'Cytopoint 30mg — Dra. Keylla (Pet Home 24h)', tipo: 'consulta', valor: 700, status: 'Confirmado', duracao: 30 },
+      // ITAE vacina mensal
+      { id: 'pinah-comp-3', data: add(17), hora: '09:30', nome: 'ITAE — vacina manutenção mensal (Pinah)', tipo: 'consulta', valor: 0, status: 'Pendente', duracao: 20 },
+      // Creche — próxima sexta (banho)
+      { id: 'pinah-comp-4', data: add((5 - hoje.getDay() + 7) % 7 || 7), hora: '08:00', nome: 'Creche Confraria dos Bichos — dia inteiro + banho (sexta)', tipo: 'pessoal', valor: 0, status: 'Confirmado', duracao: 480 },
+    ];
+  }
+
+  function getDespesasPinah() {
+    return [
+      { id: 'pinah-desp-1', data: '2026-04-30', descricao: 'Consulta Dra. Keylla — feridas perivulvares',       categoria: 'Veterinário',   valor: 280,     status: 'Pago' },
+      { id: 'pinah-desp-2', data: '2026-04-30', descricao: 'Lenços clorexidina 3% manipulados (40 unidades)',    categoria: 'Medicamentos',  valor: 65,      status: 'Pago' },
+      { id: 'pinah-desp-3', data: '2026-04-28', descricao: 'Cytopoint 30mg — aplicação',                         categoria: 'Veterinário',   valor: 700,     status: 'Pago' },
+      { id: 'pinah-desp-4', data: '2026-04-28', descricao: 'ITAE vacina manutenção — abril',                     categoria: 'Veterinário',   valor: 180,     status: 'Pago' },
+      { id: 'pinah-desp-5', data: '2025-03-23', descricao: 'Coleira Seresto antipulgas (Amazon)',                 categoria: 'Preventivos',   valor: 159,     status: 'Pago' },
+      { id: 'pinah-desp-6', data: '2024-01-25', descricao: 'ITAE TECSA — imunoterapia anual (kit completo)',     categoria: 'Veterinário',   valor: 2017.02, status: 'Pago' },
+    ];
+  }
+
+  function getTarefasPinah() {
+    return [
+      { id: 'pinah-tar-1', titulo: 'Lenços clorexidina 3% — 12/12h por 14 dias (até ~14/05)', area: 'Saúde Pinah', prioridade: 'alta',   prazo: '2026-05-14', status: 'aberta' },
+      { id: 'pinah-tar-2', titulo: 'Pomada Advantan — 2x/semana após os primeiros 7 dias',    area: 'Saúde Pinah', prioridade: 'normal', prazo: '',           status: 'aberta' },
+      { id: 'pinah-tar-3', titulo: 'Banho Oat care — semanal (Pinah)',                         area: 'Saúde Pinah', prioridade: 'normal', prazo: '',           status: 'aberta' },
+      { id: 'pinah-tar-4', titulo: 'Limpeza otológica da Pinah — 1-2x/semana',                area: 'Saúde Pinah', prioridade: 'normal', prazo: '',           status: 'aberta' },
+      { id: 'pinah-tar-5', titulo: 'Cortavance spray — 1-2x/sem periabial e patas',           area: 'Saúde Pinah', prioridade: 'normal', prazo: '',           status: 'aberta' },
+      { id: 'pinah-tar-6', titulo: 'Repor Hidrapet Ômega e Aliv Pet 150mg',                   area: 'Saúde Pinah', prioridade: 'alta',   prazo: '2026-05-20', status: 'aberta' },
+    ];
+  }
+
+  /* Notas do Segundo Cérebro da Pinah — histórico veterinário real */
+  function getNotasPinah() {
+    const d = (s) => new Date(s).toISOString();
+    return [
+      {
+        id: 'pinah-nota-perfil',
+        titulo: 'Pinah Tereza — Perfil Completo',
+        categoria: 'casos',
+        tags: ['pinah','perfil','dados-gerais'],
+        conteudo: '**Pinah Tereza** (também: Pinah Ventura nas clínicas)\n- Nascida: 24/05/2020 — adotada no Morro Santa Tereza, POA\n- 5 anos, SRD, fêmea, preta, 11,85 kg (set/2025)\n- Tutores: Letícia (mãe), Luciano (vô Terezo), Cátia (vó Tereza)\n\n**Diagnósticos ativos:**\n- Dermatite atópica (desde ~2023)\n- Alergia a ácaros: *D. farinae* e *D. pteronyssinus*\n- Alergia alimentar: frango e suíno — dieta natural caseira\n- Ansiedade (Fluoxetina diária)\n\n**Cirurgia:** Patela direita (luxação medial) — pós-op estável (RX jun/2025)\n\n**Creche:** Confraria dos Bichos — 3x/semana; sexta = dia inteiro + banho',
+        data: d('2026-04-30'), dataModificacao: d('2026-04-30')
+      },
+      {
+        id: 'pinah-nota-tratamentos',
+        titulo: 'Tratamentos em Curso — Pinah',
+        categoria: 'protocolos',
+        tags: ['pinah','tratamento','cytopoint','itae','fluoxetina'],
+        conteudo: '**ITAE — Imunoterapia alérgeno-específica**\n- Vacina depot subcutânea, manutenção mensal\n- Lote atual (desde jun/2025): *D. farinae* 50% + *D. pteronyssinus* 50%\n- Fornecedor: TECSA Laboratórios\n\n**Cytopoint 30mg** (anti-IL31)\n- Frequência: a cada 6 semanas\n- Última aplicação: 28/04/2026 → próxima ~09/06/2026\n\n**Fluoxetina** — ansiolítico diário (dose a confirmar)\n\n**Dieta natural caseira** (Dra. Camila Monteiro / Nutri.In)\n- 493 kcal/dia — base: carne bovina + fígado bovino\n- Sem frango, sem suíno\n- Ingredientes: abobrinha, arroz parboilizado, batata doce, azeite, chuchu, vagem, Food Dog Basic, manjericão, psyllium',
+        data: d('2026-04-30'), dataModificacao: d('2026-04-30')
+      },
+      {
+        id: 'pinah-nota-keylla-abr26',
+        titulo: 'Consulta Dra. Keylla — Feridas Perivulvares (30/04/2026)',
+        categoria: 'casos',
+        tags: ['pinah','dermato','vulva','dobras','keylla'],
+        conteudo: '**Achados:** Lesões crostosas ao redor da vulva. Hipótese: problema de DOBRAS (não relacionado à dermatite atópica). Áreas ressequidas no abdômen. Citologia coletada.\n\n**Conduta — tópico perivulvar:**\n- Lenços clorexidina 3% manipulados — 12/12h por 14 dias (até ~14/05)\n- Pomada Advantan/mometasona 1mg/g — 24/24h por 7 dias → depois 2x/sem\n- Hidratante tópico (Oat care / Hidrapet / Phisoderme) — 1-2x/sem\n\n**Manter:**\n- Cytopoint 45/45 dias\n- Cortavance 1-2x/sem periabial e patas\n- Banho Oat care semanal\n- Limpeza otológica 1-2x/sem\n\n**Retorno:** 25 dias após → ~25/05/2026\nAcompanhantes: Cátia + Luciano',
+        data: d('2026-04-30'), dataModificacao: d('2026-04-30')
+      },
+      {
+        id: 'pinah-nota-dermato-historico',
+        titulo: 'Histórico Dermato — Dra. Letícia Baretta (2023–2025)',
+        categoria: 'casos',
+        tags: ['pinah','dermato','historico','baretta'],
+        conteudo: '**Dra. Letícia Baretta** — CRMV RS 12839 — Pet Home 24h, Chácara das Pedras\n\n**Set/2023:** 1ª consulta — Malassezia +++, dieta exclusão Royal Canin, Cytopoint 30mg\n**Out/2023:** Nódulo MPE (histiocitoma) → CAAF → Axys Análises\n**Nov/2023:** Surto bacteriano abdômen → cultura → *Staphylococcus intermedius*\n  - Sensível: Ciprofloxacina, Doxiciclina, Enrofloxacina...\n  - Resistente: Gentamicina, Trimetoprim-Sulfa\n**Dez/2023:** Teste alérgico sorológico → ácaros confirmados\n**Jan/2024:** Início ITAE (D. farinae + D. pteronyssinus + Tyrophagus)\n**Fev/2024:** Dieta natural caseira — Dra. Camila Monteiro\n**Set/2025:** Citologia dorso/dobra caudal: cocos + → Cytopoint + Aliv Pet + sprays\n**Out/2025:** Piora pontual → Prednisolona 5mg curto (5 dias)\n\n*Dra. Letícia em licença maternidade → substituída pela Dra. Keylla*',
+        data: d('2026-04-30'), dataModificacao: d('2026-04-30')
+      },
+      {
+        id: 'pinah-nota-profissionais',
+        titulo: 'Profissionais e Clínicas da Pinah',
+        categoria: 'protocolos',
+        tags: ['pinah','profissionais','contatos','veterinarios'],
+        conteudo: '**Dra. Keylla** — Dermatologia Veterinária (substitui Dra. Letícia em licença)\n\n**Dra. Letícia Baretta** — CRMV RS 12839\n- (51) 99329-7253 / 99659-3769 | leticiabarettavet@gmail.com\n- Pet Home 24h, Rua Araponga 437, Chácara das Pedras\n\n**Dra. Camila Monteiro** — Nutrição Veterinária / Nutri.In — CRMV RS 13503\n- (51) 99361-1232 | vetnutricamilamonteiro@gmail.com\n\n**Confraria dos Bichos** — Creche 3x/sem | sexta = banho + dia inteiro\n\n**TECSA Laboratórios** — CNPJ 01.648.667/0003-20 (fornecedor ITAE)\n\nCadastro clínicas: Catia Elaine Costa Ventura (CPF 503.445.790-34)',
+        data: d('2026-04-30'), dataModificacao: d('2026-04-30')
+      },
+    ];
+  }
+
+  /* ─── Seed data: Letícia — fonoaudióloga autônoma ───────────────────
+     Pacientes identificados por iniciais (privacidade).
+  ─────────────────────────────────────────────────────────────────── */
+
+  /* Notas do Segundo Cérebro da Letícia — artigos reais do vault Obsidian */
+  function getNotasFono() {
+    const d = (s) => new Date(s).toISOString();
+    return [
+      // ── AMAMENTAÇÃO ──
+      {
+        id: 'fono-art-amam-1',
+        titulo: 'A amamentação sob a perspectiva do fonoaudiólogo',
+        categoria: 'artigos',
+        tags: ['amamentacao','sucção','desenvolvimento-oral','ofa'],
+        conteudo: '**Fonte:** Instituto PENSI / Equipe Fonoaudiologia Hospital Infantil Sabará\n**Link:** https://institutopensi.org.br/amamentacao-fonoaudiologia\n\n**Pontos-chave:**\n- Amamentação promove padrão correto de respiração nasal e postura de língua\n- Sucção no peito desenvolve mobilidade, tônus, força e postura dos órgãos fonoarticulatórios (OFA)\n- Benefícios se estendem à mastigação, deglutição e articulação dos sons da fala\n- Crianças amamentadas têm menor incidência de hábitos de sucção não-nutritivos\n- Desmame precoce pode romper o desenvolvimento motor-oral adequado\n- OMS/MS/SBP recomendam: amamentação exclusiva até 6 meses, complementada até 2 anos ou mais\n\n**Aplicação clínica:** Observação cuidadosa da mamada é o primeiro passo — fono deve orientar técnica, posicionamento e pega nas primeiras horas pós-nascimento.',
+        data: d('2026-04-26'), dataModificacao: d('2026-04-26')
+      },
+      {
+        id: 'fono-art-amam-2',
+        titulo: 'Sucção não-nutritiva em RN a termo e desempenho da mamada',
+        categoria: 'artigos',
+        tags: ['amamentacao','sucção-não-nutritiva','rn','mandibula'],
+        conteudo: '**Fonte:** Medeiros AMC et al. — Rev. Bras. Saúde Mater. Infant. (2019)\n**DOI:** dx.doi.org/10.1590/1806-93042019000300008\n\n**Objetivo:** Investigar o padrão de sucção de RN a termo na SNN e sua relação com o desempenho na mamada.\n\n**Metodologia:** 50 díades mãe/RN — instrumentos: avaliação SNN + Protocolo UNICEF de observação da mamada.\n\n**Resultados principais:**\n- Alterações na movimentação de mandíbula na SNN associadas a: boca pouco aberta (p=0,005), esforço de bochecha (p<0,001), mama apoiada com dedos na aréola (p=0,041)\n- Postura e movimentação de língua: sem diferenças significativas\n- Todas as 50 díades apresentaram pelo menos uma dificuldade durante a mamada\n\n**Conclusão:** SNN é estratégia útil para predizer dificuldades na mamada. Mandíbula inadequada impacta pega, sucção e posicionamento.\n\n**Aplicação clínica:** Avaliar SNN nas primeiras horas pós-parto. Focar na movimentação mandibular como marcador de risco para dificuldades de amamentação.',
+        data: d('2026-04-26'), dataModificacao: d('2026-04-26')
+      },
+      {
+        id: 'fono-art-amam-3',
+        titulo: 'Frênulo lingual e aleitamento materno — SciELO',
+        categoria: 'artigos',
+        tags: ['amamentacao','frenulo','aleitamento','rn'],
+        conteudo: '**Fonte:** SciELO — Audiol Commun Res\n**Link:** https://www.scielo.br/j/acr/a/YtZ9Fjn7YvzVDspLtm34JSh/?lang=pt\n\n**Foco:** Relação entre frênulo lingual e desempenho do aleitamento materno em recém-nascidos.\n\n**Pontos-chave:**\n- Leite materno é o alimento mais adequado para todo RN\n- Frênulo lingual restrito interfere na mobilidade da língua durante a sucção\n- Impacto direto na pega, formação do vedamento e extração eficiente do leite\n- Diagnóstico precoce do frênulo é fundamental para o sucesso do aleitamento\n- Fono é o profissional habilitado para avaliar e intervir — "teste da linguinha" (triagem neonatal)\n\n**Aplicação clínica:** Incluir avaliação do frênulo na triagem neonatal fonoaudiológica. Intervenção precoce preserva o aleitamento materno.',
+        data: d('2026-04-26'), dataModificacao: d('2026-04-26')
+      },
+      // ── FRÊNULO ──
+      {
+        id: 'fono-art-fren-1',
+        titulo: 'Frênulo lingual e aleitamento materno: estudo descritivo',
+        categoria: 'artigos',
+        tags: ['frenulo','aleitamento','rn','anquiloglossia'],
+        conteudo: '**Fonte:** SciELO — Audiol Commun Res\n**Link:** https://www.scielo.br/j/acr/a/YtZ9Fjn7YvzVDspLtm34JSh/?lang=pt\n\n**Anquiloglossia (língua presa):**\n- Frênulo lingual curto/fixo limita movimentos da língua necessários para sucção eficaz\n- Sintomas na mãe: dor mamilar, fissuras, mastite — levam ao desmame precoce\n- Sintomas no bebê: pega inadequada, ganho de peso lento, fadiga durante mamadas\n\n**Diagnóstico:** Ferramentas como BTAT (Bristol Tongue Assessment Tool) e protocolo MBGR\n\n**Tratamento:** Frenotomia — procedimento simples, realizado pelo fono ou médico habilitado com laser ou tesoura\n\n**Aplicação clínica:** Não esperar a criança crescer para intervir. Resultado do aleitamento materno é o principal indicador de necessidade cirúrgica no período neonatal.',
+        data: d('2026-04-26'), dataModificacao: d('2026-04-26')
+      },
+      {
+        id: 'fono-art-fren-2',
+        titulo: 'Protocolo de avaliação do frênulo da língua em bebês — USP',
+        categoria: 'protocolos',
+        tags: ['frenulo','protocolo','avaliacao','bebe','usp'],
+        conteudo: '**Fonte:** Repositório USP\n**Link:** https://repositorio.usp.br/item/002407561\n\n**Protocolo de avaliação padronizado para frênulo lingual em bebês:**\n- Avaliação anatômica: comprimento, ponto de inserção na gengiva e língua, elasticidade\n- Avaliação funcional: elevação de língua, lateralização, protrusão, canolamento\n- Observação da mamada: pega, vedamento, sucção, extração de leite\n- Critérios de encaminhamento para frenotomia\n\n**Etapas do protocolo:**\n1. Histórico clínico e queixas da mãe\n2. Inspeção intraoral\n3. Avaliação da SNN\n4. Observação direta da mamada\n5. Decisão clínica compartilhada\n\n**Importância:** Uniformiza a avaliação, reduz subjetividade e melhora rastreamento precoce.',
+        data: d('2026-04-26'), dataModificacao: d('2026-04-26')
+      },
+      {
+        id: 'fono-art-fren-3',
+        titulo: 'Alterações no frênulo lingual e impactos no aleitamento materno — UFC',
+        categoria: 'artigos',
+        tags: ['frenulo','aleitamento','impacto','anquiloglossia'],
+        conteudo: '**Fonte:** Repositório UFC\n**Link:** https://repositorio.ufc.br/handle/riufc/79153\n\n**Impactos da anquiloglossia no aleitamento materno:**\n- Dificuldade de pega e manutenção no seio\n- Dor mamilar persistente — principal causa de desmame precoce\n- Sucção ineficaz → estimulação insuficiente → redução da produção de leite\n- Consequências para o bebê: ganho ponderal lento, refluxo, gases\n\n**Aspectos clínicos:**\n- Nem todo frênulo visível é restritivo — avaliação funcional é mandatória\n- Frenotomia tem evidência de melhora imediata na mamada\n- Importância da atuação fonoaudiológica pré e pós-procedimento\n\n**Aplicação clínica:** Documentar queixas maternas detalhadamente. Frenotomia sem acompanhamento fono pré/pós tem menor taxa de sucesso.',
+        data: d('2026-04-26'), dataModificacao: d('2026-04-26')
+      },
+      // ── DESENVOLVIMENTO DA FALA ──
+      {
+        id: 'fono-art-dev-1',
+        titulo: 'Desenvolvimento da fala: marcos e quando intervir',
+        categoria: 'artigos',
+        tags: ['desenvolvimento','fala','marcos','tea','linguagem'],
+        conteudo: '**Fonte:** Genial Care\n**Link:** https://genialcare.com.br/blog/desenvolvimento-da-fala/\n\n**Marcos do desenvolvimento da fala:**\n- 0-3 meses: choro diferenciado, reação a sons, vocalizações\n- 4-6 meses: balbucios, lalação, reação ao nome\n- 7-12 meses: sílabas (ma-ma, pa-pa), gestos, primeiras palavras\n- 12-18 meses: 5-20 palavras, compreende comandos simples\n- 18-24 meses: 50+ palavras, começa combinar 2 palavras\n- 2-3 anos: frases de 2-3 palavras, vocabulário em expansão rápida\n- 3-4 anos: frases completas, conversação, 75% inteligível para estranhos\n\n**Sinais de alerta — quando encaminhar:**\n- Sem sorriso social aos 3 meses\n- Sem balbucios aos 6 meses\n- Sem palavras aos 12 meses\n- Sem combinação de 2 palavras aos 24 meses\n- Perda de habilidades já adquiridas (regressão)',
+        data: d('2026-04-26'), dataModificacao: d('2026-04-26')
+      },
+      {
+        id: 'fono-art-dev-2',
+        titulo: 'Primeiras palavras: quando a criança começa a falar?',
+        categoria: 'artigos',
+        tags: ['desenvolvimento','primeiras-palavras','estimulacao','linguagem'],
+        conteudo: '**Fonte:** Einstein / Vida Saudável\n**Link:** https://www.einstein.br/n/vida-saudavel/primeiras-palavras-quando-a-crianca-comeca-a-falar-como-e-possivel-estimular\n\n**Desenvolvimento esperado:**\n- 2-3 meses: primeiros sons e vogais\n- 6 meses: balbucios com consoantes (ba, da, ga)\n- 8-10 meses: imitação de sons do ambiente\n- 12 meses: primeiras palavras com significado\n- 18 meses: até 50 palavras; vocabulário explosivo se inicia\n\n**Como estimular em casa:**\n- Conversar com o bebê desde o nascimento — tom caloroso, pausas para "resposta"\n- Nomear objetos e ações durante rotina diária\n- Ler livros com imagens desde os primeiros meses\n- Reduzir telas — não substituem interação humana\n- Música e cantigas de roda\n\n**Papel da família:** Estímulo nos primeiros 3 anos é determinante — período crítico de desenvolvimento neural da linguagem.',
+        data: d('2026-04-26'), dataModificacao: d('2026-04-26')
+      },
+      {
+        id: 'fono-art-dev-3',
+        titulo: 'Estimulando as primeiras palavras do bebê',
+        categoria: 'artigos',
+        tags: ['desenvolvimento','estimulacao','primeiras-palavras','pronuncia'],
+        conteudo: '**Fonte:** Pampers\n**Link:** https://www.pampers.com.br/crianca-pequena/desenvolvimento/artigo/pronuncia-ajudando-a-falar-corretamente\n\n**Estratégias de estimulação da fala:**\n- "Motherese" (linguagem materna): tom mais agudo, fala mais lenta, exagerada — bebê presta mais atenção\n- Expansão: criança diz "água" → adulto responde "você quer água? Está com sede?"\n- Modelagem sem correção direta: não corrija, remodele naturalmente\n- Esperar a vez: criar pausas naturais na conversa\n- Brincadeiras de imitação e jogos de turnos\n\n**Pronúncia normal vs. preocupante:**\n- Trocas de sons até 5-6 anos podem ser normais dependendo do som\n- Rotacismo (troca do R) e sigmatismo (troca do S) são comuns — avaliar após os 5 anos\n- Gagueira fluente aos 2-3 anos é normal — gagueira persistente após 4 anos requer avaliação\n\n**Quando procurar fono:** Não entender 50% da fala da criança após 2 anos, ou 75% após 3 anos.',
+        data: d('2026-04-26'), dataModificacao: d('2026-04-26')
+      },
+    ];
+  }
+
+  function getCompromissosFono() {
+    const hoje = new Date();
+    const add  = (dias) => {
+      const d = new Date(hoje); d.setDate(hoje.getDate() + dias);
+      return d.toISOString().slice(0,10);
+    };
+    const h = hoje.getDate();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2,'0');
+    const dm = (dia) => ano + '-' + mes + '-' + String(dia).padStart(2,'0');
+    return [
+      { id: 'fono-comp-1',  data: add(0),  hora: '08:00', nome: 'A.L. — Atendimento',         tipo: 'atendimento',  valor: 180, status: 'Confirmado', duracao: 45 },
+      { id: 'fono-comp-2',  data: add(0),  hora: '09:00', nome: 'P.C. — Atendimento',         tipo: 'atendimento',  valor: 180, status: 'Confirmado', duracao: 45 },
+      { id: 'fono-comp-3',  data: add(1),  hora: '08:30', nome: 'B.A. — Avaliação',           tipo: 'avaliação',    valor: 220, status: 'Confirmado', duracao: 60 },
+      { id: 'fono-comp-4',  data: add(1),  hora: '14:00', nome: 'L.F. — Atendimento',         tipo: 'atendimento',  valor: 180, status: 'Confirmado', duracao: 45 },
+      { id: 'fono-comp-5',  data: add(2),  hora: '09:00', nome: 'G.S. — Atendimento',         tipo: 'atendimento',  valor: 180, status: 'Pendente',   duracao: 45 },
+      { id: 'fono-comp-6',  data: add(2),  hora: '10:00', nome: 'M.C. — Retorno (gratuito)',  tipo: 'retorno',      valor: 0,   status: 'Pendente',   duracao: 30 },
+      { id: 'fono-comp-7',  data: add(6),  hora: '09:30', nome: 'I.S. — Atendimento',         tipo: 'atendimento',  valor: 180, status: 'Pendente',   duracao: 45 },
+      { id: 'fono-comp-8',  data: add(7),  hora: '10:00', nome: 'T.O. — Atendimento',         tipo: 'atendimento',  valor: 180, status: 'Pendente',   duracao: 45 },
+      { id: 'fono-comp-9',  data: add(8),  hora: '08:00', nome: 'A.L. — Atendimento',         tipo: 'atendimento',  valor: 180, status: 'Pendente',   duracao: 45 },
+      { id: 'fono-comp-10', data: add(9),  hora: '14:00', nome: 'R.M. — Avaliação',           tipo: 'avaliação',    valor: 220, status: 'Pendente',   duracao: 60 },
+      { id: 'fono-comp-11', data: add(13), hora: '09:00', nome: 'P.C. — Atendimento',         tipo: 'atendimento',  valor: 180, status: 'Pendente',   duracao: 45 },
+      { id: 'fono-comp-12', data: add(14), hora: '10:00', nome: 'B.A. — Retorno',             tipo: 'retorno',      valor: 180, status: 'Pendente',   duracao: 30 },
+    ];
+  }
+
+  function getReceitasFono() {
+    const hoje = new Date();
+    const ano  = hoje.getFullYear();
+    const mes  = String(hoje.getMonth() + 1).padStart(2,'0');
+    const d    = (dia) => ano + '-' + mes + '-' + String(dia).padStart(2,'0');
+    return [
+      { id: 'fono-rec-1',  data: d(2),  nome: 'G.S. — Atendimento',  tipo: 'Atendimento', valor: 180, formaPagamento: 'Pix', status: 'Pago', categoria: 'Atendimento' },
+      { id: 'fono-rec-2',  data: d(2),  nome: 'I.S. — Atendimento',  tipo: 'Atendimento', valor: 180, formaPagamento: 'Pix', status: 'Pago', categoria: 'Atendimento' },
+      { id: 'fono-rec-3',  data: d(5),  nome: 'T.O. — Atendimento',  tipo: 'Atendimento', valor: 180, formaPagamento: 'Pix', status: 'Pago', categoria: 'Atendimento' },
+      { id: 'fono-rec-4',  data: d(5),  nome: 'L.F. — Atendimento',  tipo: 'Atendimento', valor: 180, formaPagamento: 'Cartão de débito', status: 'Pago', categoria: 'Atendimento' },
+      { id: 'fono-rec-5',  data: d(7),  nome: 'A.L. — Avaliação',    tipo: 'Avaliação',   valor: 220, formaPagamento: 'Pix', status: 'Pago', categoria: 'Avaliação'   },
+      { id: 'fono-rec-6',  data: d(7),  nome: 'R.M. — Atendimento',  tipo: 'Atendimento', valor: 180, formaPagamento: 'Pix', status: 'Pago', categoria: 'Atendimento' },
+      { id: 'fono-rec-7',  data: d(9),  nome: 'P.C. — Atendimento',  tipo: 'Atendimento', valor: 180, formaPagamento: 'Pix', status: 'Pago', categoria: 'Atendimento' },
+      { id: 'fono-rec-8',  data: d(12), nome: 'B.A. — Avaliação',    tipo: 'Avaliação',   valor: 220, formaPagamento: 'Pix', status: 'Pago', categoria: 'Avaliação'   },
+      { id: 'fono-rec-9',  data: d(12), nome: 'G.S. — Atendimento',  tipo: 'Atendimento', valor: 180, formaPagamento: 'Pix', status: 'Pendente', categoria: 'Atendimento' },
+    ];
+  }
+
+  function getDespesasFono() {
+    const hoje = new Date();
+    const ano  = hoje.getFullYear();
+    const mes  = String(hoje.getMonth() + 1).padStart(2,'0');
+    const d    = (dia) => ano + '-' + mes + '-' + String(dia).padStart(2,'0');
+    return [
+      { id: 'fono-desp-1', data: d(5),  descricao: 'Aluguel consultório',          categoria: 'Fixos',      valor: 1200, status: 'Pago' },
+      { id: 'fono-desp-2', data: d(7),  descricao: 'Materiais clínicos — maio',    categoria: 'Material',   valor: 85,   status: 'Pago' },
+      { id: 'fono-desp-3', data: d(1),  descricao: 'Plataforma Conta Comigo Pro',  categoria: 'Tecnologia', valor: 50,   status: 'Pago' },
+      { id: 'fono-desp-4', data: d(10), descricao: 'Anuidade CFFa — parcelamento', categoria: 'Conselho',   valor: 95,   status: 'Pago' },
+    ];
+  }
+
+  function getTarefasFono() {
+    return [
+      { id: 'fono-tar-1', titulo: 'Enviar relatório mensal da família de A.L.', area: 'Clínica', prioridade: 'alta',   prazo: '2026-05-20', status: 'aberta' },
+      { id: 'fono-tar-2', titulo: 'Renovar anuidade CFFa',                       area: 'Admin',   prioridade: 'alta',   prazo: '2026-06-30', status: 'aberta' },
+      { id: 'fono-tar-3', titulo: 'Preparar plano terapêutico — A.L.',           area: 'Clínica', prioridade: 'normal', prazo: '',           status: 'aberta' },
+      { id: 'fono-tar-4', titulo: 'Confirmar agendamentos da próxima semana',    area: 'Admin',   prioridade: 'normal', prazo: '',           status: 'aberta' },
     ];
   }
 
