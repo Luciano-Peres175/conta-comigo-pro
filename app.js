@@ -334,6 +334,26 @@
   // Expõe pro escopo global (usada por oneVoz que vive fora do IIFE)
   window.iniciarReconhecimentoVoz = iniciarReconhecimentoVoz;
 
+  // Expõe funções de re-render para os executores da Pinah (pinahCriar* vive fora do IIFE)
+  // Usadas após a Pinah escrever no localStorage para atualizar painéis imediatamente
+  window._pinahRerender = {
+    agenda:    function() {
+      if (typeof renderCardAgenda     === 'function') renderCardAgenda();
+      if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
+      if (typeof renderAgendaHome     === 'function') renderAgendaHome();
+    },
+    tarefas:   function() {
+      if (typeof renderOneTarefasPainel === 'function') renderOneTarefasPainel();
+      if (typeof renderOneDeskTarefas   === 'function') renderOneDeskTarefas();
+    },
+    financeiro: function() {
+      if (typeof renderCardFinanceiro === 'function') renderCardFinanceiro();
+      if (typeof renderLancamentos    === 'function') renderLancamentos();
+      if (typeof renderListaReceitas  === 'function') renderListaReceitas();
+      if (typeof renderDespesas       === 'function') renderDespesas();
+    }
+  };
+
   /* ── Lucide — render icones (idempotente, com retry se lib ainda nao carregou) ── */
   function renderIcons() {
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -3127,6 +3147,97 @@ function pinahLimpar() {
   if (clearRow) clearRow.hidden = true;
 }
 
+/* ─── Executores de ferramentas da Pinah ─────────────────────────────
+   Chamados quando o backend emite { tool, input } no stream SSE.
+   Escrevem no localStorage e disparam re-render dos painéis afetados.
+   ──────────────────────────────────────────────────────────────────── */
+
+function pinahExecutarTool(nome, input) {
+  console.log('[Pinah] executar tool:', nome, input);
+  switch (nome) {
+    case 'criar_compromisso':   pinahCriarCompromisso(input);   break;
+    case 'criar_tarefa':        pinahCriarTarefa(input);        break;
+    case 'registrar_transacao': pinahRegistrarTransacao(input); break;
+    default: console.warn('[Pinah] tool desconhecida:', nome);
+  }
+}
+
+function _pinahGetSet(chave) {
+  // Helper: lê/escreve chave do usuário atual
+  var uid = (window.authUser && window.authUser.id) ? window.authUser.id : 'anon';
+  var prefixo = 'u_' + uid + '_';
+  return {
+    get: function() {
+      try { return JSON.parse(localStorage.getItem(prefixo + chave) || '[]'); }
+      catch(e) { return []; }
+    },
+    set: function(v) {
+      localStorage.setItem(prefixo + chave, JSON.stringify(v));
+    }
+  };
+}
+
+function pinahCriarCompromisso(input) {
+  var store = _pinahGetSet('compromissos');
+  var lista = store.get();
+  var novo = {
+    id:        String(Date.now()),
+    nome:      input.nome      || '',
+    descricao: input.nome      || '',
+    data:      input.data      || new Date().toISOString().slice(0, 10),
+    hora:      input.hora      || '09:00',
+    tipo:      input.tipo      || 'atendimento',
+    duracao:   input.duracao   || 60,
+    valor:     input.valor     || null,
+    status:    'agendado',
+    realizado: false,
+    criadoEm:  new Date().toISOString()
+  };
+  lista.push(novo);
+  store.set(lista);
+  // Re-render imediato dos painéis de agenda
+  if (window._pinahRerender) window._pinahRerender.agenda();
+}
+
+function pinahCriarTarefa(input) {
+  var store = _pinahGetSet('tarefas');
+  var lista = store.get();
+  var novo = {
+    id:         String(Date.now()),
+    titulo:     input.titulo     || '',
+    nome:       input.titulo     || '',
+    area:       input.area       || 'Geral',
+    prioridade: input.prioridade || 'normal',
+    prazo:      input.prazo      || null,
+    status:     'aberta',
+    criadoEm:   new Date().toISOString()
+  };
+  lista.push(novo);
+  store.set(lista);
+  // Re-render imediato do kanban de tarefas
+  if (window._pinahRerender) window._pinahRerender.tarefas();
+}
+
+function pinahRegistrarTransacao(input) {
+  var chave = input.tipo === 'receita' ? 'receitas' : 'despesas';
+  var store  = _pinahGetSet(chave);
+  var lista  = store.get();
+  var novo = {
+    id:        String(Date.now()),
+    valor:     Number(input.valor) || 0,
+    descricao: input.descricao || '',
+    nome:      input.descricao || '',
+    data:      input.data      || new Date().toISOString().slice(0, 10),
+    categoria: input.categoria || (input.tipo === 'receita' ? 'atendimento' : 'outro'),
+    tipo:      input.tipo      || 'despesa',
+    criadoEm:  new Date().toISOString()
+  };
+  lista.push(novo);
+  store.set(lista);
+  // Re-render imediato do painel financeiro
+  if (window._pinahRerender) window._pinahRerender.financeiro();
+}
+
 /* Cria/remove a bolha de "digitando" dentro do #pinah-msgs (não elemento externo) */
 function pinahTypingShow() {
   var msgs = document.getElementById('pinah-msgs');
@@ -3203,6 +3314,10 @@ async function pinahEnviar(texto) {
         if (!line.startsWith('data: ')) continue;
         try {
           const ev = JSON.parse(line.slice(6));
+          if (ev.tool) {
+            // Ferramenta chamada pela Pinah — executa localmente e atualiza UI
+            pinahExecutarTool(ev.tool, ev.input || {});
+          }
           if (ev.text) {
             fullText += ev.text;
             if (bubble) bubble.innerHTML = pinahRenderText(fullText);
