@@ -326,7 +326,12 @@
     }
 
     return {
+      // stop() → para e envia (não seta cancelado)
       stop: () => {
+        try { recognition.stop(); } catch (e) {}
+      },
+      // cancel() → para e descarta (seta cancelado)
+      cancel: () => {
         cancelado = true;
         try { recognition.stop(); } catch (e) {}
       }
