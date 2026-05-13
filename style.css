@@ -3775,21 +3775,40 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   border-color: #9B72B0;
 }
 
-/* Card de compromisso */
+/* Card de compromisso — clicável, drag-and-drop, cor por categoria */
 .one-ag-kcard {
   background: #fff;
-  border-radius: 8px;
-  padding: 7px 8px;
-  border-left: 3px solid #9B72B0;
+  border-radius: 10px;
+  padding: 8px 9px;
+  border-left: 4px solid #9B72B0;
   display: flex;
   align-items: flex-start;
   gap: 6px;
   position: relative;
-  cursor: default;
+  cursor: grab;
   box-shadow: 0 1px 4px rgba(80,40,120,0.07);
-  transition: box-shadow .15s;
+  transition: box-shadow .15s, transform .15s;
 }
-.one-ag-kcard:hover { box-shadow: 0 3px 10px rgba(80,40,120,0.13); }
+.one-ag-kcard:hover {
+  box-shadow: 0 6px 16px rgba(80,40,120,0.18);
+  transform: translateY(-1px);
+}
+.one-ag-kcard:active { cursor: grabbing; }
+/* Dot colorido na linha da categoria */
+.one-ag-kcard-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+/* Estados de drag */
+.one-ag-event-ghost {
+  opacity: 0.4;
+  background: #F4ECF7 !important;
+}
+.one-ag-event-chosen { box-shadow: 0 8px 22px rgba(123,92,240,0.30) !important; }
+.one-ag-event-dragging { transform: rotate(1.5deg); }
 .one-ag-kcard.realizado { opacity: 0.45; }
 .one-ag-kcard.realizado .one-ag-kcard-nome { text-decoration: line-through; color: #8A8480; }
 .one-ag-kcard-check {

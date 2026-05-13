@@ -3468,6 +3468,22 @@ function oneAgNavegar(delta) {
   renderOneAgendaPainel();
 }
 
+/* Paleta de categorias da Agenda — cor (borda + hora + dot) e bg (card)
+   Detecta via regex no texto digitado/escolhido, com fallback lilás Pinah. */
+function oneAgCorCategoria(tipo) {
+  var t = (tipo || '').toLowerCase();
+  if (/atend|paciente|consulta|sess[aã]o|terapia/.test(t))   return { cor: '#27856A', bg: '#EAF6F1' }; // verde-teal
+  if (/reuni|meeting|call|encontro/.test(t))                 return { cor: '#5B7CFA', bg: '#EEF2FE' }; // azul
+  if (/admin|burocra|cart[oó]rio|banco|imposto|fisc/.test(t))return { cor: '#D4A655', bg: '#FCF6E8' }; // dourado
+  if (/sa[uú]de|m[eé]dico|exame|dentista|cl[ií]nic/.test(t)) return { cor: '#4CAF50', bg: '#EAF6EB' }; // verde
+  if (/fam[ií]lia|filho|pai|m[aã]e|filha|av[oó]/.test(t))    return { cor: '#E67BB0', bg: '#FBEDF4' }; // rosa
+  if (/financ|pagam|cobran|recebim|caixa/.test(t))           return { cor: '#B8860B', bg: '#FAF1DE' }; // ocre
+  if (/lazer|cinema|jantar|passeio|viagem|hobby/.test(t))    return { cor: '#FF8B5A', bg: '#FCEFE5' }; // laranja
+  if (/curso|estudo|aula|treino|workshop/.test(t))           return { cor: '#7B5CF0', bg: '#EFEAFB' }; // roxo
+  if (/pessoal/.test(t))                                     return { cor: '#9B72B0', bg: '#F0E8F4' }; // lilás Pinah
+  return { cor: '#9B72B0', bg: '#F4ECF7' }; // default lilás
+}
+
 function renderOneAgendaPainel() {
   var kanban = document.getElementById('one-ag-kanban');
   var label  = document.getElementById('one-ag-mes-label');
@@ -3520,20 +3536,16 @@ function renderOneAgendaPainel() {
           var checkBg  = realizado ? '#4CAF50' : 'transparent';
           var checkBdr = realizado ? '#4CAF50' : '#C0BAD0';
           var checkTxt = realizado ? '✓' : '';
-          // Cor por tipo
-          var borderColor = '#9B72B0';
-          if (/atend|paciente|consulta/i.test(tipo)) borderColor = '#7EC8B8';
-          else if (/reuni|meeting/i.test(tipo))       borderColor = '#7AB8D4';
-          else if (/admin|treino|curso/i.test(tipo))  borderColor = '#E8C4D4';
-          return '<div class="one-ag-kcard' + (realizado ? ' realizado' : '') + '" style="border-left-color:' + borderColor + '">' +
+          // Cor + tom de fundo por categoria (paleta expandida)
+          var cat = oneAgCorCategoria(tipo);
+          return '<div class="one-ag-kcard' + (realizado ? ' realizado' : '') + '" data-event-id="' + c.id + '" data-cid="' + c.id + '" onclick="oneAgModalEditar(this.dataset.cid)" style="border-left-color:' + cat.cor + ';background:' + cat.bg + '">' +
             '<div class="one-ag-kcard-check" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgToggleRealizado(this.dataset.cid)" style="background:' + checkBg + ';border-color:' + checkBdr + '">' + checkTxt + '</div>' +
             '<div class="one-ag-kcard-body">' +
-              (hora ? '<div class="one-ag-kcard-hora">' + hora + '</div>' : '') +
+              (hora ? '<div class="one-ag-kcard-hora" style="color:' + cat.cor + '">' + hora + '</div>' : '') +
               '<div class="one-ag-kcard-nome">' + nome + '</div>' +
-              (tipo ? '<div class="one-ag-kcard-tipo">' + tipo + '</div>' : '') +
+              (tipo ? '<div class="one-ag-kcard-tipo"><span class="one-ag-kcard-dot" style="background:' + cat.cor + '"></span>' + tipo + '</div>' : '') +
             '</div>' +
             '<div class="one-ag-kcard-actions">' +
-              '<button class="one-tar-card-btn edit" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgModalEditar(this.dataset.cid)" title="Editar">✏️</button>' +
               '<button class="one-tar-card-btn del"  data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgExcluir(this.dataset.cid)"    title="Excluir">🗑️</button>' +
             '</div>' +
           '</div>';
@@ -3544,12 +3556,15 @@ function renderOneAgendaPainel() {
         '<div class="one-ag-kday-name">' + NOMES[i] + '</div>' +
         numHtml +
       '</div>' +
-      '<div class="one-ag-kday-body">' + cards + '</div>' +
+      '<div class="one-ag-kday-body" data-date="' + ds + '">' + cards + '</div>' +
       '<button class="one-ag-kday-add" data-date="' + ds + '" onclick="oneAgModalAbrir(this.dataset.date)">+ Novo</button>' +
     '</div>';
   }
 
   kanban.innerHTML = html;
+
+  // Inicializa drag-and-drop após render (cards arrastáveis entre colunas/dias)
+  if (typeof oneInitAgendaSortable === 'function') oneInitAgendaSortable();
 }
 
 function oneHoraParaTop(hora) {
@@ -3566,7 +3581,7 @@ function oneHoraParaTop(hora) {
 /* ── Kanban drag-and-drop dos compromissos ──────────────── */
 function oneInitAgendaSortable() {
   if (typeof Sortable === 'undefined') return;
-  var cols = document.querySelectorAll('#one-ag-week-grid .one-ag-day-events');
+  var cols = document.querySelectorAll('#one-ag-kanban .one-ag-kday-body');
   cols.forEach(function(col){
     if (col._sortable) return; // já inicializado
     col._sortable = new Sortable(col, {

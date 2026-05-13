@@ -288,7 +288,7 @@
             <span class="one-ag-mes-label" id="one-ag-mes-label">—</span>
             <button class="one-ag-nav-btn" onclick="oneAgNavegar(1)" title="Próxima semana">›</button>
           </div>
-          <button class="one-tar-btn-nova" onclick="oneAgModalAbrir()">+ Compromisso</button>
+          <button class="one-tar-btn-nova" onclick="oneAgModalAbrir()">+ Novo agendamento</button>
         </div>
 
         <!-- Kanban de dias -->
@@ -1493,8 +1493,19 @@
     </div>
     <div class="one-modal-row">
       <div class="one-modal-field">
-        <label class="one-modal-label">Tipo</label>
-        <input id="one-ag-modal-tipo" class="one-modal-input" placeholder="Atendimento, Reunião…">
+        <label class="one-modal-label">Categoria</label>
+        <select id="one-ag-modal-tipo" class="one-modal-select">
+          <option value="">— escolher —</option>
+          <option value="Atendimento">🩺 Atendimento</option>
+          <option value="Reunião">💼 Reunião</option>
+          <option value="Administrativo">📋 Administrativo</option>
+          <option value="Saúde">💚 Saúde</option>
+          <option value="Família">👨‍👩‍👧 Família</option>
+          <option value="Financeiro">💰 Financeiro</option>
+          <option value="Lazer">🌅 Lazer</option>
+          <option value="Curso/Estudo">📚 Curso/Estudo</option>
+          <option value="Pessoal">✨ Pessoal</option>
+        </select>
       </div>
       <div class="one-modal-field">
         <label class="one-modal-label">Valor previsto (R$)</label>
