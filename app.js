@@ -3055,6 +3055,31 @@ function oneHintClick(el) {
     input.focus();
     try { input.setSelectionRange(texto.length, texto.length); } catch(e){}
   }
+  // Fecha o popup depois de escolher
+  var popup = document.getElementById('one-hints-popup');
+  if (popup) popup.setAttribute('hidden', '');
+}
+
+/* Toggle do popup de sugestões (clica no avatar da Pinah) */
+function oneHintsPopupToggle(ev) {
+  if (ev) ev.stopPropagation();
+  var popup = document.getElementById('one-hints-popup');
+  if (!popup) return;
+  if (popup.hasAttribute('hidden')) {
+    popup.removeAttribute('hidden');
+    // Fecha ao clicar fora
+    setTimeout(function(){
+      var handler = function(e) {
+        if (!popup.contains(e.target) && !e.target.closest('.one-prompt-avatar-btn')) {
+          popup.setAttribute('hidden','');
+          document.removeEventListener('click', handler);
+        }
+      };
+      document.addEventListener('click', handler);
+    }, 50);
+  } else {
+    popup.setAttribute('hidden', '');
+  }
 }
 
 /* ── Estado dos filtros de Tarefas ── */

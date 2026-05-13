@@ -407,14 +407,29 @@
       <!-- Traço fino delimitando a área de trabalho -->
       <div class="one-area-divider"></div>
 
-      <!-- Linha do prompt global: avatar Pinah | prompt | sugestões -->
+      <!-- Linha do prompt global: avatar-botão Pinah | prompt -->
       <div class="one-prompt-row-global">
 
-        <!-- Avatar da Pinah (esquerda) -->
-        <div class="one-prompt-avatar-wrap" title="Pinah">
+        <!-- Avatar da Pinah — botão que abre popup de sugestões -->
+        <button class="one-prompt-avatar-btn" title="Peça à Pinah" onclick="oneHintsPopupToggle(event)">
           <div class="one-prompt-avatar-glow"></div>
-          <img src="assets/icons/pinah-avatar.png" class="one-prompt-avatar" alt="Pinah" onerror="this.src='assets/icons/pinah-mascote.png'">
-        </div>
+          <img src="assets/icons/pinah-avatar.png" class="one-prompt-avatar" alt="Pinah">
+          <!-- Popup de sugestões — aparece acima do avatar ao clicar -->
+          <div class="one-hints-popup" id="one-hints-popup" hidden>
+            <div class="one-hints-popup-title">peça à Pinah</div>
+            <ul class="one-hints-popup-list">
+              <li onclick="oneHintClick(this);event.stopPropagation();">"Maria amanhã 14h R$ 180"</li>
+              <li onclick="oneHintClick(this);event.stopPropagation();">"Reunião pediatra dia 15/05 às 11h"</li>
+              <li onclick="oneHintClick(this);event.stopPropagation();">"Beatriz hoje 15:30 atendimento R$ 280"</li>
+              <li onclick="oneHintClick(this);event.stopPropagation();">"Comprar material casa, prioridade alta"</li>
+              <li onclick="oneHintClick(this);event.stopPropagation();">"Ligar pro plano amanhã, tarefa pessoal"</li>
+              <li onclick="oneHintClick(this);event.stopPropagation();">"Recebi R$ 280 da Maria hoje"</li>
+              <li onclick="oneHintClick(this);event.stopPropagation();">"Despesa aluguel R$ 1200 dia 10"</li>
+              <li onclick="oneHintClick(this);event.stopPropagation();">"Paguei farmácia R$ 45 ontem"</li>
+              <li onclick="oneHintClick(this);event.stopPropagation();">"Anota: ideia de post Instagram fono"</li>
+            </ul>
+          </div>
+        </button>
 
         <!-- Prompt da Pinah GLOBAL — comum a todos os módulos -->
         <div class="one-prompt-outer one-prompt-global">
@@ -440,16 +455,6 @@
               </button>
             </div>
           </div>
-        </div>
-
-        <!-- Sugestões / orientações (direita) -->
-        <div class="one-prompt-hints">
-          <div class="one-prompt-hints-title">peça à Pinah</div>
-          <ul class="one-prompt-hints-list">
-            <li onclick="oneHintClick(this)">"Maria amanhã 14h R$ 180"</li>
-            <li onclick="oneHintClick(this)">"Comprar material casa, alta"</li>
-            <li onclick="oneHintClick(this)">"Recebi R$ 280 da Maria hoje"</li>
-          </ul>
         </div>
 
       </div>

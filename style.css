@@ -4000,3 +4000,106 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .one-tar-col-add:active {
   transform: translateY(1px);
 }
+
+/* ════════════════════════════════════════════════════════════
+   AVATAR PINAH COMO BOTÃO + POPUP DE SUGESTÕES
+════════════════════════════════════════════════════════════ */
+/* Override do grid: 2 colunas agora (avatar | prompt) */
+.one-prompt-row-global {
+  grid-template-columns: 86px 1fr !important;
+}
+/* Avatar botão (substitui o wrap) */
+.one-prompt-avatar-btn {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+.one-prompt-avatar-btn:hover { transform: translateY(-2px) scale(1.02); }
+.one-prompt-avatar-btn:active { transform: translateY(1px); }
+
+/* Popup de sugestões — aparece ACIMA do avatar */
+.one-hints-popup {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 0;
+  width: 280px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px 12px;
+  z-index: 50;
+  box-shadow:
+    0 0 0 1.5px rgba(160,32,240,0.55),
+    0 0 0 5px rgba(160,32,240,0.16),
+    0 14px 32px rgba(123,92,240,0.30),
+    0 4px 12px rgba(0,0,0,.10);
+  animation: oneHintsPopupIn .18s ease;
+}
+@keyframes oneHintsPopupIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* Setinha apontando pro avatar */
+.one-hints-popup::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 32px;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  transform: rotate(45deg);
+  box-shadow: 1.5px 1.5px 0 rgba(160,32,240,0.50);
+}
+.one-hints-popup-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-size: 12px;
+  color: #9B72B0;
+  letter-spacing: 0.4px;
+  padding: 2px 4px 8px;
+  border-bottom: 1px dashed rgba(160,32,240,0.18);
+  margin-bottom: 6px;
+}
+.one-hints-popup-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.one-hints-popup-list::-webkit-scrollbar { width: 4px; }
+.one-hints-popup-list::-webkit-scrollbar-thumb { background: rgba(123,92,240,0.30); border-radius: 2px; }
+.one-hints-popup-list li {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-size: 12px;
+  color: #6E4F87;
+  background: rgba(240,232,248,0.45);
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition: background .12s ease, transform .12s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.one-hints-popup-list li:hover {
+  background: rgba(240,232,248,0.95);
+  transform: translateX(2px);
+  color: #7B5CF0;
+}
+
+/* Esconde a antiga coluna direita de hints (se ainda existir em algum lugar) */
+.one-prompt-row-global .one-prompt-hints { display: none !important; }
