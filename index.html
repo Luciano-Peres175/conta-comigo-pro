@@ -291,21 +291,10 @@
           <button class="one-tar-btn-nova" onclick="oneAgModalAbrir()">+ Novo agendamento</button>
         </div>
 
-        <!-- Kanban de dias -->
+        <!-- Timeline semanal (00h-23h, scroll inicia em 08h) -->
         <div class="one-fin-content">
-          <div id="one-ag-kanban" style="display:flex;gap:8px;overflow-x:auto;flex:1;min-height:0;padding-bottom:4px"></div>
+          <div id="one-ag-kanban" class="one-ag-tl-wrapper"></div>
         </div>
-
-        <!-- Prompt Pinah compacto -->
-        <div class="one-tar-pinah-row">
-          <img src="assets/icons/pinah-mascote.png" class="one-ag-prompt-pinah" alt="Pinah" style="width:26px;height:26px;flex-shrink:0">
-          <textarea id="one-ag-prompt-input" class="one-tar-pinah-input" rows="1"
-            placeholder='Diga à Pinah: "Maria amanhã 14h R$ 180" — ela abre o compromisso pra você'
-            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();onePromptPinah();}"></textarea>
-          <button class="one-ag-prompt-btn" onclick="onePromptPinah()" title="Pedir pra Pinah" style="flex-shrink:0">↗</button>
-        </div>
-
-
 
       </div>
 

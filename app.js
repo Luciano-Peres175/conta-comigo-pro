@@ -3510,8 +3510,17 @@ function renderOneAgendaPainel() {
   }
 
   var NOMES = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
-  var html = '';
 
+  // Régua de horas 00h-23h (50px/hora → altura total 1200px)
+  var rulerHtml = '<div class="one-ag-tl-ruler">';
+  for (var h = 0; h < 24; h++) {
+    var lbl = (h < 10 ? '0' : '') + h + ':00';
+    rulerHtml += '<div class="one-ag-tl-hour" style="top:' + (h * 50) + 'px">' + lbl + '</div>';
+  }
+  rulerHtml += '</div>';
+
+  // Colunas dos 7 dias
+  var colsHtml = '<div class="one-ag-tl-cols">';
   for (var i = 0; i < 7; i++) {
     var d = new Date(seg); d.setDate(seg.getDate() + i);
     var ds = d.toISOString().slice(0,10);
@@ -3526,45 +3535,95 @@ function renderOneAgendaPainel() {
       ? '<div class="one-ag-kday-num" style="background:#9B72B0;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px">' + numDia + '</div>'
       : '<div class="one-ag-kday-num">' + numDia + '</div>';
 
-    var cards = doDia.length === 0
-      ? '<div class="one-ag-kday-empty">Livre</div>'
-      : doDia.map(function(c) {
-          var realizado = !!c.status && c.status.toLowerCase() === 'realizado';
-          var hora = c.hora || '';
-          var nome = (c.nome || c.descricao || 'Compromisso').replace(/</g,'&lt;');
-          var tipo = (c.tipo || '').replace(/</g,'&lt;');
-          var checkBg  = realizado ? '#4CAF50' : 'transparent';
-          var checkBdr = realizado ? '#4CAF50' : '#C0BAD0';
-          var checkTxt = realizado ? '✓' : '';
-          // Cor + tom de fundo por categoria (paleta expandida)
-          var cat = oneAgCorCategoria(tipo);
-          return '<div class="one-ag-kcard' + (realizado ? ' realizado' : '') + '" data-event-id="' + c.id + '" data-cid="' + c.id + '" onclick="oneAgModalEditar(this.dataset.cid)" style="border-left-color:' + cat.cor + ';background:' + cat.bg + '">' +
-            '<div class="one-ag-kcard-check" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgToggleRealizado(this.dataset.cid)" style="background:' + checkBg + ';border-color:' + checkBdr + '">' + checkTxt + '</div>' +
-            '<div class="one-ag-kcard-body">' +
-              (hora ? '<div class="one-ag-kcard-hora" style="color:' + cat.cor + '">' + hora + '</div>' : '') +
-              '<div class="one-ag-kcard-nome">' + nome + '</div>' +
-              (tipo ? '<div class="one-ag-kcard-tipo"><span class="one-ag-kcard-dot" style="background:' + cat.cor + '"></span>' + tipo + '</div>' : '') +
-            '</div>' +
-            '<div class="one-ag-kcard-actions">' +
-              '<button class="one-tar-card-btn del"  data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgExcluir(this.dataset.cid)"    title="Excluir">🗑️</button>' +
-            '</div>' +
-          '</div>';
-        }).join('');
+    var cards = doDia.map(function(c) {
+      var realizado = !!c.status && c.status.toLowerCase() === 'realizado';
+      var hora = c.hora || '08:00';
+      var nome = (c.nome || c.descricao || 'Compromisso').replace(/</g,'&lt;');
+      var tipo = (c.tipo || '').replace(/</g,'&lt;');
+      var checkBg  = realizado ? '#4CAF50' : 'transparent';
+      var checkBdr = realizado ? '#4CAF50' : '#C0BAD0';
+      var checkTxt = realizado ? '✓' : '';
+      var cat = oneAgCorCategoria(tipo);
+      var top = oneHoraParaTop(hora);
+      var dur = parseInt(c.duracao) || 50; // duração em min (default 50)
+      var hPx = Math.max(34, Math.round(dur * (50/60)));
+      return '<div class="one-ag-kcard' + (realizado ? ' realizado' : '') + '" data-event-id="' + c.id + '" data-cid="' + c.id + '" onclick="oneAgModalEditar(this.dataset.cid)" style="top:' + top + 'px;height:' + hPx + 'px;border-left-color:' + cat.cor + ';background:' + cat.bg + '">' +
+        '<div class="one-ag-kcard-check" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgToggleRealizado(this.dataset.cid)" style="background:' + checkBg + ';border-color:' + checkBdr + '">' + checkTxt + '</div>' +
+        '<div class="one-ag-kcard-body">' +
+          '<div class="one-ag-kcard-hora" style="color:' + cat.cor + '">' + hora + '</div>' +
+          '<div class="one-ag-kcard-nome">' + nome + '</div>' +
+          (tipo ? '<div class="one-ag-kcard-tipo"><span class="one-ag-kcard-dot" style="background:' + cat.cor + '"></span>' + tipo + '</div>' : '') +
+        '</div>' +
+        '<div class="one-ag-kcard-actions">' +
+          '<button class="one-tar-card-btn del" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgExcluir(this.dataset.cid)" title="Excluir">🗑️</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
 
-    html += '<div class="one-ag-kday-col' + (isHoje ? ' today' : '') + '" data-date="' + ds + '">' +
+    // Linhas de hora horizontais como fundo
+    var gridLines = '';
+    for (var gh = 0; gh < 24; gh++) {
+      gridLines += '<div class="one-ag-tl-grid-line" style="top:' + (gh * 50) + 'px"></div>';
+    }
+
+    colsHtml += '<div class="one-ag-kday-col' + (isHoje ? ' today' : '') + '" data-date="' + ds + '">' +
       '<div class="one-ag-kday-header">' +
         '<div class="one-ag-kday-name">' + NOMES[i] + '</div>' +
         numHtml +
       '</div>' +
-      '<div class="one-ag-kday-body" data-date="' + ds + '">' + cards + '</div>' +
-      '<button class="one-ag-kday-add" data-date="' + ds + '" onclick="oneAgModalAbrir(this.dataset.date)">+ Novo</button>' +
+      '<div class="one-ag-kday-body" data-date="' + ds + '" onclick="oneAgClickSlot(event, this)">' +
+        gridLines +
+        cards +
+      '</div>' +
     '</div>';
   }
+  colsHtml += '</div>';
 
-  kanban.innerHTML = html;
+  kanban.innerHTML = rulerHtml + colsHtml;
 
-  // Inicializa drag-and-drop após render (cards arrastáveis entre colunas/dias)
+  // Scroll inicial em 08h (8h × 50px = 400px) — só uma vez por render
+  setTimeout(function(){
+    if (kanban.scrollTop < 10) kanban.scrollTop = 8 * 50 - 8;
+  }, 50);
+
+  // Marcador de "agora" se for a semana atual
+  if (oneAgWeekOffset === 0) oneAgRenderAgoraLinha(kanban);
+
+  // Inicializa drag-and-drop após render (cards arrastáveis entre dias)
   if (typeof oneInitAgendaSortable === 'function') oneInitAgendaSortable();
+}
+
+/* Linha horizontal de "agora" — atravessa todas as colunas */
+function oneAgRenderAgoraLinha(kanban) {
+  var antigo = kanban.querySelector('.one-ag-tl-agora');
+  if (antigo) antigo.remove();
+  var d = new Date();
+  var top = d.getHours() * 50 + d.getMinutes() * (50/60);
+  var ln = document.createElement('div');
+  ln.className = 'one-ag-tl-agora';
+  ln.style.top = top + 'px';
+  ln.innerHTML = '<span class="one-ag-tl-agora-dot"></span>';
+  kanban.querySelector('.one-ag-tl-cols').appendChild(ln);
+}
+
+/* Click num slot vazio do dia abre o modal com data+hora pré-preenchidas */
+function oneAgClickSlot(ev, bodyEl) {
+  if (ev.target !== bodyEl && !ev.target.classList.contains('one-ag-tl-grid-line')) return;
+  var rect = bodyEl.getBoundingClientRect();
+  var y = ev.clientY - rect.top;
+  var totalMin = Math.max(0, Math.round(y / 50 * 60));
+  // Snap a 15min
+  totalMin = Math.round(totalMin / 15) * 15;
+  if (totalMin > 23*60+45) totalMin = 23*60+45;
+  var hh = Math.floor(totalMin / 60);
+  var mm = totalMin % 60;
+  var horaStr = (hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm;
+  var ds = bodyEl.getAttribute('data-date');
+  oneAgModalAbrir(ds);
+  setTimeout(function(){
+    var hi = document.getElementById('one-ag-modal-hora');
+    if (hi) hi.value = horaStr;
+  }, 50);
 }
 
 function oneHoraParaTop(hora) {
@@ -3572,48 +3631,80 @@ function oneHoraParaTop(hora) {
   var parts = String(hora).split(':');
   var h = parseInt(parts[0]) || 0;
   var m = parseInt(parts[1]) || 0;
-  var px = (h - 8) * 50 + m * (50 / 60);
+  var px = h * 50 + m * (50 / 60);
   if (px < 0) px = 0;
-  if (px > (19 - 8) * 50 - 28) px = (19 - 8) * 50 - 28;
-  return Math.round(px); // 50px/h, range 08h-19h
+  if (px > 1200 - 28) px = 1200 - 28;
+  return Math.round(px); // 50px/h, range 00h-23h, altura total 1200px
 }
 
-/* ── Kanban drag-and-drop dos compromissos ──────────────── */
+/* Converte posição Y (em px dentro do body da coluna) em string "HH:MM" snap a 15min */
+function oneAgTopParaHora(yPx) {
+  if (yPx < 0) yPx = 0;
+  if (yPx > 1200) yPx = 1200;
+  var totalMin = Math.round(yPx / 50 * 60);
+  totalMin = Math.round(totalMin / 15) * 15; // snap 15min
+  if (totalMin > 23*60+45) totalMin = 23*60+45;
+  var hh = Math.floor(totalMin / 60);
+  var mm = totalMin % 60;
+  return (hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm;
+}
+
+/* ── Timeline drag-and-drop nativo (livre por posição Y, muda dia E hora) ── */
 function oneInitAgendaSortable() {
-  if (typeof Sortable === 'undefined') return;
+  // Anexa listeners de drop nas colunas do dia (cards já têm draggable=true via render)
   var cols = document.querySelectorAll('#one-ag-kanban .one-ag-kday-body');
   cols.forEach(function(col){
-    if (col._sortable) return; // já inicializado
-    col._sortable = new Sortable(col, {
-      group: 'agenda-events',
-      animation: 180,
-      ghostClass: 'one-ag-event-ghost',
-      chosenClass: 'one-ag-event-chosen',
-      dragClass:  'one-ag-event-dragging',
-      onAdd: function(evt) {
-        var id = evt.item.getAttribute('data-event-id');
-        var novaData = evt.to.getAttribute('data-date');
-        if (!id || !novaData) return;
-        var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
-        var idx = lista.findIndex(function(x){ return x.id === id; });
-        if (idx === -1) return;
-        var dataAntiga = lista[idx].data;
-        lista[idx].data = novaData;
-        localStorage.setItem('compromissos', JSON.stringify(lista));
-
-        // Atualiza receita vinculada se existir (mantém vínculo data ↔ data)
-        var rec = []; try { rec = JSON.parse(localStorage.getItem('receitas') || '[]'); } catch(e){}
-        var rIdx = rec.findIndex(function(r){ return r.compromissoId === id; });
-        if (rIdx !== -1) {
-          rec[rIdx].data = novaData;
-          localStorage.setItem('receitas', JSON.stringify(rec));
-        }
-
-        if (typeof oneToast === 'function') oneToast('✓ Compromisso movido pra ' + novaData.split('-').reverse().join('/'));
-        renderOneAgendaPainel();
-        if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
-      }
+    if (col._dndReady) return;
+    col._dndReady = true;
+    col.addEventListener('dragover', function(ev){
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = 'move';
+      col.classList.add('one-ag-drop-target');
     });
+    col.addEventListener('dragleave', function(){ col.classList.remove('one-ag-drop-target'); });
+    col.addEventListener('drop', function(ev){
+      ev.preventDefault();
+      col.classList.remove('one-ag-drop-target');
+      var id = ev.dataTransfer.getData('text/plain');
+      if (!id) return;
+      var rect = col.getBoundingClientRect();
+      var yOffset = parseFloat(ev.dataTransfer.getData('text/offset-y')) || 0;
+      var y = ev.clientY - rect.top - yOffset;
+      var novaHora = oneAgTopParaHora(y);
+      var novaData = col.getAttribute('data-date');
+      var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
+      var idx = lista.findIndex(function(x){ return x.id === id; });
+      if (idx === -1) return;
+      lista[idx].data = novaData;
+      lista[idx].hora = novaHora;
+      localStorage.setItem('compromissos', JSON.stringify(lista));
+      // Atualiza receita vinculada se existir
+      var rec = []; try { rec = JSON.parse(localStorage.getItem('receitas') || '[]'); } catch(e){}
+      var rIdx = rec.findIndex(function(r){ return r.compromissoId === id; });
+      if (rIdx !== -1) { rec[rIdx].data = novaData; localStorage.setItem('receitas', JSON.stringify(rec)); }
+      if (typeof oneToast === 'function') oneToast('✓ ' + novaData.split('-').reverse().join('/') + ' às ' + novaHora);
+      renderOneAgendaPainel();
+      if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+    });
+  });
+
+  // Anexa dragstart nos cards
+  var cards = document.querySelectorAll('#one-ag-kanban .one-ag-kcard');
+  cards.forEach(function(card){
+    card.setAttribute('draggable', 'true');
+    if (card._dndReady) return;
+    card._dndReady = true;
+    card.addEventListener('dragstart', function(ev){
+      var id = card.getAttribute('data-event-id') || card.getAttribute('data-cid');
+      if (!id) return;
+      var rect = card.getBoundingClientRect();
+      var offsetY = ev.clientY - rect.top;
+      ev.dataTransfer.effectAllowed = 'move';
+      ev.dataTransfer.setData('text/plain', id);
+      ev.dataTransfer.setData('text/offset-y', String(offsetY));
+      card.classList.add('one-ag-event-dragging');
+    });
+    card.addEventListener('dragend', function(){ card.classList.remove('one-ag-event-dragging'); });
   });
 }
 
