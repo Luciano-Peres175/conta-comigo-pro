@@ -5547,6 +5547,447 @@ function oneToast(msg) {
     localStorage.setItem(oneU('one_init'), '1');
   }
 
+  /* ── IMPORTAR — Segundo Cérebro ─────────────────────────────── */
+
+  var _impTabAtiva = 'url';
+  var _impCSVTransacoes = [];
+  var _impCSVTitulo = '';
+
+  function importarAbrir() {
+    var m = document.getElementById('modal-importar');
+    if (!m) return;
+    _impTabAtiva = 'url';
+    _impCSVTransacoes = [];
+    _impCSVTitulo = '';
+    _impSetStep(1);
+    _impMostrarLoading(false);
+    var urlIn = document.getElementById('imp-url-input');
+    if (urlIn) urlIn.value = '';
+    importarSetTab('url');
+    m.classList.add('open');
+  }
+  window.importarAbrir = importarAbrir;
+
+  function importarFechar() {
+    var m = document.getElementById('modal-importar');
+    if (m) m.classList.remove('open');
+  }
+  window.importarFechar = importarFechar;
+
+  function importarSetTab(tab) {
+    _impTabAtiva = tab;
+    ['url','arquivo','imagem','csv'].forEach(function(t) {
+      var btn = document.getElementById('imp-tab-' + t);
+      var pane = document.getElementById('imp-pane-' + t);
+      if (btn) btn.classList.toggle('active', t === tab);
+      if (pane) pane.style.display = (t === tab) ? '' : 'none';
+    });
+    _impSetStep(1);
+    _impMostrarLoading(false);
+  }
+  window.importarSetTab = importarSetTab;
+
+  function _impSetStep(n) {
+    var s1 = document.getElementById('imp-step1');
+    var s2 = document.getElementById('imp-step2');
+    var s2csv = document.getElementById('imp-step2-csv');
+    if (s1) s1.style.display = n === 1 ? '' : 'none';
+    if (s2) s2.style.display = (n === 2 && _impTabAtiva !== 'csv') ? '' : 'none';
+    if (s2csv) s2csv.style.display = (n === 2 && _impTabAtiva === 'csv') ? '' : 'none';
+  }
+
+  function _impMostrarLoading(show) {
+    var el = document.getElementById('imp-loading');
+    if (el) el.style.display = show ? '' : 'none';
+    var s1 = document.getElementById('imp-step1');
+    if (s1 && !show) s1.style.display = '';
+    if (s1 && show) s1.style.display = 'none';
+  }
+
+  function _impMostrarPreview(titulo, conteudo) {
+    _impMostrarLoading(false);
+    var tEl = document.getElementById('imp-preview-titulo');
+    var cEl = document.getElementById('imp-preview-conteudo');
+    if (tEl) tEl.value = titulo || '';
+    if (cEl) cEl.value = conteudo || '';
+    _impSetStep(2);
+  }
+
+  function importarVoltarStep1() {
+    _impSetStep(1);
+    _impMostrarLoading(false);
+  }
+  window.importarVoltarStep1 = importarVoltarStep1;
+
+  function importarUsarConteudo() {
+    var titulo = (document.getElementById('imp-preview-titulo') || {}).value || '';
+    var conteudo = (document.getElementById('imp-preview-conteudo') || {}).value || '';
+    importarFechar();
+    abrirModalNota();
+    setTimeout(function() {
+      var tIn = document.getElementById('nota-input-titulo');
+      var cIn = document.getElementById('nota-input-conteudo');
+      if (tIn && titulo) tIn.value = titulo;
+      if (cIn && conteudo) cIn.value = conteudo;
+    }, 120);
+  }
+  window.importarUsarConteudo = importarUsarConteudo;
+
+  // ── Drag & Drop ───────────────────────────────────────────────
+
+  function impDragOver(event, id) {
+    event.preventDefault();
+    var el = document.getElementById(id);
+    if (el) el.classList.add('drag-over');
+  }
+  window.impDragOver = impDragOver;
+
+  function impDragLeave(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('drag-over');
+  }
+  window.impDragLeave = impDragLeave;
+
+  function impDropArquivo(event) {
+    event.preventDefault();
+    impDragLeave('imp-drop-arquivo');
+    var files = event.dataTransfer && event.dataTransfer.files;
+    if (!files || !files.length) return;
+    _impProcessarArquivoFile(files[0]);
+  }
+  window.impDropArquivo = impDropArquivo;
+
+  function impDropImagem(event) {
+    event.preventDefault();
+    impDragLeave('imp-drop-imagem');
+    var files = event.dataTransfer && event.dataTransfer.files;
+    if (!files || !files.length) return;
+    _impProcessarImagemFile(files[0]);
+  }
+  window.impDropImagem = impDropImagem;
+
+  function impDropCSV(event) {
+    event.preventDefault();
+    impDragLeave('imp-drop-csv');
+    var files = event.dataTransfer && event.dataTransfer.files;
+    if (!files || !files.length) return;
+    _impProcessarCSVFile(files[0]);
+  }
+  window.impDropCSV = impDropCSV;
+
+  // ── URL ───────────────────────────────────────────────────────
+
+  function importarProcessarURL() {
+    var urlInput = document.getElementById('imp-url-input');
+    var url = urlInput ? urlInput.value.trim() : '';
+    if (!url || !url.startsWith('http')) {
+      toast('Digite uma URL válida (começando com http).', 'error'); return;
+    }
+    _impMostrarLoading(true);
+    fetch('/api/extrair-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: url })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) { _impMostrarLoading(false); toast('Erro: ' + data.error, 'error'); return; }
+      _impMostrarPreview(data.titulo || 'Artigo importado', data.conteudo || '');
+    })
+    .catch(function() {
+      _impMostrarLoading(false);
+      toast('Falha ao conectar ao servidor.', 'error');
+    });
+  }
+  window.importarProcessarURL = importarProcessarURL;
+
+  // ── Arquivo (PDF / DOCX / TXT / MD) ──────────────────────────
+
+  function importarProcessarArquivo(input) {
+    var file = input && input.files && input.files[0];
+    if (!file) return;
+    _impProcessarArquivoFile(file);
+  }
+  window.importarProcessarArquivo = importarProcessarArquivo;
+
+  function _impProcessarArquivoFile(file) {
+    var ext = (file.name || '').split('.').pop().toLowerCase();
+    if (ext === 'pdf') {
+      _impExtrairPDF(file);
+    } else if (ext === 'docx') {
+      _impExtrairDOCX(file);
+    } else if (ext === 'txt' || ext === 'md') {
+      _impExtrairTexto(file);
+    } else {
+      toast('Formato não suportado. Use PDF, DOCX, TXT ou MD.', 'error');
+    }
+  }
+
+  function _impExtrairTexto(file) {
+    _impMostrarLoading(true);
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var texto = e.target.result || '';
+      var titulo = file.name.replace(/\.[^.]+$/, '');
+      _impMostrarPreview(titulo, texto);
+    };
+    reader.onerror = function() {
+      _impMostrarLoading(false);
+      toast('Erro ao ler o arquivo.', 'error');
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  function _impExtrairPDF(file) {
+    _impMostrarLoading(true);
+    if (window.pdfjsLib) { _impPDFExtrairTexto(file); return; }
+    var script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    script.onload = function() {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      _impPDFExtrairTexto(file);
+    };
+    script.onerror = function() {
+      _impMostrarLoading(false);
+      toast('Falha ao carregar leitor de PDF.', 'error');
+    };
+    document.head.appendChild(script);
+  }
+
+  function _impPDFExtrairTexto(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      window.pdfjsLib.getDocument({ data: e.target.result }).promise
+        .then(function(pdf) {
+          var promises = [];
+          for (var i = 1; i <= pdf.numPages; i++) {
+            promises.push(pdf.getPage(i).then(function(page) {
+              return page.getTextContent().then(function(tc) {
+                return tc.items.map(function(it) { return it.str; }).join(' ');
+              });
+            }));
+          }
+          return Promise.all(promises);
+        })
+        .then(function(textos) {
+          _impMostrarPreview(file.name.replace(/\.pdf$/i,''), textos.join('\n\n'));
+        })
+        .catch(function() {
+          _impMostrarLoading(false);
+          toast('Não foi possível ler o PDF. Tente exportar como TXT.', 'error');
+        });
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function _impExtrairDOCX(file) {
+    _impMostrarLoading(true);
+    if (window.mammoth) { _impDOCXExtrair(file); return; }
+    var script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+    script.onload = function() { _impDOCXExtrair(file); };
+    script.onerror = function() {
+      _impMostrarLoading(false);
+      toast('Falha ao carregar leitor de DOCX.', 'error');
+    };
+    document.head.appendChild(script);
+  }
+
+  function _impDOCXExtrair(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      window.mammoth.extractRawText({ arrayBuffer: e.target.result })
+        .then(function(result) {
+          _impMostrarPreview(file.name.replace(/\.docx$/i,''), result.value || '');
+        })
+        .catch(function() {
+          _impMostrarLoading(false);
+          toast('Erro ao extrair texto do DOCX.', 'error');
+        });
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  // ── Imagem (OCR via Sonnet) ───────────────────────────────────
+
+  function importarProcessarImagem(input) {
+    var file = input && input.files && input.files[0];
+    if (!file) return;
+    _impProcessarImagemFile(file);
+  }
+  window.importarProcessarImagem = importarProcessarImagem;
+
+  function _impProcessarImagemFile(file) {
+    var tiposOk = ['image/jpeg','image/jpg','image/png','image/gif','image/webp'];
+    if (!tiposOk.includes(file.type.toLowerCase())) {
+      toast('Use JPG, PNG ou WebP.', 'error'); return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast('Imagem muito grande (máx 5MB).', 'error'); return;
+    }
+    _impMostrarLoading(true);
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var dataUrl = e.target.result;
+      var base64 = dataUrl.split(',')[1];
+      fetch('/api/extrair-imagem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64: base64, mimeType: file.type })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.error) { _impMostrarLoading(false); toast('Erro: ' + data.error, 'error'); return; }
+        _impMostrarPreview(data.titulo || 'Imagem importada', data.conteudo || '');
+      })
+      .catch(function() {
+        _impMostrarLoading(false);
+        toast('Falha ao conectar ao servidor.', 'error');
+      });
+    };
+    reader.onerror = function() { _impMostrarLoading(false); toast('Erro ao ler a imagem.', 'error'); };
+    reader.readAsDataURL(file);
+  }
+
+  // ── CSV ───────────────────────────────────────────────────────
+
+  function importarProcessarCSV(input) {
+    var file = input && input.files && input.files[0];
+    if (!file) return;
+    _impProcessarCSVFile(file);
+  }
+  window.importarProcessarCSV = importarProcessarCSV;
+
+  function _impProcessarCSVFile(file) {
+    _impMostrarLoading(true);
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      _impMostrarLoading(false);
+      _impTabAtiva = 'csv';
+      _impMostrarCSVPreview(e.target.result || '', file.name);
+    };
+    reader.onerror = function() { _impMostrarLoading(false); toast('Erro ao ler o CSV.', 'error'); };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  function _impDetectarColuna(headers, candidatos) {
+    for (var i = 0; i < headers.length; i++) {
+      var h = headers[i].toLowerCase().trim();
+      for (var j = 0; j < candidatos.length; j++) {
+        if (h.indexOf(candidatos[j].toLowerCase()) !== -1) return i;
+      }
+    }
+    return -1;
+  }
+
+  function _impNormalizarData(str) {
+    if (!str) return new Date().toISOString().slice(0,10);
+    var m1 = str.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (m1) return m1[3] + '-' + m1[2] + '-' + m1[1];
+    if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0,10);
+    var m2 = str.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (m2) return m2[3] + '-' + m2[2] + '-' + m2[1];
+    return new Date().toISOString().slice(0,10);
+  }
+
+  function _impMostrarCSVPreview(csvText, nomeArquivo) {
+    var sep = csvText.indexOf(';') !== -1 ? ';' : ',';
+    var linhas = csvText.split(/\r?\n/).filter(function(l) { return l.trim(); });
+    if (linhas.length < 2) { toast('CSV vazio ou sem dados.', 'error'); return; }
+    var headers = linhas[0].split(sep).map(function(h) { return h.replace(/^"|"$/g,'').trim(); });
+
+    var iData  = _impDetectarColuna(headers, ['data','date','dt']);
+    var iDesc  = _impDetectarColuna(headers, ['descricao','descrição','desc','historico','histórico','memo','lançamento','lancamento','nome','name']);
+    var iValor = _impDetectarColuna(headers, ['valor','value','amount','quantia','montante','debito','débito','credito','crédito']);
+    var iTipo  = _impDetectarColuna(headers, ['tipo','type','natureza','categoria','category']);
+    if (iValor === -1) iValor = headers.length - 1;
+    if (iDesc === -1) iDesc = iValor > 0 ? 1 : 0;
+    if (iData === -1) iData = 0;
+
+    var transacoes = [];
+    for (var i = 1; i < Math.min(linhas.length, 201); i++) {
+      var cols = linhas[i].split(sep).map(function(c) { return c.replace(/^"|"$/g,'').trim(); });
+      if (cols.length < 2) continue;
+      var vBruto = (cols[iValor] || '0').replace(/[R$\s.]/g,'').replace(',','.');
+      var valor = parseFloat(vBruto) || 0;
+      if (valor === 0) continue;
+      var tipo = 'despesa';
+      if (iTipo !== -1) {
+        var t = (cols[iTipo] || '').toLowerCase();
+        if (t.indexOf('cred') !== -1 || t.indexOf('receit') !== -1 || t.indexOf('entrad') !== -1) tipo = 'receita';
+      } else if (valor > 0) {
+        tipo = 'receita';
+      }
+      transacoes.push({
+        data: _impNormalizarData(cols[iData] || ''),
+        descricao: cols[iDesc] || 'Transação',
+        valor: Math.abs(valor),
+        tipo: tipo
+      });
+    }
+
+    _impCSVTransacoes = transacoes;
+    _impCSVTitulo = (nomeArquivo || 'CSV').replace(/\.csv$/i,'');
+
+    var tbody = '';
+    transacoes.slice(0, 50).forEach(function(t) {
+      var cor = t.tipo === 'receita' ? '#2DA96C' : '#E87A7A';
+      tbody += '<tr>' +
+        '<td>' + t.data + '</td>' +
+        '<td>' + (t.descricao.length > 40 ? t.descricao.slice(0,40) + '…' : t.descricao) + '</td>' +
+        '<td style="text-align:right;color:' + cor + '">R$ ' + t.valor.toFixed(2).replace('.',',') + '</td>' +
+        '<td style="color:' + cor + '">' + t.tipo + '</td>' +
+        '</tr>';
+    });
+
+    var countEl = document.getElementById('imp-csv-count');
+    if (countEl) countEl.textContent = transacoes.length + ' transações detectadas' + (transacoes.length > 50 ? ' (mostrando 50)' : '');
+    var tbodyEl = document.getElementById('imp-csv-tbody');
+    if (tbodyEl) tbodyEl.innerHTML = tbody;
+
+    _impSetStep(2);
+  }
+
+  function importarConfirmarCSV() {
+    if (!_impCSVTransacoes || !_impCSVTransacoes.length) {
+      toast('Nenhuma transação para importar.', 'error'); return;
+    }
+    var receitas = [];
+    var despesas = [];
+    try { receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e) {}
+    try { despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e) {}
+
+    _impCSVTransacoes.forEach(function(t) {
+      var item = {
+        id: Date.now().toString() + Math.random().toString(36).slice(2,6),
+        descricao: t.descricao,
+        valor: t.valor,
+        data: t.data,
+        categoria: 'csv',
+        fonte: _impCSVTitulo
+      };
+      if (t.tipo === 'receita') receitas.push(item);
+      else despesas.push(item);
+    });
+
+    localStorage.setItem(oneU('receitas'), JSON.stringify(receitas));
+    localStorage.setItem(oneU('despesas'), JSON.stringify(despesas));
+
+    toast('✓ ' + _impCSVTransacoes.length + ' transações importadas!');
+    importarFechar();
+    if (typeof renderOneFinanceiro === 'function') renderOneFinanceiro();
+    if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  }
+  window.importarConfirmarCSV = importarConfirmarCSV;
+
+  // Fechar ao clicar fora do box
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'modal-importar') importarFechar();
+  });
+
+  /* ── Fim IMPORTAR ─────────────────────────────────────────── */
+
   function activateOne() {
     oneInitDemo();
     var so = document.getElementById('screen-one');
