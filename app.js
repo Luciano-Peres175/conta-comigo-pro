@@ -3427,6 +3427,66 @@ function oneTarInlineSave(el) {
   if (typeof renderDesktopSidebar === 'function') renderDesktopSidebar();
 }
 
+/* ── Gerenciamento de áreas (colunas do kanban) ─────────── */
+var oneTarCollapsed = {}; // { nomeDaArea: true/false }
+
+function oneTarAreaEditar(area, btn) {
+  // Acha o span do nome dentro do header deste botão
+  var header = btn.closest('.one-tar-col-header');
+  if (!header) return;
+  var nomeSpan = header.querySelector('.one-tar-col-nome');
+  if (!nomeSpan) return;
+
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.value = area;
+  input.className = 'one-tar-area-input';
+  nomeSpan.replaceWith(input);
+  input.focus();
+  input.select();
+
+  function salvar() {
+    var novo = input.value.trim();
+    if (!novo || novo === area) { renderOneTarefasPainel(); return; }
+    // Atualiza tarefas que usam essa área
+    var tarefas = [];
+    try { tarefas = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
+    tarefas.forEach(function(t){ if ((t.area||'Geral') === area) t.area = novo; });
+    localStorage.setItem(oneU('tarefas'), JSON.stringify(tarefas));
+    // Atualiza lista de áreas
+    var areas = oneTarGetAreas();
+    var idx = areas.indexOf(area);
+    if (idx !== -1) areas[idx] = novo;
+    oneTarSaveAreas(areas);
+    renderOneTarefasPainel();
+  }
+  input.addEventListener('blur', salvar);
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { renderOneTarefasPainel(); }
+  });
+}
+
+function oneTarAreaDeletar(area) {
+  var tarefas = [];
+  try { tarefas = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
+  var comTarefas = tarefas.filter(function(t){ return (t.area||'Geral') === area; }).length;
+  if (comTarefas > 0) {
+    if (!confirm('A área "' + area + '" tem ' + comTarefas + ' tarefa(s). Excluir mesmo assim? As tarefas irão para "Geral".')) return;
+    tarefas.forEach(function(t){ if ((t.area||'Geral') === area) t.area = 'Geral'; });
+    localStorage.setItem(oneU('tarefas'), JSON.stringify(tarefas));
+  }
+  var areas = oneTarGetAreas().filter(function(a){ return a !== area; });
+  if (areas.indexOf('Geral') === -1) areas.unshift('Geral');
+  oneTarSaveAreas(areas);
+  renderOneTarefasPainel();
+}
+
+function oneTarAreaToggle(area, btn) {
+  oneTarCollapsed[area] = !oneTarCollapsed[area];
+  renderOneTarefasPainel();
+}
+
 function renderOneTarefasPainel() {
   var el = document.getElementById('one-tarefas-list');
   var count = document.getElementById('one-tarefas-count');
@@ -3515,17 +3575,24 @@ function renderOneTarefasPainel() {
 
     var emptyMsg = tasks.length === 0 ? '<div style="color:#C0BAD0;font-size:11px;font-style:italic;padding:8px 4px;text-align:center">Nenhuma tarefa</div>' : '';
 
-    html += '<div class="one-tar-col" data-area="' + area.replace(/"/g,'&quot;') + '">' +
+    var areaEnc  = area.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    var collapsed = oneTarCollapsed[area] ? ' one-tar-col-collapsed' : '';
+    html += '<div class="one-tar-col' + collapsed + '" data-area="' + area.replace(/"/g,'&quot;') + '">' +
       '<div class="one-tar-col-header" style="border-top:3px solid ' + cor + '">' +
-        '<div style="display:flex;align-items:center;gap:6px">' +
-          '<span style="font-size:15px">' + emoji + '</span>' +
-          '<span class="one-tar-col-nome">' + area + '</span>' +
+        '<div style="display:flex;align-items:center;gap:6px;min-width:0;flex:1">' +
+          '<span style="font-size:15px;flex-shrink:0">' + emoji + '</span>' +
+          '<span class="one-tar-col-nome">' + area.replace(/</g,'&lt;') + '</span>' +
+          '<span class="one-tar-col-count">' + conclN + '/' + total.length + '</span>' +
         '</div>' +
-        '<span class="one-tar-col-count">' + conclN + '/' + total.length + '</span>' +
+        '<div class="one-tar-col-actions">' +
+          '<button class="one-tar-area-btn" onclick="oneTarAreaEditar(\'' + areaEnc + '\',this)" title="Renomear área">✏️</button>' +
+          '<button class="one-tar-area-btn del" onclick="oneTarAreaDeletar(\'' + areaEnc + '\')" title="Excluir área">🗑️</button>' +
+          '<button class="one-tar-area-btn chev" onclick="oneTarAreaToggle(\'' + areaEnc + '\',this)" title="Colapsar">' + (oneTarCollapsed[area] ? '▸' : '▾') + '</button>' +
+        '</div>' +
       '</div>' +
       '<div class="one-tar-col-body">' + emptyMsg + cards + '</div>' +
       '<div class="one-tar-inline-wrap">' +
-        '<button class="one-tar-col-add" onclick="oneTarModalAbrir(\'' + area.replace(/'/g,"\\'") + '\')">+ Nova tarefa</button>' +
+        '<button class="one-tar-col-add" onclick="oneTarModalAbrir(\'' + areaEnc + '\')">+ Nova tarefa</button>' +
       '</div>' +
     '</div>';
   });

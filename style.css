@@ -3506,12 +3506,65 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .one-tar-pinah-input::placeholder { color: #B0A0C0; font-style: italic; }
 /* Inline add na coluna */
 .one-tar-inline-wrap { flex-shrink: 0; border-top: 1px dashed rgba(92,136,112,0.15); }
-.one-tar-col-add {
-  padding: 7px 12px; font-size: 11px; color: #7FA88E;
-  cursor: pointer; border: none; background: transparent;
-  width: 100%; text-align: left; font-family: system-ui; transition: background .12s;
+/* Botões de ação no header da área */
+.one-tar-col-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity .15s;
 }
-.one-tar-col-add:hover { background: rgba(92,136,112,0.05); }
+.one-tar-col-header:hover .one-tar-col-actions { opacity: 1; }
+.one-tar-area-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 3px 5px;
+  border-radius: 6px;
+  line-height: 1;
+  color: #7FA88E;
+  transition: background .12s;
+}
+.one-tar-area-btn:hover { background: rgba(92,136,112,.12); }
+.one-tar-area-btn.del:hover { background: rgba(200,60,60,.10); }
+.one-tar-area-btn.chev { font-size: 10px; color: #9BA8A0; }
+/* Input inline de renomear área */
+.one-tar-area-input {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2D2D2D;
+  border: none;
+  border-bottom: 1.5px solid #5C8870;
+  background: transparent;
+  outline: none;
+  width: 100px;
+  padding: 0 2px;
+}
+/* Colapso da coluna */
+.one-tar-col-collapsed .one-tar-col-body,
+.one-tar-col-collapsed .one-tar-inline-wrap { display: none; }
+/* "+ Nova tarefa" estilo Perplexity — borda tracejada */
+.one-tar-col-add {
+  padding: 9px 12px;
+  font-size: 12px;
+  color: #7FA88E;
+  cursor: pointer;
+  border: 1.5px dashed rgba(92,136,112,0.35);
+  border-radius: 10px;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: system-ui;
+  transition: background .12s, border-color .12s;
+  margin: 0;
+}
+.one-tar-col-add:hover {
+  background: rgba(92,136,112,0.05);
+  border-color: rgba(92,136,112,0.6);
+}
 .one-tar-inline-form { padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
 .one-tar-inline-input {
   width: 100%; border: 1.5px solid rgba(92,136,112,0.40); border-radius: 7px;
