@@ -72,14 +72,27 @@
     el.textContent = texto;
   }
 
+  // ── Allowlist de acesso ───────────────────────────────────────────
+  // Apenas estes e-mails podem criar conta. Nome e grupo são pré-definidos.
+  const USUARIOS_PERMITIDOS = {
+    'luciano.peres@assessoriacap.com': { nome: 'Luciano',  grupo: 'admin'   },
+    'catia.peres@assessoriacap.com':   { nome: 'Cátia',    grupo: 'familia' },
+    'letikurtz@gmail.com':             { nome: 'Letícia',  grupo: 'fono'    }
+  };
+
   async function authCadastrar() {
     if (!window.supa) { authMostrarMsg('Sistema ainda carregando, aguarde 2 segundos e tente de novo.', 'erro'); return; }
-    const nome  = document.getElementById('auth-signup-nome').value.trim();
     const email = document.getElementById('auth-signup-email').value.trim().toLowerCase();
     const senha = document.getElementById('auth-signup-senha').value;
-    const grupo = document.querySelector('input[name="auth-grupo"]:checked')?.value || 'familia';
-    if (!nome || !email || !senha) { authMostrarMsg('Preencha nome, e-mail e senha.', 'erro'); return; }
-    if (senha.length < 6)        { authMostrarMsg('A senha precisa ter pelo menos 6 caracteres.', 'erro'); return; }
+    if (!email || !senha) { authMostrarMsg('Preencha e-mail e senha.', 'erro'); return; }
+    if (senha.length < 6) { authMostrarMsg('A senha precisa ter pelo menos 6 caracteres.', 'erro'); return; }
+
+    // Verifica allowlist
+    const config = USUARIOS_PERMITIDOS[email];
+    if (!config) {
+      authMostrarMsg('Este e-mail não está autorizado. Entre em contato com Luciano para receber acesso.', 'erro');
+      return;
+    }
 
     authMostrarMsg('Criando conta...', 'sucesso');
 
@@ -87,9 +100,9 @@
     if (error) { authMostrarMsg('Erro: ' + error.message, 'erro'); return; }
     if (!data.user) { authMostrarMsg('Erro inesperado. Tente novamente.', 'erro'); return; }
 
-    // Cria entrada em profiles
+    // Cria entrada em profiles com nome e grupo pré-configurados
     const { error: errProfile } = await window.supa.from('profiles').insert({
-      id: data.user.id, nome, grupo
+      id: data.user.id, nome: config.nome, grupo: config.grupo
     });
     if (errProfile) {
       console.error('[profiles] erro:', errProfile);
@@ -236,11 +249,15 @@
 
   function aplicarVisibilidadePorGrupo(grupo) {
     const ehFamilia = (grupo === 'familia');
+    const ehAdmin   = (grupo === 'admin');
     // Botoes que carregam dados-demo da Le — so Familia ve
     ['btn-carregar-demo', 'btn-resetar-com-demo', 'btn-resetar-demo'].forEach(function(id) {
       const el = document.getElementById(id);
       if (el) el.style.display = ehFamilia ? '' : 'none';
     });
+    // Botao de zerar financeiro — so admin ve
+    const btnZerar = document.getElementById('btn-zerar-financeiro');
+    if (btnZerar) btnZerar.style.display = ehAdmin ? '' : 'none';
   }
 
   // Bloqueio de seguranca: mesmo que alguem chame as funcoes pelo console, nao executa pra Amigas
@@ -520,12 +537,21 @@
     migrarDadosLegado();
     const primeiraVez = !localStorage.getItem(oneU('ccp_initialized'));
     if (primeiraVez) {
-      // Auto-load: dados demo COMPLETOS na primeira vez (notas + financeiro + agenda)
-      localStorage.setItem(oneU('receitas'),      JSON.stringify(getReceitasDemo()));
-      localStorage.setItem(oneU('despesas'),      JSON.stringify(getDespesasDemo()));
-      localStorage.setItem(oneU('compromissos'),  JSON.stringify(getCompromissosDemo()));
+      // Apenas admin recebe dados demo. familia/fono começam do zero.
+      const grupo = (window.authProfile && window.authProfile.grupo) || 'admin';
+      if (grupo === 'admin') {
+        localStorage.setItem(oneU('receitas'),      JSON.stringify(getReceitasDemo()));
+        localStorage.setItem(oneU('despesas'),      JSON.stringify(getDespesasDemo()));
+        localStorage.setItem(oneU('compromissos'),  JSON.stringify(getCompromissosDemo()));
+        localStorage.setItem(oneU('notas_cerebro'), JSON.stringify(getNotasDemo()));
+      } else {
+        localStorage.setItem(oneU('receitas'),      JSON.stringify([]));
+        localStorage.setItem(oneU('despesas'),      JSON.stringify([]));
+        localStorage.setItem(oneU('compromissos'),  JSON.stringify([]));
+        localStorage.setItem(oneU('notas_cerebro'), JSON.stringify([]));
+        localStorage.setItem(oneU('tarefas'),       JSON.stringify([]));
+      }
       localStorage.setItem(oneU('despesasFixas'), JSON.stringify(FIXAS_DEFAULT));
-      localStorage.setItem(oneU('notas_cerebro'), JSON.stringify(getNotasDemo()));
       localStorage.setItem(oneU('ccp_initialized'), '1');
     }
     // Garante array de notas mesmo em app inicializado antes de existir
@@ -3773,10 +3799,10 @@ function oneFinSalvar() {
   var cat   = (document.getElementById('one-fin-cat')||{}).value || '';
   if (!nome || !valor) { if (typeof oneToast==='function') oneToast('Preencha descrição e valor.','error'); return; }
   var key = oneFinTipoAtivo === 'receita' ? 'receitas' : 'despesas';
-  var lista = []; try { lista = JSON.parse(localStorage.getItem(key)||'[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key))||'[]'); } catch(e){}
   lista.push({ id: Date.now().toString(), nome: nome, valor: valor, data: data, categoria: cat,
                status: oneFinTipoAtivo==='receita' ? 'pendente' : 'pago', criado: new Date().toISOString() });
-  localStorage.setItem(key, JSON.stringify(lista));
+  localStorage.setItem(oneU(key), JSON.stringify(lista));
   oneFinLimpar();
   if (typeof oneToast==='function') oneToast('✓ ' + (oneFinTipoAtivo==='receita'?'Receita':'Despesa') + ' salva!');
   if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
@@ -3935,19 +3961,71 @@ function renderOneFinanceiroPainel() {
 
   var el = document.getElementById('one-fin-list-big');
   if (!el) return;
-  var lancamentos = rMes.map(function(r){ return {tipo:'in', nome:r.nome || r.descricao || 'Receita', valor:Number(r.valor)||0, data:r.data}; })
-                       .concat(dMes.map(function(d){ return {tipo:'out', nome:d.nome || d.descricao || 'Despesa', valor:Number(d.valor)||0, data:d.data}; }))
+  var lancamentos = rMes.map(function(r){ return {tipo:'in', key:'receitas', id:r.id, nome:r.nome || r.descricao || 'Receita', valor:Number(r.valor)||0, data:r.data}; })
+                       .concat(dMes.map(function(d){ return {tipo:'out', key:'despesas', id:d.id, nome:d.nome || d.descricao || 'Despesa', valor:Number(d.valor)||0, data:d.data}; }))
                        .sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
-  if (!lancamentos.length) { el.innerHTML = ''; return; }
-  var html = lancamentos.slice(0, 12).map(function(l){
+  if (!lancamentos.length) { el.innerHTML = '<p style="color:#aaa;font-size:13px;padding:12px 0">Nenhum lançamento este mês.</p>'; return; }
+  var html = lancamentos.slice(0, 20).map(function(l){
     var cor = l.tipo === 'in' ? '#4CAF50' : '#E87A7A';
     var sinal = l.tipo === 'in' ? '+' : '-';
-    return '<div class="one-fin-item-big">' +
-             '<span class="one-tarefa-nome">' + l.nome.replace(/</g,'&lt;') + '</span>' +
-             '<span style="font-size:13px;font-weight:600;color:' + cor + '">' + sinal + brl(l.valor).replace('R$ ','R$') + '</span>' +
+    var safeId = (l.id||'').replace(/'/g,"\\'");
+    var safeKey = l.key;
+    return '<div class="one-fin-item-big" style="display:flex;align-items:center;gap:6px">' +
+             '<span class="one-tarefa-nome" style="flex:1">' + l.nome.replace(/</g,'&lt;') + '</span>' +
+             '<span style="font-size:13px;font-weight:600;color:' + cor + ';white-space:nowrap">' + sinal + brl(l.valor).replace('R$ ','R$') + '</span>' +
+             '<button onclick="oneFinEditar(\'' + safeKey + '\',\'' + safeId + '\')" style="background:none;border:none;cursor:pointer;padding:2px 4px;font-size:15px;color:#999;line-height:1" title="Editar">✏️</button>' +
+             '<button onclick="oneFinExcluir(\'' + safeKey + '\',\'' + safeId + '\')" style="background:none;border:none;cursor:pointer;padding:2px 4px;font-size:15px;color:#E87A7A;line-height:1" title="Excluir">🗑️</button>' +
            '</div>';
   }).join('');
   el.innerHTML = html;
+}
+
+function zerarFinanceiro() {
+  if (!confirm('Zerar TODAS as receitas e despesas do seu financeiro?\n\nEsta ação não pode ser desfeita.')) return;
+  localStorage.setItem(oneU('receitas'), JSON.stringify([]));
+  localStorage.setItem(oneU('despesas'), JSON.stringify([]));
+  if (typeof oneToast==='function') oneToast('✓ Financeiro zerado.');
+  if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
+  if (typeof renderCardFinanceiro==='function') renderCardFinanceiro();
+  if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
+}
+window.zerarFinanceiro = zerarFinanceiro;
+
+function oneFinExcluir(key, id) {
+  if (!confirm('Excluir este lançamento?')) return;
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key))||'[]'); } catch(e){}
+  lista = lista.filter(function(i){ return i.id !== id; });
+  localStorage.setItem(oneU(key), JSON.stringify(lista));
+  if (typeof oneToast==='function') oneToast('✓ Lançamento excluído.');
+  if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
+  if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
+}
+
+function oneFinEditar(key, id) {
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key))||'[]'); } catch(e){}
+  var item = lista.find(function(i){ return i.id === id; });
+  if (!item) { if (typeof oneToast==='function') oneToast('Item não encontrado.','error'); return; }
+
+  // Preenche o formulário com os dados do item
+  var tipo = key === 'receitas' ? 'receita' : 'despesa';
+  if (typeof oneFinSetTipo==='function') oneFinSetTipo(tipo);
+  var nomeEl  = document.getElementById('one-fin-nome');
+  var valorEl = document.getElementById('one-fin-valor');
+  var dataEl  = document.getElementById('one-fin-data');
+  var catEl   = document.getElementById('one-fin-cat');
+  if (nomeEl)  nomeEl.value  = item.nome  || item.descricao || '';
+  if (valorEl) valorEl.value = item.valor || '';
+  if (dataEl)  dataEl.value  = item.data  || '';
+  if (catEl)   catEl.value   = item.categoria || '';
+
+  // Remove o item original para não duplicar ao salvar
+  lista = lista.filter(function(i){ return i.id !== id; });
+  localStorage.setItem(oneU(key), JSON.stringify(lista));
+  if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
+
+  // Foco no campo nome
+  if (nomeEl) nomeEl.focus();
+  if (typeof oneToast==='function') oneToast('Edite e salve novamente.');
 }
 
 /* ── Estado das visões da Agenda ───────────────────────────────── */
