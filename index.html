@@ -269,12 +269,20 @@
       <!-- Coluna central: wrapper com variantes (swap entre Chat / Agenda / Financeiro / Tarefas) -->
       <div class="one-desktop-main">
 
-      <!-- Variante Chat (default ativa) — só a área visual, prompt foi extraído pra global -->
+      <!-- Variante Chat (default ativa) — área de conversa com Pinah real -->
       <div class="one-desktop-chat" data-panel="chat">
-        <div class="one-chat-area">
+        <!-- Welcome state: visível enquanto não há mensagens -->
+        <div class="one-chat-area" id="pinah-welcome">
           <div class="one-pinah-glow-pool"></div>
           <img src="assets/icons/pinah-mascote.png" class="one-pinah-img" alt="Pinah">
           <p class="one-pinah-phrase">Sua mente livre<br>para o que importa.</p>
+        </div>
+        <!-- Área de mensagens (oculta até a primeira mensagem) -->
+        <div class="one-chat-msgs" id="pinah-msgs" hidden></div>
+        <!-- Indicador "Pinah digitando…" -->
+        <div class="one-chat-typing" id="pinah-typing" hidden>
+          <div class="one-chat-typing-dots"><span></span><span></span><span></span></div>
+          <span class="one-chat-typing-label">Pinah está digitando…</span>
         </div>
       </div>
 

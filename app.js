@@ -331,6 +331,8 @@
       }
     };
   }
+  // Expõe pro escopo global (usada por oneVoz que vive fora do IIFE)
+  window.iniciarReconhecimentoVoz = iniciarReconhecimentoVoz;
 
   /* ── Lucide — render icones (idempotente, com retry se lib ainda nao carregou) ── */
   function renderIcons() {
@@ -3056,15 +3058,199 @@ function renderOneGreeting() {
   el.textContent = 'Luciano, ' + hh + ':' + mm + ' · ' + dias[now.getDay()] + ', ' + now.getDate() + ' de ' + meses[now.getMonth()];
 }
 
+/* ── Pinah Chat — estado e helpers ──────────────────────────
+ * pinahHistory: histórico de mensagens enviado ao endpoint a cada turno.
+ * pinahAddBubble: cria bolha no DOM e retorna o elemento (pra streaming).
+ * pinahRenderText: markdown mínimo (bold, italic, quebras).
+ * pinahGetContext: serializa dados do user do localStorage.
+ * pinahEnviar: orquestra envio + stream SSE.
+ */
+var pinahHistory = [];
+var __pinahMicControle = null;
+
+function pinahRenderText(texto) {
+  return String(texto)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>');
+}
+
+function pinahAddBubble(role, texto) {
+  var msgs = document.getElementById('pinah-msgs');
+  if (!msgs) return null;
+
+  var bubble = document.createElement('div');
+  bubble.className = 'pinah-bubble pinah-bubble-' + role;
+  if (texto) bubble.innerHTML = pinahRenderText(texto);
+
+  if (role === 'pinah') {
+    var wrap = document.createElement('div');
+    wrap.className = 'pinah-bubble-wrap';
+    var avatar = document.createElement('img');
+    avatar.src = 'assets/icons/pinah-avatar.png';
+    avatar.className = 'pinah-bubble-avatar';
+    avatar.alt = 'Pinah';
+    wrap.appendChild(avatar);
+    wrap.appendChild(bubble);
+    msgs.appendChild(wrap);
+  } else {
+    msgs.appendChild(bubble);
+  }
+
+  msgs.scrollTop = msgs.scrollHeight;
+  return bubble;
+}
+
+function pinahGetContext() {
+  if (!window.authUser) return {};
+  var id = window.authUser.id || 'anon';
+  function get(k) {
+    try { return JSON.parse(localStorage.getItem('u_' + id + '_' + k) || '[]'); }
+    catch (e) { return []; }
+  }
+  return {
+    compromissos: get('compromissos'),
+    tarefas:      get('tarefas'),
+    receitas:     get('receitas'),
+    despesas:     get('despesas')
+  };
+}
+
+async function pinahEnviar(texto) {
+  texto = texto.trim();
+  if (!texto) return;
+
+  // 1. Adiciona ao histórico e mostra bolha do user
+  pinahHistory.push({ role: 'user', content: texto });
+
+  var welcome = document.getElementById('pinah-welcome');
+  var msgs    = document.getElementById('pinah-msgs');
+  var typing  = document.getElementById('pinah-typing');
+
+  if (welcome) welcome.hidden = true;
+  if (msgs)    msgs.hidden    = false;
+
+  pinahAddBubble('user', texto);
+
+  // 2. Swap pro painel Chat (se não estiver nele)
+  swapToCenter('chat');
+
+  // 3. Mostra indicador digitando
+  if (typing) typing.hidden = false;
+  if (msgs)   msgs.scrollTop = msgs.scrollHeight;
+
+  try {
+    const resp = await fetch('/api/pinah-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: pinahHistory,
+        context: pinahGetContext()
+      })
+    });
+
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+    // 4. Cria bolha da Pinah vazia — vai sendo preenchida pelo stream
+    if (typing) typing.hidden = true;
+    var bubble = pinahAddBubble('pinah', '');
+    var fullText = '';
+
+    const reader  = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const ev = JSON.parse(line.slice(6));
+          if (ev.text) {
+            fullText += ev.text;
+            if (bubble) bubble.innerHTML = pinahRenderText(fullText);
+            if (msgs) msgs.scrollTop = msgs.scrollHeight;
+          }
+          if (ev.done) {
+            pinahHistory.push({ role: 'assistant', content: fullText });
+          }
+          if (ev.error) {
+            if (bubble) bubble.innerHTML = '⚠️ ' + pinahRenderText(ev.error);
+          }
+        } catch (e) { /* linha mal formada — ignora */ }
+      }
+    }
+
+  } catch (err) {
+    if (typing) typing.hidden = true;
+    pinahAddBubble('pinah', '⚠️ Não consegui conectar com a Pinah. Verifique a conexão e tente de novo.');
+    console.error('[pinahEnviar]', err);
+  }
+}
+
 function oneEnviar() {
-  var input = document.getElementById('one-input');
+  // Detecta qual input está ativo (desktop ou mobile)
+  var inputDesk = document.getElementById('one-input-desk');
+  var inputMob  = document.getElementById('one-input');
+  var input = (inputDesk && inputDesk.value.trim()) ? inputDesk : inputMob;
   if (!input || !input.value.trim()) return;
-  /* TODO: integrar com IA */
+
+  var texto = input.value.trim();
   input.value = '';
   input.style.height = 'auto';
+
+  pinahEnviar(texto);
 }
+
 function oneAnexar() { /* TODO */ }
-function oneVoz()    { /* TODO */ }
+
+function oneVoz() {
+  // Detecta qual input preencher
+  var inputDesk = document.getElementById('one-input-desk');
+  var inputMob  = document.getElementById('one-input');
+  var input = inputDesk || inputMob;
+  if (!input) return;
+
+  // Toggle: se já está ouvindo, para
+  if (__pinahMicControle) {
+    __pinahMicControle.stop();
+    __pinahMicControle = null;
+    return;
+  }
+
+  __pinahMicControle = iniciarReconhecimentoVoz({
+    onStateChange: function (estado) {
+      // Acende/apaga o botão de mic
+      var btns = document.querySelectorAll('.one-prompt-btn[onclick="oneVoz()"]');
+      btns.forEach(function (btn) {
+        btn.style.background = (estado === 'listening')
+          ? 'rgba(92,136,112,0.25)' : '';
+      });
+      if (estado === 'result' || estado === 'error') {
+        __pinahMicControle = null;
+      }
+    },
+    onPartial: function (texto) {
+      input.value = texto; // mostra transcrição parcial no input
+    },
+    onResult: function (texto) {
+      input.value = texto;
+      // Auto-envia após transcrição finalizada
+      setTimeout(function () { oneEnviar(); }, 300);
+    },
+    onError: function (msg) {
+      console.warn('[oneVoz]', msg);
+      __pinahMicControle = null;
+    }
+  });
+}
 
 /* ── SWAP de painéis (Chat ↔ Agenda ↔ ...) ──────────────── */
 var oneAgWeekOffset = 0; // semana atual = 0, -1 = anterior, +1 = próxima
