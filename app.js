@@ -8,6 +8,20 @@
   window.authUser = null;
   window.authProfile = null;
 
+  /* ════════════════════════════════════════════════════════════════
+     MULTI-TENANT — isola dados de cada conta no localStorage
+     ════════════════════════════════════════════════════════════════
+     Toda chave de dados do usuário (compromissos, tarefas, receitas, etc)
+     passa por oneU() que adiciona prefixo "u_<user_id>_". Antes do auth
+     terminar (ou se o user deslogar), o prefixo cai pra "u_anon_" — o que
+     mantém os dados isolados mas evita exposição cruzada.
+  */
+  function oneU(key) {
+    var uid = (window.authUser && window.authUser.id) ? window.authUser.id : 'anon';
+    return 'u_' + uid + '_' + key;
+  }
+  window.oneU = oneU;
+
   function authTrocarTab(tab) {
     const tabLogin  = document.getElementById('auth-tab-login');
     const tabSignup = document.getElementById('auth-tab-signup');
@@ -175,6 +189,21 @@
     }
     /* Atualiza card da sidebar (avatar + nome + tag) conforme grupo */
     customizarCardSidebar();
+    /* Multi-tenant: agora que sabemos quem é o user, inicializa demo (se primeira vez)
+       e re-renderiza tudo lendo das chaves prefixadas. */
+    if (typeof maybeInit === 'function') maybeInit();
+    if (typeof renderDataHoje === 'function') renderDataHoje();
+    if (typeof renderCardFinanceiro === 'function') renderCardFinanceiro();
+    if (typeof renderCardAgenda === 'function') renderCardAgenda();
+    if (typeof renderLancamentos === 'function') renderLancamentos();
+    if (typeof renderAgendaHome === 'function') renderAgendaHome();
+    if (typeof renderAgendaSemanal === 'function') renderAgendaSemanal();
+    if (typeof renderCerebro === 'function') renderCerebro();
+    /* Re-ativa screen-one com dados do usuário logado (semeia demo, renderiza tudo) */
+    if (typeof window.activateOne === 'function') window.activateOne();
+    if (typeof renderOneAgendaPainel  === 'function') renderOneAgendaPainel();
+    if (typeof renderOneTarefasPainel === 'function') renderOneTarefasPainel();
+    if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
     /* Pós-login → screen-one é o home */
     if (typeof go === 'function') go('one');
   }
@@ -432,25 +461,50 @@
     { id:'f7', descricao:'Tecnologia',          categoria:'Tecnologia',               valor:100  },
   ];
 
+  /* Migração one-shot: copia dados legados (sem prefixo) pra chave do user atual.
+     Roda só uma vez por user (flag migrated_legacy_v1). Remove a chave legada
+     pra não migrar pra outro user que logue depois no mesmo navegador. */
+  function migrarDadosLegado() {
+    if (!window.authUser || !window.authUser.id) return;
+    if (localStorage.getItem(oneU('migrated_legacy_v1'))) return;
+    var chaves = ['compromissos','tarefas','tarefas_areas','receitas','despesas','despesasFixas','notas_cerebro','usuario','ccp_imposto_pct','ccp_forma_pagamento','ccp_ia_uso','ccp_initialized','one_init'];
+    var migrou = 0;
+    chaves.forEach(function(k){
+      var legado = localStorage.getItem(k);
+      if (legado && !localStorage.getItem(oneU(k))) {
+        localStorage.setItem(oneU(k), legado);
+        localStorage.removeItem(k);
+        migrou++;
+      }
+    });
+    localStorage.setItem(oneU('migrated_legacy_v1'), '1');
+    if (migrou > 0) console.log('[multi-tenant] migrou ' + migrou + ' chaves legadas pra user ' + window.authUser.id);
+  }
+
   function maybeInit() {
-    const primeiraVez = !localStorage.getItem('ccp_initialized');
+    // Multi-tenant: só inicializa demo quando o user real estiver logado
+    // (evita criar dados na chave "u_anon_*" enquanto o auth não termina)
+    if (!window.authUser || !window.authUser.id) return;
+    // Migra dados antigos (sem prefixo) ANTES de seedar demo
+    migrarDadosLegado();
+    const primeiraVez = !localStorage.getItem(oneU('ccp_initialized'));
     if (primeiraVez) {
       // Auto-load: dados demo COMPLETOS na primeira vez (notas + financeiro + agenda)
-      localStorage.setItem('receitas',      JSON.stringify(getReceitasDemo()));
-      localStorage.setItem('despesas',      JSON.stringify(getDespesasDemo()));
-      localStorage.setItem('compromissos',  JSON.stringify(getCompromissosDemo()));
-      localStorage.setItem('despesasFixas', JSON.stringify(FIXAS_DEFAULT));
-      localStorage.setItem('notas_cerebro', JSON.stringify(getNotasDemo()));
-      localStorage.setItem('ccp_initialized', '1');
+      localStorage.setItem(oneU('receitas'),      JSON.stringify(getReceitasDemo()));
+      localStorage.setItem(oneU('despesas'),      JSON.stringify(getDespesasDemo()));
+      localStorage.setItem(oneU('compromissos'),  JSON.stringify(getCompromissosDemo()));
+      localStorage.setItem(oneU('despesasFixas'), JSON.stringify(FIXAS_DEFAULT));
+      localStorage.setItem(oneU('notas_cerebro'), JSON.stringify(getNotasDemo()));
+      localStorage.setItem(oneU('ccp_initialized'), '1');
     }
     // Garante array de notas mesmo em app inicializado antes de existir
-    if (!localStorage.getItem('notas_cerebro')) {
-      localStorage.setItem('notas_cerebro', JSON.stringify([]));
+    if (!localStorage.getItem(oneU('notas_cerebro'))) {
+      localStorage.setItem(oneU('notas_cerebro'), JSON.stringify([]));
     }
     // Garante fixas mesmo em app já inicializado mas vazio
-    const fixas = JSON.parse(localStorage.getItem('despesasFixas') || '[]');
+    const fixas = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
     if (fixas.length === 0) {
-      localStorage.setItem('despesasFixas', JSON.stringify(FIXAS_DEFAULT));
+      localStorage.setItem(oneU('despesasFixas'), JSON.stringify(FIXAS_DEFAULT));
     }
   }
 
@@ -528,10 +582,10 @@
   let cerebroFiltroBusca = '';
 
   function getNotas() {
-    return JSON.parse(localStorage.getItem('notas_cerebro') || '[]');
+    return JSON.parse(localStorage.getItem(oneU('notas_cerebro')) || '[]');
   }
   function setNotas(arr) {
-    localStorage.setItem('notas_cerebro', JSON.stringify(arr));
+    localStorage.setItem(oneU('notas_cerebro'), JSON.stringify(arr));
   }
   function getCategoria(id) {
     return CEREBRO_CATEGORIAS.find(c => c.id === id) || CEREBRO_CATEGORIAS[0];
@@ -727,10 +781,10 @@
   /** Carrega TUDO demo (notas + receitas + despesas + compromissos), sem duplicar. */
   function carregarDemo() {
     if (!souFamilia()) { toast('Esta opção é exclusiva para a Família.', 'error'); return; }
-    const r1 = _mesclarDemo('notas_cerebro', getNotasDemo());
-    const r2 = _mesclarDemo('receitas',     getReceitasDemo());
-    const r3 = _mesclarDemo('despesas',     getDespesasDemo());
-    const r4 = _mesclarDemo('compromissos', getCompromissosDemo());
+    const r1 = _mesclarDemo(oneU('notas_cerebro'), getNotasDemo());
+    const r2 = _mesclarDemo(oneU('receitas'),     getReceitasDemo());
+    const r3 = _mesclarDemo(oneU('despesas'),     getDespesasDemo());
+    const r4 = _mesclarDemo(oneU('compromissos'), getCompromissosDemo());
     const totalAdicionado = r1.adicionadas + r2.adicionadas + r3.adicionadas + r4.adicionadas;
     if (!totalAdicionado) {
       toast('Os exemplos já estão todos carregados.', null, { duration: 2400 });
@@ -750,9 +804,9 @@
     if (!souFamilia()) { toast('Esta opção é exclusiva para a Família.', 'error'); return; }
     if (!confirm('Isso vai APAGAR TODOS os dados atuais e carregar apenas os exemplos demo:\n\n• 10 notas no Segundo Cérebro\n• 10 receitas de exemplo\n• 3 despesas variáveis\n• 6 compromissos (passados, hoje e futuros)\n\nContinuar?')) return;
     setNotas(getNotasDemo());
-    localStorage.setItem('receitas',     JSON.stringify(getReceitasDemo()));
-    localStorage.setItem('despesas',     JSON.stringify(getDespesasDemo()));
-    localStorage.setItem('compromissos', JSON.stringify(getCompromissosDemo()));
+    localStorage.setItem(oneU('receitas'),     JSON.stringify(getReceitasDemo()));
+    localStorage.setItem(oneU('despesas'),     JSON.stringify(getDespesasDemo()));
+    localStorage.setItem(oneU('compromissos'), JSON.stringify(getCompromissosDemo()));
     fecharConfig();
     renderCerebro();
     if (typeof renderListaReceitas === 'function') renderListaReceitas();
@@ -767,10 +821,10 @@
     if (!confirm('Isso vai APAGAR TODOS os dados do app:\n\n• Todas as notas do Segundo Cérebro\n• Todas as receitas\n• Todas as despesas\n• Todas as despesas fixas\n• Todos os compromissos\n\nApenas as configurações (forma de pagamento, % imposto) serão mantidas.\n\nEsta ação NÃO PODE ser desfeita. Continuar?')) return;
     if (!confirm('Tem certeza? Esta é sua última chance.')) return;
     setNotas([]);
-    localStorage.setItem('receitas',     JSON.stringify([]));
-    localStorage.setItem('despesas',     JSON.stringify([]));
-    localStorage.setItem('despesasFixas', JSON.stringify([]));
-    localStorage.setItem('compromissos', JSON.stringify([]));
+    localStorage.setItem(oneU('receitas'),     JSON.stringify([]));
+    localStorage.setItem(oneU('despesas'),     JSON.stringify([]));
+    localStorage.setItem(oneU('despesasFixas'), JSON.stringify([]));
+    localStorage.setItem(oneU('compromissos'), JSON.stringify([]));
     fecharConfig();
     renderCerebro();
     if (typeof renderListaReceitas === 'function') renderListaReceitas();
@@ -785,11 +839,11 @@
   const FORMAS_PAGAMENTO = ['Pix', 'Dinheiro', 'Cartão de débito', 'Cartão de crédito', 'Transferência'];
 
   function getImpostoPct() {
-    const v = parseFloat(localStorage.getItem('ccp_imposto_pct'));
+    const v = parseFloat(localStorage.getItem(oneU('ccp_imposto_pct')));
     return (isFinite(v) && v >= 0 && v <= 100) ? v : 6;
   }
   function getFormaPagamentoDefault() {
-    const v = localStorage.getItem('ccp_forma_pagamento');
+    const v = localStorage.getItem(oneU('ccp_forma_pagamento'));
     return FORMAS_PAGAMENTO.includes(v) ? v : 'Pix';
   }
   function editarImpostoPct() {
@@ -820,8 +874,8 @@
       toast('Forma de pagamento inválida.', 'error');
       return;
     }
-    localStorage.setItem('ccp_imposto_pct', String(imp));
-    localStorage.setItem('ccp_forma_pagamento', forma);
+    localStorage.setItem(oneU('ccp_imposto_pct'), String(imp));
+    localStorage.setItem(oneU('ccp_forma_pagamento'), forma);
     fecharConfig();
     atualizarHome();
     toast('Configurações salvas. Confirme o imposto sempre com seu contador.', 'success', { duration: 3500 });
@@ -849,9 +903,9 @@
     const ano  = now.getFullYear();
     const mes  = now.getMonth();
 
-    const receitas     = JSON.parse(localStorage.getItem('receitas')      || '[]');
-    const despesas     = JSON.parse(localStorage.getItem('despesas')      || '[]');
-    const compromissos = JSON.parse(localStorage.getItem('compromissos')  || '[]');
+    const receitas     = JSON.parse(localStorage.getItem(oneU('receitas'))      || '[]');
+    const despesas     = JSON.parse(localStorage.getItem(oneU('despesas'))      || '[]');
+    const compromissos = JSON.parse(localStorage.getItem(oneU('compromissos'))  || '[]');
 
     const deMes = item => {
       const d = new Date(item.data + 'T00:00:00');
@@ -902,7 +956,7 @@
 
   /* ── Card Agenda ─────────────────────────────────────────────── */
   function renderCardAgenda() {
-    const compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
 
     const { ini: iniAt, fim: fimAt } = semanaLimites(0);
     const { ini: iniAn, fim: fimAn } = semanaLimites(-1);
@@ -969,9 +1023,9 @@
     const mes = now.getMonth();
     const primeiroMes = `${ano}-${String(mes + 1).padStart(2,'0')}-01`;
 
-    const receitas      = JSON.parse(localStorage.getItem('receitas')      || '[]');
-    const despesas      = JSON.parse(localStorage.getItem('despesas')      || '[]');
-    const despesasFixas = JSON.parse(localStorage.getItem('despesasFixas') || '[]');
+    const receitas      = JSON.parse(localStorage.getItem(oneU('receitas'))      || '[]');
+    const despesas      = JSON.parse(localStorage.getItem(oneU('despesas'))      || '[]');
+    const despesasFixas = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
 
     const deMes = item => {
       if (!item.data) return true;
@@ -1070,7 +1124,7 @@
   }
 
   function renderAgendaDia(dateStr) {
-    const compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
     const doDia = compromissos
       .filter(c => c.data === dateStr)
       .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''));
@@ -1118,7 +1172,7 @@
   }
 
   function renderMiniAgenda() {
-    const compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     const hojeStr = toDateStr(hoje);
 
@@ -1166,7 +1220,7 @@
   function renderHomeAgendaHoje() {
     const el = document.getElementById('home-agenda-hoje');
     if (!el) return;
-    const compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
     const hojeStr = toDateStr(new Date());
     const doDia = compromissos
       .filter(c => c.data === hojeStr)
@@ -1234,7 +1288,7 @@
   function renderHomeAgendaSemana() {
     const el = document.getElementById('home-agenda-semana');
     if (!el) return;
-    const compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     const hojeStr = toDateStr(hoje);
     const dom = new Date(hoje);
@@ -1309,7 +1363,7 @@
   function renderPinahWeek() {
     const el = document.getElementById('pinah-week');
     if (!el) return;
-    const compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     const hojeStr = toDateStr(hoje);
     const seg = new Date(hoje);
@@ -1364,7 +1418,7 @@
       const h = hoje.getHours();
       const saudacao = h < 12 ? 'Bom dia' : (h < 18 ? 'Boa tarde' : 'Boa noite');
       let nome = 'Luciano';
-      try { const u = JSON.parse(localStorage.getItem('usuario') || '{}'); if (u && u.nome) nome = String(u.nome).split(' ')[0]; } catch(_) {}
+      try { const u = JSON.parse(localStorage.getItem(oneU('usuario')) || '{}'); if (u && u.nome) nome = String(u.nome).split(' ')[0]; } catch(_) {}
       elH.textContent = saudacao + ', ' + nome;
     }
   }
@@ -1381,7 +1435,7 @@
     const hh = String(agora.getHours()).padStart(2,'0');
     const mm = String(agora.getMinutes()).padStart(2,'0');
     let nome = 'Luciano';
-    try { const u = JSON.parse(localStorage.getItem('usuario')||'{}'); if(u&&u.nome) nome=String(u.nome).split(' ')[0]; } catch(_) {}
+    try { const u = JSON.parse(localStorage.getItem(oneU('usuario'))||'{}'); if(u&&u.nome) nome=String(u.nome).split(' ')[0]; } catch(_) {}
     el.textContent = nome + ', são ' + hh + ':' + mm + ', dia ' + agora.getDate() + ' de ' + meses[agora.getMonth()] + ' de ' + agora.getFullYear();
   }
 
@@ -1409,13 +1463,13 @@
       toast('Preencha data e nome do paciente.', 'error');
       return;
     }
-    const lista = JSON.parse(localStorage.getItem('receitas') || '[]');
+    const lista = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
     if (editandoReceitaId) {
       const idx = lista.findIndex(r => r.id === editandoReceitaId);
       if (idx >= 0) {
         lista[idx] = { ...lista[idx], data, nome, tipo, valor, formaPagamento: forma, status, categoria: tipo };
       }
-      localStorage.setItem('receitas', JSON.stringify(lista));
+      localStorage.setItem(oneU('receitas'), JSON.stringify(lista));
       cancelarEdicaoReceita();
       renderListaReceitas();
       atualizarHome();
@@ -1423,7 +1477,7 @@
       return;
     }
     lista.push({ id: uid(), data, nome, tipo, valor, formaPagamento: forma, status, categoria: tipo });
-    localStorage.setItem('receitas', JSON.stringify(lista));
+    localStorage.setItem(oneU('receitas'), JSON.stringify(lista));
     document.getElementById('r-nome').value  = '';
     document.getElementById('r-valor').value = '';
     renderListaReceitas();
@@ -1432,7 +1486,7 @@
   }
 
   function editarReceita(id) {
-    const lista = JSON.parse(localStorage.getItem('receitas') || '[]');
+    const lista = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
     const r = lista.find(x => x.id === id);
     if (!r) return;
     editandoReceitaId = id;
@@ -1471,8 +1525,8 @@
 
   function excluirReceita(id) {
     if (!confirm('Excluir esta receita?')) return;
-    localStorage.setItem('receitas', JSON.stringify(
-      JSON.parse(localStorage.getItem('receitas') || '[]').filter(r => r.id !== id)
+    localStorage.setItem(oneU('receitas'), JSON.stringify(
+      JSON.parse(localStorage.getItem(oneU('receitas')) || '[]').filter(r => r.id !== id)
     ));
     if (editandoReceitaId === id) cancelarEdicaoReceita();
     renderListaReceitas();
@@ -1481,7 +1535,7 @@
 
   function renderListaReceitas() {
     const now = new Date(), ano = now.getFullYear(), mes = now.getMonth();
-    const receitas = JSON.parse(localStorage.getItem('receitas') || '[]');
+    const receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
     const doMes = receitas
       .filter(r => { const d = new Date(r.data + 'T00:00:00'); return d.getFullYear() === ano && d.getMonth() === mes; })
       .sort((a,b) => b.data.localeCompare(a.data));
@@ -1526,17 +1580,17 @@
     const cat  = document.getElementById('nf-categoria').value.trim() || 'Outros';
     const val  = parseValor(document.getElementById('nf-valor').value);
     if (!desc || !val) { toast('Preencha descrição e valor.', 'error'); return; }
-    const lista = JSON.parse(localStorage.getItem('despesasFixas') || '[]');
+    const lista = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
     lista.push({ id: uid(), descricao: desc, categoria: cat, valor: val });
-    localStorage.setItem('despesasFixas', JSON.stringify(lista));
+    localStorage.setItem(oneU('despesasFixas'), JSON.stringify(lista));
     fecharFormNovaFixa();
     renderDespesasFixas();
     atualizarHome();
   }
   function excluirDespesaFixa(id) {
     if (!confirm('Excluir esta despesa fixa?')) return;
-    localStorage.setItem('despesasFixas', JSON.stringify(
-      JSON.parse(localStorage.getItem('despesasFixas') || '[]').filter(d => d.id !== id)
+    localStorage.setItem(oneU('despesasFixas'), JSON.stringify(
+      JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]').filter(d => d.id !== id)
     ));
     renderDespesasFixas();
     atualizarHome();
@@ -1549,7 +1603,7 @@
     if (!aberto) el.classList.add('aberto');
   }
   function salvarEdicaoFixa(id) {
-    const lista = JSON.parse(localStorage.getItem('despesasFixas') || '[]');
+    const lista = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
     const idx = lista.findIndex(d => d.id === id);
     if (idx < 0) return;
     const desc = document.getElementById('ef-desc-'+id).value.trim();
@@ -1557,12 +1611,12 @@
     const val  = parseValor(document.getElementById('ef-val-'+id).value);
     if (!desc || !val) { toast('Preencha os campos.', 'error'); return; }
     lista[idx] = { ...lista[idx], descricao: desc, categoria: cat, valor: val };
-    localStorage.setItem('despesasFixas', JSON.stringify(lista));
+    localStorage.setItem(oneU('despesasFixas'), JSON.stringify(lista));
     renderDespesasFixas();
     atualizarHome();
   }
   function renderDespesasFixas() {
-    const lista = JSON.parse(localStorage.getItem('despesasFixas') || '[]');
+    const lista = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
     const total = lista.reduce((s,d) => s + (Number(d.valor)||0), 0);
     const elTotal = document.getElementById('total-fixo');
     if (elTotal) elTotal.textContent = brl(total);
@@ -1600,13 +1654,13 @@
       toast('Preencha todos os campos.', 'error');
       return;
     }
-    const lista = JSON.parse(localStorage.getItem('despesas') || '[]');
+    const lista = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
     if (editandoDespesaId) {
       const idx = lista.findIndex(d => d.id === editandoDespesaId);
       if (idx >= 0) {
         lista[idx] = { ...lista[idx], data, descricao: desc, nome: desc, categoria: cat, valor };
       }
-      localStorage.setItem('despesas', JSON.stringify(lista));
+      localStorage.setItem(oneU('despesas'), JSON.stringify(lista));
       cancelarEdicaoDespesa();
       renderListaDespesas();
       atualizarHome();
@@ -1614,7 +1668,7 @@
       return;
     }
     lista.push({ id: uid(), data, descricao: desc, nome: desc, categoria: cat, valor });
-    localStorage.setItem('despesas', JSON.stringify(lista));
+    localStorage.setItem(oneU('despesas'), JSON.stringify(lista));
     document.getElementById('d-descricao').value = '';
     document.getElementById('d-valor').value = '';
     renderListaDespesas();
@@ -1623,7 +1677,7 @@
   }
 
   function editarDespesa(id) {
-    const lista = JSON.parse(localStorage.getItem('despesas') || '[]');
+    const lista = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
     const d = lista.find(x => x.id === id);
     if (!d) return;
     editandoDespesaId = id;
@@ -1660,8 +1714,8 @@
 
   function excluirDespesa(id) {
     if (!confirm('Excluir esta despesa?')) return;
-    localStorage.setItem('despesas', JSON.stringify(
-      JSON.parse(localStorage.getItem('despesas') || '[]').filter(d => d.id !== id)
+    localStorage.setItem(oneU('despesas'), JSON.stringify(
+      JSON.parse(localStorage.getItem(oneU('despesas')) || '[]').filter(d => d.id !== id)
     ));
     if (editandoDespesaId === id) cancelarEdicaoDespesa();
     renderListaDespesas();
@@ -1669,7 +1723,7 @@
   }
   function renderListaDespesas() {
     const now = new Date(), ano = now.getFullYear(), mes = now.getMonth();
-    const despesas = JSON.parse(localStorage.getItem('despesas') || '[]');
+    const despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
     const doMes = despesas
       .filter(d => { const dt = new Date(d.data+'T00:00:00'); return dt.getFullYear()===ano && dt.getMonth()===mes; })
       .sort((a,b) => b.data.localeCompare(a.data));
@@ -1707,7 +1761,7 @@
   function renderCalendario() {
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     const hojeStr = toDateStr(hoje);
-    const compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
     const nomeMes = new Date(calAno, calMes, 1)
       .toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
     const elTit = document.getElementById('cal-mes-titulo');
@@ -1740,7 +1794,7 @@
     renderListaDiaAgenda(ds);
   }
   function renderListaDiaAgenda(ds) {
-    const compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
     const doDia = compromissos.filter(c => c.data === ds)
       .sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
     const d = new Date(ds+'T00:00:00');
@@ -1782,13 +1836,13 @@
     const valor  = parseValor(document.getElementById('c-valor').value);
     const status = document.getElementById('c-status').value;
     if (!data || !nome) { toast('Preencha data e nome.', 'error'); return; }
-    const lista = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
     if (editandoCompromissoId) {
       const idx = lista.findIndex(c => c.id === editandoCompromissoId);
       if (idx >= 0) {
         lista[idx] = { ...lista[idx], data, hora, nome, descricao: nome, tipo, duracao: dur, valor, status };
       }
-      localStorage.setItem('compromissos', JSON.stringify(lista));
+      localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
       editandoCompromissoId = null;
       fecharModalNovoComp();
       renderAgendaSemanal();
@@ -1799,7 +1853,7 @@
       return;
     }
     lista.push({ id: uid(), data, hora, nome, descricao: nome, tipo, duracao: dur, valor, status, realizado: false });
-    localStorage.setItem('compromissos', JSON.stringify(lista));
+    localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
     document.getElementById('c-nome').value  = '';
     document.getElementById('c-valor').value = '';
     document.getElementById('c-hora').value  = '';
@@ -1812,7 +1866,7 @@
   }
 
   function editarCompromisso(id) {
-    const lista = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
     const c = lista.find(x => x.id === id);
     if (!c) return;
     editandoCompromissoId = id;
@@ -1832,8 +1886,8 @@
 
   function excluirCompromisso(id) {
     if (!confirm('Excluir este compromisso?')) return;
-    localStorage.setItem('compromissos', JSON.stringify(
-      JSON.parse(localStorage.getItem('compromissos') || '[]').filter(c => c.id !== id)
+    localStorage.setItem(oneU('compromissos'), JSON.stringify(
+      JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]').filter(c => c.id !== id)
     ));
     if (editandoCompromissoId === id) {
       editandoCompromissoId = null;
@@ -1919,21 +1973,21 @@
 
   function getIAUsoHoje() {
     const hojeStr = new Date().toISOString().slice(0, 10);
-    const raw = localStorage.getItem('ccp_ia_uso');
+    const raw = localStorage.getItem(oneU('ccp_ia_uso'));
     let obj = {};
     try { obj = raw ? JSON.parse(raw) : {}; } catch (e) { obj = {}; }
     return obj[hojeStr] || 0;
   }
   function incrementarIAUso() {
     const hojeStr = new Date().toISOString().slice(0, 10);
-    const raw = localStorage.getItem('ccp_ia_uso');
+    const raw = localStorage.getItem(oneU('ccp_ia_uso'));
     let obj = {};
     try { obj = raw ? JSON.parse(raw) : {}; } catch (e) { obj = {}; }
     obj[hojeStr] = (obj[hojeStr] || 0) + 1;
     // Limpa entradas antigas (>7 dias) para nao poluir localStorage
     const corte = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     Object.keys(obj).forEach(k => { if (k < corte) delete obj[k]; });
-    localStorage.setItem('ccp_ia_uso', JSON.stringify(obj));
+    localStorage.setItem(oneU('ccp_ia_uso'), JSON.stringify(obj));
   }
   function atualizarRestantesIA() {
     const usados = getIAUsoHoje();
@@ -2436,7 +2490,7 @@
    * Toast com botao "Desfazer" por 5s — se clicar, restaura tudo (receita removida + status).
    */
   function marcarRealizado(id) {
-    const lista = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
     const idx = lista.findIndex(c => c.id === id);
     if (idx < 0) return;
     const comp = lista[idx];
@@ -2450,7 +2504,7 @@
 
     // 1) Cria receita se valor > 0
     if (Number(comp.valor) > 0) {
-      const recs = JSON.parse(localStorage.getItem('receitas') || '[]');
+      const recs = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
       const novaRec = {
         id: uid(),
         data: comp.data,
@@ -2462,13 +2516,13 @@
         categoria: comp.tipo || 'Atendimento'
       };
       recs.push(novaRec);
-      localStorage.setItem('receitas', JSON.stringify(recs));
+      localStorage.setItem(oneU('receitas'), JSON.stringify(recs));
       snapshot.recCriadaId = novaRec.id;
     }
 
     // 2) Atualiza compromisso
     lista[idx] = { ...comp, status: 'Confirmado', realizado: true };
-    localStorage.setItem('compromissos', JSON.stringify(lista));
+    localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
 
     // 3) Atualiza UI
     renderAgendaSemanal();
@@ -2491,17 +2545,17 @@
   function desfazerRealizado(snapshot) {
     if (!snapshot) return;
     // Restaura compromisso
-    const lista = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
     const idx = lista.findIndex(c => c.id === snapshot.compAntes.id);
     if (idx >= 0) {
       lista[idx] = snapshot.compAntes;
-      localStorage.setItem('compromissos', JSON.stringify(lista));
+      localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
     }
     // Remove receita criada (se houve)
     if (snapshot.recCriadaId) {
-      const recs = JSON.parse(localStorage.getItem('receitas') || '[]')
+      const recs = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]')
         .filter(r => r.id !== snapshot.recCriadaId);
-      localStorage.setItem('receitas', JSON.stringify(recs));
+      localStorage.setItem(oneU('receitas'), JSON.stringify(recs));
     }
     renderAgendaSemanal();
     atualizarHome();
@@ -2531,14 +2585,14 @@
     const [ano, mes] = sel.value.split('-').map(Number); // mes 1-12
     const mesIdx = mes - 1;
 
-    const receitas = JSON.parse(localStorage.getItem('receitas') || '[]')
+    const receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]')
       .filter(r => {
         const d = new Date(r.data + 'T00:00:00');
         return d.getFullYear() === ano && d.getMonth() === mesIdx;
       })
       .sort((a, b) => (a.data || '').localeCompare(b.data || ''));
 
-    const despesasAvulsas = JSON.parse(localStorage.getItem('despesas') || '[]')
+    const despesasAvulsas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]')
       .filter(d => {
         const dd = new Date(d.data + 'T00:00:00');
         return dd.getFullYear() === ano && dd.getMonth() === mesIdx;
@@ -2547,7 +2601,7 @@
 
     // Despesas fixas — aparecem como lançamentos automáticos do dia 1 do mês
     const primeiroDiaStr = ano + '-' + String(mes).padStart(2,'0') + '-01';
-    const despesasFixas = JSON.parse(localStorage.getItem('despesasFixas') || '[]')
+    const despesasFixas = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]')
       .map(df => ({
         data: primeiroDiaStr,
         descricao: df.descricao || df.nome || 'Despesa Fixa',
@@ -2735,9 +2789,9 @@
     if (!sel) return;
     const [ano, mes] = sel.value.split('-').map(Number);
     const primeiroMes = `${ano}-${String(mes).padStart(2,'0')}-01`;
-    const receitas      = JSON.parse(localStorage.getItem('receitas')      || '[]');
-    const despesas      = JSON.parse(localStorage.getItem('despesas')      || '[]');
-    const despesasFixas = JSON.parse(localStorage.getItem('despesasFixas') || '[]');
+    const receitas      = JSON.parse(localStorage.getItem(oneU('receitas'))      || '[]');
+    const despesas      = JSON.parse(localStorage.getItem(oneU('despesas'))      || '[]');
+    const despesasFixas = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
     const deMes = item => {
       if (!item.data) return true;
       const d = new Date(item.data+'T00:00:00');
@@ -2836,7 +2890,7 @@
   function renderAgendaSemanal() {
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     const hojeStr = toDateStr(hoje);
-    const compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
+    const compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
 
     const dom = new Date(hoje);
     dom.setDate(hoje.getDate() - hoje.getDay() + agSemanaOffset * 7);
@@ -2944,7 +2998,15 @@
   function resetarDados() {
     if (!souFamilia()) { toast('Esta opção é exclusiva para a Família.', 'error'); return; }
     if (!confirm('Resetar todos os dados para o estado inicial de demonstração?\n\nEsta ação apaga tudo que foi cadastrado.')) return;
-    localStorage.clear();
+    // Multi-tenant: limpa só as chaves DESTE usuário (preserva auth do Supabase e dados de outros usuários)
+    var uid = (window.authUser && window.authUser.id) ? window.authUser.id : 'anon';
+    var prefixo = 'u_' + uid + '_';
+    var chavesPraRemover = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.indexOf(prefixo) === 0) chavesPraRemover.push(k);
+    }
+    chavesPraRemover.forEach(function(k){ localStorage.removeItem(k); });
     closeDrawer();
     location.reload();
   }
@@ -3100,7 +3162,7 @@ function oneTarSetPrio(btn) {
 }
 function oneTarGetAreas() {
   try {
-    var stored = JSON.parse(localStorage.getItem('tarefas_areas') || 'null');
+    var stored = JSON.parse(localStorage.getItem(oneU('tarefas_areas')) || 'null');
     if (stored && Array.isArray(stored) && stored.length) return stored;
   } catch(e) {}
   // Áreas padrão estilo TaskAreas
@@ -3108,7 +3170,7 @@ function oneTarGetAreas() {
   oneTarSaveAreas(defaults);
   return defaults;
 }
-function oneTarSaveAreas(a) { localStorage.setItem('tarefas_areas', JSON.stringify(a)); }
+function oneTarSaveAreas(a) { localStorage.setItem(oneU('tarefas_areas'), JSON.stringify(a)); }
 
 function oneTarNovaArea() {
   var nome = prompt('Nome da nova área:');
@@ -3145,9 +3207,9 @@ function oneTarInlineSave(el) {
   var area = col ? col.dataset.area : 'Geral';
   var nome = input ? input.value.trim() : '';
   if (!nome) { oneTarHideInline(el); return; }
-  var lista = []; try { lista = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   lista.push({ id: Date.now().toString(), nome: nome, area: area, prioridade: 'Normal', concluida: false, criado: new Date().toISOString() });
-  localStorage.setItem('tarefas', JSON.stringify(lista));
+  localStorage.setItem(oneU('tarefas'), JSON.stringify(lista));
   if (typeof oneToast === 'function') oneToast('✓ Tarefa adicionada!');
   renderOneTarefasPainel();
   if (typeof renderDesktopSidebar === 'function') renderDesktopSidebar();
@@ -3157,7 +3219,7 @@ function renderOneTarefasPainel() {
   var el = document.getElementById('one-tarefas-list');
   var count = document.getElementById('one-tarefas-count');
   if (!el) return;
-  var todasTarefas = []; try { todasTarefas = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  var todasTarefas = []; try { todasTarefas = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   var pendentes = todasTarefas.filter(function(t){ return !t.concluida; });
   if (count) count.textContent = pendentes.length + ' pendente' + (pendentes.length === 1 ? '' : 's');
 
@@ -3318,27 +3380,27 @@ function oneTarSalvar() {
   var area = (document.getElementById('one-tar-area')||{}).value || 'Geral';
   var prio = (document.getElementById('one-tar-prio')||{}).value || 'Normal';
   var data = (document.getElementById('one-tar-data')||{}).value || '';
-  var lista = []; try { lista = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   lista.push({ id: Date.now().toString(), nome: nome, area: area, prioridade: prio, data: data, concluida: false, criado: new Date().toISOString() });
-  localStorage.setItem('tarefas', JSON.stringify(lista));
+  localStorage.setItem(oneU('tarefas'), JSON.stringify(lista));
   oneTarLimpar();
   if (typeof oneToast==='function') oneToast('✓ Tarefa salva!');
   if (typeof renderOneTarefasPainel==='function') renderOneTarefasPainel();
 }
 
 function oneTarToggle(id) {
-  var lista = []; try { lista = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   var idx = lista.findIndex(function(t){ return t.id === id; });
-  if (idx !== -1) { lista[idx].concluida = !lista[idx].concluida; localStorage.setItem('tarefas', JSON.stringify(lista)); }
+  if (idx !== -1) { lista[idx].concluida = !lista[idx].concluida; localStorage.setItem(oneU('tarefas'), JSON.stringify(lista)); }
   if (typeof renderOneTarefasPainel==='function') renderOneTarefasPainel();
 }
 
 
 function oneTarExcluir(id) {
   if (!confirm('Excluir esta tarefa?')) return;
-  var lista = []; try { lista = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   lista = lista.filter(function(t){ return t.id !== id; });
-  localStorage.setItem('tarefas', JSON.stringify(lista));
+  localStorage.setItem(oneU('tarefas'), JSON.stringify(lista));
   if (typeof oneToast==='function') oneToast('Tarefa excluída.');
   renderOneTarefasPainel();
 }
@@ -3362,7 +3424,7 @@ function oneTarModalAbrir(area) {
 }
 
 function oneTarModalEditar(id) {
-  var lista = []; try { lista = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   var t = lista.find(function(x){ return x.id === id; });
   if (!t) return;
   var modal = document.getElementById('one-tar-modal');
@@ -3395,7 +3457,7 @@ function oneTarModalSalvar() {
   var prio   = document.getElementById('one-tar-modal-prio').value || 'Normal';
   var status = document.getElementById('one-tar-modal-status').value;
   var data   = document.getElementById('one-tar-modal-data').value || '';
-  var lista  = []; try { lista = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  var lista  = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   if (id) {
     var idx = lista.findIndex(function(t){ return t.id === id; });
     if (idx !== -1) {
@@ -3406,7 +3468,7 @@ function oneTarModalSalvar() {
     lista.push({ id: Date.now().toString(), nome: nome, descricao: desc, area: area, prioridade: prio, concluida: status==='concluida', data: data, criado: new Date().toISOString() });
     if (typeof oneToast==='function') oneToast('✓ Tarefa criada!');
   }
-  localStorage.setItem('tarefas', JSON.stringify(lista));
+  localStorage.setItem(oneU('tarefas'), JSON.stringify(lista));
   oneTarModalFechar();
   renderOneTarefasPainel();
 }
@@ -3419,8 +3481,8 @@ function oneTarPromptPinah() {
 }
 
 function renderOneFinanceiroPainel() {
-  var receitas = JSON.parse(localStorage.getItem('receitas') || '[]');
-  var despesas = JSON.parse(localStorage.getItem('despesas') || '[]');
+  var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
+  var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
   var hoje = new Date();
   var mes = hoje.getMonth(), ano = hoje.getFullYear();
   var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -3489,7 +3551,7 @@ function renderOneAgendaPainel() {
   var label  = document.getElementById('one-ag-mes-label');
   if (!kanban) return;
 
-  var compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]');
+  var compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
   var hoje = new Date(); hoje.setHours(0,0,0,0);
   var hojeStr = hoje.toISOString().slice(0,10);
 
@@ -3672,16 +3734,16 @@ function oneInitAgendaSortable() {
       var y = ev.clientY - rect.top - yOffset;
       var novaHora = oneAgTopParaHora(y);
       var novaData = col.getAttribute('data-date');
-      var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
+      var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
       var idx = lista.findIndex(function(x){ return x.id === id; });
       if (idx === -1) return;
       lista[idx].data = novaData;
       lista[idx].hora = novaHora;
-      localStorage.setItem('compromissos', JSON.stringify(lista));
+      localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
       // Atualiza receita vinculada se existir
-      var rec = []; try { rec = JSON.parse(localStorage.getItem('receitas') || '[]'); } catch(e){}
+      var rec = []; try { rec = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
       var rIdx = rec.findIndex(function(r){ return r.compromissoId === id; });
-      if (rIdx !== -1) { rec[rIdx].data = novaData; localStorage.setItem('receitas', JSON.stringify(rec)); }
+      if (rIdx !== -1) { rec[rIdx].data = novaData; localStorage.setItem(oneU('receitas'), JSON.stringify(rec)); }
       if (typeof oneToast === 'function') oneToast('✓ ' + novaData.split('-').reverse().join('/') + ' às ' + novaHora);
       renderOneAgendaPainel();
       if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
@@ -3721,7 +3783,7 @@ function renderOneAgenda() {
   monday.setDate(today.getDate() + mondayOffset);
 
   var compromissos = [];
-  try { compromissos = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
+  try { compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
 
   var dias = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
   var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -3798,9 +3860,9 @@ function renderOneFinanceiro() {
   var prefix = ano + '-' + mesStr;
 
   var receitas = []; var despesas = []; var fixas = [];
-  try { receitas = JSON.parse(localStorage.getItem('receitas') || '[]'); } catch(e){}
-  try { despesas = JSON.parse(localStorage.getItem('despesas') || '[]'); } catch(e){}
-  try { fixas    = JSON.parse(localStorage.getItem('despesasFixas') || '[]'); } catch(e){}
+  try { receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
+  try { despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){}
+  try { fixas    = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]'); } catch(e){}
 
   var recMes  = receitas.filter(function(r){ return r.data && r.data.startsWith(prefix); });
   var despMes = despesas.filter(function(d){ return d.data && d.data.startsWith(prefix); });
@@ -3922,7 +3984,7 @@ function renderOneDeskAgenda() {
   var wrap = document.getElementById('one-desk-ag-week');
   if (!wrap) return;
   var lista = [];
-  try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
+  try { lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
   var today = new Date();
   var diasSem = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   var html = '';
@@ -3963,8 +4025,8 @@ function renderOneDeskFinanceiro() {
   var now    = new Date();
   var mesStr = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   var receitas=[]; var despesas=[];
-  try { receitas = JSON.parse(localStorage.getItem('receitas')||'[]'); } catch(e){}
-  try { despesas = JSON.parse(localStorage.getItem('despesas')||'[]'); } catch(e){}
+  try { receitas = JSON.parse(localStorage.getItem(oneU('receitas'))||'[]'); } catch(e){}
+  try { despesas = JSON.parse(localStorage.getItem(oneU('despesas'))||'[]'); } catch(e){}
   var fmt = function(v){ return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
   var recMes   = receitas.filter(function(r){return (r.data||'').startsWith(mesStr);});
   var despMes  = despesas.filter(function(d){return (d.data||'').startsWith(mesStr);});
@@ -4000,7 +4062,7 @@ function renderOneDeskTarefas() {
   var el = document.getElementById('one-desk-tarefas-list');
   if (!el) return;
   var tarefas = [];
-  try { tarefas = JSON.parse(localStorage.getItem('tarefas')||'[]'); } catch(e){}
+  try { tarefas = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   var pendentes = tarefas.filter(function(t){ return !t.concluida; }).slice(0,5);
   if (!pendentes.length) {
     el.innerHTML = '<p style="font-size:12px;color:#B0A8BC;text-align:center;padding:12px 0">Nenhuma tarefa pendente 🎉</p>';
@@ -4149,7 +4211,7 @@ function oneAbrirCompromisso(id) {
   var obsEl = document.getElementById('comp-obs');
 
   if (id) {
-    var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
+    var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
     var c = lista.find(function(x){ return x.id === id; });
     if (!c) { if (typeof oneToast === 'function') oneToast('Compromisso não encontrado.'); return; }
     if (title) title.textContent = 'Editar Compromisso';
@@ -4253,7 +4315,7 @@ function oneSalvarCompromisso() {
   var obs   = (document.getElementById('comp-obs') || {}).value || '';
   if (!nome || !data) { oneToast('Preencha nome e data.'); return; }
 
-  var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
 
   if (oneEditandoCompromissoId) {
     var idx = lista.findIndex(function(x){ return x.id === oneEditandoCompromissoId; });
@@ -4261,7 +4323,7 @@ function oneSalvarCompromisso() {
       lista[idx] = Object.assign({}, lista[idx], { data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, observacoes:obs });
     }
     // Atualiza receita vinculada se existir
-    var rec = []; try { rec = JSON.parse(localStorage.getItem('receitas') || '[]'); } catch(e){}
+    var rec = []; try { rec = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
     var rIdx = rec.findIndex(function(r){ return r.compromissoId === oneEditandoCompromissoId; });
     if (valor > 0) {
       if (rIdx !== -1) {
@@ -4272,21 +4334,21 @@ function oneSalvarCompromisso() {
     } else if (rIdx !== -1) {
       rec.splice(rIdx, 1); // remove receita se valor virou zero
     }
-    localStorage.setItem('receitas', JSON.stringify(rec));
+    localStorage.setItem(oneU('receitas'), JSON.stringify(rec));
     oneToast('✓ Compromisso atualizado!');
   } else {
     var novoId = 'one-'+Date.now();
     lista.push({ id:novoId, data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, observacoes:obs, status:'Pendente', duracao:45 });
     // Cria receita futura pendente se valor > 0
     if (valor > 0) {
-      var rec = []; try { rec = JSON.parse(localStorage.getItem('receitas') || '[]'); } catch(e){}
+      var rec = []; try { rec = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
       rec.push({ id:'r-'+Date.now(), compromissoId:novoId, data:data, nome:nome, tipo:tipo, valor:valor, status:'Pendente', categoria:tipo });
-      localStorage.setItem('receitas', JSON.stringify(rec));
+      localStorage.setItem(oneU('receitas'), JSON.stringify(rec));
     }
     oneToast('✓ Compromisso salvo!');
   }
 
-  localStorage.setItem('compromissos', JSON.stringify(lista));
+  localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
   oneResetFormCompromisso();
   if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
@@ -4297,14 +4359,14 @@ function oneExcluirCompromisso() {
   if (!oneEditandoCompromissoId) return;
   if (!confirm('Excluir este compromisso? A receita vinculada (se houver) também será removida.')) return;
 
-  var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos') || '[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
   lista = lista.filter(function(x){ return x.id !== oneEditandoCompromissoId; });
-  localStorage.setItem('compromissos', JSON.stringify(lista));
+  localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
 
   // Remove receita vinculada se existir
-  var rec = []; try { rec = JSON.parse(localStorage.getItem('receitas') || '[]'); } catch(e){}
+  var rec = []; try { rec = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
   rec = rec.filter(function(r){ return r.compromissoId !== oneEditandoCompromissoId; });
-  localStorage.setItem('receitas', JSON.stringify(rec));
+  localStorage.setItem(oneU('receitas'), JSON.stringify(rec));
 
   oneResetFormCompromisso();
   if (typeof oneToast === 'function') oneToast('✓ Compromisso excluído.');
@@ -4316,11 +4378,11 @@ function oneExcluirCompromisso() {
 
 /* ── Agenda Kanban: modal + toggle + excluir ── */
 function oneAgToggleRealizado(id) {
-  var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos')||'[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos'))||'[]'); } catch(e){}
   var idx = lista.findIndex(function(c){ return c.id === id; });
   if (idx !== -1) {
     lista[idx].status = (lista[idx].status === 'Realizado') ? 'Pendente' : 'Realizado';
-    localStorage.setItem('compromissos', JSON.stringify(lista));
+    localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
   }
   renderOneAgendaPainel();
   if (typeof renderOneAgenda === 'function') renderOneAgenda();
@@ -4328,12 +4390,12 @@ function oneAgToggleRealizado(id) {
 
 function oneAgExcluir(id) {
   if (!confirm('Excluir este compromisso? A receita vinculada (se houver) também será removida.')) return;
-  var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos')||'[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos'))||'[]'); } catch(e){}
   lista = lista.filter(function(c){ return c.id !== id; });
-  localStorage.setItem('compromissos', JSON.stringify(lista));
-  var rec = []; try { rec = JSON.parse(localStorage.getItem('receitas')||'[]'); } catch(e){}
+  localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
+  var rec = []; try { rec = JSON.parse(localStorage.getItem(oneU('receitas'))||'[]'); } catch(e){}
   rec = rec.filter(function(r){ return r.compromissoId !== id; });
-  localStorage.setItem('receitas', JSON.stringify(rec));
+  localStorage.setItem(oneU('receitas'), JSON.stringify(rec));
   if (typeof oneToast === 'function') oneToast('✓ Compromisso excluído.');
   renderOneAgendaPainel();
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
@@ -4358,7 +4420,7 @@ function oneAgModalAbrir(date) {
 }
 
 function oneAgModalEditar(id) {
-  var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos')||'[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos'))||'[]'); } catch(e){}
   var c = lista.find(function(x){ return x.id === id; });
   if (!c) return;
   var modal = document.getElementById('one-ag-modal');
@@ -4390,8 +4452,8 @@ function oneAgModalSalvar() {
   var valor = parseFloat(document.getElementById('one-ag-modal-valor').value) || 0;
   var obs   = document.getElementById('one-ag-modal-obs').value || '';
 
-  var lista = []; try { lista = JSON.parse(localStorage.getItem('compromissos')||'[]'); } catch(e){}
-  var rec   = []; try { rec   = JSON.parse(localStorage.getItem('receitas')   ||'[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos'))||'[]'); } catch(e){}
+  var rec   = []; try { rec   = JSON.parse(localStorage.getItem(oneU('receitas'))   ||'[]'); } catch(e){}
 
   if (id) {
     var idx = lista.findIndex(function(x){ return x.id === id; });
@@ -4409,8 +4471,8 @@ function oneAgModalSalvar() {
     if (typeof oneToast==='function') oneToast('✓ Compromisso salvo!');
   }
 
-  localStorage.setItem('compromissos', JSON.stringify(lista));
-  localStorage.setItem('receitas', JSON.stringify(rec));
+  localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
+  localStorage.setItem(oneU('receitas'), JSON.stringify(rec));
   oneAgModalFechar();
   renderOneAgendaPainel();
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
@@ -4430,28 +4492,30 @@ function oneToast(msg) {
 /* ── Dados demo + ativação automática ────────────────────────── */
 (function() {
   function oneInitDemo() {
-    if (localStorage.getItem('one_init')) return;
+    // Multi-tenant: só semeia demo se o user real estiver logado
+    if (!window.authUser || !window.authUser.id) return;
+    if (localStorage.getItem(oneU('one_init'))) return;
     var now = new Date();
     var ano = now.getFullYear();
     var mes = String(now.getMonth()+1).padStart(2,'0');
     var h = now.getDate();
     var d = function(dia) { return ano+'-'+mes+'-'+String(Math.max(1,Math.min(28,dia))).padStart(2,'0'); };
-    if (!localStorage.getItem('receitas')) {
-      localStorage.setItem('receitas', JSON.stringify([
+    if (!localStorage.getItem(oneU('receitas'))) {
+      localStorage.setItem(oneU('receitas'), JSON.stringify([
         {id:'d1',data:d(h-8),nome:'Maria S.',tipo:'Atendimento',valor:280,formaPagamento:'Pix',status:'Pago',categoria:'Atendimento'},
         {id:'d2',data:d(h-5),nome:'Leonardo B.',tipo:'Avaliação',valor:350,formaPagamento:'Pix',status:'Pago',categoria:'Avaliação'},
         {id:'d3',data:d(h-3),nome:'Ana K.',tipo:'Atendimento',valor:280,formaPagamento:'Pix',status:'Pago',categoria:'Atendimento'},
         {id:'d4',data:d(h),nome:'Beatriz N.',tipo:'Atendimento',valor:280,formaPagamento:'Pix',status:'Pendente',categoria:'Atendimento'}
       ]));
     }
-    if (!localStorage.getItem('despesas')) {
-      localStorage.setItem('despesas', JSON.stringify([
+    if (!localStorage.getItem(oneU('despesas'))) {
+      localStorage.setItem(oneU('despesas'), JSON.stringify([
         {id:'e1',data:d(h-7),descricao:'Material de consultório',categoria:'Material',valor:180,status:'Pago'},
         {id:'e2',data:d(h-2),descricao:'Curso online',categoria:'Capacitação',valor:320,status:'Pago'}
       ]));
     }
-    if (!localStorage.getItem('compromissos')) {
-      localStorage.setItem('compromissos', JSON.stringify([
+    if (!localStorage.getItem(oneU('compromissos'))) {
+      localStorage.setItem(oneU('compromissos'), JSON.stringify([
         {id:'c1',data:d(h-2),hora:'09:00',nome:'Maria S.',tipo:'Atendimento',valor:280,status:'Confirmado',realizado:true},
         {id:'c2',data:d(h-1),hora:'14:00',nome:'Ana K.',tipo:'Atendimento',valor:280,status:'Confirmado',realizado:true},
         {id:'c3',data:d(h),hora:'10:00',nome:'Beatriz N.',tipo:'Atendimento',valor:280,status:'Confirmado'},
@@ -4460,7 +4524,7 @@ function oneToast(msg) {
         {id:'c6',data:d(h+4),hora:'11:00',nome:'Reunião parceria',tipo:'Profissional',valor:0,status:'Pendente'}
       ]));
     }
-    localStorage.setItem('one_init', '1');
+    localStorage.setItem(oneU('one_init'), '1');
   }
 
   function activateOne() {
@@ -4475,6 +4539,8 @@ function oneToast(msg) {
     renderOneFinanceiro();
     renderOneDesktop();
   }
+  // Multi-tenant: exposto pra ser re-chamado após login (esconderTelaAuth)
+  window.activateOne = activateOne;
 
   /* Fechar modal clicando no overlay */
   document.addEventListener('click', function(e) {
