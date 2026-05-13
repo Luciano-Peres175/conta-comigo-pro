@@ -4009,6 +4009,10 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 .one-ag-kcard[draggable="true"] { cursor: grab; }
 .one-ag-kcard[draggable="true"]:active { cursor: grabbing; }
 
+/* [hidden] não basta quando há display:flex — força none explícito */
+#one-ag-kanban[hidden] { display: none !important; }
+#one-ag-mes[hidden]    { display: none !important; }
+
 /* ── Timeline semanal: wrapper com scroll + régua de horas + 7 colunas ── */
 .one-ag-tl-wrapper {
   flex: 1;
