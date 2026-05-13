@@ -3873,6 +3873,123 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   gap: 8px;
 }
 
+/* ── Tabs Semana / Dia / Mês ──────────────────────────── */
+.one-ag-view-tabs {
+  display: flex;
+  gap: 2px;
+  background: rgba(92,136,112,0.08);
+  border-radius: 10px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+.one-ag-view-tab {
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 4px 13px;
+  font-size: 12px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #7A7488;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.one-ag-view-tab.active {
+  background: #fff;
+  color: #5C8870;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(92,136,112,0.15);
+}
+.one-ag-view-tab:hover:not(.active) { color: #5C8870; }
+
+/* ── Visão DIA: card de largura total ───────────────────── */
+.one-ag-dia-cols {
+  flex: 1;
+  min-width: 0;
+}
+.one-ag-dia-card {
+  left: 0 !important;
+  right: 12px !important;
+  width: auto !important;
+}
+
+/* ── Visão MÊS: grid calendário ─────────────────────────── */
+.one-ag-mes-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0 12px;
+}
+.one-ag-mes-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: rgba(92,136,112,0.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.one-ag-mes-dow {
+  background: rgba(92,136,112,0.06);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: #9A96A8;
+  padding: 8px 0 6px;
+}
+.one-ag-mes-cell {
+  background: #fff;
+  min-height: 80px;
+  padding: 6px 6px 4px;
+  cursor: pointer;
+  transition: background .12s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.one-ag-mes-cell:hover { background: #f8f5fc; }
+.one-ag-mes-cell.outro-mes .one-ag-mes-num { color: #C8C4D4; }
+.one-ag-mes-cell.outro-mes { background: rgba(250,248,254,0.5); }
+.one-ag-mes-cell.hoje .one-ag-mes-num {
+  background: #7FA88E;
+  color: #fff;
+  border-radius: 50%;
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+}
+.one-ag-mes-num {
+  font-size: 13px;
+  font-weight: 600;
+  color: #3D3550;
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+}
+.one-ag-mes-dots {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  padding: 0 2px;
+}
+.one-ag-mes-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.one-ag-mes-dot-more {
+  font-size: 9px;
+  color: #9A96A8;
+  line-height: 7px;
+}
+
+/* ── Drag & Drop ─────────────────────────────────────────── */
+.one-ag-kday-body.drag-over {
+  background: rgba(92,136,112,0.08);
+  outline: 2px dashed rgba(92,136,112,0.40);
+  outline-offset: -2px;
+}
+.one-ag-kcard[draggable="true"] { cursor: grab; }
+.one-ag-kcard[draggable="true"]:active { cursor: grabbing; }
+
 /* ── Timeline semanal: wrapper com scroll + régua de horas + 7 colunas ── */
 .one-ag-tl-wrapper {
   flex: 1;

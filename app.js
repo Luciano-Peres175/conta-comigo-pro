@@ -3950,8 +3950,43 @@ function renderOneFinanceiroPainel() {
   el.innerHTML = html;
 }
 
+/* ── Estado das visões da Agenda ───────────────────────────────── */
+var oneAgView         = 'semana';  // 'semana' | 'dia' | 'mes'
+var oneAgSelectedDate = new Date().toISOString().slice(0,10); // data selecionada p/ visão Dia
+var oneAgMonthOffset  = 0;         // deslocamento de mês na visão Mês
+
+function oneAgSetView(view) {
+  oneAgView = view;
+  // Atualiza tabs
+  document.querySelectorAll('.one-ag-view-tab').forEach(function(t) {
+    t.classList.toggle('active', t.dataset.view === view);
+  });
+  // Mostra só o container correto
+  var kanban = document.getElementById('one-ag-kanban');
+  var dia    = document.getElementById('one-ag-dia');
+  var mes    = document.getElementById('one-ag-mes');
+  if (kanban) kanban.hidden = view !== 'semana';
+  if (dia)    dia.hidden    = view !== 'dia';
+  if (mes)    mes.hidden    = view !== 'mes';
+  renderOneAgendaPainel();
+}
+
+/* Clicar num dia no Mês → vai pra Dia */
+function oneAgGoToDia(dateStr) {
+  oneAgSelectedDate = dateStr;
+  oneAgSetView('dia');
+}
+
 function oneAgNavegar(delta) {
-  oneAgWeekOffset += delta;
+  if (oneAgView === 'semana') {
+    oneAgWeekOffset += delta;
+  } else if (oneAgView === 'dia') {
+    var d = new Date(oneAgSelectedDate + 'T12:00:00');
+    d.setDate(d.getDate() + delta);
+    oneAgSelectedDate = d.toISOString().slice(0,10);
+  } else if (oneAgView === 'mes') {
+    oneAgMonthOffset += delta;
+  }
   renderOneAgendaPainel();
 }
 
@@ -3972,6 +4007,9 @@ function oneAgCorCategoria(tipo) {
 }
 
 function renderOneAgendaPainel() {
+  if (oneAgView === 'dia') { renderOneAgDia(); return; }
+  if (oneAgView === 'mes') { renderOneAgMes(); return; }
+
   var kanban = document.getElementById('one-ag-kanban');
   var label  = document.getElementById('one-ag-mes-label');
   if (!kanban) return;
@@ -4035,7 +4073,7 @@ function renderOneAgendaPainel() {
       var dur = parseInt(c.duracao) || 50; // duração em min (default 50)
       // 50px/hora → 1min = 0.833px. Mínimo 56px pra caber hora + nome + tipo sem cortar
       var hPx = Math.max(56, Math.round(dur * (50/60)));
-      return '<div class="one-ag-kcard' + (realizado ? ' realizado' : '') + '" data-event-id="' + c.id + '" data-cid="' + c.id + '" onclick="oneAgModalEditar(this.dataset.cid)" style="top:' + top + 'px;height:' + hPx + 'px;border-left-color:' + cat.cor + ';background:' + cat.bg + '">' +
+      return '<div class="one-ag-kcard' + (realizado ? ' realizado' : '') + '" draggable="true" data-event-id="' + c.id + '" data-cid="' + c.id + '" onclick="oneAgModalEditar(this.dataset.cid)" style="top:' + top + 'px;height:' + hPx + 'px;border-left-color:' + cat.cor + ';background:' + cat.bg + '">' +
         '<div class="one-ag-kcard-check" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgToggleRealizado(this.dataset.cid)" style="background:' + checkBg + ';border-color:' + checkBdr + '">' + checkTxt + '</div>' +
         '<div class="one-ag-kcard-body">' +
           '<div class="one-ag-kcard-hora" style="color:' + cat.cor + '">' + hora + '</div>' +
@@ -4077,8 +4115,8 @@ function renderOneAgendaPainel() {
   // Marcador de "agora" se for a semana atual
   if (oneAgWeekOffset === 0) oneAgRenderAgoraLinha(kanban);
 
-  // Inicializa drag-and-drop após render (cards arrastáveis entre dias)
-  if (typeof oneInitAgendaSortable === 'function') oneInitAgendaSortable();
+  // Inicializa drag-and-drop após render (cards arrastáveis entre dias/horas)
+  oneInitDragDrop();
 }
 
 /* Linha horizontal de "agora" — atravessa todas as colunas */
@@ -4092,6 +4130,185 @@ function oneAgRenderAgoraLinha(kanban) {
   ln.style.top = top + 'px';
   ln.innerHTML = '<span class="one-ag-tl-agora-dot"></span>';
   kanban.querySelector('.one-ag-tl-cols').appendChild(ln);
+}
+
+/* ── Visão DIA ─────────────────────────────────────────────────── */
+function renderOneAgDia() {
+  var el    = document.getElementById('one-ag-dia');
+  var label = document.getElementById('one-ag-mes-label');
+  if (!el) return;
+
+  var compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
+  var hojeStr = new Date().toISOString().slice(0,10);
+  var ds = oneAgSelectedDate;
+  var d  = new Date(ds + 'T12:00:00');
+
+  var DIAS  = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  var MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  if (label) label.textContent = DIAS[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()];
+
+  var doDia = compromissos
+    .filter(function(c){ return c.data === ds; })
+    .sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
+
+  var rulerHtml = '<div class="one-ag-tl-ruler">';
+  for (var h = 0; h < 24; h++)
+    rulerHtml += '<div class="one-ag-tl-hour" style="top:' + (h*50) + 'px">' + (h<10?'0':'') + h + ':00</div>';
+  rulerHtml += '</div>';
+
+  var gridLines = '';
+  for (var gh = 0; gh < 24; gh++)
+    gridLines += '<div class="one-ag-tl-grid-line" style="top:' + (gh*50) + 'px"></div>';
+
+  var cards = doDia.map(function(c) {
+    var realizado = c.status === 'realizado';
+    var hora = c.hora || '08:00';
+    var nome = (c.nome || c.descricao || 'Compromisso').replace(/</g,'&lt;');
+    var tipo = (c.tipo || '').replace(/</g,'&lt;');
+    var cat  = oneAgCorCategoria(tipo);
+    var top  = oneHoraParaTop(hora);
+    var dur  = parseInt(c.duracao) || 50;
+    var hPx  = Math.max(56, Math.round(dur * (50/60)));
+    var valor = c.valor ? ' · R$' + Number(c.valor).toFixed(0) : '';
+    return '<div class="one-ag-kcard one-ag-dia-card' + (realizado?' realizado':'') + '" draggable="true" data-event-id="' + c.id + '" data-cid="' + c.id + '" onclick="oneAgModalEditar(this.dataset.cid)" style="top:' + top + 'px;height:' + hPx + 'px;left:0;right:12px;border-left-color:' + cat.cor + ';background:' + cat.bg + '">' +
+      '<div class="one-ag-kcard-body">' +
+        '<div class="one-ag-kcard-hora" style="color:' + cat.cor + '">' + hora + (valor?'<span style="margin-left:6px;opacity:.7;font-size:11px">'+valor+'</span>':'') + '</div>' +
+        '<div class="one-ag-kcard-nome" style="font-size:14px">' + nome + '</div>' +
+        (tipo?'<div class="one-ag-kcard-tipo"><span class="one-ag-kcard-dot" style="background:'+cat.cor+'"></span>'+tipo+'</div>':'') +
+      '</div>' +
+      '<div class="one-ag-kcard-actions"><button class="one-tar-card-btn del" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgExcluir(this.dataset.cid)">🗑️</button></div>' +
+    '</div>';
+  }).join('');
+
+  el.innerHTML = rulerHtml +
+    '<div class="one-ag-tl-cols one-ag-dia-cols">' +
+      '<div class="one-ag-kday-col' + (ds===hojeStr?' today':'') + '" data-date="' + ds + '" style="flex:1;min-width:0">' +
+        '<div class="one-ag-kday-body" data-date="' + ds + '" onclick="oneAgClickSlot(event,this)">' +
+          gridLines + cards +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  setTimeout(function(){ if (el.scrollTop < 10) el.scrollTop = 8*50-8; }, 50);
+  if (ds === hojeStr) oneAgRenderAgoraLinha(el);
+  oneInitDragDrop('one-ag-dia');
+}
+
+/* ── Visão MÊS ─────────────────────────────────────────────────── */
+function renderOneAgMes() {
+  var el    = document.getElementById('one-ag-mes');
+  var label = document.getElementById('one-ag-mes-label');
+  if (!el) return;
+
+  var compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
+  var hojeStr = new Date().toISOString().slice(0,10);
+
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var ref  = new Date(hoje.getFullYear(), hoje.getMonth() + oneAgMonthOffset, 1);
+  var ano  = ref.getFullYear();
+  var mes  = ref.getMonth();
+
+  var MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  if (label) label.textContent = MESES[mes] + ' ' + ano;
+
+  var primeiroDia = new Date(ano, mes, 1);
+  var ultimoDia   = new Date(ano, mes + 1, 0);
+  var startDow    = primeiroDia.getDay(); // 0=Dom
+  var offsetStart = startDow === 0 ? -6 : 1 - startDow; // recua até segunda
+  var startDate   = new Date(primeiroDia);
+  startDate.setDate(1 + offsetStart);
+
+  var DIAS_SEMANA = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+
+  var html = '<div class="one-ag-mes-grid">';
+  // Cabeçalho dias da semana
+  DIAS_SEMANA.forEach(function(d){ html += '<div class="one-ag-mes-dow">' + d + '</div>'; });
+
+  // Células do mês
+  var cur = new Date(startDate);
+  var maxIter = 42; // 6 semanas máximo
+  for (var i = 0; i < maxIter; i++) {
+    if (i > 0 && cur > ultimoDia && cur.getDay() === 1) break; // fim da última semana
+    var ds      = cur.toISOString().slice(0,10);
+    var doMes   = cur.getMonth() === mes;
+    var isHoje  = ds === hojeStr;
+    var eventos = compromissos.filter(function(c){ return c.data === ds; });
+
+    html += '<div class="one-ag-mes-cell' + (!doMes?' outro-mes':'') + (isHoje?' hoje':'') + '" onclick="oneAgGoToDia(\'' + ds + '\')">';
+    html += '<div class="one-ag-mes-num">' + cur.getDate() + '</div>';
+    if (eventos.length > 0) {
+      html += '<div class="one-ag-mes-dots">';
+      eventos.slice(0,3).forEach(function(ev){
+        var cat = oneAgCorCategoria(ev.tipo || '');
+        html += '<span class="one-ag-mes-dot" style="background:' + cat.cor + '" title="' + (ev.nome||'').replace(/"/g,'&quot;') + '"></span>';
+      });
+      if (eventos.length > 3) html += '<span class="one-ag-mes-dot-more">+' + (eventos.length-3) + '</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+    cur.setDate(cur.getDate() + 1);
+  }
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
+/* ── Drag & Drop ────────────────────────────────────────────────── */
+function oneInitDragDrop(containerId) {
+  var wrap = document.getElementById(containerId || 'one-ag-kanban');
+  if (!wrap) return;
+
+  var dragId   = null;
+  var dragDate = null;
+
+  wrap.querySelectorAll('.one-ag-kcard[draggable]').forEach(function(card) {
+    card.addEventListener('dragstart', function(e) {
+      dragId   = this.dataset.eventId;
+      dragDate = (this.closest('[data-date]') || {}).dataset && this.closest('[data-date]').dataset.date;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragId);
+      this.style.opacity = '0.45';
+    });
+    card.addEventListener('dragend', function() {
+      this.style.opacity = '';
+      wrap.querySelectorAll('.one-ag-kday-body').forEach(function(b){ b.classList.remove('drag-over'); });
+    });
+  });
+
+  wrap.querySelectorAll('.one-ag-kday-body').forEach(function(body) {
+    body.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      this.classList.add('drag-over');
+    });
+    body.addEventListener('dragleave', function(e) {
+      if (!this.contains(e.relatedTarget)) this.classList.remove('drag-over');
+    });
+    body.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      var id = e.dataTransfer.getData('text/plain') || dragId;
+      if (!id) return;
+      var novaData = this.dataset.date;
+      var rect = this.getBoundingClientRect();
+      var y = e.clientY - rect.top;
+      var novaHora = oneAgTopParaHora(y);
+      oneAgMoverEvento(id, novaData, novaHora);
+    });
+  });
+}
+
+function oneAgMoverEvento(eventId, novaData, novaHora) {
+  var lista = [];
+  try { lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
+  var idx = -1;
+  for (var i = 0; i < lista.length; i++) { if (lista[i].id === eventId) { idx = i; break; } }
+  if (idx < 0) return;
+  lista[idx].data = novaData;
+  lista[idx].hora = novaHora;
+  localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
+  renderOneAgendaPainel();
+  if (window._pinahRerender) window._pinahRerender.agenda();
 }
 
 /* Click num slot vazio do dia abre o modal com data+hora pré-preenchidas */

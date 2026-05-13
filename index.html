@@ -292,16 +292,23 @@
         <!-- Header kanban -->
         <div class="one-ag-kheader">
           <div class="one-ag-knav">
-            <button class="one-ag-nav-btn" onclick="oneAgNavegar(-1)" title="Semana anterior">‹</button>
+            <button class="one-ag-nav-btn" onclick="oneAgNavegar(-1)" title="Anterior">‹</button>
             <span class="one-ag-mes-label" id="one-ag-mes-label">—</span>
-            <button class="one-ag-nav-btn" onclick="oneAgNavegar(1)" title="Próxima semana">›</button>
+            <button class="one-ag-nav-btn" onclick="oneAgNavegar(1)" title="Próximo">›</button>
           </div>
-          <button class="one-tar-btn-nova" onclick="oneAgModalAbrir()">+ Novo agendamento</button>
+          <div class="one-ag-view-tabs">
+            <button class="one-ag-view-tab active" data-view="semana" onclick="oneAgSetView('semana')">Semana</button>
+            <button class="one-ag-view-tab" data-view="dia" onclick="oneAgSetView('dia')">Dia</button>
+            <button class="one-ag-view-tab" data-view="mes" onclick="oneAgSetView('mes')">Mês</button>
+          </div>
+          <button class="one-tar-btn-nova" onclick="oneAgModalAbrir()">+ Novo</button>
         </div>
 
-        <!-- Timeline semanal (00h-23h, scroll inicia em 08h) -->
+        <!-- Três visões — só uma visível por vez -->
         <div class="one-fin-content">
           <div id="one-ag-kanban" class="one-ag-tl-wrapper"></div>
+          <div id="one-ag-dia"    class="one-ag-tl-wrapper" hidden></div>
+          <div id="one-ag-mes"    class="one-ag-mes-wrapper" hidden></div>
         </div>
 
       </div>
