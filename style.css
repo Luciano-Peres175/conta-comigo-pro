@@ -2686,6 +2686,12 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
 
 /* Prompt desktop — 2/3 da coluna, centralizado */
 /* ── Pinah Chat — bolhas de conversa ──────────────────────── */
+/* [hidden] precisa de !important porque CSS de display específico sobrepõe
+   o padrão do browser (specificidade mais alta vence) */
+#pinah-welcome[hidden] { display: none !important; }
+#pinah-msgs[hidden]    { display: none !important; }
+#pinah-typing[hidden]  { display: none !important; }
+
 .one-chat-msgs {
   flex: 1;
   overflow-y: auto;
@@ -2765,6 +2771,14 @@ body:has(#screen-one.active) #main         { margin-left:0 !important; backgroun
   font-size: 12px;
   color: #7FA88E;
   font-style: italic;
+}
+/* Bolha inline de "digitando" (dentro do #pinah-msgs) */
+.pinah-typing-inline {
+  padding: 12px 16px;
+  min-width: 56px;
+}
+.pinah-typing-inline .one-chat-typing-dots {
+  margin: 0;
 }
 /* ── fim bolhas ─────────────────────────────────────────── */
 

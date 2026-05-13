@@ -3117,6 +3117,26 @@ function pinahGetContext() {
   };
 }
 
+/* Cria/remove a bolha de "digitando" dentro do #pinah-msgs (não elemento externo) */
+function pinahTypingShow() {
+  var msgs = document.getElementById('pinah-msgs');
+  if (!msgs) return;
+  var el = document.createElement('div');
+  el.id = 'pinah-typing-bubble';
+  el.className = 'pinah-bubble-wrap';
+  el.innerHTML =
+    '<img src="assets/icons/pinah-avatar.png" class="pinah-bubble-avatar" alt="Pinah">' +
+    '<div class="pinah-bubble pinah-bubble-pinah pinah-typing-inline">' +
+    '<div class="one-chat-typing-dots"><span></span><span></span><span></span></div>' +
+    '</div>';
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+function pinahTypingHide() {
+  var el = document.getElementById('pinah-typing-bubble');
+  if (el) el.remove();
+}
+
 async function pinahEnviar(texto) {
   texto = texto.trim();
   if (!texto) return;
@@ -3126,7 +3146,6 @@ async function pinahEnviar(texto) {
 
   var welcome = document.getElementById('pinah-welcome');
   var msgs    = document.getElementById('pinah-msgs');
-  var typing  = document.getElementById('pinah-typing');
 
   if (welcome) welcome.hidden = true;
   if (msgs)    msgs.hidden    = false;
@@ -3136,9 +3155,8 @@ async function pinahEnviar(texto) {
   // 2. Swap pro painel Chat (se não estiver nele)
   swapToCenter('chat');
 
-  // 3. Mostra indicador digitando
-  if (typing) typing.hidden = false;
-  if (msgs)   msgs.scrollTop = msgs.scrollHeight;
+  // 3. Bolha de "digitando" no fluxo das mensagens
+  pinahTypingShow();
 
   try {
     const resp = await fetch('/api/pinah-chat', {
@@ -3152,8 +3170,8 @@ async function pinahEnviar(texto) {
 
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
 
-    // 4. Cria bolha da Pinah vazia — vai sendo preenchida pelo stream
-    if (typing) typing.hidden = true;
+    // 4. Remove "digitando" e cria bolha real (vai sendo preenchida pelo stream)
+    pinahTypingHide();
     var bubble = pinahAddBubble('pinah', '');
     var fullText = '';
 
@@ -3189,7 +3207,7 @@ async function pinahEnviar(texto) {
     }
 
   } catch (err) {
-    if (typing) typing.hidden = true;
+    pinahTypingHide();
     pinahAddBubble('pinah', '⚠️ Não consegui conectar com a Pinah. Verifique a conexão e tente de novo.');
     console.error('[pinahEnviar]', err);
   }
