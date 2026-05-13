@@ -3045,6 +3045,18 @@ function oneNovaTarefa() {
   setTimeout(function(){ var el = document.getElementById('one-tar-nome'); if(el) el.focus(); }, 200);
 }
 
+/* Hint do prompt global — clica numa sugestão e preenche o input */
+function oneHintClick(el) {
+  if (!el) return;
+  var texto = (el.textContent || '').replace(/^[\s"'“”]+|[\s"'“”]+$/g, '');
+  var input = document.getElementById('one-input-desk');
+  if (input) {
+    input.value = texto;
+    input.focus();
+    try { input.setSelectionRange(texto.length, texto.length); } catch(e){}
+  }
+}
+
 /* ── Estado dos filtros de Tarefas ── */
 var oneTarFilterStatus = 'todos';
 var oneTarFilterPrio   = 'qualquer';

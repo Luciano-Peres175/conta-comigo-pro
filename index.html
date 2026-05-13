@@ -407,30 +407,51 @@
       <!-- Traço fino delimitando a área de trabalho -->
       <div class="one-area-divider"></div>
 
-      <!-- Prompt da Pinah GLOBAL — comum a todos os módulos -->
-      <div class="one-prompt-outer one-prompt-global">
-        <div class="one-prompt-card">
-          <textarea class="one-prompt-input" id="one-input-desk" rows="1" placeholder="O que você quer capturar ou lembrar?"></textarea>
-          <button class="one-prompt-btn" onclick="oneAnexar()">
-            <div class="one-prompt-btn-glow"></div>
-            <img src="assets/icons/ic-anexar.png" alt="anexar">
-          </button>
-          <button class="one-prompt-btn" onclick="oneVoz()">
-            <div class="one-prompt-btn-glow"></div>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round" style="position:relative;z-index:1">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-              <line x1="12" y1="19" x2="12" y2="23"/>
-              <line x1="8" y1="23" x2="16" y2="23"/>
-            </svg>
-          </button>
-          <div class="one-send-wrap">
-            <div class="one-send-glow"></div>
-            <button class="one-send-btn" onclick="oneEnviar()">
-              <img src="assets/icons/ic-enviar.png" alt="enviar">
+      <!-- Linha do prompt global: avatar Pinah | prompt | sugestões -->
+      <div class="one-prompt-row-global">
+
+        <!-- Avatar da Pinah (esquerda) -->
+        <div class="one-prompt-avatar-wrap" title="Pinah">
+          <div class="one-prompt-avatar-glow"></div>
+          <img src="assets/icons/pinah-avatar.png" class="one-prompt-avatar" alt="Pinah" onerror="this.src='assets/icons/pinah-mascote.png'">
+        </div>
+
+        <!-- Prompt da Pinah GLOBAL — comum a todos os módulos -->
+        <div class="one-prompt-outer one-prompt-global">
+          <div class="one-prompt-card">
+            <textarea class="one-prompt-input" id="one-input-desk" rows="1" placeholder="O que você quer capturar ou lembrar?"></textarea>
+            <button class="one-prompt-btn" onclick="oneAnexar()">
+              <div class="one-prompt-btn-glow"></div>
+              <img src="assets/icons/ic-anexar.png" alt="anexar">
             </button>
+            <button class="one-prompt-btn" onclick="oneVoz()">
+              <div class="one-prompt-btn-glow"></div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9090A0" stroke-width="2" stroke-linecap="round" style="position:relative;z-index:1">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+            </button>
+            <div class="one-send-wrap">
+              <div class="one-send-glow"></div>
+              <button class="one-send-btn" onclick="oneEnviar()">
+                <img src="assets/icons/ic-enviar.png" alt="enviar">
+              </button>
+            </div>
           </div>
         </div>
+
+        <!-- Sugestões / orientações (direita) -->
+        <div class="one-prompt-hints">
+          <div class="one-prompt-hints-title">peça à Pinah</div>
+          <ul class="one-prompt-hints-list">
+            <li onclick="oneHintClick(this)">"Maria amanhã 14h R$ 180"</li>
+            <li onclick="oneHintClick(this)">"Comprar material casa, alta"</li>
+            <li onclick="oneHintClick(this)">"Recebi R$ 280 da Maria hoje"</li>
+          </ul>
+        </div>
+
       </div>
 
       </div><!-- /one-desktop-main -->
