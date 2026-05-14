@@ -661,13 +661,15 @@
   function openDrawer() {
     document.getElementById('sidebar').classList.add('drawer-open');
     document.getElementById('drawer-overlay').classList.add('open');
-    document.getElementById('hamburger').classList.add('open');
+    var h = document.getElementById('hamburger');
+    if (h) h.classList.add('open');
   }
 
   function closeDrawer() {
     document.getElementById('sidebar').classList.remove('drawer-open');
     document.getElementById('drawer-overlay').classList.remove('open');
-    document.getElementById('hamburger').classList.remove('open');
+    var h = document.getElementById('hamburger');
+    if (h) h.classList.remove('open');
   }
 
   /* ── Data de hoje ───────────────────────────────────────────── */
@@ -5460,6 +5462,27 @@ function renderOneTarefasMobile() {
       + '<span class="one-tar-mob-prio ' + cls + '">' + prio + '</span>'
       + '</div>';
   }).join('');
+}
+
+/* Nova área no mobile — campo inline (sem prompt()) */
+function oneTarMobNovaArea() {
+  var wrap  = document.getElementById('one-tar-mob-area-wrap');
+  var input = document.getElementById('one-tar-mob-area-input');
+  if (!wrap) return;
+  wrap.style.display = 'flex';
+  if (input) { input.value = ''; input.focus(); }
+}
+
+function oneTarMobAreaSalvar() {
+  var wrap  = document.getElementById('one-tar-mob-area-wrap');
+  var input = document.getElementById('one-tar-mob-area-input');
+  var nome  = input ? input.value.trim() : '';
+  if (nome) {
+    var areas = oneTarGetAreas();
+    if (areas.indexOf(nome) === -1) { areas.push(nome); oneTarSaveAreas(areas); }
+    if (typeof renderOneTarefasPainel === 'function') renderOneTarefasPainel();
+  }
+  if (wrap) wrap.style.display = 'none';
 }
 
 function oneTarMobToggle(id, btn) {

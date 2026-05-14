@@ -194,7 +194,7 @@
         <div class="one-agenda-wrap">
           <div class="one-agenda-nav">
             <span class="one-agenda-nav-period" id="one-ag-period">—</span>
-            <button class="one-agenda-add" onclick="go('agenda')">+ Ver tudo / Novo</button>
+            <button class="one-agenda-add" onclick="oneAgModalAbrir()">+ Novo</button>
           </div>
           <div class="one-agenda-week" id="one-ag-week">
             <!-- JS renderiza as 7 colunas -->
@@ -226,7 +226,7 @@
           <p class="one-fin-section-title">Lançamentos recentes</p>
           <div class="one-fin-list" id="one-fin-list"></div>
           <div class="one-fin-add-row">
-            <button onclick="go('receitas')">+ Lançar receita / despesa</button>
+            <button onclick="oneAbrirLancamento()">+ Lançar receita / despesa</button>
           </div>
         </div>
       </div>
@@ -236,7 +236,15 @@
         <div class="one-tar-mob-wrap">
           <div class="one-tar-mob-nav">
             <span class="one-tar-mob-title">📋 Tarefas pendentes</span>
-            <button class="one-agenda-add" onclick="oneTarModalAbrir()">+ Nova</button>
+            <div style="display:flex;gap:6px">
+              <button class="one-agenda-add" style="background:transparent;color:#5C8870;border:1.5px solid rgba(92,136,112,.40)" onclick="oneTarMobNovaArea()">+ Área</button>
+              <button class="one-agenda-add" onclick="oneTarModalAbrir()">+ Tarefa</button>
+            </div>
+          </div>
+          <!-- Campo inline nova área (aparece ao clicar "+ Área") -->
+          <div id="one-tar-mob-area-wrap" style="display:none;padding:0 0 8px;gap:6px;align-items:center;flex-shrink:0;display:none">
+            <input id="one-tar-mob-area-input" class="one-field" placeholder="Nome da área..." style="flex:1;margin:0;font-size:13px;padding:9px 12px">
+            <button class="one-agenda-add" onclick="oneTarMobAreaSalvar()" style="flex-shrink:0">OK</button>
           </div>
           <div class="one-tar-mob-list" id="one-tar-mob-list">
             <!-- JS renderiza -->

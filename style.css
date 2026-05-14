@@ -2385,8 +2385,10 @@
 
 
 /* ── Modais internos do screen-one ─────────────────────────── */
-.one-modal-overlay{display:none;position:absolute;inset:0;background:rgba(30,20,50,.50);z-index:200;align-items:flex-end;justify-content:center;}
-.one-modal-overlay.open{display:flex;}
+.one-modal-overlay{display:none;position:fixed;inset:0;background:rgba(30,20,50,.50);z-index:200;align-items:flex-end;justify-content:center;}
+.one-modal-overlay.open{display:flex;z-index:10000;}
+/* Modais externos também acima de screen-one */
+#modal-novo-comp,#modal-ia,#modal-nota,#modal-config,#modal-importar,#modal-em-breve{z-index:10000 !important;}
 .one-modal{background:#F4F1EA;border-radius:24px 24px 0 0;width:100%;padding:22px 18px 32px;max-height:82%;overflow-y:auto;}
 .one-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
 .one-modal-title{font-size:16px;font-weight:600;color:#2D2D2D;font-family:system-ui,-apple-system,sans-serif;}
