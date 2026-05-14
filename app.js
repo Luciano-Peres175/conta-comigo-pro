@@ -3711,24 +3711,54 @@ async function supaSync() {
 
 /* Insere/atualiza um item no Supabase (upsert por id) */
 async function supaUpsert(localKey, item) {
-  if (!window.supa) { console.warn('[supaUpsert] window.supa nulo — abortado'); return; }
-  if (!window.authUser) { console.warn('[supaUpsert] window.authUser nulo — abortado'); return; }
+  if (!window.supa) {
+    console.warn('[supaUpsert] window.supa nulo — abortado');
+    if (typeof oneToast === 'function') oneToast('⚠ Supabase não inicializado');
+    return;
+  }
+  if (!window.authUser) {
+    console.warn('[supaUpsert] window.authUser nulo — abortado');
+    if (typeof oneToast === 'function') oneToast('⚠ Usuário não autenticado');
+    return;
+  }
   var tabela = SUPA_TABLES[localKey];
-  if (!tabela) { console.warn('[supaUpsert] tabela desconhecida para localKey:', localKey); return; }
+  if (!tabela) {
+    console.warn('[supaUpsert] tabela desconhecida para localKey:', localKey);
+    if (typeof oneToast === 'function') oneToast('⚠ Tabela desconhecida: ' + localKey);
+    return;
+  }
   try {
     var row = _supaMapToRow(localKey, item, window.authUser.id);
     console.log('[supaUpsert] enviando →', tabela, row);
     var result = await window.supa.from(tabela).upsert(row, { onConflict: 'id' });
     if (result.error) {
       console.error('[supaUpsert] ERRO na tabela', tabela, ':', result.error);
+      if (typeof oneToast === 'function') oneToast('⚠ Erro sync: ' + (result.error.message || result.error.code || 'desconhecido'));
     } else {
       console.log('[supaUpsert] OK —', tabela, row.id);
     }
   } catch(e) {
     console.error('[supaUpsert] Exceção:', e);
+    if (typeof oneToast === 'function') oneToast('⚠ Exceção sync: ' + e.message);
   }
 }
 window.supaUpsert = supaUpsert;
+
+async function supaResync() {
+  if (typeof supaSync !== 'function') return;
+  if (typeof oneToast === 'function') oneToast('Sincronizando…');
+  try {
+    await supaSync();
+    if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+    if (typeof renderOneFinanceiro === 'function') renderOneFinanceiro();
+    if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
+    if (typeof renderOneTarefasPainel === 'function') renderOneTarefasPainel();
+    if (typeof oneToast === 'function') oneToast('✓ Sincronizado');
+  } catch(e) {
+    if (typeof oneToast === 'function') oneToast('⚠ Erro ao sincronizar');
+  }
+}
+window.supaResync = supaResync;
 
 /* Remove um item do Supabase pelo id */
 async function supaDelete(localKey, id) {
@@ -5789,6 +5819,8 @@ function oneSalvarLancamento() {
   else { item.descricao = nome; }
   lista.push(item);
   localStorage.setItem(oneU(chave), JSON.stringify(lista));
+  /* diagnóstico temporário — remove após confirmar sync */
+  oneToast('supa:' + !!window.supa + ' user:' + !!window.authUser + ' fn:' + (typeof supaUpsert));
   if (typeof supaUpsert === 'function') supaUpsert(chave, item);
   oneFecharModal('lancamento');
   renderOneFinanceiro();
