@@ -2408,7 +2408,9 @@
 .one-fin-add-row button{background:#5C8870;color:#fff;border:none;border-radius:13px;font-size:12px;font-weight:600;padding:10px;cursor:pointer;box-shadow:0 3px 10px rgba(92,136,112,.30);width:100%;}
 
 /* ── Screen-one: mobile — overlay sobre o app antigo ─────────── */
-body:has(#screen-one.active) #sidebar      { display:none !important; }
+/* A sidebar só vira drawer no mobile (regra de @media max-width:767px já existe).
+   No desktop ela aparece sempre — incluindo dentro do screen-one — pra dar acesso
+   a Configurações / Sair / Nossa história. */
 body:has(#screen-one.active) #bottom-nav   { display:none !important; }
 body:has(#screen-one.active) #main         { margin-left:0 !important; background:#F4F1EA; }
 
