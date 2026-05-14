@@ -2407,12 +2407,34 @@
 .one-fin-add-row{padding:8px 0 2px;flex-shrink:0;}
 .one-fin-add-row button{background:#5C8870;color:#fff;border:none;border-radius:13px;font-size:12px;font-weight:600;padding:10px;cursor:pointer;box-shadow:0 3px 10px rgba(92,136,112,.30);width:100%;}
 
+/* ── Tarefas mobile (4º slide) ───────────────────────────────── */
+.one-tar-mob-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:0 10px 6px;}
+.one-tar-mob-nav{display:flex;align-items:center;justify-content:space-between;padding:4px 0 8px;flex-shrink:0;}
+.one-tar-mob-title{font-size:11px;font-weight:600;color:#5A5060;letter-spacing:.2px;}
+.one-tar-mob-list{flex:1;overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:6px;}
+.one-tar-mob-list::-webkit-scrollbar{display:none;}
+.one-tar-mob-item{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:10px 12px;box-shadow:0 1px 6px rgba(92,136,112,.10);}
+.one-tar-mob-check{width:18px;height:18px;border-radius:50%;border:2px solid #C8BFD8;background:#fff;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s;}
+.one-tar-mob-check.done{background:#5C8870;border-color:#5C8870;}
+.one-tar-mob-info{flex:1;min-width:0;}
+.one-tar-mob-nome{font-size:13px;font-weight:500;color:#3A3050;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.one-tar-mob-nome.done{text-decoration:line-through;color:#aaa;}
+.one-tar-mob-area{font-size:10px;color:#A090B8;margin-top:1px;}
+.one-tar-mob-prio{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600;flex-shrink:0;}
+.one-tar-mob-prio.alta{background:#FFF0F0;color:#D95757;}
+.one-tar-mob-prio.normal{background:#F0F4FF;color:#5573C2;}
+.one-tar-mob-prio.baixa{background:#F0FBF5;color:#5C8870;}
+.one-tar-mob-empty{text-align:center;padding:32px 16px;color:#C0B8D0;font-size:13px;}
+
 /* ── Screen-one: mobile — overlay sobre o app antigo ─────────── */
 /* A sidebar só vira drawer no mobile (regra de @media max-width:767px já existe).
    No desktop ela aparece sempre — incluindo dentro do screen-one — pra dar acesso
    a Configurações / Sair / Nossa história. */
 body:has(#screen-one.active) #bottom-nav   { display:none !important; }
 body:has(#screen-one.active) #main         { margin-left:0 !important; background:#F4F1EA; }
+/* Fix: drawer abre sobre screen-one (z-index 9999) no mobile */
+body:has(#screen-one.active) #sidebar.drawer-open { z-index:10001 !important; transform:translateX(0) !important; }
+body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 
 #screen-one.active {
   display: flex;

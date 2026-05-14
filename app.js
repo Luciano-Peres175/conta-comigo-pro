@@ -4235,7 +4235,7 @@ function oneTarInlineSave(el) {
   var nome = input ? input.value.trim() : '';
   if (!nome) { oneTarHideInline(el); return; }
   var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
-  lista.push({ id: Date.now().toString(), nome: nome, area: area, prioridade: 'Normal', concluida: false, criado: new Date().toISOString() });
+  lista.push({ id: crypto.randomUUID(), nome: nome, area: area, prioridade: 'Normal', concluida: false, criado: new Date().toISOString() });
   localStorage.setItem(oneU('tarefas'), JSON.stringify(lista));
   if (typeof oneToast === 'function') oneToast('✓ Tarefa adicionada!');
   renderOneTarefasPainel();
@@ -5350,7 +5350,52 @@ function renderOneFinanceiro() {
   });
 }
 
-/* Dots — atualiza ao rolar entre telas */
+/* ── Tarefas mobile (4º slide) ───────────────────────────────── */
+function renderOneTarefasMobile() {
+  var el = document.getElementById('one-tar-mob-list');
+  if (!el) return;
+  var tarefas = [];
+  try { tarefas = JSON.parse(localStorage.getItem(oneU('tarefas')) || '[]'); } catch(e) {}
+  var pendentes = tarefas.filter(function(t) { return !t.concluida && t.status !== 'concluida'; });
+  if (!pendentes.length) {
+    el.innerHTML = '<div class="one-tar-mob-empty">Nenhuma tarefa pendente 🎉</div>';
+    return;
+  }
+  var prioBadge = { 'Alta':'alta', 'Normal':'normal', 'Baixa':'baixa' };
+  el.innerHTML = pendentes.slice(0, 20).map(function(t) {
+    var prio = t.prioridade || 'Normal';
+    var cls  = prioBadge[prio] || 'normal';
+    return '<div class="one-tar-mob-item">'
+      + '<div class="one-tar-mob-check" onclick="oneTarMobToggle(\'' + t.id + '\',this)">'
+      + '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="opacity:0" id="ck-' + t.id + '">'
+      + '<polyline points="1.5 5 4 7.5 8.5 2" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+      + '</svg></div>'
+      + '<div class="one-tar-mob-info">'
+      + '<div class="one-tar-mob-nome">' + (t.titulo || t.nome || '—') + '</div>'
+      + '<div class="one-tar-mob-area">' + (t.area || '') + '</div>'
+      + '</div>'
+      + '<span class="one-tar-mob-prio ' + cls + '">' + prio + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+function oneTarMobToggle(id, btn) {
+  var tarefas = [];
+  try { tarefas = JSON.parse(localStorage.getItem(oneU('tarefas')) || '[]'); } catch(e) {}
+  var idx = tarefas.findIndex(function(t){ return t.id === id; });
+  if (idx === -1) return;
+  tarefas[idx].concluida = true;
+  tarefas[idx].status = 'concluida';
+  localStorage.setItem(oneU('tarefas'), JSON.stringify(tarefas));
+  if (typeof supaUpsert === 'function') supaUpsert('tarefas', tarefas[idx]);
+  /* Anima o check e some o item */
+  btn.classList.add('done');
+  var ck = document.getElementById('ck-' + id);
+  if (ck) ck.style.opacity = '1';
+  setTimeout(function() { renderOneTarefasMobile(); }, 600);
+}
+
+/* Dots — atualiza ao rolar entre telas e dispara render do slide ativo */
 (function() {
   function setup() {
     var wrap = document.getElementById('one-screens-wrap');
@@ -5359,6 +5404,8 @@ function renderOneFinanceiro() {
     wrap.addEventListener('scroll', function() {
       var idx = Math.round(wrap.scrollLeft / wrap.offsetWidth);
       dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+      /* Render lazy do 4º painel (tarefas) */
+      if (idx === 3) renderOneTarefasMobile();
     }, { passive: true });
   }
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', setup) : setup();
@@ -5563,6 +5610,7 @@ function renderOneDesktop() {
       renderOneGreeting();
       renderOneAgenda();
       renderOneFinanceiro();
+      if (typeof renderOneTarefasMobile === 'function') renderOneTarefasMobile();
       renderOneDesktop();
       return;
     }
@@ -5612,7 +5660,7 @@ function oneSalvarLancamento() {
   if (!nome || !valor || !data) { oneToast('Preencha descrição, valor e data.'); return; }
   var chave = _lancTipo === 'receita' ? 'receitas' : 'despesas';
   var lista = []; try { lista = JSON.parse(localStorage.getItem(chave) || '[]'); } catch(e){}
-  var item = { id: 'one-' + Date.now(), data: data, valor: valor, status: 'Pago', categoria: cat };
+  var item = { id: crypto.randomUUID(), data: data, valor: valor, status: 'Pago', categoria: cat };
   if (_lancTipo === 'receita') { item.nome = nome; item.tipo = cat; item.formaPagamento = 'Pix'; }
   else { item.descricao = nome; }
   lista.push(item);
@@ -6429,6 +6477,7 @@ function oneToast(msg) {
     renderOneGreeting();
     renderOneAgenda();
     renderOneFinanceiro();
+    if (typeof renderOneTarefasMobile === 'function') renderOneTarefasMobile();
     renderOneDesktop();
   }
   // Multi-tenant: exposto pra ser re-chamado após login (esconderTelaAuth)
