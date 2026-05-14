@@ -657,6 +657,7 @@
     const isOpen = document.getElementById('sidebar').classList.contains('drawer-open');
     isOpen ? closeDrawer() : openDrawer();
   }
+  window.toggleDrawer = toggleDrawer;
 
   function openDrawer() {
     document.getElementById('sidebar').classList.add('drawer-open');
@@ -664,6 +665,7 @@
     var h = document.getElementById('hamburger');
     if (h) h.classList.add('open');
   }
+  window.openDrawer = openDrawer;
 
   function closeDrawer() {
     document.getElementById('sidebar').classList.remove('drawer-open');
@@ -671,6 +673,7 @@
     var h = document.getElementById('hamburger');
     if (h) h.classList.remove('open');
   }
+  window.closeDrawer = closeDrawer;
 
   /* ── Data de hoje ───────────────────────────────────────────── */
   function renderDataHoje() {
@@ -1219,10 +1222,12 @@
     m.style.display = 'flex';
     renderIcons();
   }
+  window.abrirConfig = abrirConfig;
   function fecharConfig() {
     const m = document.getElementById('modal-config');
     if (m) m.style.display = 'none';
   }
+  window.fecharConfig = fecharConfig;
   function salvarConfig() {
     const impStr = document.getElementById('cfg-imposto').value;
     const imp = parseFloat(String(impStr).replace(',', '.'));
@@ -1241,6 +1246,7 @@
     atualizarHome();
     toast('Configurações salvas. Confirme o imposto sempre com seu contador.', 'success', { duration: 3500 });
   }
+  window.salvarConfig = salvarConfig;
 
   function mesNome() {
     return new Date().toLocaleDateString('pt-BR', { month: 'long' });
@@ -1786,7 +1792,7 @@
 
   function abrirMenuPinah()   { alert('Menu lateral Pinah — em breve.'); }
   function abrirTelaPinah()   { go('pinah'); renderPinahTopo(); }
-  function abrirConfigPinah() { alert('Configurações Pinah — em breve.'); }
+  function abrirConfigPinah() { abrirConfig(); }
 
   function renderPinahTopo() {
     const el = document.getElementById('psc-topo-text');
@@ -4206,15 +4212,20 @@ function swapToCenter(target) {
     if (c.dataset.panel === atualPanel) c.removeAttribute('hidden');
   });
 
-  // 4. Dispara render do novo painel se for o caso
-  if (target === 'agenda' && typeof renderOneAgendaPainel === 'function') {
-    renderOneAgendaPainel();
-  }
-  if (target === 'tarefas' && typeof renderOneTarefasPainel === 'function') {
-    renderOneTarefasPainel();
-  }
-  if (target === 'financeiro' && typeof renderOneFinanceiroPainel === 'function') {
-    renderOneFinanceiroPainel();
+  // 4. Dispara render do novo painel — com re-sync Supabase em background
+  var renderers = {
+    agenda:     function() { if (typeof renderOneAgendaPainel    === 'function') renderOneAgendaPainel(); },
+    tarefas:    function() { if (typeof renderOneTarefasPainel   === 'function') renderOneTarefasPainel(); },
+    financeiro: function() { if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel(); }
+  };
+
+  var renderFn = renderers[target];
+  if (renderFn) {
+    renderFn(); // mostra dados locais imediatamente
+    // Re-sync em background e re-renderiza quando chegar
+    if (typeof supaSync === 'function' && window.supa && window.authUser) {
+      supaSync().then(function() { renderFn(); }).catch(function(){});
+    }
   }
 }
 
@@ -5510,7 +5521,14 @@ function oneTarMobToggle(id, btn) {
     wrap.addEventListener('scroll', function() {
       var idx = Math.round(wrap.scrollLeft / wrap.offsetWidth);
       dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
-      /* Render lazy do 4º painel (tarefas) */
+      /* Render lazy + sync por painel */
+      if (idx === 2) {
+        /* Financeiro mobile: sync + render */
+        renderOneFinanceiro();
+        if (typeof supaSync === 'function' && window.supa && window.authUser) {
+          supaSync().then(function() { renderOneFinanceiro(); }).catch(function(){});
+        }
+      }
       if (idx === 3) renderOneTarefasMobile();
     }, { passive: true });
   }
@@ -5765,12 +5783,13 @@ function oneSalvarLancamento() {
   var cat   = (document.getElementById('lanc-cat').value   || '').trim() || 'Geral';
   if (!nome || !valor || !data) { oneToast('Preencha descrição, valor e data.'); return; }
   var chave = _lancTipo === 'receita' ? 'receitas' : 'despesas';
-  var lista = []; try { lista = JSON.parse(localStorage.getItem(chave) || '[]'); } catch(e){}
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(chave)) || '[]'); } catch(e){}
   var item = { id: crypto.randomUUID(), data: data, valor: valor, status: 'Pago', categoria: cat };
-  if (_lancTipo === 'receita') { item.nome = nome; item.tipo = cat; item.formaPagamento = 'Pix'; }
+  if (_lancTipo === 'receita') { item.nome = nome; item.tipo = cat; item.formaPagamento = getFormaPagamentoDefault(); }
   else { item.descricao = nome; }
   lista.push(item);
-  localStorage.setItem(chave, JSON.stringify(lista));
+  localStorage.setItem(oneU(chave), JSON.stringify(lista));
+  if (typeof supaUpsert === 'function') supaUpsert(chave, item);
   oneFecharModal('lancamento');
   renderOneFinanceiro();
   oneToast(_lancTipo === 'receita' ? '✓ Receita salva!' : '✓ Despesa salva!');
