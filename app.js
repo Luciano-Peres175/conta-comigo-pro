@@ -204,7 +204,7 @@
     if (so) so.classList.remove('active');
   }
 
-  function esconderTelaAuth() {
+  async function esconderTelaAuth() {
     const a = document.getElementById('auth-screen');
     if (a) a.style.display = 'none';
     const app = document.getElementById('app');
@@ -231,6 +231,11 @@
         window.oneOnboardingStart();
         return;
       }
+    }
+
+    /* Supabase sync: puxa todos os dados do usuário antes de renderizar */
+    if (typeof supaSync === 'function') {
+      try { await supaSync(); } catch(e) { console.warn('[esconderTelaAuth] supaSync falhou:', e); }
     }
 
     /* Multi-tenant: agora que sabemos quem é o user, inicializa demo (se primeira vez)
@@ -2195,6 +2200,7 @@
       const idx = lista.findIndex(c => c.id === editandoCompromissoId);
       if (idx >= 0) {
         lista[idx] = { ...lista[idx], data, hora, nome, descricao: nome, tipo, duracao: dur, valor, status };
+        supaUpsert('compromissos', lista[idx]);
       }
       localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
       editandoCompromissoId = null;
@@ -2206,8 +2212,10 @@
       toast('Compromisso atualizado!', 'success');
       return;
     }
-    lista.push({ id: uid(), data, hora, nome, descricao: nome, tipo, duracao: dur, valor, status, realizado: false });
+    const novoComp = { id: uid(), data, hora, nome, descricao: nome, tipo, duracao: dur, valor, status, realizado: false };
+    lista.push(novoComp);
     localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
+    supaUpsert('compromissos', novoComp);
     document.getElementById('c-nome').value  = '';
     document.getElementById('c-valor').value = '';
     document.getElementById('c-hora').value  = '';
@@ -2243,6 +2251,7 @@
     localStorage.setItem(oneU('compromissos'), JSON.stringify(
       JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]').filter(c => c.id !== id)
     ));
+    supaDelete('compromissos', id);
     if (editandoCompromissoId === id) {
       editandoCompromissoId = null;
       fecharModalNovoComp();
@@ -2676,13 +2685,16 @@
       // Edicao
       notas[idx] = { ...notas[idx], titulo, categoria, paciente, conteudo, tags, dataModificacao: agora };
       setNotas(notas);
+      supaUpsert('notas_cerebro', notas[idx]);
       fecharModalNota();
       renderCerebro();
       toast('Nota atualizada.', 'success');
     } else {
       // Nova
-      notas.push({ id, titulo, categoria, paciente, conteudo, tags, data: agora, dataModificacao: agora });
+      const novaNota = { id, titulo, categoria, paciente, conteudo, tags, data: agora, criadoEm: agora, dataModificacao: agora };
+      notas.push(novaNota);
       setNotas(notas);
+      supaUpsert('notas_cerebro', novaNota);
       fecharModalNota();
       renderCerebro();
       toast('Nota criada com sucesso.', 'success');
@@ -2703,6 +2715,7 @@
     // Snapshot para desfazer
     const snapshot = { ...nota };
     setNotas(notas.filter(n => n.id !== id));
+    supaDelete('notas_cerebro', id);
     renderCerebro();
     toast(
       'Nota "' + (nota.titulo || 'sem título').slice(0, 40) + '" excluída',
@@ -2713,6 +2726,7 @@
           const arr = getNotas();
           arr.push(snapshot);
           setNotas(arr);
+          supaUpsert('notas_cerebro', snapshot);
           renderCerebro();
           toast('Nota restaurada.', 'success', { duration: 2400 });
         },
@@ -3499,15 +3513,17 @@ function pinahCriarNota(input) {
   var store = _pinahGetSet('notas_cerebro');
   var lista = store.get();
   var novo = {
-    id:        String(Date.now()),
+    id:        (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
     titulo:    input.titulo    || 'Nota importada',
     conteudo:  input.conteudo  || '',
     categoria: input.categoria || 'artigos',
     tags:      Array.isArray(input.tags) ? input.tags : [],
-    criadoEm:  new Date().toISOString()
+    criadoEm:  new Date().toISOString(),
+    dataModificacao: new Date().toISOString()
   };
   lista.push(novo);
   store.set(lista);
+  supaUpsert('notas_cerebro', novo);
   // Re-render do Segundo Cérebro se estiver visível
   if (typeof renderCerebro === 'function') renderCerebro();
   if (typeof renderNotasCerebro === 'function') renderNotasCerebro();
@@ -3528,11 +3544,196 @@ function _pinahGetSet(chave) {
   };
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   CAMADA SUPABASE — sincronização local-first
+   Estratégia: localStorage imediato → async push/pull Supabase
+   ═══════════════════════════════════════════════════════════════════ */
+
+const SUPA_TABLES = {
+  receitas:       'receitas',
+  despesas:       'despesas',
+  despesas_fixas: 'despesas_fixas',
+  compromissos:   'compromissos',
+  tarefas:        'tarefas',
+  notas_cerebro:  'notas'
+};
+
+/* Mapeia item localStorage → row Supabase */
+function _supaMapToRow(localKey, item, userId) {
+  var base = { user_id: userId };
+  switch (localKey) {
+    case 'receitas':
+    case 'despesas':
+      return Object.assign(base, {
+        id:              item.id,
+        nome:            item.nome || item.descricao || '',
+        valor:           item.valor || 0,
+        data:            item.data || new Date().toISOString().slice(0,10),
+        categoria:       item.categoria || '',
+        tipo:            item.tipo || (localKey === 'receitas' ? 'receita' : 'despesa'),
+        status:          item.status || (localKey === 'receitas' ? 'pendente' : 'pago'),
+        forma_pagamento: item.forma_pagamento || ''
+      });
+    case 'compromissos':
+      return Object.assign(base, {
+        id:        item.id,
+        nome:      item.nome || item.descricao || '',
+        descricao: item.descricao || item.nome || '',
+        data:      item.data || '',
+        hora:      item.hora || '',
+        tipo:      item.tipo || 'atendimento',
+        duracao:   item.duracao || 60,
+        valor:     item.valor || null,
+        status:    item.status || 'agendado',
+        realizado: item.realizado || false
+      });
+    case 'tarefas':
+      return Object.assign(base, {
+        id:         item.id,
+        titulo:     item.titulo || item.nome || '',
+        area:       item.area || 'Geral',
+        prioridade: (item.prioridade || 'normal').toLowerCase(),
+        prazo:      item.prazo || item.data || null,
+        status:     item.concluida ? 'concluida' : (item.status || 'aberta')
+      });
+    case 'notas_cerebro':
+      return Object.assign(base, {
+        id:         item.id,
+        titulo:     item.titulo || '',
+        conteudo:   item.conteudo || '',
+        categoria:  item.categoria || 'outros',
+        paciente:   item.paciente || '',
+        tags:       Array.isArray(item.tags) ? item.tags : [],
+        created_at: item.criadoEm || item.data || new Date().toISOString(),
+        updated_at: item.dataModificacao || new Date().toISOString()
+      });
+    default:
+      return Object.assign(base, item);
+  }
+}
+
+/* Mapeia row Supabase → item localStorage */
+function _supaMapFromRow(localKey, row) {
+  switch (localKey) {
+    case 'receitas':
+    case 'despesas':
+      return {
+        id:              row.id,
+        nome:            row.nome || '',
+        descricao:       row.nome || '',
+        valor:           row.valor || 0,
+        data:            row.data || '',
+        categoria:       row.categoria || '',
+        tipo:            row.tipo || localKey.slice(0,-1),
+        status:          row.status || '',
+        forma_pagamento: row.forma_pagamento || '',
+        criadoEm:        row.created_at || ''
+      };
+    case 'compromissos':
+      return {
+        id:        row.id,
+        nome:      row.nome || '',
+        descricao: row.descricao || row.nome || '',
+        data:      row.data || '',
+        hora:      row.hora || '',
+        tipo:      row.tipo || 'atendimento',
+        duracao:   row.duracao || 60,
+        valor:     row.valor || null,
+        status:    row.status || 'agendado',
+        realizado: row.realizado || false
+      };
+    case 'tarefas':
+      return {
+        id:         row.id,
+        titulo:     row.titulo || '',
+        nome:       row.titulo || '',
+        area:       row.area || 'Geral',
+        prioridade: row.prioridade || 'normal',
+        prazo:      row.prazo || null,
+        data:       row.prazo || null,
+        status:     row.status || 'aberta',
+        concluida:  row.status === 'concluida',
+        criadoEm:   row.criado_em || ''
+      };
+    case 'notas_cerebro':
+      return {
+        id:              row.id,
+        titulo:          row.titulo || '',
+        conteudo:        row.conteudo || '',
+        categoria:       row.categoria || 'outros',
+        paciente:        row.paciente || '',
+        tags:            Array.isArray(row.tags) ? row.tags : [],
+        data:            row.created_at || '',
+        criadoEm:        row.created_at || '',
+        dataModificacao: row.updated_at || ''
+      };
+    default:
+      return row;
+  }
+}
+
+/* Busca todos os dados do Supabase e popula localStorage do usuário atual */
+async function supaSync() {
+  if (!window.supa || !window.authUser) return;
+  var userId = window.authUser.id;
+  var prefix = 'u_' + userId + '_';
+  var localKeys = Object.keys(SUPA_TABLES);
+  try {
+    await Promise.all(localKeys.map(async function(localKey) {
+      var tabela = SUPA_TABLES[localKey];
+      try {
+        var result = await window.supa.from(tabela).select('*').eq('user_id', userId);
+        if (result.error) {
+          console.warn('[supaSync] Erro na tabela', tabela, result.error.message);
+          return;
+        }
+        var rows = result.data || [];
+        var itens = rows.map(function(row) { return _supaMapFromRow(localKey, row); });
+        localStorage.setItem(prefix + localKey, JSON.stringify(itens));
+        console.log('[supaSync]', tabela, '→', itens.length, 'itens');
+      } catch(e) {
+        console.warn('[supaSync] Exceção na tabela', tabela, e);
+      }
+    }));
+    console.log('[supaSync] Sync completo para userId:', userId);
+  } catch(e) {
+    console.error('[supaSync] Erro geral:', e);
+  }
+}
+
+/* Insere/atualiza um item no Supabase (upsert por id) */
+async function supaUpsert(localKey, item) {
+  if (!window.supa || !window.authUser) return;
+  var tabela = SUPA_TABLES[localKey];
+  if (!tabela) return;
+  try {
+    var row = _supaMapToRow(localKey, item, window.authUser.id);
+    var result = await window.supa.from(tabela).upsert(row, { onConflict: 'id' });
+    if (result.error) console.warn('[supaUpsert]', tabela, result.error.message);
+  } catch(e) {
+    console.warn('[supaUpsert] Exceção:', e);
+  }
+}
+
+/* Remove um item do Supabase pelo id */
+async function supaDelete(localKey, id) {
+  if (!window.supa || !window.authUser) return;
+  var tabela = SUPA_TABLES[localKey];
+  if (!tabela) return;
+  try {
+    var result = await window.supa.from(tabela).delete()
+      .eq('id', id).eq('user_id', window.authUser.id);
+    if (result.error) console.warn('[supaDelete]', tabela, id, result.error.message);
+  } catch(e) {
+    console.warn('[supaDelete] Exceção:', e);
+  }
+}
+
 function pinahCriarCompromisso(input) {
   var store = _pinahGetSet('compromissos');
   var lista = store.get();
   var novo = {
-    id:        String(Date.now()),
+    id:        (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
     nome:      input.nome      || '',
     descricao: input.nome      || '',
     data:      input.data      || new Date().toISOString().slice(0, 10),
@@ -3546,6 +3747,7 @@ function pinahCriarCompromisso(input) {
   };
   lista.push(novo);
   store.set(lista);
+  supaUpsert('compromissos', novo);
   // Re-render imediato dos painéis de agenda
   if (window._pinahRerender) window._pinahRerender.agenda();
 }
@@ -3554,17 +3756,19 @@ function pinahCriarTarefa(input) {
   var store = _pinahGetSet('tarefas');
   var lista = store.get();
   var novo = {
-    id:         String(Date.now()),
+    id:         (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
     titulo:     input.titulo     || '',
     nome:       input.titulo     || '',
     area:       input.area       || 'Geral',
     prioridade: input.prioridade || 'normal',
     prazo:      input.prazo      || null,
     status:     'aberta',
+    concluida:  false,
     criadoEm:   new Date().toISOString()
   };
   lista.push(novo);
   store.set(lista);
+  supaUpsert('tarefas', novo);
   // Re-render imediato do kanban de tarefas
   if (window._pinahRerender) window._pinahRerender.tarefas();
 }
@@ -3574,17 +3778,19 @@ function pinahRegistrarTransacao(input) {
   var store  = _pinahGetSet(chave);
   var lista  = store.get();
   var novo = {
-    id:        String(Date.now()),
+    id:        (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
     valor:     Number(input.valor) || 0,
     descricao: input.descricao || '',
     nome:      input.descricao || '',
     data:      input.data      || new Date().toISOString().slice(0, 10),
     categoria: input.categoria || (input.tipo === 'receita' ? 'atendimento' : 'outro'),
     tipo:      input.tipo      || 'despesa',
+    status:    input.tipo === 'receita' ? 'pendente' : 'pago',
     criadoEm:  new Date().toISOString()
   };
   lista.push(novo);
   store.set(lista);
+  supaUpsert(chave, novo);
   // Re-render imediato do painel financeiro
   if (window._pinahRerender) window._pinahRerender.financeiro();
 }
@@ -4230,9 +4436,13 @@ function oneFinSalvar() {
   if (!nome || !valor) { if (typeof oneToast==='function') oneToast('Preencha descrição e valor.','error'); return; }
   var key = oneFinTipoAtivo === 'receita' ? 'receitas' : 'despesas';
   var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key))||'[]'); } catch(e){}
-  lista.push({ id: Date.now().toString(), nome: nome, valor: valor, data: data, categoria: cat,
-               status: oneFinTipoAtivo==='receita' ? 'pendente' : 'pago', criado: new Date().toISOString() });
+  var novoFin = { id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(),
+    nome: nome, valor: valor, data: data, categoria: cat,
+    tipo: oneFinTipoAtivo,
+    status: oneFinTipoAtivo==='receita' ? 'pendente' : 'pago', criado: new Date().toISOString() };
+  lista.push(novoFin);
   localStorage.setItem(oneU(key), JSON.stringify(lista));
+  supaUpsert(key, novoFin);
   oneFinLimpar();
   if (typeof oneToast==='function') oneToast('✓ ' + (oneFinTipoAtivo==='receita'?'Receita':'Despesa') + ' salva!');
   if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
@@ -4262,8 +4472,12 @@ function oneTarSalvar() {
   var prio = (document.getElementById('one-tar-prio')||{}).value || 'Normal';
   var data = (document.getElementById('one-tar-data')||{}).value || '';
   var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
-  lista.push({ id: Date.now().toString(), nome: nome, area: area, prioridade: prio, data: data, concluida: false, criado: new Date().toISOString() });
+  var novaTar = { id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(),
+    titulo: nome, nome: nome, area: area, prioridade: prio, prazo: data || null, data: data,
+    concluida: false, status: 'aberta', criado: new Date().toISOString() };
+  lista.push(novaTar);
   localStorage.setItem(oneU('tarefas'), JSON.stringify(lista));
+  supaUpsert('tarefas', novaTar);
   oneTarLimpar();
   if (typeof oneToast==='function') oneToast('✓ Tarefa salva!');
   if (typeof renderOneTarefasPainel==='function') renderOneTarefasPainel();
@@ -4272,7 +4486,12 @@ function oneTarSalvar() {
 function oneTarToggle(id) {
   var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   var idx = lista.findIndex(function(t){ return t.id === id; });
-  if (idx !== -1) { lista[idx].concluida = !lista[idx].concluida; localStorage.setItem(oneU('tarefas'), JSON.stringify(lista)); }
+  if (idx !== -1) {
+    lista[idx].concluida = !lista[idx].concluida;
+    lista[idx].status = lista[idx].concluida ? 'concluida' : 'aberta';
+    localStorage.setItem(oneU('tarefas'), JSON.stringify(lista));
+    supaUpsert('tarefas', lista[idx]);
+  }
   if (typeof renderOneTarefasPainel==='function') renderOneTarefasPainel();
 }
 
@@ -4282,6 +4501,7 @@ function oneTarExcluir(id) {
   var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   lista = lista.filter(function(t){ return t.id !== id; });
   localStorage.setItem(oneU('tarefas'), JSON.stringify(lista));
+  supaDelete('tarefas', id);
   if (typeof oneToast==='function') oneToast('Tarefa excluída.');
   renderOneTarefasPainel();
 }
@@ -4342,11 +4562,22 @@ function oneTarModalSalvar() {
   if (id) {
     var idx = lista.findIndex(function(t){ return t.id === id; });
     if (idx !== -1) {
-      lista[idx] = Object.assign(lista[idx], { nome: nome, descricao: desc, area: area, prioridade: prio, concluida: status==='concluida', data: data });
+      lista[idx] = Object.assign(lista[idx], {
+        titulo: nome, nome: nome, descricao: desc, area: area, prioridade: prio,
+        concluida: status==='concluida', status: status, prazo: data || null, data: data
+      });
+      supaUpsert('tarefas', lista[idx]);
     }
     if (typeof oneToast==='function') oneToast('✓ Tarefa atualizada!');
   } else {
-    lista.push({ id: Date.now().toString(), nome: nome, descricao: desc, area: area, prioridade: prio, concluida: status==='concluida', data: data, criado: new Date().toISOString() });
+    var novaTarModal = {
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(),
+      titulo: nome, nome: nome, descricao: desc, area: area, prioridade: prio,
+      concluida: status==='concluida', status: status || 'aberta',
+      prazo: data || null, data: data, criado: new Date().toISOString()
+    };
+    lista.push(novaTarModal);
+    supaUpsert('tarefas', novaTarModal);
     if (typeof oneToast==='function') oneToast('✓ Tarefa criada!');
   }
   localStorage.setItem(oneU('tarefas'), JSON.stringify(lista));
@@ -4426,6 +4657,7 @@ function oneFinExcluir(key, id) {
   var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key))||'[]'); } catch(e){}
   lista = lista.filter(function(i){ return i.id !== id; });
   localStorage.setItem(oneU(key), JSON.stringify(lista));
+  supaDelete(key, id);
   if (typeof oneToast==='function') oneToast('✓ Lançamento excluído.');
   if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
   if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
