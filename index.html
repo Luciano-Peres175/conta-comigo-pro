@@ -127,30 +127,26 @@
        ===================================================== -->
   <section class="screen" id="screen-one">
 
-    <!-- Topbar fixa — SVG icons, Pinah neon -->
+    <!-- Topbar — SVG icons + avatar Pinah neon -->
     <div class="one-topbar">
       <div class="one-btn-wrap">
         <div class="one-btn-glow"></div>
         <button class="one-btn-side" onclick="typeof toggleDrawer==='function'?toggleDrawer():null" aria-label="Menu">
-          <!-- Hamburger SVG -->
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
             <rect x="3" y="5.5" width="16" height="2" rx="1" fill="#7A7080"/>
             <rect x="3" y="10" width="16" height="2" rx="1" fill="#7A7080"/>
             <rect x="3" y="14.5" width="16" height="2" rx="1" fill="#7A7080"/>
           </svg>
         </button>
       </div>
-      <div class="one-btn-pinah-wrap">
-        <div class="one-btn-pinah-glow"></div>
-        <button class="one-btn-pinah" onclick="oneMobPinahFocus()" aria-label="Pinah — fale comigo">
-          <img src="assets/icons/pinah-mascote.png" alt="Pinah">
-          <span class="one-btn-pinah-label">PINAH</span>
-        </button>
-      </div>
+      <!-- Avatar Pinah neon — mesmo estilo do desktop, popup de sugestões ao clicar -->
+      <button class="one-btn-pinah-avatar" onclick="oneMobPopupToggle(event)" aria-label="Pinah">
+        <div class="one-btn-pinah-avatar-glow"></div>
+        <img src="assets/icons/pinah-avatar.png" alt="Pinah">
+      </button>
       <div class="one-btn-wrap">
         <div class="one-btn-glow"></div>
         <button class="one-btn-side" onclick="abrirConfigPinah()" aria-label="Configurações">
-          <!-- Gear SVG -->
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A7080" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -159,17 +155,24 @@
       </div>
     </div>
 
+    <!-- Popup de sugestões mobile — abre abaixo do topbar ao clicar na Pinah -->
+    <div class="one-mob-popup" id="one-mob-popup" hidden>
+      <div class="one-hints-popup-title">peça à Pinah</div>
+      <ul>
+        <li onclick="oneMobSuggest(this.textContent.replace(/[""]/g,''))">"Maria amanhã 14h R$ 180"</li>
+        <li onclick="oneMobSuggest(this.textContent.replace(/[""]/g,''))">"Reunião pediatra dia 15/05 às 11h"</li>
+        <li onclick="oneMobSuggest(this.textContent.replace(/[""]/g,''))">"Beatriz hoje 15:30 atendimento R$ 280"</li>
+        <li onclick="oneMobSuggest(this.textContent.replace(/[""]/g,''))">"Comprar material casa, prioridade alta"</li>
+        <li onclick="oneMobSuggest(this.textContent.replace(/[""]/g,''))">"Ligar pro plano amanhã, tarefa pessoal"</li>
+        <li onclick="oneMobSuggest(this.textContent.replace(/[""]/g,''))">"Recebi R$ 280 da Maria hoje"</li>
+        <li onclick="oneMobSuggest(this.textContent.replace(/[""]/g,''))">"Paguei farmácia R$ 45 ontem"</li>
+        <li onclick="oneMobSuggest(this.textContent.replace(/[""]/g,''))">"Anota: ideia de post Instagram fono"</li>
+        <li onclick="oneMobSuggest(this.textContent.replace(/[""]/g,''))">"Como está meu saldo este mês?"</li>
+      </ul>
+    </div>
+
     <!-- Saudação -->
     <div class="one-greeting" id="one-greeting-text">—</div>
-
-    <!-- Chips de sugestão rápida -->
-    <div class="one-mob-chips" id="one-mob-chips">
-      <button class="one-mob-chip" onclick="oneMobSuggest('Qual minha semana?')">📅 Minha semana</button>
-      <button class="one-mob-chip" onclick="oneMobSuggest('Novo compromisso')">🗓 Compromisso</button>
-      <button class="one-mob-chip" onclick="oneMobSuggest('Lançar despesa')">💸 Despesa</button>
-      <button class="one-mob-chip" onclick="oneMobSuggest('Nova tarefa')">✅ Tarefa</button>
-      <button class="one-mob-chip" onclick="oneMobSuggest('Como estou financeiramente?')">💰 Saldo</button>
-    </div>
 
     <!-- Telas deslizáveis — SÓ o workspace se move -->
     <div class="one-screens-wrap" id="one-screens-wrap">

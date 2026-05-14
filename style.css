@@ -2287,7 +2287,7 @@
 #screen-one{background:#F4F1EA;min-height:100vh;padding:0;overflow:hidden;}
 #screen-one.active{display:flex;flex-direction:column;}
 /* ── Topbar ──────────────────────────────────────────────────── */
-.one-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px;position:relative;z-index:10;flex-shrink:0;}
+.one-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 8px;position:relative;z-index:10;flex-shrink:0;gap:0;}
 .one-btn-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
 .one-btn-glow{position:absolute;width:68px;height:68px;border-radius:50%;background:radial-gradient(circle,rgba(92,136,112,.20) 0%,transparent 65%);pointer-events:none;z-index:0;}
 /* Botões laterais — menu e config */
@@ -2312,17 +2312,34 @@
   box-shadow:0 0 0 2px rgba(92,136,112,.70),0 0 0 5px rgba(92,136,112,.12),0 4px 12px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.90);}
 .one-btn-pinah img{width:48px;height:48px;object-fit:contain;margin-bottom:3px;}
 .one-btn-pinah-label{font-size:9px;font-weight:700;letter-spacing:2px;color:#5C8870;font-family:system-ui,-apple-system,sans-serif;}
-/* ── Chips de sugestão (abaixo do topbar) ────────────────────── */
-.one-mob-chips{display:flex;gap:8px;padding:0 16px 8px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;-webkit-overflow-scrolling:touch;}
-.one-mob-chips::-webkit-scrollbar{display:none;}
-.one-mob-chip{background:#fff;border:none;border-radius:18px;padding:6px 13px;font-size:11.5px;font-weight:600;color:#5C8870;white-space:nowrap;cursor:pointer;font-family:system-ui,-apple-system,sans-serif;
-  box-shadow:0 0 0 1.5px rgba(92,136,112,.38),0 2px 8px rgba(92,136,112,.12);transition:transform .12s,box-shadow .12s;}
-.one-mob-chip:active{transform:scale(.96);box-shadow:0 0 0 1.5px rgba(92,136,112,.55),0 1px 4px rgba(92,136,112,.18);}
+/* ── Botão avatar Pinah no topbar mobile ─────────────────────── */
+.one-btn-pinah-avatar{position:relative;width:62px;height:62px;padding:0;border:none;background:transparent;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;border-radius:16px;
+  transition:transform .14s ease;}
+.one-btn-pinah-avatar:active{transform:scale(.94);}
+.one-btn-pinah-avatar-glow{position:absolute;inset:-10px;background:radial-gradient(circle,rgba(92,136,112,.38) 0%,rgba(92,136,112,.16) 50%,transparent 78%);filter:blur(7px);pointer-events:none;}
+.one-btn-pinah-avatar img{width:62px;height:62px;border-radius:16px;position:relative;z-index:1;object-fit:cover;
+  box-shadow:0 0 0 2px rgba(92,136,112,0.90),0 0 0 7px rgba(92,136,112,0.20),0 8px 20px rgba(92,136,112,.28),0 2px 6px rgba(0,0,0,.08);}
+/* ── Popup mobile de sugestões (abre ABAIXO do header) ──────── */
+.one-mob-popup{position:absolute;top:86px;left:16px;right:16px;z-index:10000;
+  background:#fff;border-radius:16px;padding:10px 12px;
+  box-shadow:0 0 0 1.5px rgba(92,136,112,.55),0 0 0 5px rgba(92,136,112,.16),0 16px 36px rgba(92,136,112,.28),0 4px 12px rgba(0,0,0,.10);
+  animation:oneHintsPopupIn .18s ease;}
+.one-mob-popup[hidden]{display:none;}
+.one-mob-popup::before{content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%) rotate(45deg);
+  width:12px;height:12px;background:#fff;box-shadow:-1px -1px 0 rgba(92,136,112,.45);}
+.one-mob-popup .one-hints-popup-title{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:12px;color:#7FA88E;
+  letter-spacing:.4px;padding:2px 4px 8px;border-bottom:1px dashed rgba(92,136,112,.18);margin-bottom:6px;}
+.one-mob-popup ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;max-height:320px;overflow-y:auto;}
+.one-mob-popup li{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:12.5px;color:#6E4F87;
+  background:rgba(240,232,248,.45);border-radius:8px;padding:8px 11px;cursor:pointer;transition:background .12s,transform .12s;}
+.one-mob-popup li:active{background:rgba(240,232,248,.95);color:#5C8870;transform:translateX(2px);}
 /* Saudação */
 .one-greeting{text-align:center;font-size:12px;color:#8A8480;font-family:system-ui,-apple-system,sans-serif;padding:2px 0 2px;flex-shrink:0;}
 /* Msgs chat mobile */
-.one-chat-msgs-mob{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;min-height:0;padding:4px 0 8px;display:flex;flex-direction:column;gap:8px;}
+.one-chat-msgs-mob{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;min-height:0;padding:4px 0 8px;display:none;flex-direction:column;gap:8px;}
 .one-chat-msgs-mob::-webkit-scrollbar{display:none;}
+.one-chat-msgs-mob.ativo{display:flex;}
 /* Prompt global (fora do swiper, fixo no fundo) */
 .one-prompt-global-wrap{flex-shrink:0;padding:0 16px;}
 .one-prompt-global-wrap .one-prompt-outer{padding-top:4px;}
@@ -2473,9 +2490,9 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 
 /* ── Screen-one: desktop (≥ 900px) ───────────────────────────── */
 @media (min-width: 900px) {
-  /* No desktop, o prompt global mobile não aparece */
+  /* No desktop, elementos mobile não aparecem */
   .one-prompt-global-wrap { display:none !important; }
-  .one-mob-chips           { display:none !important; }
+  .one-mob-popup          { display:none !important; }
   body:has(#screen-one.active) #main    { margin-left:var(--sidebar-w) !important; padding:0 !important; }
   #screen-one.active {
     left: var(--sidebar-w);

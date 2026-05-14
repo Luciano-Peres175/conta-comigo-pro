@@ -3880,7 +3880,7 @@ async function pinahEnviar(texto, arquivo) {
   if (isMobile && msgsMob) {
     var welcomeMob = document.getElementById('one-chat-welcome-mob');
     if (welcomeMob) welcomeMob.style.display = 'none';
-    msgsMob.style.display = 'flex';
+    msgsMob.classList.add('ativo');
     /* Bolha do usuário */
     var uBub = document.createElement('div');
     uBub.className = 'chat-bubble user-bubble';
@@ -3988,22 +3988,38 @@ function oneMobScrollToChat() {
   if (wrap) wrap.scrollTo({ left: 0, behavior: 'smooth' });
 }
 
-/* Clicar no botão Pinah no topbar → vai ao chat e foca o input */
-function oneMobPinahFocus() {
-  oneMobScrollToChat();
-  setTimeout(function() {
-    var input = document.getElementById('one-input');
-    if (input) input.focus();
-  }, 320);
-}
-
 /* Focar input de qualquer slide → arrasta para o chat */
 function oneMobInputFocus() {
   oneMobScrollToChat();
 }
 
-/* Chips de sugestão: preenche o input e vai ao chat */
+/* Popup de sugestões mobile (abre/fecha ao clicar no avatar Pinah) */
+function oneMobPopupToggle(ev) {
+  if (ev) ev.stopPropagation();
+  var popup = document.getElementById('one-mob-popup');
+  if (!popup) return;
+  var hidden = popup.hasAttribute('hidden');
+  if (hidden) {
+    popup.removeAttribute('hidden');
+    /* Fecha ao clicar fora */
+    setTimeout(function() {
+      var handler = function(e) {
+        if (!popup.contains(e.target) && !e.target.closest('.one-btn-pinah-avatar')) {
+          popup.setAttribute('hidden', '');
+          document.removeEventListener('click', handler);
+        }
+      };
+      document.addEventListener('click', handler);
+    }, 50);
+  } else {
+    popup.setAttribute('hidden', '');
+  }
+}
+
+/* Sugestão clicada no popup: fecha popup, preenche input, vai ao chat */
 function oneMobSuggest(texto) {
+  var popup = document.getElementById('one-mob-popup');
+  if (popup) popup.setAttribute('hidden', '');
   var input = document.getElementById('one-input');
   if (input) {
     input.value = texto;
