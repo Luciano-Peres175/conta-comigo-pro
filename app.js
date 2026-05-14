@@ -130,13 +130,31 @@
   }
 
   async function authSair() {
-    if (!window.supa) return;
+    console.log('[authSair] início — window.supa =', !!window.supa);
     if (!confirm('Sair da sua conta?')) return;
-    await window.supa.auth.signOut();
-    window.authUser = null;
+    // Tenta signOut via API do Supabase (caminho preferido)
+    try {
+      if (window.supa && window.supa.auth && typeof window.supa.auth.signOut === 'function') {
+        await window.supa.auth.signOut();
+        console.log('[authSair] signOut OK');
+      } else {
+        console.warn('[authSair] window.supa indisponível, vou limpar manualmente');
+      }
+    } catch (e) {
+      console.warn('[authSair] signOut lançou exceção, vou limpar manualmente:', e);
+    }
+    // Limpa as chaves de session do Supabase no localStorage (fallback robusto)
+    try {
+      Object.keys(localStorage).filter(function(k){ return k.indexOf('sb-') === 0; }).forEach(function(k){
+        localStorage.removeItem(k);
+      });
+    } catch (e) {}
+    window.authUser    = null;
     window.authProfile = null;
     location.reload();
   }
+  // Expõe no window pra ser chamado de qualquer escopo (HTML onclick + console)
+  window.authSair = authSair;
 
   async function authCheck() {
     // ── Modo demo local (file://) — sem Supabase ──────────────────
