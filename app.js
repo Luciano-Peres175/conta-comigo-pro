@@ -1835,7 +1835,7 @@
       toast('Receita atualizada!', 'success');
       return;
     }
-    lista.push({ id: uid(), data, nome, tipo, valor, formaPagamento: forma, status, categoria: tipo });
+    lista.push({ id: crypto.randomUUID(), data, nome, tipo, valor, formaPagamento: forma, status, categoria: tipo });
     localStorage.setItem(oneU('receitas'), JSON.stringify(lista));
     document.getElementById('r-nome').value  = '';
     document.getElementById('r-valor').value = '';
@@ -1940,7 +1940,7 @@
     const val  = parseValor(document.getElementById('nf-valor').value);
     if (!desc || !val) { toast('Preencha descrição e valor.', 'error'); return; }
     const lista = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
-    lista.push({ id: uid(), descricao: desc, categoria: cat, valor: val });
+    lista.push({ id: crypto.randomUUID(), descricao: desc, categoria: cat, valor: val });
     localStorage.setItem(oneU('despesasFixas'), JSON.stringify(lista));
     fecharFormNovaFixa();
     renderDespesasFixas();
@@ -2026,7 +2026,7 @@
       toast('Despesa atualizada!', 'success');
       return;
     }
-    lista.push({ id: uid(), data, descricao: desc, nome: desc, categoria: cat, valor });
+    lista.push({ id: crypto.randomUUID(), data, descricao: desc, nome: desc, categoria: cat, valor });
     localStorage.setItem(oneU('despesas'), JSON.stringify(lista));
     document.getElementById('d-descricao').value = '';
     document.getElementById('d-valor').value = '';
@@ -2212,7 +2212,7 @@
       toast('Compromisso atualizado!', 'success');
       return;
     }
-    const novoComp = { id: uid(), data, hora, nome, descricao: nome, tipo, duracao: dur, valor, status, realizado: false };
+    const novoComp = { id: crypto.randomUUID(), data, hora, nome, descricao: nome, tipo, duracao: dur, valor, status, realizado: false };
     lista.push(novoComp);
     localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
     supaUpsert('compromissos', novoComp);
@@ -2660,7 +2660,7 @@
   }
 
   function salvarNota() {
-    const id = document.getElementById('nota-id').value || uid();
+    const id = document.getElementById('nota-id').value || crypto.randomUUID();
     const titulo = document.getElementById('nota-input-titulo').value.trim();
     const categoria = document.getElementById('nota-input-categoria').value;
     const paciente = document.getElementById('nota-input-paciente').value.trim();
@@ -2874,7 +2874,7 @@
     if (Number(comp.valor) > 0) {
       const recs = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
       const novaRec = {
-        id: uid(),
+        id: crypto.randomUUID(),
         data: comp.data,
         nome: comp.nome,
         tipo: comp.tipo === 'Atendimento' ? 'Consulta' : (comp.tipo || 'Consulta'),
