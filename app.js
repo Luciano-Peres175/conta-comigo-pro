@@ -102,7 +102,7 @@
 
     // Cria entrada em profiles com nome e grupo pré-configurados
     const { error: errProfile } = await window.supa.from('profiles').insert({
-      id: data.user.id, nome: config.nome, grupo: config.grupo
+      id: data.user.id, nome: config.nome, grupo: config.grupo, onboarded: false
     });
     if (errProfile) {
       console.error('[profiles] erro:', errProfile);
