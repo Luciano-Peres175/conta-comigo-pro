@@ -1523,6 +1523,80 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
+     ONBOARDING — Primeira vez do usuário (Pinah se apresenta + tour)
+═══════════════════════════════════════════════════════════════ -->
+<div id="pinah-onb-overlay" class="pinah-onb-overlay" hidden>
+
+  <!-- Fase 1: Boas-vindas -->
+  <div class="pinah-onb-fase" data-fase="welcome">
+    <div class="pinah-onb-welcome-card">
+      <img src="assets/icons/pinah-avatar.png" class="pinah-onb-avatar-big" alt="Pinah">
+      <h1 class="pinah-onb-welcome-title">Oi! Eu sou a Pinah.</h1>
+      <p class="pinah-onb-welcome-sub">
+        Vou ser sua assistente pra agenda, tarefas, finanças e suas notas.<br>
+        Antes de começar, me conta um pouco sobre você?
+      </p>
+      <button class="pinah-onb-btn pinah-onb-btn-primary" onclick="oneOnboardingProximaFase('chat')">
+        Vamos lá →
+      </button>
+    </div>
+  </div>
+
+  <!-- Fase 2: Chat conversacional -->
+  <div class="pinah-onb-fase" data-fase="chat" hidden>
+    <div class="pinah-onb-chat-wrap">
+      <div class="pinah-onb-chat-header">
+        <img src="assets/icons/pinah-avatar.png" class="pinah-onb-avatar-small" alt="Pinah">
+        <div>
+          <div class="pinah-onb-chat-name">Pinah</div>
+          <div class="pinah-onb-chat-status">Conhecendo você…</div>
+        </div>
+      </div>
+      <div id="pinah-onb-msgs" class="pinah-onb-msgs"></div>
+      <div class="pinah-onb-input-row">
+        <textarea id="pinah-onb-input" class="pinah-onb-input" rows="1"
+          placeholder="Sua resposta…"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();oneOnboardingResponder();}"></textarea>
+        <button class="pinah-onb-send" onclick="oneOnboardingResponder()" title="Enviar">↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fase 3: Tour -->
+  <div class="pinah-onb-fase" data-fase="tour" hidden>
+    <div class="pinah-onb-tour-wrap">
+      <h2 class="pinah-onb-tour-title">Antes de você começar, 4 coisas rápidas:</h2>
+      <div class="pinah-onb-tour-grid">
+        <div class="pinah-onb-tour-card">
+          <div class="pinah-onb-tour-emoji">💬</div>
+          <div class="pinah-onb-tour-h">Converse comigo</div>
+          <div class="pinah-onb-tour-p">Digite ou aperte o microfone. Falo português brasileiro. Posso criar compromissos, tarefas, lançamentos financeiros e notas só pelo que você me disser.</div>
+        </div>
+        <div class="pinah-onb-tour-card">
+          <div class="pinah-onb-tour-emoji">📎</div>
+          <div class="pinah-onb-tour-h">Me mande arquivos</div>
+          <div class="pinah-onb-tour-p">PDF, DOCX, imagem ou um link de site. Eu leio, organizo e salvo como nota no seu Segundo Cérebro — sem você precisar fazer nada.</div>
+        </div>
+        <div class="pinah-onb-tour-card">
+          <div class="pinah-onb-tour-emoji">📅</div>
+          <div class="pinah-onb-tour-h">Tudo num lugar só</div>
+          <div class="pinah-onb-tour-p">Agenda, Tarefas, Financeiro e Segundo Cérebro. Cards laterais alternam com a tela central — clique pra trocar o foco.</div>
+        </div>
+        <div class="pinah-onb-tour-card">
+          <div class="pinah-onb-tour-emoji">🔒</div>
+          <div class="pinah-onb-tour-h">Seus dados são seus</div>
+          <div class="pinah-onb-tour-p">Cada conta tem dados isolados. Ninguém vê o que é seu — nem outro usuário do mesmo computador, nem nós.</div>
+        </div>
+      </div>
+      <button class="pinah-onb-btn pinah-onb-btn-primary pinah-onb-btn-final" onclick="oneOnboardingFinalizar()">
+        Bora começar 💚
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
      SCRIPTS
 ═══════════════════════════════════════════════════════════════ -->
 <script src="app.js"></script>

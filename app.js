@@ -161,10 +161,10 @@
 
     window.authUser = session.user;
 
-    // Busca perfil
+    // Busca perfil (inclui campos do onboarding: onboarded + bio_pinah)
     const { data: profile } = await window.supa
       .from('profiles')
-      .select('id, nome, grupo')
+      .select('id, nome, grupo, onboarded, bio_pinah')
       .eq('id', session.user.id)
       .single();
     window.authProfile = profile || null;
@@ -202,6 +202,19 @@
     }
     /* Atualiza card da sidebar (avatar + nome + tag) conforme grupo */
     customizarCardSidebar();
+
+    /* PRIMEIRO LOGIN: se onboarded ainda não foi marcado true no perfil,
+       desvia pro onboarding (Pinah se apresenta + 4 perguntas + tour de 4 cards).
+       Quando o onboarding terminar, ele mesmo dispara activateOne() + renders.
+       Tolerância: se a coluna `onboarded` ainda não existir no Supabase (não criada),
+       authProfile.onboarded vem undefined — nesse caso seguimos o fluxo normal. */
+    if (window.authProfile && window.authProfile.onboarded === false) {
+      if (typeof window.oneOnboardingStart === 'function') {
+        window.oneOnboardingStart();
+        return;
+      }
+    }
+
     /* Multi-tenant: agora que sabemos quem é o user, inicializa demo (se primeira vez)
        e re-renderiza tudo lendo das chaves prefixadas. */
     if (typeof maybeInit === 'function') maybeInit();
@@ -3634,7 +3647,11 @@ async function pinahEnviar(texto, arquivo) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: apiMessages,
-        context: pinahGetContext()
+        context: pinahGetContext(),
+        profile: window.authProfile ? {
+          nome:      window.authProfile.nome      || null,
+          bio_pinah: window.authProfile.bio_pinah || null
+        } : null
       })
     });
 
@@ -6146,3 +6163,153 @@ function oneToast(msg) {
   }
 })();
 
+
+/* ════════════════════════════════════════════════════════════════
+   ONBOARDING — Primeira vez do usuário (Pinah se apresenta)
+   ════════════════════════════════════════════════════════════════ */
+(function() {
+  var onbState = null;
+
+  var PERGUNTAS = [
+    {
+      campo: 'nome_chamada',
+      texto: 'Pra começar — como você gostaria que eu te chamasse? (pode ser primeiro nome, apelido, do jeito que você preferir)'
+    },
+    {
+      campo: 'profissao',
+      texto: 'Beleza! E qual sua profissão ou área principal de trabalho?'
+    },
+    {
+      campo: 'contexto',
+      texto: 'Me conta um pouco mais sobre seu dia a dia — tipos de cliente/paciente que você atende, áreas que você trabalha, projetos importantes. Quanto mais detalhes, melhor eu te ajudo.'
+    },
+    {
+      campo: 'tom',
+      texto: 'Última: você prefere que eu fale com você de um jeito mais formal ou mais informal?'
+    }
+  ];
+
+  function oneOnboardingStart() {
+    onbState = { fase: 'welcome', perguntaIdx: 0, respostas: {} };
+    var ov = document.getElementById('pinah-onb-overlay');
+    if (ov) ov.hidden = false;
+    // Garante que só a welcome fica visível
+    document.querySelectorAll('.pinah-onb-fase').forEach(function(el){
+      el.hidden = el.getAttribute('data-fase') !== 'welcome';
+    });
+  }
+
+  function oneOnboardingProximaFase(fase) {
+    if (!onbState) return;
+    onbState.fase = fase;
+    document.querySelectorAll('.pinah-onb-fase').forEach(function(el){
+      el.hidden = el.getAttribute('data-fase') !== fase;
+    });
+    if (fase === 'chat') {
+      var msgs = document.getElementById('pinah-onb-msgs');
+      if (msgs) msgs.innerHTML = '';
+      onbState.perguntaIdx = 0;
+      // Pinah cumprimenta + primeira pergunta
+      setTimeout(function(){
+        oneOnboardingAddBubble('pinah', 'Antes de te liberar o app, queria te conhecer um pouco. Vai ser rapidinho — 4 perguntas.');
+        setTimeout(function(){
+          oneOnboardingAddBubble('pinah', PERGUNTAS[0].texto);
+          var inp = document.getElementById('pinah-onb-input');
+          if (inp) inp.focus();
+        }, 700);
+      }, 350);
+    }
+  }
+
+  function oneOnboardingAddBubble(tipo, texto) {
+    var msgs = document.getElementById('pinah-onb-msgs');
+    if (!msgs) return;
+    var b = document.createElement('div');
+    b.className = 'pinah-onb-bubble ' + tipo;
+    b.textContent = texto;
+    msgs.appendChild(b);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function oneOnboardingResponder() {
+    var inp = document.getElementById('pinah-onb-input');
+    if (!inp || !onbState) return;
+    var texto = (inp.value || '').trim();
+    if (!texto) return;
+    var idx = onbState.perguntaIdx;
+    var pergunta = PERGUNTAS[idx];
+    if (!pergunta) return;
+    // Mostra resposta do user
+    oneOnboardingAddBubble('user', texto);
+    inp.value = '';
+    // Salva
+    onbState.respostas[pergunta.campo] = texto;
+    onbState.perguntaIdx++;
+    // Próxima pergunta ou fim
+    var proxIdx = onbState.perguntaIdx;
+    if (proxIdx < PERGUNTAS.length) {
+      setTimeout(function(){
+        oneOnboardingAddBubble('pinah', PERGUNTAS[proxIdx].texto);
+        inp.focus();
+      }, 600);
+    } else {
+      // Acabaram as perguntas — Pinah agradece e leva pro tour
+      setTimeout(function(){
+        var primeiroNome = String(onbState.respostas.nome_chamada || 'você').split(' ')[0];
+        oneOnboardingAddBubble('pinah', 'Prazer em te conhecer, ' + primeiroNome + '! Agora vou te mostrar como o app funciona em 4 cards rápidos.');
+        setTimeout(function(){ oneOnboardingProximaFase('tour'); }, 1400);
+      }, 600);
+    }
+  }
+
+  async function oneOnboardingFinalizar() {
+    if (!onbState) return;
+    // Monta a bio_pinah a partir das respostas
+    var r = onbState.respostas;
+    var bio =
+      'Nome preferido: ' + (r.nome_chamada || '(não informado)') + '\n' +
+      'Profissão: ' + (r.profissao || '(não informado)') + '\n' +
+      'Dia a dia / contexto: ' + (r.contexto || '(não informado)') + '\n' +
+      'Tom preferido: ' + (r.tom || '(não informado)');
+
+    // Tenta salvar no Supabase
+    if (window.supa && window.authUser && window.authUser.id) {
+      try {
+        var res = await window.supa
+          .from('profiles')
+          .update({ onboarded: true, bio_pinah: bio })
+          .eq('id', window.authUser.id);
+        if (res.error) {
+          console.error('[onboarding] erro ao salvar profile:', res.error);
+          if (typeof toast === 'function') {
+            toast('Erro ao salvar suas respostas. Tente recarregar.', 'error');
+          }
+          return;
+        }
+        // Atualiza o perfil local
+        if (window.authProfile) {
+          window.authProfile.onboarded = true;
+          window.authProfile.bio_pinah = bio;
+        }
+      } catch (e) {
+        console.error('[onboarding] exceção ao salvar:', e);
+      }
+    }
+    // Fecha overlay e libera o app
+    var ov = document.getElementById('pinah-onb-overlay');
+    if (ov) ov.hidden = true;
+    onbState = null;
+    // Dispara o boot pós-auth (mesmo fluxo do esconderTelaAuth normal)
+    if (typeof window.activateOne === 'function') window.activateOne();
+    if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
+    if (typeof renderOneTarefasPainel === 'function') renderOneTarefasPainel();
+    if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+    if (typeof go === 'function') go('one');
+  }
+
+  // Expõe globalmente pra HTML chamar via onclick + pra esconderTelaAuth disparar
+  window.oneOnboardingStart        = oneOnboardingStart;
+  window.oneOnboardingProximaFase  = oneOnboardingProximaFase;
+  window.oneOnboardingResponder    = oneOnboardingResponder;
+  window.oneOnboardingFinalizar    = oneOnboardingFinalizar;
+})();
