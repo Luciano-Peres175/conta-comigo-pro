@@ -2297,14 +2297,35 @@
 .one-btn-side img{width:24px;height:24px;object-fit:contain;}
 /* Botão central — Pinah */
 .one-btn-pinah-wrap{position:relative;display:flex;flex-direction:column;align-items:center;}
-.one-btn-pinah-glow{position:absolute;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(92,136,112,.22) 0%,transparent 65%);top:-18px;pointer-events:none;z-index:0;}
+.one-btn-pinah-glow{position:absolute;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(92,136,112,.26) 0%,transparent 65%);top:-22px;pointer-events:none;z-index:0;}
 .one-btn-pinah{position:relative;z-index:1;background:#fff;border:none;border-radius:24px;padding:8px 18px 7px;display:flex;flex-direction:column;align-items:center;cursor:pointer;
-  box-shadow:0 8px 24px rgba(0,0,0,.13),0 3px 8px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.98),inset 0 -2px 0 rgba(0,0,0,.05);}
-.one-btn-pinah:active{transform:translateY(2px);box-shadow:0 4px 14px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.90);}
+  /* Neon ring — igual ao one-desk-card */
+  box-shadow:
+    0 0 0 2px rgba(92,136,112,0.90),
+    0 0 0 7px rgba(92,136,112,0.20),
+    0 10px 26px rgba(0,0,0,.12),
+    0 3px 8px rgba(0,0,0,.08),
+    inset 0 2px 0 rgba(255,255,255,1),
+    inset 0 -2px 0 rgba(0,0,0,.06);
+  transition:box-shadow .18s ease,transform .18s ease;}
+.one-btn-pinah:active{transform:translateY(2px);
+  box-shadow:0 0 0 2px rgba(92,136,112,.70),0 0 0 5px rgba(92,136,112,.12),0 4px 12px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.90);}
 .one-btn-pinah img{width:48px;height:48px;object-fit:contain;margin-bottom:3px;}
 .one-btn-pinah-label{font-size:9px;font-weight:700;letter-spacing:2px;color:#5C8870;font-family:system-ui,-apple-system,sans-serif;}
+/* ── Chips de sugestão (abaixo do topbar) ────────────────────── */
+.one-mob-chips{display:flex;gap:8px;padding:0 16px 8px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;-webkit-overflow-scrolling:touch;}
+.one-mob-chips::-webkit-scrollbar{display:none;}
+.one-mob-chip{background:#fff;border:none;border-radius:18px;padding:6px 13px;font-size:11.5px;font-weight:600;color:#5C8870;white-space:nowrap;cursor:pointer;font-family:system-ui,-apple-system,sans-serif;
+  box-shadow:0 0 0 1.5px rgba(92,136,112,.38),0 2px 8px rgba(92,136,112,.12);transition:transform .12s,box-shadow .12s;}
+.one-mob-chip:active{transform:scale(.96);box-shadow:0 0 0 1.5px rgba(92,136,112,.55),0 1px 4px rgba(92,136,112,.18);}
 /* Saudação */
-.one-greeting{text-align:center;font-size:12px;color:#8A8480;font-family:system-ui,-apple-system,sans-serif;padding:2px 0 6px;flex-shrink:0;}
+.one-greeting{text-align:center;font-size:12px;color:#8A8480;font-family:system-ui,-apple-system,sans-serif;padding:2px 0 2px;flex-shrink:0;}
+/* Msgs chat mobile */
+.one-chat-msgs-mob{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;min-height:0;padding:4px 0 8px;display:flex;flex-direction:column;gap:8px;}
+.one-chat-msgs-mob::-webkit-scrollbar{display:none;}
+/* Prompt global (fora do swiper, fixo no fundo) */
+.one-prompt-global-wrap{flex-shrink:0;padding:0 16px;}
+.one-prompt-global-wrap .one-prompt-outer{padding-top:4px;}
 /* Scroll de telas */
 .one-screens-wrap{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex:1;min-height:0;}
 .one-screens-wrap::-webkit-scrollbar{display:none;}
@@ -2452,6 +2473,9 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 
 /* ── Screen-one: desktop (≥ 900px) ───────────────────────────── */
 @media (min-width: 900px) {
+  /* No desktop, o prompt global mobile não aparece */
+  .one-prompt-global-wrap { display:none !important; }
+  .one-mob-chips           { display:none !important; }
   body:has(#screen-one.active) #main    { margin-left:var(--sidebar-w) !important; padding:0 !important; }
   #screen-one.active {
     left: var(--sidebar-w);

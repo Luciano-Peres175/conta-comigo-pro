@@ -3860,6 +3860,10 @@ async function pinahEnviar(texto, arquivo) {
   var chatPanel = document.querySelector('.one-desktop-main > [data-panel="chat"]:not([hidden])');
   var emChat    = !!chatPanel;
 
+  /* Mobile: tela one-chat-msgs-mob */
+  var isMobile = window.innerWidth < 900;
+  var msgsMob  = isMobile ? document.getElementById('one-chat-msgs-mob') : null;
+
   var msgs = document.getElementById('pinah-msgs');
 
   if (emChat) {
@@ -3870,6 +3874,25 @@ async function pinahEnviar(texto, arquivo) {
     if (clearRow) clearRow.hidden = false;
     pinahAddBubble('user', displayText);
     pinahTypingShow();
+  }
+
+  /* Mobile chat: mostra mensagens na área móvel */
+  if (isMobile && msgsMob) {
+    var welcomeMob = document.getElementById('one-chat-welcome-mob');
+    if (welcomeMob) welcomeMob.style.display = 'none';
+    msgsMob.style.display = 'flex';
+    /* Bolha do usuário */
+    var uBub = document.createElement('div');
+    uBub.className = 'chat-bubble user-bubble';
+    uBub.textContent = displayText;
+    msgsMob.appendChild(uBub);
+    /* Bolha de typing */
+    var typBub = document.createElement('div');
+    typBub.className = 'chat-bubble pinah-bubble chat-typing';
+    typBub.id = 'mob-typing-bub';
+    typBub.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+    msgsMob.appendChild(typBub);
+    msgsMob.scrollTop = msgsMob.scrollHeight;
   }
 
   try {
@@ -3890,6 +3913,14 @@ async function pinahEnviar(texto, arquivo) {
 
     var bubble   = emChat ? pinahAddBubble('pinah', '') : null;
     var fullText = '';
+
+    /* Mobile: substitui bolha de typing pela bolha de resposta */
+    var mobBubble = null;
+    if (isMobile && msgsMob) {
+      var tb = document.getElementById('mob-typing-bub');
+      if (tb) { tb.className = 'chat-bubble pinah-bubble'; tb.innerHTML = ''; }
+      mobBubble = tb;
+    }
 
     if (emChat) pinahTypingHide();
 
@@ -3918,6 +3949,10 @@ async function pinahEnviar(texto, arquivo) {
               bubble.innerHTML = pinahRenderText(fullText);
               if (msgs) msgs.scrollTop = msgs.scrollHeight;
             }
+            if (mobBubble) {
+              mobBubble.innerHTML = pinahRenderText(fullText);
+              if (msgsMob) msgsMob.scrollTop = msgsMob.scrollHeight;
+            }
           }
           if (ev.done) {
             pinahHistory.push({ role: 'assistant', content: fullText });
@@ -3945,6 +3980,38 @@ async function pinahEnviar(texto, arquivo) {
     }
     console.error('[pinahEnviar]', err);
   }
+}
+
+/* ── Mobile — ir ao slide de chat ───────────────────────────── */
+function oneMobScrollToChat() {
+  var wrap = document.getElementById('one-screens-wrap');
+  if (wrap) wrap.scrollTo({ left: 0, behavior: 'smooth' });
+}
+
+/* Clicar no botão Pinah no topbar → vai ao chat e foca o input */
+function oneMobPinahFocus() {
+  oneMobScrollToChat();
+  setTimeout(function() {
+    var input = document.getElementById('one-input');
+    if (input) input.focus();
+  }, 320);
+}
+
+/* Focar input de qualquer slide → arrasta para o chat */
+function oneMobInputFocus() {
+  oneMobScrollToChat();
+}
+
+/* Chips de sugestão: preenche o input e vai ao chat */
+function oneMobSuggest(texto) {
+  var input = document.getElementById('one-input');
+  if (input) {
+    input.value = texto;
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 96) + 'px';
+  }
+  oneMobScrollToChat();
+  setTimeout(function() { if (input) input.focus(); }, 320);
 }
 
 function oneEnviar() {
