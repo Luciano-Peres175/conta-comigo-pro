@@ -5744,6 +5744,7 @@ function oneSalvarCompromisso() {
     var idx = lista.findIndex(function(x){ return x.id === oneEditandoCompromissoId; });
     if (idx !== -1) {
       lista[idx] = Object.assign({}, lista[idx], { data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, observacoes:obs });
+      supaUpsert('compromissos', lista[idx]);
     }
     // Atualiza receita vinculada se existir
     var rec = []; try { rec = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
@@ -5751,8 +5752,11 @@ function oneSalvarCompromisso() {
     if (valor > 0) {
       if (rIdx !== -1) {
         rec[rIdx] = Object.assign({}, rec[rIdx], { data:data, nome:nome, tipo:tipo, valor:valor });
+        supaUpsert('receitas', rec[rIdx]);
       } else {
-        rec.push({ id:'r-'+Date.now(), compromissoId:oneEditandoCompromissoId, data:data, nome:nome, tipo:tipo, valor:valor, status:'Pendente', categoria:tipo });
+        var novaRecUpd = { id: crypto.randomUUID(), compromissoId:oneEditandoCompromissoId, data:data, nome:nome, tipo:tipo, valor:valor, status:'pendente', categoria:tipo };
+        rec.push(novaRecUpd);
+        supaUpsert('receitas', novaRecUpd);
       }
     } else if (rIdx !== -1) {
       rec.splice(rIdx, 1); // remove receita se valor virou zero
@@ -5760,12 +5764,16 @@ function oneSalvarCompromisso() {
     localStorage.setItem(oneU('receitas'), JSON.stringify(rec));
     oneToast('✓ Compromisso atualizado!');
   } else {
-    var novoId = 'one-'+Date.now();
-    lista.push({ id:novoId, data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, observacoes:obs, status:'Pendente', duracao:45 });
+    var novoId = crypto.randomUUID();
+    var novoCompOne = { id:novoId, data:data, hora:hora, nome:nome, descricao:nome, tipo:tipo, valor:valor, observacoes:obs, status:'agendado', realizado:false, duracao:45 };
+    lista.push(novoCompOne);
+    supaUpsert('compromissos', novoCompOne);
     // Cria receita futura pendente se valor > 0
     if (valor > 0) {
       var rec = []; try { rec = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
-      rec.push({ id:'r-'+Date.now(), compromissoId:novoId, data:data, nome:nome, tipo:tipo, valor:valor, status:'Pendente', categoria:tipo });
+      var novaRecOne = { id: crypto.randomUUID(), compromissoId:novoId, data:data, nome:nome, tipo:tipo, valor:valor, status:'pendente', categoria:tipo };
+      rec.push(novaRecOne);
+      supaUpsert('receitas', novaRecOne);
       localStorage.setItem(oneU('receitas'), JSON.stringify(rec));
     }
     oneToast('✓ Compromisso salvo!');
@@ -5782,13 +5790,18 @@ function oneExcluirCompromisso() {
   if (!oneEditandoCompromissoId) return;
   if (!confirm('Excluir este compromisso? A receita vinculada (se houver) também será removida.')) return;
 
+  var idParaExcluir = oneEditandoCompromissoId;
+
   var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
-  lista = lista.filter(function(x){ return x.id !== oneEditandoCompromissoId; });
+  lista = lista.filter(function(x){ return x.id !== idParaExcluir; });
   localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
+  supaDelete('compromissos', idParaExcluir);
 
   // Remove receita vinculada se existir
   var rec = []; try { rec = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
-  rec = rec.filter(function(r){ return r.compromissoId !== oneEditandoCompromissoId; });
+  var recVinculada = rec.find(function(r){ return r.compromissoId === idParaExcluir; });
+  if (recVinculada) supaDelete('receitas', recVinculada.id);
+  rec = rec.filter(function(r){ return r.compromissoId !== idParaExcluir; });
   localStorage.setItem(oneU('receitas'), JSON.stringify(rec));
 
   oneResetFormCompromisso();
@@ -5880,17 +5893,32 @@ function oneAgModalSalvar() {
 
   if (id) {
     var idx = lista.findIndex(function(x){ return x.id === id; });
-    if (idx !== -1) lista[idx] = Object.assign(lista[idx], { data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, observacoes:obs });
+    if (idx !== -1) {
+      lista[idx] = Object.assign(lista[idx], { data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, observacoes:obs });
+      supaUpsert('compromissos', lista[idx]);
+    }
     var rIdx = rec.findIndex(function(r){ return r.compromissoId === id; });
     if (valor > 0) {
-      if (rIdx !== -1) rec[rIdx] = Object.assign(rec[rIdx], { data:data, nome:nome, tipo:tipo, valor:valor });
-      else rec.push({ id:'r-'+Date.now(), compromissoId:id, data:data, nome:nome, tipo:tipo, valor:valor, status:'Pendente', categoria:tipo });
+      if (rIdx !== -1) {
+        rec[rIdx] = Object.assign(rec[rIdx], { data:data, nome:nome, tipo:tipo, valor:valor });
+        supaUpsert('receitas', rec[rIdx]);
+      } else {
+        var novaRecEdit = { id: crypto.randomUUID(), compromissoId:id, data:data, nome:nome, tipo:tipo, valor:valor, status:'pendente', categoria:tipo };
+        rec.push(novaRecEdit);
+        supaUpsert('receitas', novaRecEdit);
+      }
     } else if (rIdx !== -1) { rec.splice(rIdx, 1); }
     if (typeof oneToast==='function') oneToast('✓ Compromisso atualizado!');
   } else {
-    var novoId = 'one-'+Date.now();
-    lista.push({ id:novoId, data:data, hora:hora, nome:nome, tipo:tipo, valor:valor, observacoes:obs, status:'Pendente', duracao:45 });
-    if (valor > 0) rec.push({ id:'r-'+Date.now(), compromissoId:novoId, data:data, nome:nome, tipo:tipo, valor:valor, status:'Pendente', categoria:tipo });
+    var novoId = crypto.randomUUID();
+    var novoComp = { id:novoId, data:data, hora:hora, nome:nome, descricao:nome, tipo:tipo, valor:valor, observacoes:obs, status:'agendado', realizado:false, duracao:45 };
+    lista.push(novoComp);
+    supaUpsert('compromissos', novoComp);
+    if (valor > 0) {
+      var novaRec = { id: crypto.randomUUID(), compromissoId:novoId, data:data, nome:nome, tipo:tipo, valor:valor, status:'pendente', categoria:tipo };
+      rec.push(novaRec);
+      supaUpsert('receitas', novaRec);
+    }
     if (typeof oneToast==='function') oneToast('✓ Compromisso salvo!');
   }
 
