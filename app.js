@@ -3703,17 +3703,24 @@ async function supaSync() {
 
 /* Insere/atualiza um item no Supabase (upsert por id) */
 async function supaUpsert(localKey, item) {
-  if (!window.supa || !window.authUser) return;
+  if (!window.supa) { console.warn('[supaUpsert] window.supa nulo — abortado'); return; }
+  if (!window.authUser) { console.warn('[supaUpsert] window.authUser nulo — abortado'); return; }
   var tabela = SUPA_TABLES[localKey];
-  if (!tabela) return;
+  if (!tabela) { console.warn('[supaUpsert] tabela desconhecida para localKey:', localKey); return; }
   try {
     var row = _supaMapToRow(localKey, item, window.authUser.id);
+    console.log('[supaUpsert] enviando →', tabela, row);
     var result = await window.supa.from(tabela).upsert(row, { onConflict: 'id' });
-    if (result.error) console.warn('[supaUpsert]', tabela, result.error.message);
+    if (result.error) {
+      console.error('[supaUpsert] ERRO na tabela', tabela, ':', result.error);
+    } else {
+      console.log('[supaUpsert] OK —', tabela, row.id);
+    }
   } catch(e) {
-    console.warn('[supaUpsert] Exceção:', e);
+    console.error('[supaUpsert] Exceção:', e);
   }
 }
+window.supaUpsert = supaUpsert;
 
 /* Remove um item do Supabase pelo id */
 async function supaDelete(localKey, id) {
