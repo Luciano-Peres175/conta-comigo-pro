@@ -1837,14 +1837,17 @@
         lista[idx] = { ...lista[idx], data, nome, tipo, valor, formaPagamento: forma, status, categoria: tipo };
       }
       localStorage.setItem(oneU('receitas'), JSON.stringify(lista));
+      if (idx >= 0 && typeof supaUpsert === 'function') supaUpsert('receitas', lista[idx]);
       cancelarEdicaoReceita();
       renderListaReceitas();
       atualizarHome();
       toast('Receita atualizada!', 'success');
       return;
     }
-    lista.push({ id: crypto.randomUUID(), data, nome, tipo, valor, formaPagamento: forma, status, categoria: tipo });
+    const novaReceita = { id: crypto.randomUUID(), data, nome, tipo, valor, formaPagamento: forma, status, categoria: tipo };
+    lista.push(novaReceita);
     localStorage.setItem(oneU('receitas'), JSON.stringify(lista));
+    if (typeof supaUpsert === 'function') supaUpsert('receitas', novaReceita);
     document.getElementById('r-nome').value  = '';
     document.getElementById('r-valor').value = '';
     renderListaReceitas();
@@ -1895,6 +1898,7 @@
     localStorage.setItem(oneU('receitas'), JSON.stringify(
       JSON.parse(localStorage.getItem(oneU('receitas')) || '[]').filter(r => r.id !== id)
     ));
+    if (typeof supaDelete === 'function') supaDelete('receitas', id);
     if (editandoReceitaId === id) cancelarEdicaoReceita();
     renderListaReceitas();
     atualizarHome();
@@ -1948,8 +1952,10 @@
     const val  = parseValor(document.getElementById('nf-valor').value);
     if (!desc || !val) { toast('Preencha descrição e valor.', 'error'); return; }
     const lista = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
-    lista.push({ id: crypto.randomUUID(), descricao: desc, categoria: cat, valor: val });
+    const novaFixa = { id: crypto.randomUUID(), descricao: desc, categoria: cat, valor: val };
+    lista.push(novaFixa);
     localStorage.setItem(oneU('despesasFixas'), JSON.stringify(lista));
+    if (typeof supaUpsert === 'function') supaUpsert('despesas_fixas', novaFixa);
     fecharFormNovaFixa();
     renderDespesasFixas();
     atualizarHome();
@@ -1959,6 +1965,7 @@
     localStorage.setItem(oneU('despesasFixas'), JSON.stringify(
       JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]').filter(d => d.id !== id)
     ));
+    if (typeof supaDelete === 'function') supaDelete('despesas_fixas', id);
     renderDespesasFixas();
     atualizarHome();
   }
@@ -1979,6 +1986,7 @@
     if (!desc || !val) { toast('Preencha os campos.', 'error'); return; }
     lista[idx] = { ...lista[idx], descricao: desc, categoria: cat, valor: val };
     localStorage.setItem(oneU('despesasFixas'), JSON.stringify(lista));
+    if (typeof supaUpsert === 'function') supaUpsert('despesas_fixas', lista[idx]);
     renderDespesasFixas();
     atualizarHome();
   }
@@ -2028,14 +2036,17 @@
         lista[idx] = { ...lista[idx], data, descricao: desc, nome: desc, categoria: cat, valor };
       }
       localStorage.setItem(oneU('despesas'), JSON.stringify(lista));
+      if (idx >= 0 && typeof supaUpsert === 'function') supaUpsert('despesas', lista[idx]);
       cancelarEdicaoDespesa();
       renderListaDespesas();
       atualizarHome();
       toast('Despesa atualizada!', 'success');
       return;
     }
-    lista.push({ id: crypto.randomUUID(), data, descricao: desc, nome: desc, categoria: cat, valor });
+    const novaDespesa = { id: crypto.randomUUID(), data, descricao: desc, nome: desc, categoria: cat, valor };
+    lista.push(novaDespesa);
     localStorage.setItem(oneU('despesas'), JSON.stringify(lista));
+    if (typeof supaUpsert === 'function') supaUpsert('despesas', novaDespesa);
     document.getElementById('d-descricao').value = '';
     document.getElementById('d-valor').value = '';
     renderListaDespesas();
@@ -2084,6 +2095,7 @@
     localStorage.setItem(oneU('despesas'), JSON.stringify(
       JSON.parse(localStorage.getItem(oneU('despesas')) || '[]').filter(d => d.id !== id)
     ));
+    if (typeof supaDelete === 'function') supaDelete('despesas', id);
     if (editandoDespesaId === id) cancelarEdicaoDespesa();
     renderListaDespesas();
     atualizarHome();
@@ -3614,6 +3626,13 @@ function _supaMapToRow(localKey, item, userId) {
         tags:       Array.isArray(item.tags) ? item.tags : [],
         created_at: item.criadoEm || item.data || new Date().toISOString(),
         updated_at: item.dataModificacao || new Date().toISOString()
+      });
+    case 'despesas_fixas':
+      return Object.assign(base, {
+        id:        item.id,
+        descricao: item.descricao || '',
+        categoria: item.categoria || 'Outros',
+        valor:     Number(item.valor) || 0
       });
     default:
       return Object.assign(base, item);
