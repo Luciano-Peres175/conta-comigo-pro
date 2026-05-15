@@ -3599,9 +3599,7 @@ function _supaMapToRow(localKey, item, userId) {
         descricao: item.descricao || item.nome || '',
         valor:     item.valor || 0,
         data:      item.data || new Date().toISOString().slice(0,10),
-        categoria: item.categoria || '',
-        tipo:      item.tipo || 'despesa',
-        status:    item.status || 'pago'
+        categoria: item.categoria || ''
       });
     case 'compromissos':
       return Object.assign(base, {
