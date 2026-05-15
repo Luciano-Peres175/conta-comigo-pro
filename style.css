@@ -7002,3 +7002,48 @@ button.one-fin-card:hover {
     margin-top: 0 !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   FIXES v3.2: ZERAR drop shadow estatico dos 5 cards (top + laterais)
+   - Manter SO o contorno duplo verde
+   - Manter o efeito hover dos cards laterais (sombra de elevacao)
+   - Alta especificidade pra vencer todas as regras anteriores
+   ════════════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+
+  /* Cards de cima (frase central + Conta Comigo) — so contorno, zero sombra */
+  body:has(#screen-one.active) .one-desk-frase-card,
+  body:has(#screen-one.active) .one-desk-card-conta {
+    box-shadow:
+      0 0 0 2px rgba(92,136,112,0.92),
+      0 0 0 8px rgba(92,136,112,0.22) !important;
+    filter: none !important;
+  }
+
+  /* Cards laterais (Agenda/Tarefas/Financeiro) — so contorno, zero sombra estatica */
+  body:has(#screen-one.active) .one-desk-card {
+    box-shadow:
+      0 0 0 2px rgba(92,136,112,0.92),
+      0 0 0 8px rgba(92,136,112,0.22) !important;
+    filter: none !important;
+  }
+
+  /* Hover dos cards laterais — efeito de botao preservado (eleva + sombra reforcada) */
+  body:has(#screen-one.active) .one-desk-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 0 0 2px rgba(92,136,112,1.0),
+      0 0 0 10px rgba(92,136,112,0.32),
+      0 16px 32px rgba(0,0,0,.12),
+      0 5px 12px rgba(0,0,0,.08) !important;
+  }
+
+  /* Active dos cards laterais — clique pressionando */
+  body:has(#screen-one.active) .one-desk-card:active {
+    transform: translateY(1px);
+    box-shadow:
+      0 0 0 2px rgba(92,136,112,0.85),
+      0 0 0 6px rgba(92,136,112,0.18),
+      0 6px 14px rgba(0,0,0,.09) !important;
+  }
+}
