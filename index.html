@@ -694,30 +694,29 @@
           <div id="one-desk-tarefas-list" class="one-desk-tar-kanban" style="flex:1;min-height:0;overflow:hidden"></div>
         </div>
 
-        <!-- Card Financeiro — saldo + entradas/saídas/pendente (click no card abre) -->
+        <!-- Card Financeiro — saldo destaque + 3 mini resumos (Entradas / Saídas / Pendente) -->
         <div class="one-desk-card one-desk-card-financeiro" data-panel="financeiro" onclick="swapToCenter('financeiro')" title="Abrir Financeiro no centro">
           <div class="one-desk-card-header">
             <span class="one-desk-card-title">💰 Financeiro</span>
           </div>
           <div class="one-desk-fin-saldo-card">
-            <p class="one-fin-saldo-label" style="font-size:9px">Saldo do mês</p>
+            <p class="one-fin-saldo-label">Saldo do mês</p>
             <p class="one-desk-fin-saldo-value" id="one-desk-fin-saldo">R$ —</p>
-            <div class="one-desk-fin-mini-stats">
-              <div class="one-desk-fin-mini-stat">
-                <p class="one-desk-fin-mini-stat-label">↑ entradas</p>
-                <p class="one-desk-fin-mini-stat-value" id="one-desk-fin-entradas">—</p>
-              </div>
-              <div class="one-desk-fin-mini-stat">
-                <p class="one-desk-fin-mini-stat-label">↓ saídas</p>
-                <p class="one-desk-fin-mini-stat-value" id="one-desk-fin-saidas">—</p>
-              </div>
-              <div class="one-desk-fin-mini-stat">
-                <p class="one-desk-fin-mini-stat-label">⏳ pendente</p>
-                <p class="one-desk-fin-mini-stat-value" id="one-desk-fin-pendente">—</p>
-              </div>
+          </div>
+          <div class="one-desk-mini-resumos one-desk-fin-mini-resumos">
+            <div class="one-desk-mini-resumo mini-entradas">
+              <div class="one-desk-mini-resumo-val" id="one-desk-fin-entradas">R$ —</div>
+              <div class="one-desk-mini-resumo-lbl">Entradas</div>
+            </div>
+            <div class="one-desk-mini-resumo mini-saidas">
+              <div class="one-desk-mini-resumo-val" id="one-desk-fin-saidas">R$ —</div>
+              <div class="one-desk-mini-resumo-lbl">Saídas</div>
+            </div>
+            <div class="one-desk-mini-resumo mini-pendente">
+              <div class="one-desk-mini-resumo-val" id="one-desk-fin-pendente">R$ —</div>
+              <div class="one-desk-mini-resumo-lbl">Pendente</div>
             </div>
           </div>
-          <div class="one-fin-list" id="one-desk-fin-list" style="gap:4px;display:flex;flex-direction:column"></div>
         </div>
 
       </div><!-- /one-desktop-sidebar -->

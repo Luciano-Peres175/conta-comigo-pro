@@ -5759,34 +5759,90 @@ function renderOneDeskAgenda() {
   if (!wrap) return;
   var lista = [];
   try { lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
-  var today = new Date();
-  var diasSem = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  var html = '';
-  var todayYMD = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-  for (var i = 0; i < 7; i++) {
-    var d = new Date(today); d.setDate(today.getDate() + i);
-    var ymd = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    var items = lista.filter(function(c){return c.data===ymd;}).sort(function(a,b){return (a.hora||'').localeCompare(b.hora||'');});
+
+  var today = new Date(); today.setHours(0,0,0,0);
+  var todayYMD = today.toISOString().slice(0,10);
+
+  // Encontra a segunda-feira da semana corrente
+  var dow = today.getDay();
+  var diffSeg = (dow === 0 ? -6 : 1 - dow);
+  var seg = new Date(today); seg.setDate(today.getDate() + diffSeg);
+  var sex = new Date(seg); sex.setDate(seg.getDate() + 4);
+  var segYMD = seg.toISOString().slice(0,10);
+  var sexYMD = sex.toISOString().slice(0,10);
+
+  // Filtra compromissos da semana (Seg-Sex) e pega os 4 próximos a partir de hoje
+  var daSemana = lista.filter(function(c){
+    return c.data && c.data >= segYMD && c.data <= sexYMD;
+  });
+  var proximos4 = lista
+    .filter(function(c){ return c.data && c.data >= todayYMD && c.data <= sexYMD; })
+    .sort(function(a,b){
+      var d = (a.data||'').localeCompare(b.data||'');
+      if (d !== 0) return d;
+      return (a.hora||'').localeCompare(b.hora||'');
+    })
+    .slice(0, 4);
+  var idsProximos = new Set(proximos4.map(function(c){ return c.id; }));
+
+  var nomesDias = ['SEG','TER','QUA','QUI','SEX'];
+  var colsHtml = '';
+  for (var i = 0; i < 5; i++) {
+    var d = new Date(seg); d.setDate(seg.getDate() + i);
+    var ymd = d.toISOString().slice(0,10);
     var isHoje = ymd === todayYMD;
-    html += '<div class="one-agenda-col">';
-    html += '<div class="one-agenda-day-header">';
-    html += '<div class="one-agenda-day-name">'+diasSem[d.getDay()]+'</div>';
-    html += '<div class="one-agenda-day-num'+(isHoje?' today':'')+'">'+(d.getDate())+'</div>';
-    html += '</div><div class="one-agenda-day-cards">';
-    if (!items.length) {
-      html += '<div class="one-agenda-empty-col"></div>';
-    } else {
-      items.forEach(function(c) {
-        var cls = c.realizado ? 'realizado' : ((c.status||'').toLowerCase() === 'confirmado' ? 'confirmado' : 'pendente');
-        html += '<div class="one-agenda-card-mini '+cls+'">';
-        html += '<div class="one-agenda-card-mini-name">'+(c.nome||c.descricao||'—')+'</div>';
-        if (c.hora) html += '<div class="one-agenda-card-mini-time">'+c.hora+'</div>';
-        html += '</div>';
-      });
-    }
-    html += '</div></div>';
+    // Mostra só os compromissos do dia que ESTÃO entre os 4 próximos visíveis
+    var doDia = proximos4.filter(function(c){ return c.data === ymd; });
+    var cardsHtml = doDia.map(function(c){
+      var cls = c.realizado ? 'realizado' : ((c.status||'').toLowerCase() === 'confirmado' ? 'confirmado' : 'pendente');
+      var nome = (c.nome || c.descricao || '—').replace(/</g,'&lt;');
+      // Tronca o nome pra caber
+      if (nome.length > 8) nome = nome.slice(0, 7) + '…';
+      var hora = c.hora ? '<div class="one-agenda-card-mini-time">' + c.hora + '</div>' : '';
+      return '<div class="one-agenda-card-mini ' + cls + '">' +
+               '<div class="one-agenda-card-mini-name">' + nome + '</div>' + hora +
+             '</div>';
+    }).join('');
+    colsHtml += '<div class="one-agenda-col">' +
+                  '<div class="one-agenda-day-header">' +
+                    '<div class="one-agenda-day-name">' + nomesDias[i] + '</div>' +
+                    '<div class="one-agenda-day-num' + (isHoje ? ' today' : '') + '">' + d.getDate() + '</div>' +
+                  '</div>' +
+                  '<div class="one-agenda-day-cards">' +
+                    (cardsHtml || '<div class="one-agenda-empty-col"></div>') +
+                  '</div>' +
+                '</div>';
   }
-  wrap.innerHTML = html;
+
+  // Calcula resumos (semana corrente)
+  var receber = 0, qtdR = 0, pagar = 0, qtdP = 0;
+  daSemana.forEach(function(c){
+    var v = Number(c.valor) || 0;
+    var t = String(c.tipo || '').toLowerCase();
+    if (v > 0) {
+      if (/desp|pag|aluguel|imposto|conta/.test(t)) { pagar += v; qtdP++; }
+      else { receber += v; qtdR++; }
+    }
+  });
+  function _brl(v) { return 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
+
+  var resumoHtml =
+    '<div class="one-desk-mini-resumos">' +
+      '<div class="one-desk-mini-resumo mini-receber">' +
+        '<div class="one-desk-mini-resumo-val">' + _brl(receber) + '</div>' +
+        '<div class="one-desk-mini-resumo-lbl">A receber</div>' +
+      '</div>' +
+      '<div class="one-desk-mini-resumo mini-pagar">' +
+        '<div class="one-desk-mini-resumo-val">' + _brl(pagar) + '</div>' +
+        '<div class="one-desk-mini-resumo-lbl">A pagar</div>' +
+      '</div>' +
+      '<div class="one-desk-mini-resumo mini-compromissos">' +
+        '<div class="one-desk-mini-resumo-val">' + daSemana.length + '</div>' +
+        '<div class="one-desk-mini-resumo-lbl">Semana</div>' +
+      '</div>' +
+    '</div>';
+
+  wrap.innerHTML = '<div class="one-agenda-week-grid">' + colsHtml + '</div>' + resumoHtml;
 }
 
 function renderOneDeskFinanceiro() {
@@ -5838,40 +5894,86 @@ function renderOneDeskTarefas() {
   var tarefas = [];
   try { tarefas = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
 
-  // Classifica tarefas em 3 buckets de status
+  // Classifica em 3 buckets
   var aFazer = [], emAnd = [], concl = [];
   tarefas.forEach(function(t){
     if (t.concluida || String(t.status||'').toLowerCase() === 'concluida') concl.push(t);
-    else if (String(t.status||'').toLowerCase() === 'em-andamento' || String(t.status||'').toLowerCase() === 'andamento') emAnd.push(t);
+    else if (/em-?andamento|andamento/.test(String(t.status||'').toLowerCase())) emAnd.push(t);
     else aFazer.push(t);
   });
 
-  // Renderiza 3 mini colunas estilo kanban
-  function colHtml(label, cor, bgCor, lista) {
-    var max = 3;
-    var topItens = lista.slice(0, max);
-    var itemsHtml = topItens.map(function(t){
+  // Calcula resumos
+  var pendentes = aFazer.length + emAnd.length;
+  var urgentes = tarefas.filter(function(t){
+    return !t.concluida && (String(t.prioridade||'').toLowerCase() === 'alta' || String(t.prioridade||'').toLowerCase() === 'urgente');
+  }).length;
+  // Concluídas no mês atual
+  var hojeM = new Date();
+  var mesStr = hojeM.getFullYear() + '-' + String(hojeM.getMonth()+1).padStart(2,'0');
+  var conclMes = concl.filter(function(t){
+    var d = t.concluido_em || t.criadoEm || t.criado || t.data || '';
+    return d && d.indexOf(mesStr) === 0;
+  }).length;
+
+  // Mostra MAX 3 TAREFAS NO TOTAL — distribuídas pelas 3 colunas (preserva representação)
+  // Pega 1 de cada coluna se houver. Se sobrar slots, prefere "A fazer" → "Em and.".
+  var visiveis = { aFazer: [], emAnd: [], concl: [] };
+  var slots = 3;
+  // Volta 1, 1, 1 inicialmente
+  if (aFazer.length && slots) { visiveis.aFazer.push(aFazer[0]); slots--; }
+  if (emAnd.length && slots)  { visiveis.emAnd.push(emAnd[0]); slots--; }
+  if (concl.length && slots)  { visiveis.concl.push(concl[0]); slots--; }
+  // Sobraram slots? Distribui priorizando A fazer
+  var idxA = 1, idxE = 1, idxC = 1;
+  while (slots > 0) {
+    var added = false;
+    if (idxA < aFazer.length) { visiveis.aFazer.push(aFazer[idxA++]); slots--; added = true; if (!slots) break; }
+    if (idxE < emAnd.length) { visiveis.emAnd.push(emAnd[idxE++]); slots--; added = true; if (!slots) break; }
+    if (idxC < concl.length) { visiveis.concl.push(concl[idxC++]); slots--; added = true; if (!slots) break; }
+    if (!added) break;
+  }
+
+  // Render colunas
+  function colHtml(label, cor, bgCor, lista, visivelLista) {
+    var itemsHtml = visivelLista.map(function(t){
       var nome = (t.nome || t.titulo || t.descricao || 'Tarefa').replace(/</g,'&lt;');
       return '<div class="one-desk-tar-mini-card">' + nome + '</div>';
     }).join('');
-    if (!topItens.length) {
+    if (!visivelLista.length) {
       itemsHtml = '<div class="one-desk-tar-mini-empty">—</div>';
     }
-    var maisN = lista.length - topItens.length;
-    var maisLabel = maisN > 0 ? '<div class="one-desk-tar-mini-mais">+' + maisN + '</div>' : '';
     return '<div class="one-desk-tar-mini-col">' +
              '<div class="one-desk-tar-mini-col-head" style="background:' + bgCor + ';color:' + cor + '">' +
                '<span class="one-desk-tar-mini-col-label">' + label + '</span>' +
                '<span class="one-desk-tar-mini-col-count">' + lista.length + '</span>' +
              '</div>' +
-             '<div class="one-desk-tar-mini-col-body">' + itemsHtml + maisLabel + '</div>' +
+             '<div class="one-desk-tar-mini-col-body">' + itemsHtml + '</div>' +
            '</div>';
   }
 
-  el.innerHTML =
-    colHtml('A fazer',     '#6E4F87', 'rgba(155,114,176,0.20)', aFazer) +
-    colHtml('Em and.',     '#8B6914', 'rgba(212,166,85,0.20)',  emAnd) +
-    colHtml('Concluídas',  '#1F6B52', 'rgba(39,133,106,0.20)',  concl);
+  var kanbanHtml = '<div class="one-desk-tar-kanban-grid">' +
+    colHtml('A fazer',     '#6E4F87', 'rgba(155,114,176,0.20)', aFazer, visiveis.aFazer) +
+    colHtml('Em and.',     '#8B6914', 'rgba(212,166,85,0.20)',  emAnd,  visiveis.emAnd) +
+    colHtml('Concl.',      '#1F6B52', 'rgba(39,133,106,0.20)',  concl,  visiveis.concl) +
+    '</div>';
+
+  var resumoHtml =
+    '<div class="one-desk-mini-resumos">' +
+      '<div class="one-desk-mini-resumo mini-pendentes">' +
+        '<div class="one-desk-mini-resumo-val">' + pendentes + '</div>' +
+        '<div class="one-desk-mini-resumo-lbl">Pendentes</div>' +
+      '</div>' +
+      '<div class="one-desk-mini-resumo mini-urgentes">' +
+        '<div class="one-desk-mini-resumo-val">' + urgentes + '</div>' +
+        '<div class="one-desk-mini-resumo-lbl">Urgentes</div>' +
+      '</div>' +
+      '<div class="one-desk-mini-resumo mini-concluidas">' +
+        '<div class="one-desk-mini-resumo-val">' + conclMes + '</div>' +
+        '<div class="one-desk-mini-resumo-lbl">No mês</div>' +
+      '</div>' +
+    '</div>';
+
+  el.innerHTML = kanbanHtml + resumoHtml;
 }
 
 function renderOneDesktop() {

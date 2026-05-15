@@ -6794,3 +6794,145 @@ button.one-fin-card:hover {
     font-size: 7.5px;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   LAYOUT v3 — Refinos finais: alinhamento + contornos + respiro
+   ════════════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+
+  /* Cards frase e Conta Comigo — MESMO contorno duplo dos outros elementos */
+  .one-desk-frase-card,
+  .one-desk-card-conta {
+    box-shadow:
+      0 0 0 2px rgba(92,136,112,0.92),
+      0 0 0 8px rgba(92,136,112,0.22),
+      0 8px 24px rgba(0,0,0,.08),
+      0 4px 10px rgba(0,0,0,.05) !important;
+  }
+
+  /* Gaps verticais uniformes nas 3 colunas pra alinhar horizontalmente
+     o topo dos elementos da segunda linha (menu, área de trabalho, 1º card lateral) */
+  body:has(#screen-one.active) #sidebar {
+    gap: 14px !important;
+  }
+  body:has(#screen-one.active) .one-desktop-sidebar {
+    gap: 14px !important; /* gap entre Conta Comigo e primeiro card + gap entre cards laterais */
+  }
+  .one-desk-frase-card {
+    margin-bottom: 14px !important;
+  }
+
+  /* Cards laterais ainda mais compactos pra evitar mescla de sombras
+     e dar destaque ao conteúdo */
+  body:has(#screen-one.active) .one-desk-card {
+    padding: 10px 12px 8px !important;
+    border-radius: 16px !important;
+  }
+  body:has(#screen-one.active) .one-desk-card-header {
+    margin-bottom: 6px !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MINI RESUMOS — 3 mini cards no rodapé de cada card lateral
+   (Agenda: A receber/A pagar/Compromissos | Tarefas: Pendentes/Urgentes/No mês
+    | Financeiro: Entradas/Saídas/Pendente)
+   ════════════════════════════════════════════════════════════════ */
+.one-desk-mini-resumos {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+.one-desk-mini-resumo {
+  background: #FBF8F2;
+  border: 1.5px solid rgba(127,168,142,0.18);
+  border-radius: 8px;
+  padding: 5px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-family: system-ui, -apple-system, sans-serif;
+  text-align: left;
+  min-width: 0;
+}
+.one-desk-mini-resumo-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2D3D2F;
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+.one-desk-mini-resumo-lbl {
+  font-size: 8.5px;
+  color: #6B7F6F;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+/* Variantes coloridas pros mini resumos */
+.one-desk-mini-resumo.mini-receber,
+.one-desk-mini-resumo.mini-entradas,
+.one-desk-mini-resumo.mini-concluidas {
+  background: #E5EFE3;
+  border-color: rgba(39,133,106,0.28);
+}
+.one-desk-mini-resumo.mini-receber .one-desk-mini-resumo-val,
+.one-desk-mini-resumo.mini-entradas .one-desk-mini-resumo-val,
+.one-desk-mini-resumo.mini-concluidas .one-desk-mini-resumo-val {
+  color: #1F6B52;
+}
+
+.one-desk-mini-resumo.mini-pagar,
+.one-desk-mini-resumo.mini-saidas,
+.one-desk-mini-resumo.mini-urgentes {
+  background: #FDECEA;
+  border-color: rgba(192,57,43,0.22);
+}
+.one-desk-mini-resumo.mini-pagar .one-desk-mini-resumo-val,
+.one-desk-mini-resumo.mini-saidas .one-desk-mini-resumo-val,
+.one-desk-mini-resumo.mini-urgentes .one-desk-mini-resumo-val {
+  color: #A02D24;
+}
+
+.one-desk-mini-resumo.mini-compromissos,
+.one-desk-mini-resumo.mini-pendentes {
+  background: #F0E8F4;
+  border-color: rgba(155,114,176,0.30);
+}
+.one-desk-mini-resumo.mini-compromissos .one-desk-mini-resumo-val,
+.one-desk-mini-resumo.mini-pendentes .one-desk-mini-resumo-val {
+  color: #6E4F87;
+}
+
+.one-desk-mini-resumo.mini-pendente {
+  background: #FCF6E8;
+  border-color: rgba(212,166,85,0.28);
+}
+.one-desk-mini-resumo.mini-pendente .one-desk-mini-resumo-val {
+  color: #8B6914;
+}
+
+/* Garante que o conteúdo principal (grid agenda / kanban) tem espaço sobrando */
+.one-agenda-week-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  min-height: 0;
+}
+.one-desk-tar-kanban-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  min-height: 0;
+}
