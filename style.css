@@ -6491,3 +6491,167 @@ button.one-fin-card:hover {
   width: 7px; height: 7px;
   border-radius: 50%;
 }
+
+/* ════════════════════════════════════════════════════════════════
+   LAYOUT v3 — Sidebar compacta + 3 cards alinhados no topo + área expandida
+   ════════════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+
+  /* Esconde o header full-width antigo no desktop (substituído pelos 3 cards alinhados) */
+  body:has(#screen-one.active) .one-desktop-header-row { display: none !important; }
+
+  /* Sidebar esquerda mais compacta — 140px (era ~220px) */
+  body:has(#screen-one.active) #sidebar {
+    width: 140px !important;
+  }
+  body:has(#screen-one.active) #main {
+    margin-left: 140px !important;
+  }
+  body:has(#screen-one.active) #screen-one.active {
+    left: 140px !important;
+  }
+
+  /* Sidebar direita (cards) mais compacta — 180px (era ~260-380px) */
+  body:has(#screen-one.active) .one-desktop-sidebar {
+    min-width: 180px !important;
+    max-width: 200px !important;
+    gap: 8px !important;
+    padding: 0 12px 0 4px !important;
+  }
+
+  /* Frase central — card estreito alinhado horizontalmente com card identidade + card Conta Comigo */
+  .one-desk-frase-card {
+    background: #FBF8F2;
+    border-radius: 14px;
+    padding: 8px 18px;
+    height: 56px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-bottom: 8px;
+    box-shadow:
+      0 0 0 2px rgba(92,136,112,0.55),
+      0 0 0 6px rgba(92,136,112,0.15),
+      0 4px 12px rgba(0,0,0,.05);
+  }
+  .one-desk-frase-text {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 14px;
+    color: #5C8870;
+    margin: 0;
+    transition: opacity .4s ease;
+  }
+
+  /* Card "Conta Comigo" — primeiro elemento da sidebar direita, alinha com card identidade da esquerda */
+  .one-desk-card-conta {
+    background: #FBF8F2;
+    border-radius: 14px;
+    padding: 8px 12px;
+    height: 56px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    box-shadow:
+      0 0 0 2px rgba(92,136,112,0.55),
+      0 0 0 6px rgba(92,136,112,0.15),
+      0 4px 12px rgba(0,0,0,.05);
+  }
+  .one-desk-card-conta-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 6px;
+  }
+  .one-desk-card-conta-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .one-desk-card-conta-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #2D3D2F;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .one-desk-card-conta-meta {
+    font-size: 10px;
+    color: #6B7F6F;
+    margin-top: 2px;
+    font-family: system-ui, -apple-system, sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .one-desk-card-conta-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .one-desk-card-conta-btn {
+    background: rgba(127,168,142,0.10);
+    border: 1px solid rgba(127,168,142,0.25);
+    width: 24px; height: 24px;
+    border-radius: 7px;
+    color: #5C8870;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s ease;
+  }
+  .one-desk-card-conta-btn:hover { background: rgba(127,168,142,0.20); }
+  .one-desk-card-conta-btn-sair { color: #C0392B; }
+  .one-desk-card-conta-btn-sair:hover { background: rgba(192,57,43,0.10); }
+
+  /* Card identidade Letícia (sidebar esquerda) precisa ter mesma altura pra alinhar */
+  body:has(#screen-one.active) .sidebar-profile {
+    height: 56px !important;
+    min-height: 56px !important;
+    padding: 6px 9px !important;
+  }
+
+  /* Layout: reduz padding-top do main pra cards se alinharem */
+  body:has(#screen-one.active) .one-desktop-layout {
+    padding-top: 8px !important;
+  }
+
+  /* Cards laterais menores (compactos pra liberar espaço pro main) */
+  body:has(#screen-one.active) .one-desk-card {
+    padding: 12px 14px 10px !important;
+    border-radius: 18px !important;
+  }
+  body:has(#screen-one.active) .one-desk-card-header {
+    margin-bottom: 6px !important;
+  }
+  body:has(#screen-one.active) .one-desk-card-title {
+    font-size: 11px !important;
+  }
+
+  /* Sidebar esquerda — ajustes pra a versão compacta de 140px */
+  body:has(#screen-one.active) .sidebar-profile .avatar {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 11px !important;
+    flex-shrink: 0 !important;
+  }
+  body:has(#screen-one.active) .sidebar-profile .profile-info strong {
+    font-size: 11px !important;
+    line-height: 1.1 !important;
+  }
+  body:has(#screen-one.active) .sidebar-profile .profile-info small {
+    font-size: 9.5px !important;
+  }
+  body:has(#screen-one.active) .nav-item {
+    font-size: 11px !important;
+    padding: 5px 8px !important;
+  }
+  body:has(#screen-one.active) .nav-icon img {
+    width: 14px !important;
+    height: 14px !important;
+  }
+}

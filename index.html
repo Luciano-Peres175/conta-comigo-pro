@@ -331,6 +331,11 @@
       <!-- Coluna central: wrapper com variantes (swap entre Chat / Agenda / Financeiro / Tarefas) -->
       <div class="one-desktop-main">
 
+      <!-- Card frase central — alinhado horizontalmente com card identidade (esquerda) e card Conta Comigo (direita) -->
+      <div class="one-desk-frase-card">
+        <p class="one-desk-frase-text" id="one-desk-frase-text">Sua mente livre para o que importa.</p>
+      </div>
+
       <!-- Variante Chat (default ativa) — área de conversa com Pinah real -->
       <div class="one-desktop-chat" data-panel="chat">
         <!-- Welcome state: visível enquanto não há mensagens -->
@@ -652,6 +657,20 @@
 
       <!-- Coluna direita: cards flutuantes -->
       <div class="one-desktop-sidebar">
+
+        <!-- Card "Conta Comigo" — alinhado horizontalmente com o card identidade da Letícia (sidebar esquerda) -->
+        <div class="one-desk-card-conta">
+          <div class="one-desk-card-conta-row">
+            <div class="one-desk-card-conta-info">
+              <div class="one-desk-card-conta-title">Conta Comigo</div>
+              <div class="one-desk-card-conta-meta" id="one-desk-card-conta-meta">—</div>
+            </div>
+            <div class="one-desk-card-conta-actions">
+              <button onclick="abrirConfigPinah()" title="Configurações" class="one-desk-card-conta-btn"><img src="assets/icons/ic-config.png" alt="config" style="width:16px;height:16px"></button>
+              <button onclick="authSair()" title="Sair" class="one-desk-card-conta-btn one-desk-card-conta-btn-sair"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+            </div>
+          </div>
+        </div>
 
         <!-- Card Pinah compacto (escondido por default — aparece quando Chat sai do centro) -->
         <div class="one-desk-card one-desk-card-chat" data-panel="chat" onclick="swapToCenter('chat')" hidden title="Voltar pra Pinah">

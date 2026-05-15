@@ -8060,3 +8060,26 @@ function oneAgRenderResumoMes() {
     '</div>';
 }
 window.oneAgRenderResumoMes = oneAgRenderResumoMes;
+
+/* ════════════════════════════════════════════════════════════════
+   LAYOUT v3 — atualiza data/hora no card "Conta Comigo" do header
+   ════════════════════════════════════════════════════════════════ */
+function oneDeskAtualizarMeta() {
+  var el = document.getElementById('one-desk-card-conta-meta');
+  if (!el) return;
+  var agora = new Date();
+  var dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  var dia = dias[agora.getDay()];
+  var dataF = String(agora.getDate()).padStart(2,'0') + '/' + String(agora.getMonth()+1).padStart(2,'0');
+  var hora = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
+  el.textContent = dia + ' ' + dataF + ' · ' + hora;
+}
+window.oneDeskAtualizarMeta = oneDeskAtualizarMeta;
+// Roda a cada minuto pra manter a hora atualizada
+setInterval(function(){ try { oneDeskAtualizarMeta(); } catch(e){} }, 60 * 1000);
+// Roda uma vez ao carregar (após DOM ready)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', oneDeskAtualizarMeta);
+} else {
+  oneDeskAtualizarMeta();
+}
