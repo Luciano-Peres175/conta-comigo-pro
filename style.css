@@ -4161,9 +4161,10 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 
 /* Coluna do dia — agora com altura fixa (header + 1200px corpo) */
 .one-ag-kday-col {
-  flex: 0 0 160px;
-  min-width: 140px;
-  max-width: 200px;
+  /* Largura calculada pra 5 dias úteis caberem visíveis (seg-sex). Sáb/dom acessíveis via scroll horizontal. */
+  flex: 0 0 calc((100% - 80px) / 5);
+  min-width: 150px;
+  max-width: 240px;
   background: #F2F6F1;
   border-radius: 12px;
   display: flex;
@@ -4171,6 +4172,13 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   overflow: visible;
   border: 1.5px solid rgba(127,168,142,0.12);
   height: 1236px;
+}
+/* Em containers estreitos (mobile), volta pra largura fixa */
+@media (max-width: 900px) {
+  .one-ag-kday-col {
+    flex: 0 0 150px;
+    min-width: 150px;
+  }
 }
 .one-ag-kday-col.today {
   border-color: #7FA88E;
@@ -6181,20 +6189,21 @@ button.one-fin-card:hover {
   color: #6E4F87;
 }
 
-/* View Hoje — strip horizontal de 7 dias */
+/* View Hoje — strip horizontal compacta de 7 dias */
 .one-ag-week-strip {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  margin: 12px 0 18px;
+  gap: 4px;
+  margin: 8px 0 10px;
   padding: 0 2px;
+  flex-shrink: 0;
 }
 .one-ag-week-day {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 4px;
-  border-radius: 12px;
+  padding: 5px 4px 6px;
+  border-radius: 10px;
   background: transparent;
   border: 1.5px solid transparent;
   cursor: pointer;
@@ -6203,18 +6212,18 @@ button.one-fin-card:hover {
 }
 .one-ag-week-day:hover { background: rgba(127,168,142,0.08); }
 .one-ag-week-day .dia-nome {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 600;
   color: #6B7F6F;
   letter-spacing: .4px;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .one-ag-week-day .dia-num {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 500;
   color: #2D3D2F;
-  width: 36px; height: 36px;
+  width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%;
   transition: all .15s ease;
@@ -6222,29 +6231,36 @@ button.one-fin-card:hover {
 .one-ag-week-day.today .dia-num {
   background: linear-gradient(135deg, #7FA88E, #5C8870);
   color: #fff;
-  box-shadow: 0 3px 10px rgba(92,136,112,0.30);
+  box-shadow: 0 3px 8px rgba(92,136,112,0.30);
 }
 .one-ag-week-day.selected:not(.today) .dia-num {
   background: rgba(127,168,142,0.18);
   color: #2D3D2F;
 }
 .one-ag-week-day .dia-dot {
-  width: 4px; height: 4px;
+  width: 3.5px; height: 3.5px;
   border-radius: 50%;
   background: #9B72B0;
-  margin-top: 4px;
+  margin-top: 3px;
   opacity: 0;
 }
 .one-ag-week-day.tem-evento .dia-dot { opacity: 1; }
 
-/* Lista de compromissos do dia (view Hoje) */
+/* Lista de compromissos do dia (view Hoje) — rolagem na lista */
+.one-fin-vista[data-view="hoje"] {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
 .one-ag-hoje-list {
   flex: 1;
   overflow-y: auto;
-  padding: 0 2px;
+  padding: 0 2px 8px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-height: 0;
 }
 .one-ag-hoje-day-label {
   font-size: 11px;
