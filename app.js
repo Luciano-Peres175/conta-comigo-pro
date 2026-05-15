@@ -5837,20 +5837,41 @@ function renderOneDeskTarefas() {
   if (!el) return;
   var tarefas = [];
   try { tarefas = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
-  var pendentes = tarefas.filter(function(t){ return !t.concluida; }).slice(0,5);
-  if (!pendentes.length) {
-    el.innerHTML = '<p style="font-size:12px;color:#B0A8BC;text-align:center;padding:12px 0">Nenhuma tarefa pendente 🎉</p>';
-    return;
-  }
-  var html = '';
-  pendentes.forEach(function(t) {
-    html += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid rgba(160,32,240,0.08)">';
-    html += '<div style="width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(160,32,240,0.55);flex-shrink:0"></div>';
-    html += '<span style="font-size:12px;color:#2D2D2D;font-family:system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">'+(t.nome||t.titulo||t.descricao||'Tarefa')+'</span>';
-    if (t.prazo) html += '<span style="font-size:10px;color:#A8A0B8;flex-shrink:0">'+t.prazo+'</span>';
-    html += '</div>';
+
+  // Classifica tarefas em 3 buckets de status
+  var aFazer = [], emAnd = [], concl = [];
+  tarefas.forEach(function(t){
+    if (t.concluida || String(t.status||'').toLowerCase() === 'concluida') concl.push(t);
+    else if (String(t.status||'').toLowerCase() === 'em-andamento' || String(t.status||'').toLowerCase() === 'andamento') emAnd.push(t);
+    else aFazer.push(t);
   });
-  el.innerHTML = html;
+
+  // Renderiza 3 mini colunas estilo kanban
+  function colHtml(label, cor, bgCor, lista) {
+    var max = 3;
+    var topItens = lista.slice(0, max);
+    var itemsHtml = topItens.map(function(t){
+      var nome = (t.nome || t.titulo || t.descricao || 'Tarefa').replace(/</g,'&lt;');
+      return '<div class="one-desk-tar-mini-card">' + nome + '</div>';
+    }).join('');
+    if (!topItens.length) {
+      itemsHtml = '<div class="one-desk-tar-mini-empty">—</div>';
+    }
+    var maisN = lista.length - topItens.length;
+    var maisLabel = maisN > 0 ? '<div class="one-desk-tar-mini-mais">+' + maisN + '</div>' : '';
+    return '<div class="one-desk-tar-mini-col">' +
+             '<div class="one-desk-tar-mini-col-head" style="background:' + bgCor + ';color:' + cor + '">' +
+               '<span class="one-desk-tar-mini-col-label">' + label + '</span>' +
+               '<span class="one-desk-tar-mini-col-count">' + lista.length + '</span>' +
+             '</div>' +
+             '<div class="one-desk-tar-mini-col-body">' + itemsHtml + maisLabel + '</div>' +
+           '</div>';
+  }
+
+  el.innerHTML =
+    colHtml('A fazer',     '#6E4F87', 'rgba(155,114,176,0.20)', aFazer) +
+    colHtml('Em and.',     '#8B6914', 'rgba(212,166,85,0.20)',  emAnd) +
+    colHtml('Concluídas',  '#1F6B52', 'rgba(39,133,106,0.20)',  concl);
 }
 
 function renderOneDesktop() {

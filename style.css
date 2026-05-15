@@ -6697,3 +6697,100 @@ button.one-fin-card:hover {
   .one-desk-card-conta-actions { display: none !important; }
   .one-desk-card-conta-row { display: contents !important; } /* faz o info aparecer direto */
 }
+
+/* ════════════════════════════════════════════════════════════════
+   CARDS LATERAIS — Mini telas das funcionalidades (Agenda/Tarefas/Financeiro)
+   ════════════════════════════════════════════════════════════════ */
+
+/* Card Tarefas: mini kanban com 3 colunas */
+.one-desk-tar-kanban {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  flex: 1;
+  min-height: 0;
+}
+.one-desk-tar-mini-col {
+  background: #FBF8F2;
+  border-radius: 7px;
+  border: 1px solid rgba(127,168,142,0.10);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+.one-desk-tar-mini-col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+  padding: 3px 5px;
+  border-bottom: 1px solid rgba(127,168,142,0.10);
+}
+.one-desk-tar-mini-col-label {
+  font-size: 9px;
+  font-weight: 600;
+  font-family: system-ui, -apple-system, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.one-desk-tar-mini-col-count {
+  font-size: 9px;
+  font-weight: 700;
+  font-family: system-ui, -apple-system, sans-serif;
+  flex-shrink: 0;
+}
+.one-desk-tar-mini-col-body {
+  flex: 1;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+  min-height: 0;
+}
+.one-desk-tar-mini-card {
+  background: #fff;
+  border: 0.5px solid rgba(127,168,142,0.20);
+  border-radius: 5px;
+  padding: 4px 5px;
+  font-size: 8.5px;
+  color: #2D3D2F;
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.one-desk-tar-mini-empty {
+  font-size: 9px;
+  color: #C0BAB0;
+  text-align: center;
+  padding: 4px 0;
+  font-style: italic;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+.one-desk-tar-mini-mais {
+  font-size: 8.5px;
+  color: #6B7F6F;
+  text-align: center;
+  padding: 2px 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-style: italic;
+}
+
+/* Mini cards de compromissos no card Agenda (se existirem) — compactar */
+@media (min-width: 900px) {
+  .one-desk-card-agenda .one-agenda-card-mini {
+    font-size: 8.5px;
+    padding: 3px 4px;
+  }
+  .one-desk-card-agenda .one-agenda-card-mini-name {
+    font-size: 8.5px;
+    line-height: 1.15;
+  }
+  .one-desk-card-agenda .one-agenda-card-mini-time {
+    font-size: 7.5px;
+  }
+}
