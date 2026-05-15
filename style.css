@@ -7092,25 +7092,32 @@ button.one-fin-card:hover {
 }
 
 /* ── Kanban Semanal — 5+2 colunas individualizadas ── */
+/* Wrapper: scroll vertical de 24h, layout em linha (regua + 7 cols) */
 .one-ag-tl-wrapper {
+  flex: 1;
   display: flex;
   flex-direction: row;
   gap: 8px;
-  height: 100%;
-  min-height: 0;
-  padding: 6px 4px 4px;
+  overflow: auto;
   background: transparent;
-  overflow: hidden;
+  border: none;
+  border-radius: 14px;
+  min-height: 0;
+  position: relative;
+  padding: 6px 4px;
 }
 
-/* Regua de horas (esquerda) — pequena e discreta */
+/* Regua de horas (esquerda) — pequena e discreta, sticky */
 .one-ag-tl-ruler {
+  position: sticky;
+  left: 0;
+  z-index: 6;
+  flex: 0 0 36px !important;
   width: 36px !important;
-  flex-shrink: 0;
-  position: relative;
+  height: 1236px; /* 36 header + 1200 body */
+  background: transparent;
   border-right: none;
   padding-top: 38px; /* compensa header das colunas */
-  background: transparent;
 }
 .one-ag-tl-hour {
   position: absolute;
@@ -7123,18 +7130,18 @@ button.one-fin-card:hover {
   font-family: system-ui, -apple-system, sans-serif;
   text-align: right;
   padding-right: 4px;
+  margin-top: 0;
   transform: translateY(-50%);
 }
 
-/* Wrapper das colunas dos dias */
+/* Wrapper das colunas dos dias — altura igual à régua, grid 7 colunas */
 .one-ag-tl-cols {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  gap: 6px;
   flex: 1;
   min-width: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  height: 1236px; /* 36 header + 1200 body */
   position: relative;
 }
 
@@ -7192,11 +7199,11 @@ button.one-fin-card:hover {
 .one-ag-kday-col[data-dow="6"] .one-ag-kday-header { background: #9DB1A8; } /* SAB cinza-verde claro */
 .one-ag-kday-col[data-dow="0"] .one-ag-kday-header { background: #8DA39A; } /* DOM cinza-verde mais escuro */
 
-/* Body da coluna — area de eventos */
+/* Body da coluna — area de eventos com altura fixa (24h x 50px/h) */
 .one-ag-kday-body {
   position: relative;
-  flex: 1;
-  min-height: 1200px; /* 24h x 50px/h */
+  height: 1200px; /* 24h x 50px/h - sempre 1200px */
+  flex-shrink: 0;
   cursor: pointer;
   background: #FFFFFF;
 }
