@@ -4815,6 +4815,17 @@ function renderOneFinanceiroPainel() {
   // Atualiza o bloco Pendências e Alertas a cada render do painel
   if (typeof renderOnePendenciasAlertas === 'function') renderOnePendenciasAlertas();
 
+  // Se a vista ativa não for Extrato, renderiza ela em vez da lista de lançamentos
+  var vistaAtual = window.oneFinVistaAtiva || 'geral';
+  if (vistaAtual === 'geral' && typeof oneFinRenderGeral === 'function') {
+    // Garante visibilidade da view geral, esconde outras
+    document.querySelectorAll('.one-fin-vista').forEach(function(v){ v.hidden = v.getAttribute('data-vista') !== 'geral'; });
+    setTimeout(oneFinRenderGeral, 0);
+  } else if (vistaAtual === 'dashboard' && typeof oneFinRenderCategorias === 'function') {
+    document.querySelectorAll('.one-fin-vista').forEach(function(v){ v.hidden = v.getAttribute('data-vista') !== 'dashboard'; });
+    setTimeout(oneFinRenderCategorias, 0);
+  }
+
   var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
   var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
   var hoje = new Date(); hoje.setHours(0,0,0,0);
@@ -4856,6 +4867,28 @@ function renderOneFinanceiroPainel() {
     var inicioStr = inicio.toISOString().slice(0,10);
     rFil = receitas.filter(function(r){ return (r.data||'') >= inicioStr; });
     dFil = despesas.filter(function(d){ return (d.data||'') >= inicioStr; });
+  }
+
+  // Filtro adicional vindo dos cards de alerta (pendentes / vencendo)
+  if (window.oneFinFiltroAtivo === 'pendentes') {
+    rFil = rFil.filter(function(r){
+      var s = String(r.status || '').toLowerCase();
+      return s === 'pendente' || s === 'aberto' || s === 'aguardando';
+    });
+    dFil = []; // pendentes é só de receitas
+  } else if (window.oneFinFiltroAtivo === 'vencendo') {
+    var hojeStr2 = hoje.toISOString().slice(0,10);
+    var em7Dias2 = new Date(hoje); em7Dias2.setDate(em7Dias2.getDate() + 7);
+    var em7Str = em7Dias2.toISOString().slice(0,10);
+    var inicioMes2 = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
+    dFil = dFil.filter(function(d){
+      var data = d.data || '';
+      if (!data) return false;
+      var status = String(d.status || '').toLowerCase();
+      if (status === 'pago' || status === 'quitado') return false;
+      return (data >= hojeStr2 && data <= em7Str) || (data >= inicioMes2 && data < hojeStr2);
+    });
+    rFil = []; // vencendo é só de despesas
   }
 
   var lancamentos = rFil.map(function(r){
@@ -6950,66 +6983,82 @@ window.syncGlobal = syncGlobal;
 /* ════════════════════════════════════════════════════════════════
    PENDÊNCIAS E ALERTAS — 3 cards no topo do painel Financeiro
    ════════════════════════════════════════════════════════════════ */
+window.oneFinFiltroAtivo = window.oneFinFiltroAtivo || null; // null | 'pendentes' | 'vencendo'
+
+function _brlFin(v) { return 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
 function renderOnePendenciasAlertas() {
   var hoje = new Date().toISOString().slice(0, 10);
   var hojeDate = new Date(); hojeDate.setHours(0,0,0,0);
 
-  // 1) Receitas pendentes (status === 'pendente')
+  // Receitas pendentes (status === 'pendente')
   var receitas = [];
   try { receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
-  var recPend = receitas.filter(function(r){
+  var recPendList = receitas.filter(function(r){
     var s = String(r.status || '').toLowerCase();
     return s === 'pendente' || s === 'aberto' || s === 'aguardando';
-  }).length;
+  });
+  var recPend = recPendList.length;
+  var recPendValor = recPendList.reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
 
-  // 2) Despesas vencendo — variáveis com data nos próximos 7 dias OU já vencidas no mês corrente sem status 'pago'
+  // Despesas vencendo — próximos 7 dias OU vencidas no mês sem pago
   var despesas = [];
   try { despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){}
   var em7Dias = new Date(hojeDate); em7Dias.setDate(em7Dias.getDate() + 7);
   var em7DiasStr = em7Dias.toISOString().slice(0,10);
   var inicioMes = new Date(hojeDate.getFullYear(), hojeDate.getMonth(), 1).toISOString().slice(0,10);
-  var despVenc = despesas.filter(function(d){
+  var despVencList = despesas.filter(function(d){
     var data = d.data || '';
     if (!data) return false;
     var status = String(d.status || '').toLowerCase();
     if (status === 'pago' || status === 'quitado') return false;
-    // vence em até 7 dias OU já venceu neste mês sem ter sido paga
     return (data >= hoje && data <= em7DiasStr) || (data >= inicioMes && data < hoje);
-  }).length;
-
-  // 3) Compromissos de hoje (não realizados)
-  var compromissos = [];
-  try { compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
-  var compHoje = compromissos.filter(function(c){
-    return c.data === hoje && !c.realizado && String(c.status || '').toLowerCase() !== 'cancelado';
-  }).length;
+  });
+  var despVenc = despVencList.length;
+  var despVencValor = despVencList.reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
 
   // Atualiza DOM
-  var setNum = function(id, n) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = n;
-  };
-  setNum('one-pn-num-receitas', recPend);
-  setNum('one-pn-num-despesas', despVenc);
-  setNum('one-pn-num-compromissos', compHoje);
-
-  // Mostra mensagem "Pinah já cuidou" se tudo zerado
-  var empty = document.getElementById('one-pn-alerts-empty');
-  if (empty) empty.hidden = (recPend + despVenc + compHoje) > 0;
+  var setText = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+  setText('one-pn-num-receitas', recPend);
+  setText('one-pn-val-receitas', _brlFin(recPendValor));
+  setText('one-pn-num-despesas', despVenc);
+  setText('one-pn-val-despesas', _brlFin(despVencValor));
 }
 window.renderOnePendenciasAlertas = renderOnePendenciasAlertas;
 
-/* Filtros chamados pelos cards de alerta — placeholders por enquanto, toast pra Mentor saber */
+/* Filtros funcionais nos cards de alerta — clicam, filtram a lista no Extrato e chaveiam vista */
 function oneFinFiltrarPendentes() {
-  if (typeof oneToast === 'function') oneToast('Filtro "Pendentes" em breve. Por enquanto role a lista.');
-  // TODO: filtrar lista por status === 'pendente'
+  window.oneFinFiltroAtivo = 'pendentes';
+  oneFinSetVista('extrato');
+  oneFinAtualizarChipFiltro('Receitas pendentes');
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
 }
 function oneFinFiltrarVencendo() {
-  if (typeof oneToast === 'function') oneToast('Filtro "Vencendo" em breve. Por enquanto role a lista.');
-  // TODO: filtrar lista por despesas vencendo
+  window.oneFinFiltroAtivo = 'vencendo';
+  oneFinSetVista('extrato');
+  oneFinAtualizarChipFiltro('Despesas vencendo');
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+}
+function oneFinLimparFiltro() {
+  window.oneFinFiltroAtivo = null;
+  oneFinAtualizarChipFiltro(null);
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+}
+function oneFinAtualizarChipFiltro(label) {
+  var wrap = document.getElementById('one-fin-filtros-ativos');
+  var chip = document.getElementById('one-fin-filtro-chip');
+  if (!wrap) return;
+  if (label) {
+    wrap.hidden = false;
+    if (chip) chip.textContent = '🔍 ' + label;
+  } else {
+    wrap.hidden = true;
+  }
 }
 window.oneFinFiltrarPendentes = oneFinFiltrarPendentes;
 window.oneFinFiltrarVencendo = oneFinFiltrarVencendo;
+window.oneFinLimparFiltro = oneFinLimparFiltro;
+window.oneFinAtualizarChipFiltro = oneFinAtualizarChipFiltro;
 
 /* ════════════════════════════════════════════════════════════════
    RELATÓRIOS — modal full-screen com gráfico donut + balanço
@@ -7372,7 +7421,7 @@ window.oneFinModalSalvar = oneFinModalSalvar;
 /* ════════════════════════════════════════════════════════════════
    VISTAS INLINE NO PAINEL FINANCEIRO — Extrato | Categorias | Balanço
    ════════════════════════════════════════════════════════════════ */
-window.oneFinVistaAtiva = window.oneFinVistaAtiva || 'extrato';
+window.oneFinVistaAtiva = window.oneFinVistaAtiva || 'geral';
 window.oneFinInlineTipo = window.oneFinInlineTipo || 'despesas';
 window.oneFinInlineCharts = window.oneFinInlineCharts || { donut: null, bars: null };
 
@@ -7385,21 +7434,105 @@ function oneFinSetVista(vista) {
     v.hidden = v.getAttribute('data-vista') !== vista;
   });
   // Render apropriado pra cada vista
-  if (vista === 'categorias') {
-    if (typeof Chart === 'undefined') {
-      setTimeout(oneFinRenderCategorias, 200);
-    } else {
-      oneFinRenderCategorias();
-    }
-  } else if (vista === 'balanco') {
-    if (typeof Chart === 'undefined') {
-      setTimeout(oneFinRenderBalanco, 200);
-    } else {
-      oneFinRenderBalanco();
-    }
+  if (vista === 'geral') {
+    oneFinRenderGeral();
+  } else if (vista === 'dashboard') {
+    if (typeof Chart === 'undefined') setTimeout(oneFinRenderCategorias, 200);
+    else oneFinRenderCategorias();
+  } else if (vista === 'extrato') {
+    if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
   }
 }
 window.oneFinSetVista = oneFinSetVista;
+
+/* ── View "Visão geral" — lista resumida + barras balanço 6 meses ── */
+function oneFinRenderGeral() {
+  // 1) Últimos 6 lançamentos
+  var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
+  var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
+  var todos = receitas.map(function(r){
+    return { tipo:'in', key:'receitas', id:r.id, nome:r.nome || r.descricao || 'Receita',
+             categoria: r.categoria || r.tipo || '', valor:Number(r.valor)||0, data:r.data };
+  }).concat(despesas.map(function(d){
+    return { tipo:'out', key:'despesas', id:d.id, nome:d.descricao || d.nome || 'Despesa',
+             categoria: d.categoria || '', valor:Number(d.valor)||0, data:d.data };
+  })).sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); }).slice(0, 6);
+
+  var listEl = document.getElementById('one-fin-geral-recent');
+  if (listEl) {
+    if (!todos.length) {
+      listEl.innerHTML = '<p style="text-align:center;color:#9CAB9C;font-size:12px;padding:12px 0;font-style:italic;font-family:Playfair Display,Georgia,serif">Nenhum lançamento ainda</p>';
+    } else {
+      listEl.innerHTML = todos.map(function(l){
+        var cat = (typeof oneFinCatIcon === 'function') ? oneFinCatIcon(l.categoria) : { emoji:'💸', cor:'#6B7F6F', bg:'#F2F6F1' };
+        var sinal = l.tipo === 'in' ? '+' : '-';
+        var dataF = l.data ? l.data.split('-').reverse().slice(0,2).join('/') : '';
+        return '<div style="display:flex;align-items:center;gap:9px;padding:6px 2px;border-bottom:1px solid rgba(127,168,142,0.10);font-family:system-ui,-apple-system,sans-serif">' +
+                 '<div style="width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;background:' + cat.bg + ';color:' + cat.cor + ';flex-shrink:0">' + cat.emoji + '</div>' +
+                 '<div style="flex:1;min-width:0">' +
+                   '<div style="font-size:12.5px;color:#2D3D2F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + l.nome.replace(/</g,'&lt;') + '</div>' +
+                   '<div style="font-size:10px;color:#6B7F6F">' + dataF + '</div>' +
+                 '</div>' +
+                 '<div style="font-size:12.5px;font-weight:600;color:' + (l.tipo==='in'?'#27856A':'#C0392B') + ';white-space:nowrap">' + sinal + _brlFin(l.valor).replace('R$ ','R$') + '</div>' +
+               '</div>';
+      }).join('');
+    }
+  }
+
+  // 2) Gráfico de barras dos últimos 6 meses
+  var canvas = document.getElementById('one-fin-bars-geral');
+  if (!canvas || typeof Chart === 'undefined') {
+    if (canvas) setTimeout(oneFinRenderGeral, 200);
+    return;
+  }
+  if (window.oneFinInlineCharts && window.oneFinInlineCharts.barsGeral) {
+    window.oneFinInlineCharts.barsGeral.destroy();
+  }
+  if (!window.oneFinInlineCharts) window.oneFinInlineCharts = {};
+
+  var hoje = new Date();
+  var mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
+  var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var labels = [], rData = [], dData = [];
+  for (var i = 5; i >= 0; i--) {
+    var m = mesAtual - i, a = anoAtual;
+    while (m < 0) { m += 12; a--; }
+    labels.push(meses[m]);
+    var rTot = receitas
+      .filter(function(r){ if (!r.data) return false; var d = new Date(r.data+'T00:00:00'); return d.getMonth()===m && d.getFullYear()===a && r.status !== 'pendente'; })
+      .reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
+    var dTot = despesas
+      .filter(function(d){ if (!d.data) return false; var dt = new Date(d.data+'T00:00:00'); return dt.getMonth()===m && dt.getFullYear()===a; })
+      .reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+    rData.push(rTot);
+    dData.push(dTot);
+  }
+
+  window.oneFinInlineCharts.barsGeral = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Receitas', data: rData, backgroundColor: '#7FA88E', borderRadius: 5 },
+        { label: 'Despesas', data: dData, backgroundColor: '#E07A6B', borderRadius: 5 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 }, color: '#6B7F6F', usePointStyle: true, boxWidth: 6 } },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ': ' + _brlFin(ctx.parsed.y); } } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { font: { size: 9 }, color: '#6B7F6F', callback: function(v){ return 'R$ ' + (v/1000).toFixed(0) + 'k'; } }, grid: { color: 'rgba(127,168,142,0.10)' } },
+        x: { ticks: { font: { size: 10 }, color: '#6B7F6F' }, grid: { display: false } }
+      },
+      animation: { duration: 500 }
+    }
+  });
+}
+window.oneFinRenderGeral = oneFinRenderGeral;
 
 function oneFinInlineSetTipo(tipo) {
   window.oneFinInlineTipo = tipo;
