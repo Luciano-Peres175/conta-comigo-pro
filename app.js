@@ -3596,7 +3596,7 @@ function _supaMapToRow(localKey, item, userId) {
     case 'despesas':
       return Object.assign(base, {
         id:        item.id,
-        nome:      item.nome || item.descricao || '',
+        descricao: item.descricao || item.nome || '',
         valor:     item.valor || 0,
         data:      item.data || new Date().toISOString().slice(0,10),
         categoria: item.categoria || '',
@@ -3652,7 +3652,6 @@ function _supaMapToRow(localKey, item, userId) {
 function _supaMapFromRow(localKey, row) {
   switch (localKey) {
     case 'receitas':
-    case 'despesas':
       return {
         id:              row.id,
         nome:            row.nome || '',
@@ -3660,10 +3659,23 @@ function _supaMapFromRow(localKey, row) {
         valor:           row.valor || 0,
         data:            row.data || '',
         categoria:       row.categoria || '',
-        tipo:            row.tipo || localKey.slice(0,-1),
+        tipo:            row.tipo || 'receita',
         status:          row.status || '',
         forma_pagamento: row.forma_pagamento || '',
+        formaPagamento:  row.forma_pagamento || '',
         criadoEm:        row.created_at || ''
+      };
+    case 'despesas':
+      return {
+        id:         row.id,
+        descricao:  row.descricao || '',
+        nome:       row.descricao || '',
+        valor:      row.valor || 0,
+        data:       row.data || '',
+        categoria:  row.categoria || '',
+        tipo:       row.tipo || 'despesa',
+        status:     row.status || '',
+        criadoEm:   row.created_at || ''
       };
     case 'compromissos':
       return {
