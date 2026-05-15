@@ -3583,16 +3583,25 @@ function _supaMapToRow(localKey, item, userId) {
   var base = { user_id: userId };
   switch (localKey) {
     case 'receitas':
-    case 'despesas':
       return Object.assign(base, {
         id:              item.id,
         nome:            item.nome || item.descricao || '',
         valor:           item.valor || 0,
         data:            item.data || new Date().toISOString().slice(0,10),
         categoria:       item.categoria || '',
-        tipo:            item.tipo || (localKey === 'receitas' ? 'receita' : 'despesa'),
-        status:          item.status || (localKey === 'receitas' ? 'pendente' : 'pago'),
-        forma_pagamento: item.forma_pagamento || ''
+        tipo:            item.tipo || 'receita',
+        status:          item.status || 'pendente',
+        forma_pagamento: item.forma_pagamento || item.formaPagamento || ''
+      });
+    case 'despesas':
+      return Object.assign(base, {
+        id:        item.id,
+        nome:      item.nome || item.descricao || '',
+        valor:     item.valor || 0,
+        data:      item.data || new Date().toISOString().slice(0,10),
+        categoria: item.categoria || '',
+        tipo:      item.tipo || 'despesa',
+        status:    item.status || 'pago'
       });
     case 'compromissos':
       return Object.assign(base, {
