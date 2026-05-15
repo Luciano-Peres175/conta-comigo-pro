@@ -6842,3 +6842,26 @@ function oneToast(msg) {
   window.oneOnboardingResponder    = oneOnboardingResponder;
   window.oneOnboardingFinalizar    = oneOnboardingFinalizar;
 })();
+
+/* ════════════════════════════════════════════════════════════════
+   SYNC UNIVERSAL — botão flutuante (período de testes)
+   ════════════════════════════════════════════════════════════════
+   Wrapper de supaResync que adiciona feedback visual (ícone girando)
+   no botão #btn-sync-global durante a operação.
+*/
+async function syncGlobal() {
+  var btn = document.getElementById('btn-sync-global');
+  if (btn) btn.classList.add('syncing');
+  try {
+    if (typeof supaResync === 'function') {
+      await supaResync();
+    } else if (typeof supaSync === 'function') {
+      await supaSync();
+    }
+  } catch (e) {
+    console.warn('[syncGlobal] erro:', e);
+  } finally {
+    if (btn) btn.classList.remove('syncing');
+  }
+}
+window.syncGlobal = syncGlobal;
