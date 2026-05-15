@@ -6655,3 +6655,45 @@ button.one-fin-card:hover {
     height: 14px !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   LAYOUT v3 — Ajustes finos (alinhamento horizontal das 3 colunas)
+   ════════════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+
+  /* Gap entre card identidade Letícia e o menu — pequeno (subir o menu) */
+  body:has(#screen-one.active) #sidebar {
+    gap: 8px !important;
+  }
+
+  /* Gap entre card Conta Comigo e o primeiro card lateral — mesmo gap pra alinhar */
+  body:has(#screen-one.active) .one-desktop-sidebar {
+    gap: 8px !important;
+  }
+
+  /* Centro: dar mais respiro entre card frase e o conteúdo principal (baixar a área de trabalho) */
+  .one-desk-frase-card {
+    margin-bottom: 14px !important;
+  }
+
+  /* Card Conta Comigo: sem botões, tipo o card identidade — só info */
+  .one-desk-card-conta {
+    padding: 8px 14px !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+  }
+  .one-desk-card-conta-info {
+    width: 100%;
+  }
+  .one-desk-card-conta-title {
+    font-size: 13px !important;
+  }
+  .one-desk-card-conta-meta {
+    font-size: 10.5px !important;
+  }
+
+  /* Esconde a regra antiga dos botões que removemos */
+  .one-desk-card-conta-actions { display: none !important; }
+  .one-desk-card-conta-row { display: contents !important; } /* faz o info aparecer direto */
+}
