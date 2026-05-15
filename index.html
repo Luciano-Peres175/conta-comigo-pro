@@ -418,31 +418,36 @@
             <span class="one-ag-mes-label">💰 Financeiro</span>
             <span class="one-pn-sub" id="one-fin-periodo">—</span>
             <button onclick="oneFinModalAbrir()" title="Novo lançamento" style="margin-left:8px;font-size:12px;padding:5px 12px;background:linear-gradient(135deg,#7FA88E,#5C8870);border:none;color:#fff;border-radius:8px;cursor:pointer;font-weight:600;box-shadow:0 3px 10px rgba(92,136,112,0.30)">+ Novo lançamento</button>
-            <button onclick="oneRelAbrir()" title="Ver relatórios" style="font-size:11px;padding:3px 10px;background:none;border:1px solid #7FA88E;color:#5C8870;border-radius:6px;cursor:pointer;font-weight:600">📊 Relatórios</button>
             <button onclick="supaResync()" title="Sincronizar com outros dispositivos" style="font-size:11px;padding:3px 10px;background:none;border:1px solid #7AA88A;color:#7AA88A;border-radius:6px;cursor:pointer">⟳ Sync</button>
             <button id="btn-zerar-financeiro" onclick="zerarFinanceiro()" style="display:none;margin-left:auto;font-size:11px;padding:3px 10px;background:none;border:1px solid #E87A7A;color:#E87A7A;border-radius:6px;cursor:pointer">Zerar financeiro</button>
           </div>
         </div>
         <div class="one-fin-content">
 
-          <!-- Pendências e Alertas — 3 cards de pulso operacional -->
+          <!-- Pendências e Alertas — 3 cards slim horizontais -->
           <div class="one-pn-alerts-wrap">
             <p class="one-pn-alerts-title">Pendências e alertas</p>
             <div class="one-pn-alerts-grid">
               <button class="one-pn-alert one-pn-alert-receitas" type="button" onclick="oneFinFiltrarPendentes()">
-                <div class="one-pn-alert-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>
-                <div class="one-pn-alert-num" id="one-pn-num-receitas">0</div>
-                <div class="one-pn-alert-lbl">Receitas pendentes</div>
+                <div class="one-pn-alert-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>
+                <div class="one-pn-alert-body">
+                  <div class="one-pn-alert-num" id="one-pn-num-receitas">0</div>
+                  <div class="one-pn-alert-lbl">Receitas pendentes</div>
+                </div>
               </button>
               <button class="one-pn-alert one-pn-alert-despesas" type="button" onclick="oneFinFiltrarVencendo()">
-                <div class="one-pn-alert-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-                <div class="one-pn-alert-num" id="one-pn-num-despesas">0</div>
-                <div class="one-pn-alert-lbl">Despesas vencendo</div>
+                <div class="one-pn-alert-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+                <div class="one-pn-alert-body">
+                  <div class="one-pn-alert-num" id="one-pn-num-despesas">0</div>
+                  <div class="one-pn-alert-lbl">Despesas vencendo</div>
+                </div>
               </button>
               <button class="one-pn-alert one-pn-alert-compromissos" type="button" onclick="swapToCenter('agenda')">
-                <div class="one-pn-alert-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg></div>
-                <div class="one-pn-alert-num" id="one-pn-num-compromissos">0</div>
-                <div class="one-pn-alert-lbl">Compromissos hoje</div>
+                <div class="one-pn-alert-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg></div>
+                <div class="one-pn-alert-body">
+                  <div class="one-pn-alert-num" id="one-pn-num-compromissos">0</div>
+                  <div class="one-pn-alert-lbl">Compromissos hoje</div>
+                </div>
               </button>
             </div>
             <div class="one-pn-alerts-empty" id="one-pn-alerts-empty" hidden>
@@ -461,15 +466,47 @@
             </div>
           </div>
 
-          <!-- Filtros de período em tabs -->
-          <div class="one-fin-period-tabs" id="one-fin-period-tabs">
-            <button class="one-fin-period-tab" data-periodo="7"   onclick="oneFinSetPeriodo('7')">7 dias</button>
-            <button class="one-fin-period-tab" data-periodo="15"  onclick="oneFinSetPeriodo('15')">15 dias</button>
-            <button class="one-fin-period-tab" data-periodo="30"  onclick="oneFinSetPeriodo('30')">30 dias</button>
-            <button class="one-fin-period-tab active" data-periodo="mes" onclick="oneFinSetPeriodo('mes')">Mês</button>
+          <!-- Tabs principais: Extrato | Categorias | Balanço -->
+          <div class="one-fin-vista-tabs">
+            <button class="one-fin-vista-tab active" data-vista="extrato"    onclick="oneFinSetVista('extrato')">📋 Extrato</button>
+            <button class="one-fin-vista-tab" data-vista="categorias"        onclick="oneFinSetVista('categorias')">🍩 Categorias</button>
+            <button class="one-fin-vista-tab" data-vista="balanco"           onclick="oneFinSetVista('balanco')">📊 Balanço</button>
           </div>
 
-          <div class="one-pn-body" id="one-fin-list-big" style="flex:1;overflow-y:auto"></div>
+          <!-- View Extrato (default) -->
+          <div class="one-fin-vista" data-vista="extrato">
+            <div class="one-fin-period-tabs" id="one-fin-period-tabs">
+              <button class="one-fin-period-tab" data-periodo="7"   onclick="oneFinSetPeriodo('7')">7 dias</button>
+              <button class="one-fin-period-tab" data-periodo="15"  onclick="oneFinSetPeriodo('15')">15 dias</button>
+              <button class="one-fin-period-tab" data-periodo="30"  onclick="oneFinSetPeriodo('30')">30 dias</button>
+              <button class="one-fin-period-tab active" data-periodo="mes" onclick="oneFinSetPeriodo('mes')">Mês</button>
+            </div>
+            <div class="one-pn-body" id="one-fin-list-big" style="flex:1;overflow-y:auto"></div>
+          </div>
+
+          <!-- View Categorias -->
+          <div class="one-fin-vista" data-vista="categorias" hidden>
+            <div class="one-fin-cat-toggle">
+              <button class="one-fin-cat-toggle-btn active" data-tipo="despesas" onclick="oneFinInlineSetTipo('despesas')">Despesas</button>
+              <button class="one-fin-cat-toggle-btn" data-tipo="receitas" onclick="oneFinInlineSetTipo('receitas')">Receitas</button>
+            </div>
+            <div class="one-fin-donut-wrap">
+              <canvas id="one-fin-donut-inline"></canvas>
+              <div class="one-fin-donut-center">
+                <div class="one-fin-donut-lbl">Total</div>
+                <div class="one-fin-donut-val" id="one-fin-donut-total">R$ 0,00</div>
+              </div>
+            </div>
+            <div class="one-fin-cat-list-inline" id="one-fin-cat-list-inline"></div>
+          </div>
+
+          <!-- View Balanço -->
+          <div class="one-fin-vista" data-vista="balanco" hidden>
+            <div class="one-fin-bars-wrap">
+              <canvas id="one-fin-bars-inline"></canvas>
+            </div>
+          </div>
+
         </div>
       </div>
 

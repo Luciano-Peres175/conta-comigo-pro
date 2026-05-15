@@ -5217,29 +5217,31 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
    PENDÊNCIAS E ALERTAS — 3 cards de pulso operacional no topo do Financeiro
    ════════════════════════════════════════════════════════════════ */
 .one-pn-alerts-wrap {
-  margin: 0 0 14px;
+  margin: 0 0 10px;
   padding: 0 2px;
 }
 .one-pn-alerts-title {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #6B7F6F;
-  letter-spacing: 0.7px;
-  margin: 0 0 10px;
+  letter-spacing: 0.6px;
+  margin: 0 0 6px;
   text-transform: uppercase;
   font-family: system-ui, -apple-system, sans-serif;
 }
 .one-pn-alerts-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
 }
+/* Card slim horizontal: ícone à esquerda + número grande + label ao lado */
 .one-pn-alert {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 14px 12px;
-  border-radius: 16px;
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 12px;
   border: 1.5px solid transparent;
   background: #FBF8F2;
   cursor: pointer;
@@ -5248,31 +5250,40 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   transition: transform .15s ease, box-shadow .15s ease;
 }
 .one-pn-alert:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(58,88,72,0.10);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(58,88,72,0.10);
 }
 .one-pn-alert:active { transform: translateY(0); }
 .one-pn-alert-icon {
-  width: 34px; height: 34px;
-  border-radius: 11px;
+  width: 28px; height: 28px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+.one-pn-alert-icon svg { width: 15px; height: 15px; }
+.one-pn-alert-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 .one-pn-alert-num {
-  font-size: 24px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 600;
   color: #2D3D2F;
   line-height: 1;
   font-family: system-ui, -apple-system, sans-serif;
 }
 .one-pn-alert-lbl {
-  font-size: 11.5px;
+  font-size: 10.5px;
   color: #6B7F6F;
-  margin-top: 5px;
-  line-height: 1.3;
+  margin-top: 2px;
+  line-height: 1.2;
   font-family: system-ui, -apple-system, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Variante 1 — Receitas pendentes (âmbar) */
@@ -5460,39 +5471,42 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   background: rgba(45,61,47,0.55);
   backdrop-filter: blur(6px);
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
   overflow-y: auto;
   padding: 0;
   animation: oneRelFadeIn .25s ease;
 }
-.one-rel-modal[hidden] { display: none; }
+.one-rel-modal[hidden] { display: none !important; }
 @keyframes oneRelFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .one-rel-box {
   background: #FBF8F2;
   width: 100%;
-  max-width: 720px;
-  margin: auto 0;
-  min-height: 100dvh;
+  max-width: 760px;
+  max-height: 92vh;
   display: flex;
   flex-direction: column;
   padding: 0;
+  overflow-y: auto;
+  border-radius: 24px;
+  border: 1.5px solid rgba(127,168,142,0.18);
+  box-shadow: 0 30px 80px rgba(58,88,72,0.35);
   animation: oneRelSlideIn .3s cubic-bezier(.2,.9,.3,1.05);
 }
 @keyframes oneRelSlideIn {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(14px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-@media (min-width: 720px) {
+/* Mobile — vira tela cheia (sem cantos) */
+@media (max-width: 720px) {
+  .one-rel-modal { align-items: stretch; }
   .one-rel-box {
-    min-height: auto;
-    max-height: 92vh;
-    margin: auto;
-    border-radius: 24px;
-    overflow-y: auto;
-    border: 1.5px solid rgba(127,168,142,0.18);
-    box-shadow: 0 30px 80px rgba(58,88,72,0.35);
+    max-height: 100dvh;
+    min-height: 100dvh;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
   }
 }
 
@@ -5756,3 +5770,118 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 .one-fin-modal-tab.active[data-tipo="despesa"],
 #one-fin-modal-tab-desp.active { color: #C0392B; }
 #one-fin-modal-tab-rec.active { color: #27856A; }
+
+/* ════════════════════════════════════════════════════════════════
+   FINANCEIRO — Tabs principais (Extrato | Categorias | Balanço)
+   ════════════════════════════════════════════════════════════════ */
+.one-fin-vista-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0 10px;
+  padding: 0 2px;
+  border-bottom: 1.5px solid rgba(127,168,142,0.18);
+}
+.one-fin-vista-tab {
+  padding: 9px 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6B7F6F;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: color .15s ease, border-color .15s ease;
+  margin-bottom: -1.5px;
+}
+.one-fin-vista-tab:hover { color: #2D3D2F; }
+.one-fin-vista-tab.active {
+  color: #5C8870;
+  border-bottom-color: #5C8870;
+}
+
+.one-fin-vista {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  animation: oneFinFadeIn .2s ease;
+}
+.one-fin-vista[hidden] { display: none; }
+@keyframes oneFinFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Toggle Despesas/Receitas dentro da view Categorias */
+.one-fin-cat-toggle {
+  display: flex;
+  gap: 2px;
+  background: rgba(127,168,142,0.10);
+  border-radius: 9px;
+  padding: 3px;
+  margin: 0 auto 14px;
+  width: fit-content;
+}
+.one-fin-cat-toggle-btn {
+  padding: 6px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B7F6F;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-cat-toggle-btn.active {
+  background: #fff;
+  color: #2D3D2F;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+/* Donut inline */
+.one-fin-donut-wrap {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 12px;
+}
+.one-fin-donut-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.one-fin-donut-lbl {
+  font-size: 10px;
+  color: #6B7F6F;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-donut-val {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2D3D2F;
+  margin-top: 2px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Lista de categorias inline */
+.one-fin-cat-list-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0 4px;
+}
+.one-fin-cat-list-inline .one-rel-cat-row {
+  padding: 7px 4px;
+}
+
+/* Barras inline */
+.one-fin-bars-wrap {
+  position: relative;
+  height: 280px;
+  padding: 12px 4px;
+}

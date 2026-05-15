@@ -7368,3 +7368,187 @@ function oneFinModalSalvar() {
   if (typeof renderDesktopSidebar === 'function') renderDesktopSidebar();
 }
 window.oneFinModalSalvar = oneFinModalSalvar;
+
+/* ════════════════════════════════════════════════════════════════
+   VISTAS INLINE NO PAINEL FINANCEIRO — Extrato | Categorias | Balanço
+   ════════════════════════════════════════════════════════════════ */
+window.oneFinVistaAtiva = window.oneFinVistaAtiva || 'extrato';
+window.oneFinInlineTipo = window.oneFinInlineTipo || 'despesas';
+window.oneFinInlineCharts = window.oneFinInlineCharts || { donut: null, bars: null };
+
+function oneFinSetVista(vista) {
+  window.oneFinVistaAtiva = vista;
+  document.querySelectorAll('.one-fin-vista-tab').forEach(function(t){
+    t.classList.toggle('active', t.getAttribute('data-vista') === vista);
+  });
+  document.querySelectorAll('.one-fin-vista').forEach(function(v){
+    v.hidden = v.getAttribute('data-vista') !== vista;
+  });
+  // Render apropriado pra cada vista
+  if (vista === 'categorias') {
+    if (typeof Chart === 'undefined') {
+      setTimeout(oneFinRenderCategorias, 200);
+    } else {
+      oneFinRenderCategorias();
+    }
+  } else if (vista === 'balanco') {
+    if (typeof Chart === 'undefined') {
+      setTimeout(oneFinRenderBalanco, 200);
+    } else {
+      oneFinRenderBalanco();
+    }
+  }
+}
+window.oneFinSetVista = oneFinSetVista;
+
+function oneFinInlineSetTipo(tipo) {
+  window.oneFinInlineTipo = tipo;
+  document.querySelectorAll('.one-fin-cat-toggle-btn').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-tipo') === tipo);
+  });
+  oneFinRenderCategorias();
+}
+window.oneFinInlineSetTipo = oneFinInlineSetTipo;
+
+/* Render donut + lista — versão inline (mês corrente) */
+function oneFinRenderCategorias() {
+  var tipo = window.oneFinInlineTipo || 'despesas';
+  var dados = (tipo === 'receitas')
+    ? JSON.parse(localStorage.getItem(oneU('receitas')) || '[]')
+    : JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
+
+  var hoje = new Date();
+  var mes = hoje.getMonth(), ano = hoje.getFullYear();
+  var doMes = dados.filter(function(it){
+    if (!it.data) return false;
+    var d = new Date(it.data + 'T00:00:00');
+    return d.getMonth() === mes && d.getFullYear() === ano;
+  });
+
+  var grupos = {};
+  doMes.forEach(function(it){
+    var cat = it.categoria || it.tipo || 'Outros';
+    if (!grupos[cat]) grupos[cat] = 0;
+    grupos[cat] += Number(it.valor) || 0;
+  });
+  var entries = Object.entries(grupos)
+    .map(function(e){ return { categoria: e[0], total: e[1] }; })
+    .sort(function(a,b){ return b.total - a.total; });
+  var totalGeral = entries.reduce(function(s,e){ return s + e.total; }, 0);
+
+  function _brl(v) { return 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+  var totalEl = document.getElementById('one-fin-donut-total');
+  if (totalEl) totalEl.textContent = _brl(totalGeral);
+
+  var listEl = document.getElementById('one-fin-cat-list-inline');
+  if (listEl) {
+    if (!entries.length) {
+      listEl.innerHTML = '<p style="text-align:center;color:#9CAB9C;font-size:13px;padding:16px 0;font-style:italic;font-family:Playfair Display,Georgia,serif">Sem ' + tipo + ' neste mês</p>';
+    } else {
+      var palette = ['#7FA88E','#D4A655','#9B72B0','#5B7CFA','#FF8B5A','#27856A','#E67BB0','#7B5CF0','#C0392B','#B8860B'];
+      listEl.innerHTML = entries.map(function(e, i){
+        var cat = (typeof oneFinCatIcon === 'function') ? oneFinCatIcon(e.categoria) : { emoji:'💸', cor:'#6B7F6F', bg:'#F2F6F1' };
+        var pct = totalGeral > 0 ? Math.round((e.total / totalGeral) * 100) : 0;
+        return '<div class="one-rel-cat-row">' +
+                 '<div class="one-rel-cat-dot" style="background:' + cat.bg + ';color:' + cat.cor + '">' + cat.emoji + '</div>' +
+                 '<div class="one-rel-cat-nome">' + e.categoria.replace(/</g,'&lt;') + '</div>' +
+                 '<div class="one-rel-cat-val">' + _brl(e.total) + '</div>' +
+                 '<div class="one-rel-cat-pct" style="background:' + palette[i % palette.length] + '">' + pct + '%</div>' +
+               '</div>';
+      }).join('');
+    }
+  }
+
+  var canvas = document.getElementById('one-fin-donut-inline');
+  if (!canvas || typeof Chart === 'undefined') return;
+  if (window.oneFinInlineCharts.donut) window.oneFinInlineCharts.donut.destroy();
+  if (!entries.length) { window.oneFinInlineCharts.donut = null; return; }
+  var palette = ['#7FA88E','#D4A655','#9B72B0','#5B7CFA','#FF8B5A','#27856A','#E67BB0','#7B5CF0','#C0392B','#B8860B'];
+  window.oneFinInlineCharts.donut = new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: entries.map(function(e){ return e.categoria; }),
+      datasets: [{
+        data: entries.map(function(e){ return e.total; }),
+        backgroundColor: entries.map(function(_, i){ return palette[i % palette.length]; }),
+        borderColor: '#fff',
+        borderWidth: 3,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: function(ctx) { return ctx.label + ': ' + _brl(ctx.parsed); } }
+        }
+      },
+      animation: { duration: 500 }
+    }
+  });
+}
+window.oneFinRenderCategorias = oneFinRenderCategorias;
+
+/* Render balanço inline (barras dos últimos 6 meses) */
+function oneFinRenderBalanco() {
+  var canvas = document.getElementById('one-fin-bars-inline');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
+  var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
+  var hoje = new Date();
+  var mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
+
+  var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var labels = [], rData = [], dData = [];
+  for (var i = 5; i >= 0; i--) {
+    var m = mesAtual - i, a = anoAtual;
+    while (m < 0) { m += 12; a--; }
+    labels.push(meses[m] + '/' + String(a).slice(2));
+    var rTot = receitas
+      .filter(function(r){ if (!r.data) return false; var d = new Date(r.data+'T00:00:00'); return d.getMonth()===m && d.getFullYear()===a && r.status !== 'pendente'; })
+      .reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
+    var dTot = despesas
+      .filter(function(d){ if (!d.data) return false; var dt = new Date(d.data+'T00:00:00'); return dt.getMonth()===m && dt.getFullYear()===a; })
+      .reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+    rData.push(rTot);
+    dData.push(dTot);
+  }
+
+  if (window.oneFinInlineCharts.bars) window.oneFinInlineCharts.bars.destroy();
+  window.oneFinInlineCharts.bars = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Receitas', data: rData, backgroundColor: '#7FA88E', borderRadius: 6 },
+        { label: 'Despesas', data: dData, backgroundColor: '#E07A6B', borderRadius: 6 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, color: '#6B7F6F', usePointStyle: true } },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ': R$ ' + ctx.parsed.y.toLocaleString('pt-BR', {minimumFractionDigits:2}); } } }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { font: { size: 10 }, color: '#6B7F6F', callback: function(v){ return 'R$ ' + (v/1000).toFixed(0) + 'k'; } },
+          grid: { color: 'rgba(127,168,142,0.10)' }
+        },
+        x: {
+          ticks: { font: { size: 11 }, color: '#6B7F6F' },
+          grid: { display: false }
+        }
+      },
+      animation: { duration: 500 }
+    }
+  });
+}
+window.oneFinRenderBalanco = oneFinRenderBalanco;
