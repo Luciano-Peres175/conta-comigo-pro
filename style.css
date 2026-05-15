@@ -3114,15 +3114,36 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 .one-desktop-agenda {
   background: #F4F1EA;
   border-radius: 20px;
-  padding: 18px 24px 22px 24px;
+  padding: 14px 20px 16px 20px;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
   box-shadow:
     0 0 0 2px rgba(92,136,112,0.90),
     0 8px 24px rgba(0,0,0,.07);
+}
+/* O wrapper do kanban e o conteúdo das views devem ocupar todo o espaço vertical restante */
+.one-desktop-agenda .one-fin-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.one-desktop-agenda .one-fin-vista {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.one-desktop-agenda .one-ag-tl-wrapper {
+  flex: 1;
+  min-height: 0;
+}
+.one-desktop-agenda .one-ag-mes-wrapper {
+  flex: 1;
+  min-height: 0;
 }
 .one-ag-header {
   display: flex;
@@ -5971,26 +5992,27 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 }
 .one-fin-btn-sync:hover { background: rgba(127,168,142,0.10); }
 
-/* ── 3 cards slim no topo: Pendentes + Vencendo + Saldo ── */
+/* ── 3 cards slim no topo: Pendentes + Vencendo + Saldo (versão compacta) ── */
 .one-fin-top-cards {
   display: grid;
   grid-template-columns: 1fr 1fr 1.4fr;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
 }
 .one-fin-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 14px;
-  border-radius: 14px;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
   border: 1.5px solid transparent;
   background: #FBF8F2;
   cursor: default;
   font-family: inherit;
   text-align: left;
   transition: transform .15s ease, box-shadow .15s ease;
-  min-height: 78px;
+  min-height: 56px;
 }
 button.one-fin-card { cursor: pointer; }
 button.one-fin-card:hover {
@@ -5998,14 +6020,14 @@ button.one-fin-card:hover {
   box-shadow: 0 6px 16px rgba(58,88,72,0.12);
 }
 .one-fin-card-icon {
-  width: 36px; height: 36px;
-  border-radius: 11px;
+  width: 30px; height: 30px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
-.one-fin-card-icon svg { width: 18px; height: 18px; }
+.one-fin-card-icon svg { width: 15px; height: 15px; }
 .one-fin-card-body { flex: 1; min-width: 0; }
 .one-fin-card-row {
   display: flex;
@@ -6013,23 +6035,24 @@ button.one-fin-card:hover {
   gap: 8px;
 }
 .one-fin-card-num {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 600;
   color: #2D3D2F;
-  line-height: 1;
+  line-height: 1.05;
   font-family: system-ui, -apple-system, sans-serif;
 }
 .one-fin-card-lbl {
-  font-size: 12px;
+  font-size: 11.5px;
   color: #6B7F6F;
   font-weight: 500;
   font-family: system-ui, -apple-system, sans-serif;
 }
 .one-fin-card-sub {
-  font-size: 11.5px;
+  font-size: 10.5px;
   color: #6B7F6F;
-  margin-top: 4px;
+  margin-top: 2px;
   font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.2;
 }
 
 /* Variantes coloridas */
@@ -6058,7 +6081,7 @@ button.one-fin-card:hover {
   background: rgba(255,255,255,0.22);
   color: #fff;
 }
-.one-fin-card-saldo .one-fin-card-num { color: #fff; font-size: 18px; }
+.one-fin-card-saldo .one-fin-card-num { color: #fff; font-size: 16px; }
 .one-fin-card-saldo .one-fin-card-lbl { color: rgba(255,255,255,0.78); }
 .one-fin-card-stats {
   display: flex;
