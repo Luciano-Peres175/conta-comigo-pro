@@ -4933,31 +4933,13 @@ function oneFinExcluir(key, id) {
   if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
 }
 
+/* Agora abre o modal de lançamento (em vez do form inline removido) */
 function oneFinEditar(key, id) {
-  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key))||'[]'); } catch(e){}
-  var item = lista.find(function(i){ return i.id === id; });
-  if (!item) { if (typeof oneToast==='function') oneToast('Item não encontrado.','error'); return; }
-
-  // Preenche o formulário com os dados do item
-  var tipo = key === 'receitas' ? 'receita' : 'despesa';
-  if (typeof oneFinSetTipo==='function') oneFinSetTipo(tipo);
-  var nomeEl  = document.getElementById('one-fin-nome');
-  var valorEl = document.getElementById('one-fin-valor');
-  var dataEl  = document.getElementById('one-fin-data');
-  var catEl   = document.getElementById('one-fin-cat');
-  if (nomeEl)  nomeEl.value  = item.nome  || item.descricao || '';
-  if (valorEl) valorEl.value = item.valor || '';
-  if (dataEl)  dataEl.value  = item.data  || '';
-  if (catEl)   catEl.value   = item.categoria || '';
-
-  // Remove o item original para não duplicar ao salvar
-  lista = lista.filter(function(i){ return i.id !== id; });
-  localStorage.setItem(oneU(key), JSON.stringify(lista));
-  if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
-
-  // Foco no campo nome
-  if (nomeEl) nomeEl.focus();
-  if (typeof oneToast==='function') oneToast('Edite e salve novamente.');
+  if (typeof oneFinModalEditar === 'function') {
+    oneFinModalEditar(key, id);
+  } else if (typeof oneToast === 'function') {
+    oneToast('Modal não carregado ainda. Tente em alguns segundos.', 'error');
+  }
 }
 
 /* ── Estado das visões da Agenda ───────────────────────────────── */
@@ -7284,3 +7266,105 @@ function oneRelRenderBalanco() {
   });
 }
 window.oneRelRenderBalanco = oneRelRenderBalanco;
+
+/* ════════════════════════════════════════════════════════════════
+   MODAL NOVO/EDITAR LANÇAMENTO — substitui o form inline do painel financeiro
+   ════════════════════════════════════════════════════════════════ */
+window.oneFinModalTipo = window.oneFinModalTipo || 'receita';
+
+function oneFinModalAbrir(tipoInicial) {
+  var modal = document.getElementById('one-fin-modal');
+  if (!modal) return;
+  document.getElementById('one-fin-modal-title').textContent = 'Novo lançamento';
+  document.getElementById('one-fin-modal-id').value = '';
+  document.getElementById('one-fin-modal-nome').value = '';
+  document.getElementById('one-fin-modal-valor').value = '';
+  document.getElementById('one-fin-modal-data').value = new Date().toISOString().slice(0,10);
+  document.getElementById('one-fin-modal-cat').value = '';
+  document.getElementById('one-fin-modal-status').value = 'pendente';
+  oneFinModalSetTipo(tipoInicial || 'receita');
+  modal.classList.add('open');
+  setTimeout(function(){ document.getElementById('one-fin-modal-nome').focus(); }, 100);
+}
+window.oneFinModalAbrir = oneFinModalAbrir;
+
+function oneFinModalEditar(key, id) {
+  var lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]');
+  var it = lista.find(function(x){ return String(x.id) === String(id); });
+  if (!it) return;
+  var modal = document.getElementById('one-fin-modal');
+  if (!modal) return;
+  document.getElementById('one-fin-modal-title').textContent = 'Editar lançamento';
+  document.getElementById('one-fin-modal-id').value = it.id;
+  document.getElementById('one-fin-modal-nome').value = it.nome || it.descricao || '';
+  document.getElementById('one-fin-modal-valor').value = it.valor || '';
+  document.getElementById('one-fin-modal-data').value = it.data || '';
+  document.getElementById('one-fin-modal-cat').value = it.categoria || it.tipo || '';
+  document.getElementById('one-fin-modal-status').value = it.status || (key === 'receitas' ? 'pendente' : 'pago');
+  oneFinModalSetTipo(key === 'receitas' ? 'receita' : 'despesa');
+  modal.classList.add('open');
+  setTimeout(function(){ document.getElementById('one-fin-modal-nome').focus(); }, 100);
+}
+window.oneFinModalEditar = oneFinModalEditar;
+
+function oneFinModalFechar() {
+  var modal = document.getElementById('one-fin-modal');
+  if (modal) modal.classList.remove('open');
+}
+window.oneFinModalFechar = oneFinModalFechar;
+
+function oneFinModalSetTipo(tipo) {
+  window.oneFinModalTipo = tipo;
+  var tabRec = document.getElementById('one-fin-modal-tab-rec');
+  var tabDesp = document.getElementById('one-fin-modal-tab-desp');
+  if (tabRec)  tabRec.classList.toggle('active', tipo === 'receita');
+  if (tabDesp) tabDesp.classList.toggle('active', tipo === 'despesa');
+  // Status só faz sentido pra receita (pendente/pago). Pra despesa esconde.
+  var stWrap = document.getElementById('one-fin-modal-status-wrap');
+  if (stWrap) stWrap.style.display = (tipo === 'receita') ? '' : 'none';
+}
+window.oneFinModalSetTipo = oneFinModalSetTipo;
+
+function oneFinModalSalvar() {
+  var id     = document.getElementById('one-fin-modal-id').value;
+  var nome   = (document.getElementById('one-fin-modal-nome').value || '').trim();
+  var valor  = parseFloat(document.getElementById('one-fin-modal-valor').value) || 0;
+  var data   = document.getElementById('one-fin-modal-data').value || new Date().toISOString().slice(0,10);
+  var cat    = (document.getElementById('one-fin-modal-cat').value || '').trim();
+  var status = document.getElementById('one-fin-modal-status').value;
+  var tipo   = window.oneFinModalTipo || 'receita';
+  if (!nome || !valor) {
+    if (typeof oneToast === 'function') oneToast('Preencha descrição e valor.', 'error');
+    return;
+  }
+  var key = (tipo === 'receita') ? 'receitas' : 'despesas';
+  var lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]');
+  var novoFin;
+  if (id) {
+    var idx = lista.findIndex(function(x){ return String(x.id) === String(id); });
+    if (idx >= 0) {
+      lista[idx] = Object.assign(lista[idx], {
+        nome: nome, descricao: nome, valor: valor, data: data, categoria: cat,
+        tipo: tipo,
+        status: (tipo === 'receita') ? status : 'pago'
+      });
+      novoFin = lista[idx];
+    }
+  } else {
+    novoFin = {
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(),
+      nome: nome, descricao: nome, valor: valor, data: data, categoria: cat,
+      tipo: tipo,
+      status: (tipo === 'receita') ? status : 'pago',
+      criado: new Date().toISOString()
+    };
+    lista.push(novoFin);
+  }
+  localStorage.setItem(oneU(key), JSON.stringify(lista));
+  if (typeof supaUpsert === 'function' && novoFin) supaUpsert(key, novoFin);
+  oneFinModalFechar();
+  if (typeof oneToast === 'function') oneToast('✓ Lançamento salvo!');
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  if (typeof renderDesktopSidebar === 'function') renderDesktopSidebar();
+}
+window.oneFinModalSalvar = oneFinModalSalvar;
