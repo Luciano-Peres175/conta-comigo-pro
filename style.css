@@ -7043,3 +7043,270 @@ button.one-fin-card:hover {
       0 4px 10px rgba(0,0,0,.08) !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   AGENDA v4 — Header padrao TaskAreas + Kanban semanal individualizado
+   - Pills compactas (Hoje/Semana/Mes) no header
+   - Filtros em pill buttons na linha 2 (setas + tabs Hoje/Semana/Mes)
+   - 5 colunas dos dias individualizadas com headers coloridos (gradient SEG->SEX)
+   - Coluna de horarios pequena e discreta a esquerda
+   ════════════════════════════════════════════════════════════════ */
+
+/* Botoes de navegacao (setas) compactos, estilo pill */
+.one-ag-nav-btn-pill {
+  background: #FBF8F2;
+  border: 1.5px solid rgba(92,136,112,0.20);
+  color: #5C8870;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background .15s, border-color .15s;
+}
+.one-ag-nav-btn-pill:hover {
+  background: rgba(127,168,142,0.10);
+  border-color: rgba(92,136,112,0.40);
+}
+
+/* Label do periodo inline na linha de filtros */
+.one-ag-periodo-label-inline {
+  font-size: 12px;
+  color: #5C8870;
+  font-weight: 600;
+  padding: 0 6px;
+  white-space: nowrap;
+}
+
+/* Separador vertical entre setas+label e tabs */
+.one-tar-sep {
+  width: 1px;
+  height: 18px;
+  background: rgba(92,136,112,0.22);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* ── Kanban Semanal — 5+2 colunas individualizadas ── */
+.one-ag-tl-wrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+  padding: 6px 4px 4px;
+  background: transparent;
+  overflow: hidden;
+}
+
+/* Regua de horas (esquerda) — pequena e discreta */
+.one-ag-tl-ruler {
+  width: 36px !important;
+  flex-shrink: 0;
+  position: relative;
+  border-right: none;
+  padding-top: 38px; /* compensa header das colunas */
+  background: transparent;
+}
+.one-ag-tl-hour {
+  position: absolute;
+  left: 0;
+  width: 32px;
+  font-size: 9.5px;
+  font-weight: 500;
+  color: rgba(92,136,112,0.55);
+  letter-spacing: 0.3px;
+  font-family: system-ui, -apple-system, sans-serif;
+  text-align: right;
+  padding-right: 4px;
+  transform: translateY(-50%);
+}
+
+/* Wrapper das colunas dos dias */
+.one-ag-tl-cols {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Cada coluna de dia: individualizada com bordas suaves */
+.one-ag-kday-col {
+  background: #FBF8F2;
+  border: 1.5px solid rgba(92,136,112,0.15);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  transition: border-color .15s, transform .15s;
+}
+.one-ag-kday-col:hover {
+  border-color: rgba(92,136,112,0.30);
+}
+.one-ag-kday-col.today {
+  border-color: rgba(92,136,112,0.50);
+  box-shadow: 0 0 0 1px rgba(92,136,112,0.20);
+}
+
+/* Header de cada coluna do dia — colorido por dia da semana (gradient narrative SEG->SEX) */
+.one-ag-kday-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 12px 12px 0 0;
+  flex-shrink: 0;
+  gap: 6px;
+}
+.one-ag-kday-name {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 700;
+  opacity: 0.95;
+}
+.one-ag-kday-num {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Paleta gradient SEG->SEX + fim de semana neutro */
+.one-ag-kday-col[data-dow="1"] .one-ag-kday-header { background: #C97B6A; } /* SEG terracota */
+.one-ag-kday-col[data-dow="2"] .one-ag-kday-header { background: #D89B5A; } /* TER ambar pessego */
+.one-ag-kday-col[data-dow="3"] .one-ag-kday-header { background: #D4B855; } /* QUA dourado mostarda */
+.one-ag-kday-col[data-dow="4"] .one-ag-kday-header { background: #A8B470; } /* QUI verde-ambar */
+.one-ag-kday-col[data-dow="5"] .one-ag-kday-header { background: #7FA88E; } /* SEX verde menta */
+.one-ag-kday-col[data-dow="6"] .one-ag-kday-header { background: #9DB1A8; } /* SAB cinza-verde claro */
+.one-ag-kday-col[data-dow="0"] .one-ag-kday-header { background: #8DA39A; } /* DOM cinza-verde mais escuro */
+
+/* Body da coluna — area de eventos */
+.one-ag-kday-body {
+  position: relative;
+  flex: 1;
+  min-height: 1200px; /* 24h x 50px/h */
+  cursor: pointer;
+  background: #FFFFFF;
+}
+
+/* Linhas de hora horizontais (guias discretas) */
+.one-ag-tl-grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(92,136,112,0.08);
+  pointer-events: none;
+}
+
+/* Cards de evento — estilo limpo igual cards de tarefa */
+.one-ag-kcard {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  background: #FBF8F2;
+  border-left: 3px solid #7FA88E;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  transition: transform .12s, box-shadow .12s;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.one-ag-kcard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,.10);
+}
+.one-ag-kcard.realizado {
+  opacity: 0.7;
+  background: #EAF6F1;
+}
+.one-ag-kcard-check {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1.5px solid #C0BAD0;
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #fff;
+  cursor: pointer;
+}
+.one-ag-kcard-body { flex: 1; min-width: 0; }
+.one-ag-kcard-hora {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  margin-bottom: 1px;
+}
+.one-ag-kcard-nome {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #2D2D2D;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.one-ag-kcard-tipo {
+  font-size: 10px;
+  color: #6B7F6F;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.one-ag-kcard-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.one-ag-kcard-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: none;
+}
+.one-ag-kcard:hover .one-ag-kcard-actions {
+  display: flex;
+}
+
+/* Linha do "agora" — discreta atravessando todas as colunas */
+.one-ag-tl-agora {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #C0392B;
+  pointer-events: none;
+  z-index: 5;
+}
+.one-ag-tl-agora-dot {
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #C0392B;
+}

@@ -5039,7 +5039,8 @@ function renderOneAgendaPainel() {
   if (oneAgView === 'mes') { renderOneAgMes(); return; }
 
   var kanban = document.getElementById('one-ag-kanban');
-  var label  = document.getElementById('one-ag-mes-label');
+  // Label do periodo: usa o novo ID padrao TaskAreas (fallback pro antigo)
+  var label  = document.getElementById('one-ag-periodo-label') || document.getElementById('one-ag-mes-label');
   if (!kanban) return;
 
   var compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
@@ -5055,10 +5056,16 @@ function renderOneAgendaPainel() {
   var meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   var domDaSemana = new Date(seg); domDaSemana.setDate(seg.getDate() + 6);
   if (label) {
+    // Formato compacto pra caber inline: "11–17 mai 2026"
+    var dIni = seg.getDate();
+    var dFim = domDaSemana.getDate();
+    var mIni = meses[seg.getMonth()].slice(0,3);
+    var mFim = meses[domDaSemana.getMonth()].slice(0,3);
+    var ano = domDaSemana.getFullYear();
     if (seg.getMonth() === domDaSemana.getMonth()) {
-      label.textContent = meses[seg.getMonth()] + ' ' + seg.getFullYear();
+      label.textContent = dIni + '–' + dFim + ' ' + mIni + ' ' + ano;
     } else {
-      label.textContent = meses[seg.getMonth()] + ' / ' + meses[domDaSemana.getMonth()];
+      label.textContent = dIni + ' ' + mIni + ' – ' + dFim + ' ' + mFim + ' ' + ano;
     }
   }
 
@@ -5120,7 +5127,9 @@ function renderOneAgendaPainel() {
       gridLines += '<div class="one-ag-tl-grid-line" style="top:' + (gh * 50) + 'px"></div>';
     }
 
-    colsHtml += '<div class="one-ag-kday-col' + (isHoje ? ' today' : '') + '" data-date="' + ds + '">' +
+    // data-dow: 1=SEG, 2=TER, 3=QUA, 4=QUI, 5=SEX, 6=SAB, 0=DOM (igual ao Date.getDay())
+    var dowReal = d.getDay();
+    colsHtml += '<div class="one-ag-kday-col' + (isHoje ? ' today' : '') + '" data-date="' + ds + '" data-dow="' + dowReal + '">' +
       '<div class="one-ag-kday-header">' +
         '<div class="one-ag-kday-name">' + NOMES[i] + '</div>' +
         numHtml +
@@ -7831,8 +7840,8 @@ function _brlAg(v) { return 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFract
 /* Sobrescreve o oneAgSetView pra suportar a nova vista "hoje" também */
 function oneAgSetView(view) {
   window.oneAgViewAtiva = view;
-  // Atualiza tabs (header v2)
-  document.querySelectorAll('.one-fin-header-tabs .one-fin-vista-tab[data-view]').forEach(function(t){
+  // Atualiza tabs (pill buttons padrão TaskAreas)
+  document.querySelectorAll('#one-ag-filters .one-tar-filter[data-view]').forEach(function(t){
     t.classList.toggle('active', t.getAttribute('data-view') === view);
   });
   // Mostra/esconde views
@@ -7871,65 +7880,46 @@ function oneAgAtualizarLabelPeriodo() {
   }
 }
 
-/* ── 3 cards slim: A receber + A pagar + Compromissos ── */
+/* ── 3 pills compactas no header: Hoje | Semana | Mês (contagem de compromissos) ── */
 function oneAgRenderTopCards() {
-  var view = window.oneAgViewAtiva || 'semana';
   var hoje = new Date(); hoje.setHours(0,0,0,0);
   var hojeStr = hoje.toISOString().slice(0,10);
 
-  // Janela de datas conforme view
-  var dataIni, dataFim, labelPeriodo;
-  if (view === 'hoje') {
-    var sel = window.oneAgHojeSelecionado || hojeStr;
-    dataIni = sel; dataFim = sel;
-    labelPeriodo = 'hoje';
-  } else if (view === 'mes') {
-    var dt = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-    var dtFim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
-    dataIni = dt.toISOString().slice(0,10);
-    dataFim = dtFim.toISOString().slice(0,10);
-    labelPeriodo = 'no mês';
-  } else {
-    // semana — começa segunda
-    var dow = hoje.getDay();
-    var diffSeg = (dow === 0 ? -6 : 1 - dow);
-    var seg = new Date(hoje); seg.setDate(hoje.getDate() + diffSeg);
-    var dom = new Date(seg); dom.setDate(seg.getDate() + 6);
-    dataIni = seg.toISOString().slice(0,10);
-    dataFim = dom.toISOString().slice(0,10);
-    labelPeriodo = 'na semana';
-  }
+  // Janela semana corrente (segunda → domingo)
+  var dow = hoje.getDay();
+  var diffSeg = (dow === 0 ? -6 : 1 - dow);
+  var seg = new Date(hoje); seg.setDate(hoje.getDate() + diffSeg);
+  var dom = new Date(seg); dom.setDate(seg.getDate() + 6);
+  var segStr = seg.toISOString().slice(0,10);
+  var domStr = dom.toISOString().slice(0,10);
+
+  // Janela mês corrente
+  var mesIni = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
+  var mesFim = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).toISOString().slice(0,10);
 
   var compromissos = [];
   try { compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
-  var noPeriodo = compromissos.filter(function(c){
-    return c.data && c.data >= dataIni && c.data <= dataFim;
-  });
 
-  var receber = 0, qtdReceber = 0, pagar = 0, qtdPagar = 0;
-  noPeriodo.forEach(function(c){
-    var valor = Number(c.valor) || 0;
-    var tipo = String(c.tipo || '').toLowerCase();
-    // Heurística: tipo 'atendimento', 'consulta', 'avalia', 'receita' = a receber
-    // tipo contendo 'desp', 'pag', 'aluguel' = a pagar
-    if (valor > 0) {
-      if (/desp|pag|aluguel|imposto|conta/.test(tipo)) {
-        pagar += valor; qtdPagar++;
-      } else {
-        receber += valor; qtdReceber++;
-      }
-    }
+  var qtdHoje = 0, qtdSemana = 0, qtdMes = 0;
+  compromissos.forEach(function(c){
+    if (!c.data) return;
+    if (c.data === hojeStr)                    qtdHoje++;
+    if (c.data >= segStr && c.data <= domStr)  qtdSemana++;
+    if (c.data >= mesIni && c.data <= mesFim)  qtdMes++;
   });
 
   var setText = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
-  setText('one-ag-card-receber-val', _brlAg(receber));
-  setText('one-ag-card-receber-sub', qtdReceber + ' compromisso' + (qtdReceber===1?'':'s'));
-  setText('one-ag-card-pagar-val', _brlAg(pagar));
-  setText('one-ag-card-pagar-sub', qtdPagar + ' compromisso' + (qtdPagar===1?'':'s'));
-  setText('one-ag-card-compromissos-num', noPeriodo.length);
-  setText('one-ag-card-compromissos-sub', labelPeriodo);
+  setText('one-ag-pill-hoje',   qtdHoje   + ' hoje');
+  setText('one-ag-pill-semana', qtdSemana + ' semana');
+  setText('one-ag-pill-mes',    qtdMes    + ' mês');
 }
 window.oneAgRenderTopCards = oneAgRenderTopCards;
+
+/* Stub: + Nova categoria (em breve — abre modal pra criar categoria de compromisso) */
+function oneAgNovaCategoria() {
+  if (typeof toast === 'function') toast('Categorias de compromisso em breve', 'info');
+}
+window.oneAgNovaCategoria = oneAgNovaCategoria;
 
 /* ── View Hoje: strip de 7 dias + lista do dia selecionado ── */
 function oneAgRenderHoje() {
