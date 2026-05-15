@@ -6942,15 +6942,14 @@ button.one-fin-card:hover {
    ════════════════════════════════════════════════════════════════ */
 @media (min-width: 900px) {
 
-  /* Cards de cima: sombra mais intensa e garantida que não vai ser cortada */
+  /* Cards de cima: SÓ o contorno duplo verde, SEM drop shadow (igual ao menu) */
   .one-desk-frase-card,
   .one-desk-card-conta {
     overflow: visible !important;
     box-shadow:
       0 0 0 2px rgba(92,136,112,0.92),
-      0 0 0 8px rgba(92,136,112,0.22),
-      0 14px 32px rgba(0,0,0,.14),
-      0 6px 14px rgba(0,0,0,.09) !important;
+      0 0 0 8px rgba(92,136,112,0.22) !important;
+    filter: none !important;
   }
 
   /* Garantir que parents não cortem as sombras dos cards de cima */
