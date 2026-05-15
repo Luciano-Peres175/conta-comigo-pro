@@ -351,24 +351,80 @@
       <!-- Variante Agenda (escondida por default — aparece via swapToCenter('agenda')) -->
       <div class="one-desktop-agenda" data-panel="agenda" hidden>
 
-        <!-- Header kanban -->
-        <div class="one-ag-kheader">
-          <div class="one-ag-knav">
-            <button class="one-ag-nav-btn" onclick="oneAgNavegar(-1)" title="Anterior">‹</button>
-            <span class="one-ag-mes-label" id="one-ag-mes-label">—</span>
-            <button class="one-ag-nav-btn" onclick="oneAgNavegar(1)" title="Próximo">›</button>
+        <!-- Header padrão v2: título + tabs + ações -->
+        <div class="one-ag-header one-fin-header" style="flex-shrink:0">
+          <div class="one-fin-header-left">
+            <span class="one-ag-mes-label">📅 Agenda</span>
+            <span class="one-pn-sub" id="one-ag-periodo-label">—</span>
+            <button class="one-ag-nav-btn" onclick="oneAgNavegar(-1)" title="Anterior" style="background:none;border:1.5px solid rgba(127,168,142,0.22);color:#5C8870;width:26px;height:26px;border-radius:8px;cursor:pointer;font-size:14px">‹</button>
+            <button class="one-ag-nav-btn" onclick="oneAgNavegar(1)" title="Próximo" style="background:none;border:1.5px solid rgba(127,168,142,0.22);color:#5C8870;width:26px;height:26px;border-radius:8px;cursor:pointer;font-size:14px">›</button>
           </div>
-          <div class="one-ag-view-tabs">
-            <button class="one-ag-view-tab active" data-view="semana" onclick="oneAgSetView('semana')">Semana</button>
-            <button class="one-ag-view-tab" data-view="mes" onclick="oneAgSetView('mes')">Mês</button>
+          <div class="one-fin-header-tabs">
+            <button class="one-fin-vista-tab active" data-view="hoje"   onclick="oneAgSetView('hoje')">Hoje</button>
+            <button class="one-fin-vista-tab"        data-view="semana" onclick="oneAgSetView('semana')">Semana</button>
+            <button class="one-fin-vista-tab"        data-view="mes"    onclick="oneAgSetView('mes')">Mês</button>
           </div>
-          <button class="one-tar-btn-nova" onclick="oneAgModalAbrir()">+ Novo</button>
+          <div class="one-fin-header-right">
+            <button onclick="oneAgModalAbrir()" title="Novo agendamento" class="one-fin-btn-novo">+ Novo agendamento</button>
+            <button onclick="supaResync()" title="Sincronizar" class="one-fin-btn-sync">⟳</button>
+          </div>
         </div>
 
-        <!-- Três visões — só uma visível por vez -->
+        <!-- 3 cards slim no topo: A receber + A pagar + Compromissos -->
+        <div class="one-fin-top-cards">
+          <div class="one-fin-card one-ag-card-receber">
+            <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+            <div class="one-fin-card-body">
+              <div class="one-fin-card-row">
+                <span class="one-fin-card-num" id="one-ag-card-receber-val">R$ 0,00</span>
+              </div>
+              <div class="one-fin-card-lbl">A receber</div>
+              <div class="one-fin-card-sub" id="one-ag-card-receber-sub">0 compromissos</div>
+            </div>
+          </div>
+
+          <div class="one-fin-card one-ag-card-pagar">
+            <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="7" x2="17" y2="17"/><polyline points="17 7 17 17 7 17"/></svg></div>
+            <div class="one-fin-card-body">
+              <div class="one-fin-card-row">
+                <span class="one-fin-card-num" id="one-ag-card-pagar-val">R$ 0,00</span>
+              </div>
+              <div class="one-fin-card-lbl">A pagar</div>
+              <div class="one-fin-card-sub" id="one-ag-card-pagar-sub">0 compromissos</div>
+            </div>
+          </div>
+
+          <div class="one-fin-card one-ag-card-compromissos">
+            <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+            <div class="one-fin-card-body">
+              <div class="one-fin-card-row">
+                <span class="one-fin-card-num" id="one-ag-card-compromissos-num">0</span>
+                <span class="one-fin-card-lbl">Compromissos</span>
+              </div>
+              <div class="one-fin-card-sub" id="one-ag-card-compromissos-sub">no período</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 views: Hoje | Semana | Mês -->
         <div class="one-fin-content">
-          <div id="one-ag-kanban" class="one-ag-tl-wrapper"></div>
-          <div id="one-ag-mes"    class="one-ag-mes-wrapper" hidden></div>
+          <!-- View Hoje: calendário horizontal + lista do dia -->
+          <div class="one-fin-vista" data-view="hoje" hidden>
+            <div class="one-ag-week-strip" id="one-ag-week-strip"></div>
+            <div class="one-ag-hoje-list" id="one-ag-hoje-list"></div>
+          </div>
+
+          <!-- View Semana: kanban semanal existente + resumo embaixo -->
+          <div class="one-fin-vista" data-view="semana">
+            <div id="one-ag-kanban" class="one-ag-tl-wrapper"></div>
+            <div class="one-ag-resumo-semana" id="one-ag-resumo-semana"></div>
+          </div>
+
+          <!-- View Mês: calendário tradicional com bolinhas + panorama -->
+          <div class="one-fin-vista" data-view="mes" hidden>
+            <div id="one-ag-mes" class="one-ag-mes-wrapper"></div>
+            <div class="one-ag-resumo-mes" id="one-ag-resumo-mes"></div>
+          </div>
         </div>
 
       </div>

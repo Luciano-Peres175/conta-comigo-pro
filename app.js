@@ -4282,7 +4282,18 @@ function swapToCenter(target) {
 
   // 4. Dispara render do novo painel — com re-sync Supabase em background
   var renderers = {
-    agenda:     function() { if (typeof renderOneAgendaPainel    === 'function') renderOneAgendaPainel(); },
+    agenda: function() {
+      // Renderiza a view ativa da Agenda v2 + cards + label do período
+      if (typeof oneAgRenderTopCards === 'function') oneAgRenderTopCards();
+      if (typeof oneAgAtualizarLabelPeriodo === 'function') oneAgAtualizarLabelPeriodo();
+      var view = window.oneAgViewAtiva || 'semana';
+      if (view === 'hoje' && typeof oneAgRenderHoje === 'function') oneAgRenderHoje();
+      else if (view === 'mes' && typeof oneAgRenderMes === 'function') oneAgRenderMes();
+      else {
+        if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
+        if (typeof oneAgRenderResumoSemana === 'function') oneAgRenderResumoSemana();
+      }
+    },
     tarefas:    function() { if (typeof renderOneTarefasPainel   === 'function') renderOneTarefasPainel(); },
     financeiro: function() { if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel(); }
   };
@@ -7685,3 +7696,367 @@ function oneFinRenderBalanco() {
   });
 }
 window.oneFinRenderBalanco = oneFinRenderBalanco;
+
+/* ════════════════════════════════════════════════════════════════
+   AGENDA v2 — Cards slim, 3 views (Hoje | Semana | Mês), painéis
+   ════════════════════════════════════════════════════════════════ */
+window.oneAgViewAtiva = window.oneAgViewAtiva || 'semana';
+window.oneAgHojeSelecionado = window.oneAgHojeSelecionado || new Date().toISOString().slice(0,10);
+
+function _brlAg(v) { return 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+/* Sobrescreve o oneAgSetView pra suportar a nova vista "hoje" também */
+function oneAgSetView(view) {
+  window.oneAgViewAtiva = view;
+  // Atualiza tabs (header v2)
+  document.querySelectorAll('.one-fin-header-tabs .one-fin-vista-tab[data-view]').forEach(function(t){
+    t.classList.toggle('active', t.getAttribute('data-view') === view);
+  });
+  // Mostra/esconde views
+  document.querySelectorAll('.one-desktop-agenda .one-fin-vista').forEach(function(v){
+    v.hidden = v.getAttribute('data-view') !== view;
+  });
+  // Atualiza label do período no header
+  oneAgAtualizarLabelPeriodo();
+  // Render apropriado
+  if (view === 'hoje') {
+    oneAgRenderHoje();
+  } else if (view === 'semana') {
+    if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
+    oneAgRenderResumoSemana();
+  } else if (view === 'mes') {
+    oneAgRenderMes();
+  }
+  // Sempre atualiza os 3 cards (baseado na view)
+  oneAgRenderTopCards();
+}
+window.oneAgSetView = oneAgSetView;
+
+function oneAgAtualizarLabelPeriodo() {
+  var lbl = document.getElementById('one-ag-periodo-label');
+  if (!lbl) return;
+  var hoje = new Date();
+  var view = window.oneAgViewAtiva || 'semana';
+  var meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  if (view === 'hoje') {
+    var sel = new Date((window.oneAgHojeSelecionado || hoje.toISOString().slice(0,10)) + 'T00:00:00');
+    lbl.textContent = sel.getDate() + ' de ' + meses[sel.getMonth()];
+  } else if (view === 'mes') {
+    lbl.textContent = meses[hoje.getMonth()] + ' ' + hoje.getFullYear();
+  } else {
+    lbl.textContent = ''; // semana mostra label próprio
+  }
+}
+
+/* ── 3 cards slim: A receber + A pagar + Compromissos ── */
+function oneAgRenderTopCards() {
+  var view = window.oneAgViewAtiva || 'semana';
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var hojeStr = hoje.toISOString().slice(0,10);
+
+  // Janela de datas conforme view
+  var dataIni, dataFim, labelPeriodo;
+  if (view === 'hoje') {
+    var sel = window.oneAgHojeSelecionado || hojeStr;
+    dataIni = sel; dataFim = sel;
+    labelPeriodo = 'hoje';
+  } else if (view === 'mes') {
+    var dt = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    var dtFim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+    dataIni = dt.toISOString().slice(0,10);
+    dataFim = dtFim.toISOString().slice(0,10);
+    labelPeriodo = 'no mês';
+  } else {
+    // semana — começa segunda
+    var dow = hoje.getDay();
+    var diffSeg = (dow === 0 ? -6 : 1 - dow);
+    var seg = new Date(hoje); seg.setDate(hoje.getDate() + diffSeg);
+    var dom = new Date(seg); dom.setDate(seg.getDate() + 6);
+    dataIni = seg.toISOString().slice(0,10);
+    dataFim = dom.toISOString().slice(0,10);
+    labelPeriodo = 'na semana';
+  }
+
+  var compromissos = [];
+  try { compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
+  var noPeriodo = compromissos.filter(function(c){
+    return c.data && c.data >= dataIni && c.data <= dataFim;
+  });
+
+  var receber = 0, qtdReceber = 0, pagar = 0, qtdPagar = 0;
+  noPeriodo.forEach(function(c){
+    var valor = Number(c.valor) || 0;
+    var tipo = String(c.tipo || '').toLowerCase();
+    // Heurística: tipo 'atendimento', 'consulta', 'avalia', 'receita' = a receber
+    // tipo contendo 'desp', 'pag', 'aluguel' = a pagar
+    if (valor > 0) {
+      if (/desp|pag|aluguel|imposto|conta/.test(tipo)) {
+        pagar += valor; qtdPagar++;
+      } else {
+        receber += valor; qtdReceber++;
+      }
+    }
+  });
+
+  var setText = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
+  setText('one-ag-card-receber-val', _brlAg(receber));
+  setText('one-ag-card-receber-sub', qtdReceber + ' compromisso' + (qtdReceber===1?'':'s'));
+  setText('one-ag-card-pagar-val', _brlAg(pagar));
+  setText('one-ag-card-pagar-sub', qtdPagar + ' compromisso' + (qtdPagar===1?'':'s'));
+  setText('one-ag-card-compromissos-num', noPeriodo.length);
+  setText('one-ag-card-compromissos-sub', labelPeriodo);
+}
+window.oneAgRenderTopCards = oneAgRenderTopCards;
+
+/* ── View Hoje: strip de 7 dias + lista do dia selecionado ── */
+function oneAgRenderHoje() {
+  var stripEl = document.getElementById('one-ag-week-strip');
+  var listEl  = document.getElementById('one-ag-hoje-list');
+  if (!stripEl || !listEl) return;
+
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var hojeStr = hoje.toISOString().slice(0,10);
+  var selecionado = window.oneAgHojeSelecionado || hojeStr;
+
+  // Strip dos 7 dias da semana corrente
+  var dow = hoje.getDay();
+  var diffSeg = (dow === 0 ? -6 : 1 - dow);
+  var seg = new Date(hoje); seg.setDate(hoje.getDate() + diffSeg);
+  var nomes = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+
+  var compromissos = [];
+  try { compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
+
+  var stripHtml = '';
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(seg); d.setDate(seg.getDate() + i);
+    var ds = d.toISOString().slice(0,10);
+    var temEvento = compromissos.some(function(c){ return c.data === ds; });
+    var cls = ['one-ag-week-day'];
+    if (ds === hojeStr) cls.push('today');
+    if (ds === selecionado) cls.push('selected');
+    if (temEvento) cls.push('tem-evento');
+    stripHtml += '<button type="button" class="' + cls.join(' ') + '" onclick="oneAgSelecionarDia(\'' + ds + '\')">' +
+                   '<span class="dia-nome">' + nomes[i] + '</span>' +
+                   '<span class="dia-num">' + d.getDate() + '</span>' +
+                   '<span class="dia-dot"></span>' +
+                 '</button>';
+  }
+  stripEl.innerHTML = stripHtml;
+
+  // Lista de compromissos do dia selecionado
+  var doDia = compromissos
+    .filter(function(c){ return c.data === selecionado; })
+    .sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
+
+  if (!doDia.length) {
+    listEl.innerHTML = '<p class="one-ag-hoje-empty">Sem compromissos neste dia. Use "+ Novo agendamento" pra criar.</p>';
+    return;
+  }
+
+  var dataLabel = (function(){
+    var d = new Date(selecionado + 'T00:00:00');
+    var meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    if (selecionado === hojeStr) return 'Hoje, ' + d.getDate() + ' de ' + meses[d.getMonth()];
+    var ontem = new Date(hoje); ontem.setDate(hoje.getDate() - 1);
+    if (selecionado === ontem.toISOString().slice(0,10)) return 'Ontem, ' + d.getDate() + ' de ' + meses[d.getMonth()];
+    return d.getDate() + ' de ' + meses[d.getMonth()];
+  })();
+
+  var html = '<div class="one-ag-hoje-day-label">' + dataLabel + '</div>';
+  doDia.forEach(function(c){
+    var cat = (typeof oneAgCorCategoria === 'function') ? oneAgCorCategoria(c.tipo) : { cor:'#9B72B0', bg:'#F0E8F4' };
+    var nome = (c.nome || c.descricao || 'Compromisso').replace(/</g,'&lt;');
+    var hora = c.hora || '';
+    var valor = Number(c.valor) || 0;
+    var tipo = String(c.tipo || '').toLowerCase();
+    // Decide badge
+    var badgeClass = 'tarefa', badgeText = 'Tarefa';
+    if (valor > 0) {
+      if (/desp|pag|aluguel|imposto/.test(tipo)) { badgeClass = 'despesa'; badgeText = 'Despesa'; }
+      else { badgeClass = 'receita'; badgeText = 'Receita'; }
+    } else if (/reuni|meeting/.test(tipo)) { badgeClass = 'reuniao'; badgeText = 'Reunião'; }
+    else if (/atend|consulta|sess/.test(tipo)) { badgeClass = 'receita'; badgeText = 'Atendimento'; }
+    var emoji = '📅';
+    if (/atend|paciente/.test(tipo)) emoji = '🩺';
+    else if (/reuni/.test(tipo)) emoji = '💼';
+    else if (/aluguel|conta|pag/.test(tipo)) emoji = '💸';
+    else if (/curso|workshop/.test(tipo)) emoji = '🎓';
+    var sub = c.descricao && c.descricao !== c.nome ? c.descricao.replace(/</g,'&lt;') : (c.tipo || '');
+    html += '<div class="one-ag-hoje-item" onclick="oneAgModalEditar(\'' + (c.id||'') + '\')">' +
+              '<div class="one-ag-hoje-item-icon" style="background:' + cat.bg + ';color:' + cat.cor + '">' + emoji + '</div>' +
+              '<div class="one-ag-hoje-item-body">' +
+                (hora ? '<div class="one-ag-hoje-item-hora">' + hora + '</div>' : '') +
+                '<div class="one-ag-hoje-item-nome">' + nome + '</div>' +
+                (sub ? '<div class="one-ag-hoje-item-sub">' + sub.replace(/</g,'&lt;') + '</div>' : '') +
+              '</div>' +
+              '<span class="one-ag-hoje-item-badge ' + badgeClass + '">' + badgeText + '</span>' +
+            '</div>';
+  });
+  listEl.innerHTML = html;
+}
+window.oneAgRenderHoje = oneAgRenderHoje;
+
+function oneAgSelecionarDia(ds) {
+  window.oneAgHojeSelecionado = ds;
+  oneAgRenderHoje();
+  oneAgRenderTopCards();
+  oneAgAtualizarLabelPeriodo();
+}
+window.oneAgSelecionarDia = oneAgSelecionarDia;
+
+/* ── Resumo da semana (embaixo da view Semana) ── */
+function oneAgRenderResumoSemana() {
+  var el = document.getElementById('one-ag-resumo-semana');
+  if (!el) return;
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var dow = hoje.getDay();
+  var diffSeg = (dow === 0 ? -6 : 1 - dow);
+  var seg = new Date(hoje); seg.setDate(hoje.getDate() + diffSeg);
+  var dom = new Date(seg); dom.setDate(seg.getDate() + 6);
+  var segStr = seg.toISOString().slice(0,10);
+  var domStr = dom.toISOString().slice(0,10);
+
+  var compromissos = [];
+  try { compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
+  var doPeriodo = compromissos.filter(function(c){ return c.data >= segStr && c.data <= domStr; });
+
+  var receber = 0, qtdR = 0, pagar = 0, qtdP = 0;
+  doPeriodo.forEach(function(c){
+    var v = Number(c.valor) || 0;
+    var t = String(c.tipo || '').toLowerCase();
+    if (v > 0) {
+      if (/desp|pag|aluguel|imposto/.test(t)) { pagar += v; qtdP++; }
+      else { receber += v; qtdR++; }
+    }
+  });
+
+  el.innerHTML =
+    '<div class="one-ag-resumo-card in">' +
+      '<div class="one-ag-resumo-titulo">Recebimentos previstos</div>' +
+      '<div class="one-ag-resumo-valor">' + _brlAg(receber) + '</div>' +
+      '<div class="one-ag-resumo-sub">' + qtdR + ' compromisso' + (qtdR===1?'':'s') + '</div>' +
+    '</div>' +
+    '<div class="one-ag-resumo-card out">' +
+      '<div class="one-ag-resumo-titulo">Pagamentos previstos</div>' +
+      '<div class="one-ag-resumo-valor">' + _brlAg(pagar) + '</div>' +
+      '<div class="one-ag-resumo-sub">' + qtdP + ' compromisso' + (qtdP===1?'':'s') + '</div>' +
+    '</div>' +
+    '<div class="one-ag-resumo-card">' +
+      '<div class="one-ag-resumo-titulo">Compromissos</div>' +
+      '<div class="one-ag-resumo-valor">' + doPeriodo.length + '</div>' +
+      '<div class="one-ag-resumo-sub">esta semana</div>' +
+    '</div>';
+}
+window.oneAgRenderResumoSemana = oneAgRenderResumoSemana;
+
+/* ── View Mês: calendário tradicional com bolinhas + panorama ── */
+function oneAgRenderMes() {
+  var wrap = document.getElementById('one-ag-mes');
+  if (!wrap) return;
+
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var hojeStr = hoje.toISOString().slice(0,10);
+  var mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
+
+  // Primeiro dia do mês e dia da semana (0=domingo, queremos começar segunda)
+  var primDia = new Date(anoAtual, mesAtual, 1);
+  var dowPrim = primDia.getDay(); // 0=Dom
+  var offset = dowPrim === 0 ? 6 : dowPrim - 1; // quantos dias do mês anterior preencher antes do dia 1
+  var inicio = new Date(primDia); inicio.setDate(primDia.getDate() - offset);
+
+  var compromissos = [];
+  try { compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
+
+  var nomes = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+  var html = '<div class="one-ag-mes-grid">';
+  nomes.forEach(function(n){ html += '<div class="one-ag-mes-header-day">' + n + '</div>'; });
+
+  for (var i = 0; i < 42; i++) {
+    var d = new Date(inicio); d.setDate(inicio.getDate() + i);
+    var ds = d.toISOString().slice(0,10);
+    var outroMes = d.getMonth() !== mesAtual;
+    var isToday = ds === hojeStr;
+    var doDia = compromissos.filter(function(c){ return c.data === ds; });
+    var tipos = new Set();
+    doDia.forEach(function(c){
+      var v = Number(c.valor) || 0;
+      var t = String(c.tipo || '').toLowerCase();
+      if (v > 0 && /desp|pag|aluguel/.test(t)) tipos.add('despesa');
+      else if (v > 0) tipos.add('receita');
+      else if (/reuni|meeting/.test(t)) tipos.add('reuniao');
+      else tipos.add('tarefa');
+    });
+    var dots = '';
+    ['receita','despesa','reuniao','tarefa'].forEach(function(tp){
+      if (tipos.has(tp)) dots += '<span class="one-ag-mes-day-dot ' + tp + '"></span>';
+    });
+    var cls = ['one-ag-mes-day-cell'];
+    if (outroMes) cls.push('outro-mes');
+    if (isToday) cls.push('today');
+    html += '<div class="' + cls.join(' ') + '" onclick="oneAgClickDiaMes(\'' + ds + '\')">' +
+              '<span class="one-ag-mes-day-num">' + d.getDate() + '</span>' +
+              (dots ? '<div class="one-ag-mes-day-dots">' + dots + '</div>' : '') +
+            '</div>';
+  }
+  html += '</div>';
+
+  // Legenda
+  html += '<div class="one-ag-mes-legenda">' +
+            '<span class="one-ag-mes-legenda-item"><span class="one-ag-mes-legenda-dot" style="background:#27856A"></span>Recebimentos</span>' +
+            '<span class="one-ag-mes-legenda-item"><span class="one-ag-mes-legenda-dot" style="background:#C0392B"></span>Pagamentos</span>' +
+            '<span class="one-ag-mes-legenda-item"><span class="one-ag-mes-legenda-dot" style="background:#5B7CFA"></span>Reuniões</span>' +
+            '<span class="one-ag-mes-legenda-item"><span class="one-ag-mes-legenda-dot" style="background:#888880"></span>Tarefas</span>' +
+          '</div>';
+
+  wrap.innerHTML = html;
+
+  // Resumo do mês (panorama)
+  oneAgRenderResumoMes();
+}
+window.oneAgRenderMes = oneAgRenderMes;
+
+function oneAgClickDiaMes(ds) {
+  // Click num dia do mês → vai pra view Hoje com aquele dia selecionado
+  window.oneAgHojeSelecionado = ds;
+  oneAgSetView('hoje');
+}
+window.oneAgClickDiaMes = oneAgClickDiaMes;
+
+function oneAgRenderResumoMes() {
+  var el = document.getElementById('one-ag-resumo-mes');
+  if (!el) return;
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var iniMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
+  var fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).toISOString().slice(0,10);
+
+  var compromissos = [];
+  try { compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
+  var doMes = compromissos.filter(function(c){ return c.data >= iniMes && c.data <= fimMes; });
+
+  var receber = 0, pagar = 0;
+  doMes.forEach(function(c){
+    var v = Number(c.valor) || 0;
+    var t = String(c.tipo || '').toLowerCase();
+    if (v > 0) {
+      if (/desp|pag|aluguel|imposto/.test(t)) pagar += v;
+      else receber += v;
+    }
+  });
+
+  el.innerHTML =
+    '<div class="one-ag-resumo-card in">' +
+      '<div class="one-ag-resumo-titulo">Recebimentos previstos</div>' +
+      '<div class="one-ag-resumo-valor">' + _brlAg(receber) + '</div>' +
+    '</div>' +
+    '<div class="one-ag-resumo-card out">' +
+      '<div class="one-ag-resumo-titulo">Pagamentos previstos</div>' +
+      '<div class="one-ag-resumo-valor">' + _brlAg(pagar) + '</div>' +
+    '</div>' +
+    '<div class="one-ag-resumo-card">' +
+      '<div class="one-ag-resumo-titulo">Compromissos</div>' +
+      '<div class="one-ag-resumo-valor">' + doMes.length + '</div>' +
+      '<div class="one-ag-resumo-sub">no mês</div>' +
+    '</div>';
+}
+window.oneAgRenderResumoMes = oneAgRenderResumoMes;
