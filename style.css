@@ -6936,3 +6936,70 @@ button.one-fin-card:hover {
   gap: 4px;
   min-height: 0;
 }
+
+/* ════════════════════════════════════════════════════════════════
+   FIXES v3.1: sombras + gap entre cards + empilhamento mini resumos
+   ════════════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+
+  /* Cards de cima: sombra mais intensa e garantida que não vai ser cortada */
+  .one-desk-frase-card,
+  .one-desk-card-conta {
+    overflow: visible !important;
+    box-shadow:
+      0 0 0 2px rgba(92,136,112,0.92),
+      0 0 0 8px rgba(92,136,112,0.22),
+      0 14px 32px rgba(0,0,0,.14),
+      0 6px 14px rgba(0,0,0,.09) !important;
+  }
+
+  /* Garantir que parents não cortem as sombras dos cards de cima */
+  body:has(#screen-one.active) .one-desktop-layout {
+    overflow: visible !important;
+  }
+  body:has(#screen-one.active) .one-desktop-main,
+  body:has(#screen-one.active) .one-desktop-sidebar {
+    overflow: visible !important;
+  }
+
+  /* Aumentar gap entre cards laterais pra sombras respirarem */
+  body:has(#screen-one.active) .one-desktop-sidebar {
+    gap: 22px !important;
+  }
+  body:has(#screen-one.active) #sidebar {
+    gap: 22px !important;
+  }
+  .one-desk-frase-card {
+    margin-bottom: 22px !important;
+  }
+
+  /* Wrappers dos cards Agenda e Tarefas: flex column pra empilhar grid + mini resumos */
+  body:has(#screen-one.active) #one-desk-ag-week,
+  body:has(#screen-one.active) #one-desk-tarefas-list {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+    gap: 8px;
+  }
+  /* Grid principal (colunas) ocupa o espaço disponível */
+  .one-agenda-week-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 4px;
+  }
+  .one-desk-tar-kanban-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 4px;
+  }
+  /* Mini resumos: empilhados embaixo, não encolhem */
+  .one-desk-mini-resumos {
+    flex-shrink: 0 !important;
+    margin-top: 0 !important;
+  }
+}
