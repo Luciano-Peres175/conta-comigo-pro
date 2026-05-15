@@ -56,7 +56,7 @@
     /* ── Layout raiz ────────────────────────────────────────────── */
     #app {
       display: flex;
-      min-height: 100vh;
+      min-height: 100dvh;
     }
 
     /* ════════════════════════════════════════════════════════════
@@ -71,7 +71,7 @@
       flex-direction: column;
       position: fixed;
       top: 0; left: 0;
-      height: 100vh;
+      height: 100dvh;
       z-index: 250; /* acima do bottom-nav (200) — corrige acesso ao botão Configurações no mobile vertical */
       transition: transform .28s ease;
     }
@@ -196,7 +196,7 @@
     #main {
       flex: 1;
       margin-left: var(--sidebar-w);
-      min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
     }
@@ -2147,7 +2147,7 @@
     }
     #screen-pinah {
       background: var(--psc-mesa);
-      min-height: 100vh;
+      min-height: 100dvh;
       padding: 0; gap: 0;
     }
     .psc-wrap {
@@ -2284,7 +2284,7 @@
    SCREEN ONE — Chat | Agenda | Financeiro
    Pérola #F4F1EA · Lilás #5C8870 · Glow radial na superfície
    ============================================================ */
-#screen-one{background:#F4F1EA;min-height:100vh;padding:0;overflow:hidden;}
+#screen-one{background:#F4F1EA;min-height:100dvh;padding:0;overflow:hidden;}
 #screen-one.active{display:flex;flex-direction:column;}
 /* ── Topbar ──────────────────────────────────────────────────── */
 .one-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 8px;position:relative;z-index:10;flex-shrink:0;gap:0;}
@@ -2484,7 +2484,7 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   max-width: 480px;
   width: 100%;
   margin: 0 auto;
-  min-height: 100vh;
+  min-height: 100dvh;
   min-height: 100dvh;
   z-index: 9999;
   overflow: hidden;
@@ -5124,4 +5124,28 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   .pinah-onb-tour-title { font-size: 20px; }
   .pinah-onb-avatar-big { width: 108px; height: 108px; }
   .pinah-onb-chat-wrap { height: 88vh; max-height: none; border-radius: 0; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MOBILE — evita auto-zoom do iOS Safari ao focar em inputs
+   ════════════════════════════════════════════════════════════════
+   iOS Safari (e Chrome iOS) faz zoom automático quando o usuário foca
+   em um campo de texto com font-size < 16px. Forçar 16px mínimo no
+   mobile mantém o app no mesmo zoom durante a edição.
+*/
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="time"],
+  input[type="search"],
+  input[type="url"],
+  input:not([type]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
