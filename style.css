@@ -5212,3 +5212,515 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   display: none !important;
 }
+
+/* ════════════════════════════════════════════════════════════════
+   PENDÊNCIAS E ALERTAS — 3 cards de pulso operacional no topo do Financeiro
+   ════════════════════════════════════════════════════════════════ */
+.one-pn-alerts-wrap {
+  margin: 0 0 14px;
+  padding: 0 2px;
+}
+.one-pn-alerts-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6B7F6F;
+  letter-spacing: 0.7px;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-pn-alerts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.one-pn-alert {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 14px 12px;
+  border-radius: 16px;
+  border: 1.5px solid transparent;
+  background: #FBF8F2;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.one-pn-alert:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(58,88,72,0.10);
+}
+.one-pn-alert:active { transform: translateY(0); }
+.one-pn-alert-icon {
+  width: 34px; height: 34px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.one-pn-alert-num {
+  font-size: 24px;
+  font-weight: 500;
+  color: #2D3D2F;
+  line-height: 1;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-pn-alert-lbl {
+  font-size: 11.5px;
+  color: #6B7F6F;
+  margin-top: 5px;
+  line-height: 1.3;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Variante 1 — Receitas pendentes (âmbar) */
+.one-pn-alert-receitas {
+  background: #FCF6E8;
+  border-color: rgba(212,166,85,0.28);
+}
+.one-pn-alert-receitas .one-pn-alert-icon {
+  background: rgba(212,166,85,0.22);
+  color: #8B6914;
+}
+
+/* Variante 2 — Despesas vencendo (coral) */
+.one-pn-alert-despesas {
+  background: #FDECEA;
+  border-color: rgba(192,57,43,0.22);
+}
+.one-pn-alert-despesas .one-pn-alert-icon {
+  background: rgba(192,57,43,0.20);
+  color: #A02D24;
+}
+
+/* Variante 3 — Compromissos hoje (lilás Pinah — acento de marca) */
+.one-pn-alert-compromissos {
+  background: #F0E8F4;
+  border-color: rgba(155,114,176,0.30);
+}
+.one-pn-alert-compromissos .one-pn-alert-icon {
+  background: rgba(155,114,176,0.22);
+  color: #6E4F87;
+}
+
+/* Estado de tudo zerado — Pinah já cuidou */
+.one-pn-alerts-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border-top: 1px dashed rgba(127,168,142,0.22);
+  font-style: italic;
+  color: #5C8870;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 13px;
+}
+.one-pn-alerts-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7FA88E, #5C8870);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Mobile — cards um pouco mais compactos */
+@media (max-width: 767px) {
+  .one-pn-alerts-grid { gap: 8px; }
+  .one-pn-alert { padding: 12px 10px; border-radius: 14px; }
+  .one-pn-alert-icon { width: 30px; height: 30px; margin-bottom: 8px; }
+  .one-pn-alert-num { font-size: 22px; }
+  .one-pn-alert-lbl { font-size: 11px; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   FINANCEIRO — Tabs de período + lista agrupada por data + ícones
+   ════════════════════════════════════════════════════════════════ */
+
+/* Tabs de período (7/15/30/Mês) */
+.one-fin-period-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 14px 0 10px;
+  padding: 4px;
+  background: rgba(127,168,142,0.10);
+  border-radius: 12px;
+}
+.one-fin-period-tab {
+  flex: 1;
+  padding: 7px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6B7F6F;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all .15s ease;
+}
+.one-fin-period-tab:hover { color: #5C8870; }
+.one-fin-period-tab.active {
+  background: #FBF8F2;
+  color: #2D3D2F;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(58,88,72,0.10);
+}
+
+/* Cabeçalho de dia no extrato */
+.one-fin-day-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6B7F6F;
+  letter-spacing: 0.4px;
+  margin: 14px 0 6px;
+  padding: 0 2px;
+  text-transform: uppercase;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-day-header:first-child { margin-top: 0; }
+
+/* Linha de lançamento com ícone redondinho colorido */
+.one-fin-item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid rgba(127,168,142,0.08);
+}
+.one-fin-item-row:last-child { border-bottom: none; }
+.one-fin-item-icon {
+  width: 36px; height: 36px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+.one-fin-item-body { flex: 1; min-width: 0; }
+.one-fin-item-nome {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #2D3D2F;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-item-meta {
+  font-size: 11px;
+  color: #6B7F6F;
+  margin-top: 2px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-item-valor {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-item-valor.in  { color: #27856A; }
+.one-fin-item-valor.out { color: #C0392B; }
+.one-fin-item-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+.one-fin-item-row:hover .one-fin-item-actions { opacity: 1; }
+.one-fin-item-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  font-size: 14px;
+  color: #888880;
+  border-radius: 6px;
+}
+.one-fin-item-btn:hover { background: rgba(127,168,142,0.10); color: #2D3D2F; }
+.one-fin-item-btn.del:hover { color: #C0392B; }
+
+/* ════════════════════════════════════════════════════════════════
+   RELATÓRIOS — Modal full-screen com gráfico donut + tabs
+   ════════════════════════════════════════════════════════════════ */
+.one-rel-modal {
+  position: fixed; inset: 0;
+  z-index: 9995;
+  background: rgba(45,61,47,0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 0;
+  animation: oneRelFadeIn .25s ease;
+}
+.one-rel-modal[hidden] { display: none; }
+@keyframes oneRelFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.one-rel-box {
+  background: #FBF8F2;
+  width: 100%;
+  max-width: 720px;
+  margin: auto 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  animation: oneRelSlideIn .3s cubic-bezier(.2,.9,.3,1.05);
+}
+@keyframes oneRelSlideIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (min-width: 720px) {
+  .one-rel-box {
+    min-height: auto;
+    max-height: 92vh;
+    margin: auto;
+    border-radius: 24px;
+    overflow-y: auto;
+    border: 1.5px solid rgba(127,168,142,0.18);
+    box-shadow: 0 30px 80px rgba(58,88,72,0.35);
+  }
+}
+
+/* Header */
+.one-rel-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(127,168,142,0.14);
+  position: sticky;
+  top: 0;
+  background: #FBF8F2;
+  z-index: 3;
+}
+.one-rel-back {
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(127,168,142,0.20);
+  background: #fff;
+  color: #5C8870;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-rel-back:hover { background: #EDF4ED; transform: translateX(-1px); }
+.one-rel-title {
+  flex: 1;
+  text-align: center;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2D3D2F;
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+
+/* Navegação de mês */
+.one-rel-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 16px;
+  background: rgba(127,168,142,0.06);
+  border-bottom: 1px solid rgba(127,168,142,0.14);
+}
+.one-rel-month-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid rgba(127,168,142,0.22);
+  color: #5C8870;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-rel-month-btn:hover { background: #EDF4ED; }
+.one-rel-month-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2D3D2F;
+  min-width: 140px;
+  text-align: center;
+  text-transform: capitalize;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Tabs */
+.one-rel-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 16px 0;
+  border-bottom: 1.5px solid rgba(127,168,142,0.14);
+}
+.one-rel-tab {
+  flex: 1;
+  padding: 10px 6px;
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6B7F6F;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: color .15s ease, border-color .15s ease;
+}
+.one-rel-tab:hover { color: #2D3D2F; }
+.one-rel-tab.active {
+  color: #5C8870;
+  border-bottom-color: #5C8870;
+}
+
+/* Conteúdo */
+.one-rel-content {
+  padding: 16px;
+  flex: 1;
+}
+.one-rel-aba { animation: oneRelFadeIn .2s ease; }
+
+.one-rel-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 16px;
+  border: 1px solid rgba(127,168,142,0.16);
+  box-shadow: 0 6px 18px rgba(58,88,72,0.06);
+}
+.one-rel-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.one-rel-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2D3D2F;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Toggle Despesas | Receitas */
+.one-rel-toggle {
+  display: flex;
+  gap: 2px;
+  background: rgba(127,168,142,0.12);
+  border-radius: 9px;
+  padding: 3px;
+}
+.one-rel-toggle-btn {
+  padding: 5px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #6B7F6F;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-rel-toggle-btn.active {
+  background: #fff;
+  color: #2D3D2F;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+/* Donut chart */
+.one-rel-chart-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 260px;
+  margin: 16px auto 8px;
+  aspect-ratio: 1 / 1;
+}
+.one-rel-chart-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
+}
+.one-rel-chart-center-lbl {
+  font-size: 11px;
+  color: #6B7F6F;
+  font-family: system-ui, -apple-system, sans-serif;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+.one-rel-chart-center-val {
+  font-size: 19px;
+  font-weight: 600;
+  color: #2D3D2F;
+  margin-top: 3px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Lista de categorias com percentual */
+.one-rel-cat-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.one-rel-cat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 4px;
+  border-bottom: 1px solid rgba(127,168,142,0.10);
+}
+.one-rel-cat-row:last-child { border-bottom: none; }
+.one-rel-cat-dot {
+  width: 28px; height: 28px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.one-rel-cat-nome {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2D3D2F;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-rel-cat-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2D3D2F;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-rel-cat-pct {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(45,61,47,0.55);
+  padding: 3px 8px;
+  border-radius: 8px;
+  min-width: 38px;
+  text-align: center;
+  font-family: system-ui, -apple-system, sans-serif;
+}
