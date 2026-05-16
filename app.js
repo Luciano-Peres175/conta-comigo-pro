@@ -5070,14 +5070,32 @@ function renderOneAgendaPainel() {
   }
 
   var NOMES = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
-  // Paleta narrativa SEG→SEX: ranço de segunda → festa de sexta
   var PALETTE = ['#C97B6A','#D89B5A','#D4B855','#A8B470','#7FA88E','#9DB1A8','#8DA39A'];
+
+  var H_START = 8, H_END = 18, PX = 50;
+  var BODY_H = (H_END - H_START) * PX; // 500px
+  var HDR_H  = 38; // altura aprox. do header das colunas (para alinhar régua)
+
+  // Régua única à esquerda (08:00–18:00)
+  var rulerHtml = '<div class="one-ag-tl-ruler one-ag-week-ruler">';
+  for (var rh = H_START; rh <= H_END; rh++) {
+    var rt = HDR_H + (rh - H_START) * PX;
+    rulerHtml += '<div class="one-ag-tl-hour" style="top:' + rt + 'px">' + (rh < 10 ? '0' : '') + rh + ':00</div>';
+  }
+  rulerHtml += '</div>';
+
+  // Grid lines (reutilizadas em cada coluna)
+  var gridLines = '';
+  for (var gh = 0; gh <= H_END - H_START; gh++) {
+    gridLines += '<div class="one-ag-tl-grid-line" style="top:' + (gh * PX) + 'px"></div>';
+  }
 
   var colsHtml = '';
   for (var i = 0; i < 7; i++) {
     var d = new Date(seg); d.setDate(seg.getDate() + i);
     var ds = d.toISOString().slice(0,10);
     var isHoje = ds === hojeStr;
+    var dowReal = d.getDay();
 
     var doDia = compromissos
       .filter(function(c){ return c.data === ds; })
@@ -5088,34 +5106,36 @@ function renderOneAgendaPainel() {
       ? '<span class="one-ag-kday-num today-circle">' + numDia + '</span>'
       : '<span class="one-ag-kday-num">' + numDia + '</span>';
 
-    var emptyMsg = doDia.length === 0
-      ? '<div class="one-ag-kday-empty">Nenhum compromisso</div>'
-      : '';
+    var cards = (function(list, hStart, px) {
+      return list.map(function(c) {
+        var realizado = !!c.status && c.status.toLowerCase() === 'realizado';
+        var hora = c.hora || '08:00';
+        var nome = (c.nome || c.descricao || 'Compromisso').replace(/</g,'&lt;');
+        var tipo = (c.tipo || '').replace(/</g,'&lt;');
+        var cat  = oneAgCorCategoria(tipo);
+        var checkBg  = realizado ? '#4CAF50' : 'transparent';
+        var checkBdr = realizado ? '#4CAF50' : '#C0BAD0';
+        var checkTxt = realizado ? '✓' : '';
+        var parts = String(hora).split(':');
+        var hh = parseInt(parts[0]) || 0;
+        var mm = parseInt(parts[1]) || 0;
+        var top = ((hh - hStart) + mm / 60) * px;
+        if (top < 0) top = 0;
+        var dur = parseInt(c.duracao) || 60;
+        var hPx = Math.max(22, Math.round(dur * (px / 60)));
+        var valor = c.valor ? ' · R$' + Number(c.valor).toFixed(0) : '';
+        return '<div class="one-ag-kcard one-ag-tl-card' + (realizado ? ' realizado' : '') + '" draggable="true" data-event-id="' + c.id + '" data-cid="' + c.id + '" onclick="oneAgModalEditar(this.dataset.cid)" style="top:' + top + 'px;height:' + hPx + 'px;border-left-color:' + cat.cor + ';background:' + cat.bg + '">' +
+          '<div class="one-ag-kcard-check" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgToggleRealizado(this.dataset.cid)" style="background:' + checkBg + ';border-color:' + checkBdr + '">' + checkTxt + '</div>' +
+          '<div class="one-ag-kcard-body">' +
+            '<div class="one-ag-kcard-hora" style="color:' + cat.cor + '">' + hora + (valor ? '<span style="margin-left:5px;opacity:.7;font-size:10px">' + valor + '</span>' : '') + '</div>' +
+            '<div class="one-ag-kcard-nome">' + nome + '</div>' +
+            (tipo ? '<div class="one-ag-kcard-tipo"><span class="one-ag-kcard-dot" style="background:' + cat.cor + '"></span>' + tipo + '</div>' : '') +
+          '</div>' +
+          '<div class="one-ag-kcard-actions"><button class="one-tar-card-btn del" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgExcluir(this.dataset.cid)" title="Excluir">🗑️</button></div>' +
+        '</div>';
+      }).join('');
+    }(doDia, H_START, PX));
 
-    var cards = doDia.map(function(c) {
-      var realizado = !!c.status && c.status.toLowerCase() === 'realizado';
-      var hora = c.hora || '';
-      var nome = (c.nome || c.descricao || 'Compromisso').replace(/</g,'&lt;');
-      var tipo = (c.tipo || '').replace(/</g,'&lt;');
-      var checkBg  = realizado ? '#4CAF50' : 'transparent';
-      var checkBdr = realizado ? '#4CAF50' : '#C0BAD0';
-      var checkTxt = realizado ? '✓' : '';
-      var cat = oneAgCorCategoria(tipo);
-      return '<div class="one-ag-kcard' + (realizado ? ' realizado' : '') + '" data-cid="' + c.id + '" onclick="oneAgModalEditar(this.dataset.cid)" style="border-left-color:' + cat.cor + ';background:' + cat.bg + '">' +
-        '<div class="one-ag-kcard-check" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgToggleRealizado(this.dataset.cid)" style="background:' + checkBg + ';border-color:' + checkBdr + '">' + checkTxt + '</div>' +
-        '<div class="one-ag-kcard-body">' +
-          (hora ? '<div class="one-ag-kcard-hora" style="color:' + cat.cor + '">' + hora + '</div>' : '') +
-          '<div class="one-ag-kcard-nome">' + nome + '</div>' +
-          (tipo ? '<div class="one-ag-kcard-tipo"><span class="one-ag-kcard-dot" style="background:' + cat.cor + '"></span>' + tipo + '</div>' : '') +
-        '</div>' +
-        '<div class="one-ag-kcard-actions">' +
-          '<button class="one-tar-card-btn del" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgExcluir(this.dataset.cid)" title="Excluir">🗑️</button>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-
-    // data-dow: 1=SEG, 2=TER, 3=QUA, 4=QUI, 5=SEX, 6=SAB, 0=DOM
-    var dowReal = d.getDay();
     colsHtml +=
       '<div class="one-ag-kday-col' + (isHoje ? ' today' : '') + '" data-date="' + ds + '" data-dow="' + dowReal + '" style="border-top:3px solid ' + PALETTE[i] + '">' +
         '<div class="one-ag-kday-header">' +
@@ -5125,11 +5145,8 @@ function renderOneAgendaPainel() {
           '</div>' +
           '<span class="one-ag-kday-count">' + doDia.length + '</span>' +
         '</div>' +
-        '<div class="one-ag-kday-body" data-date="' + ds + '">' +
-          '<div class="one-ag-hours-gutter">' +
-            ['08','09','10','11','12','13','14','15','16','17','18'].map(function(h){ return '<span class="one-ag-hour-tick">' + h + '</span>'; }).join('') +
-          '</div>' +
-          '<div class="one-ag-cards-col">' + emptyMsg + cards + '</div>' +
+        '<div class="one-ag-kday-body" data-date="' + ds + '" data-hour-offset="' + H_START + '" style="height:' + BODY_H + 'px" onclick="oneAgClickSlotWeek(event,this)">' +
+          gridLines + cards +
         '</div>' +
         '<div class="one-ag-kday-add-wrap">' +
           '<button class="one-ag-kday-add" onclick="event.stopPropagation();oneAgModalAbrir(\'' + ds + '\')">+ Novo compromisso</button>' +
@@ -5137,7 +5154,8 @@ function renderOneAgendaPainel() {
       '</div>';
   }
 
-  kanban.innerHTML = colsHtml;
+  kanban.innerHTML = rulerHtml + '<div class="one-ag-tl-cols one-ag-week-cols">' + colsHtml + '</div>';
+  oneInitAgendaSortable();
 }
 
 /* Linha horizontal de "agora" — atravessa todas as colunas */
@@ -5380,6 +5398,26 @@ function oneAgClickSlot(ev, bodyEl) {
   }, 50);
 }
 
+/* Click em slot vazio na view semanal — calcula hora com offset de H_START */
+function oneAgClickSlotWeek(ev, bodyEl) {
+  if (ev.target !== bodyEl && !ev.target.classList.contains('one-ag-tl-grid-line')) return;
+  var rect = bodyEl.getBoundingClientRect();
+  var y = ev.clientY - rect.top;
+  var hourOffset = parseInt(bodyEl.getAttribute('data-hour-offset') || '0');
+  var totalMin = hourOffset * 60 + Math.max(0, Math.round(y / 50 * 60));
+  totalMin = Math.round(totalMin / 15) * 15;
+  if (totalMin > 23*60+45) totalMin = 23*60+45;
+  var hh = Math.floor(totalMin / 60);
+  var mm = totalMin % 60;
+  var horaStr = (hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm;
+  var ds = bodyEl.getAttribute('data-date');
+  oneAgModalAbrir(ds);
+  setTimeout(function(){
+    var hi = document.getElementById('one-ag-modal-hora');
+    if (hi) hi.value = horaStr;
+  }, 50);
+}
+
 function oneHoraParaTop(hora) {
   if (!hora) return 0;
   var parts = String(hora).split(':');
@@ -5424,7 +5462,8 @@ function oneInitAgendaSortable() {
       var rect = col.getBoundingClientRect();
       var yOffset = parseFloat(ev.dataTransfer.getData('text/offset-y')) || 0;
       var y = ev.clientY - rect.top - yOffset;
-      var novaHora = oneAgTopParaHora(y);
+      var hourOffset = parseInt(col.getAttribute('data-hour-offset') || '0');
+      var novaHora = oneAgTopParaHora(y + hourOffset * 50);
       var novaData = col.getAttribute('data-date');
       var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
       var idx = lista.findIndex(function(x){ return x.id === id; });

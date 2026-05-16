@@ -4106,10 +4106,11 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 .one-ag-tl-wrapper {
   flex: 1;
   display: flex;
-  gap: 6px;
-  padding: 8px;
+  flex-direction: row;
+  gap: 0;
+  padding: 8px 8px 8px 0;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto;
   min-height: 0;
 }
 .one-ag-tl-wrapper::-webkit-scrollbar { height: 4px; }
@@ -4120,24 +4121,27 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   position: sticky;
   left: 0;
   z-index: 6;
-  flex: 0 0 56px;
-  width: 56px;
-  height: 1236px; /* 36px header + 1200px corpo */
+  flex: 0 0 44px;
+  width: 44px;
+  min-height: 100%;
   background: #FBF8F2;
-  border-right: 1px solid rgba(127,168,142,0.14);
-  padding-top: 36px;
+  border-right: 1px solid rgba(127,168,142,0.12);
+}
+.one-ag-week-ruler {
+  flex: 0 0 44px;
+  width: 44px;
 }
 .one-ag-tl-hour {
   position: absolute;
   left: 0; right: 0;
-  font-size: 10px;
-  font-weight: 700;
-  color: #7FA88E;
+  font-size: 9.5px;
+  font-weight: 500;
+  color: rgba(92,136,112,0.65);
   font-family: system-ui, -apple-system, sans-serif;
-  padding: 2px 8px 0 0;
+  padding: 0 5px 0 0;
   text-align: right;
-  margin-top: 36px; /* offset do header */
-  letter-spacing: .4px;
+  letter-spacing: .3px;
+  transform: translateY(-50%);
 }
 
 /* Faixa das 7 colunas */
@@ -4147,6 +4151,10 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   padding: 0 6px;
   position: relative;
   flex: 1;
+  min-width: 0;
+}
+.one-ag-week-cols {
+  align-items: flex-start;
 }
 
 /* Linha de "agora" — atravessa as colunas */
@@ -4252,42 +4260,18 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   font-family: system-ui;
 }
 .one-ag-kday-body {
-  flex: 1;
+  position: relative;
   overflow: hidden;
-  display: flex;
-  flex-direction: row;
   background: #fff;
-  scrollbar-width: none;
   cursor: default;
+  width: 100%;
 }
-.one-ag-kday-body::-webkit-scrollbar { display: none; }
-.one-ag-hours-gutter {
-  width: 18px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 8px 0 8px 3px;
-  border-right: 1px solid rgba(92,136,112,0.08);
+/* Card posicionado absolutamente na timeline semanal */
+.one-ag-tl-card {
+  position: absolute;
+  left: 4px;
+  right: 8px;
 }
-.one-ag-hour-tick {
-  font-size: 8px;
-  color: #C4BEB8;
-  font-family: system-ui, sans-serif;
-  line-height: 1;
-  flex-shrink: 0;
-}
-.one-ag-cards-col {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 8px 8px 6px 6px;
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-.one-ag-cards-col::-webkit-scrollbar { display: none; }
 .one-ag-kday-empty {
   font-size: 11px;
   color: #B0AEA8;
@@ -4302,8 +4286,8 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 .one-ag-kday-add {
   display: block;
   width: calc(100% - 12px);
-  margin: 8px 6px 6px;
-  padding: 10px 14px;
+  margin: 6px 6px 5px;
+  padding: 6px 14px;
   background: linear-gradient(180deg, #F4EBFA 0%, #E5D3F2 100%);
   border: none;
   border-radius: 14px;
@@ -7168,78 +7152,3 @@ button.one-fin-card:hover {
   flex-shrink: 0;
 }
 
-/* ── Kanban Semanal — 5+2 colunas individualizadas ── */
-/* Wrapper: scroll vertical de 24h, layout em linha (regua + 7 cols) */
-.one-ag-tl-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  overflow: auto;
-  background: transparent;
-  border: none;
-  border-radius: 14px;
-  min-height: 0;
-  position: relative;
-  padding: 6px 4px;
-}
-
-/* Regua de horas (esquerda) — pequena e discreta, sticky */
-.one-ag-tl-ruler {
-  position: sticky;
-  left: 0;
-  z-index: 6;
-  flex: 0 0 36px !important;
-  width: 36px !important;
-  height: 1236px; /* 36 header + 1200 body */
-  background: transparent;
-  border-right: none;
-  padding-top: 38px; /* compensa header das colunas */
-}
-.one-ag-tl-hour {
-  position: absolute;
-  left: 0;
-  width: 32px;
-  font-size: 9.5px;
-  font-weight: 500;
-  color: rgba(92,136,112,0.55);
-  letter-spacing: 0.3px;
-  font-family: system-ui, -apple-system, sans-serif;
-  text-align: right;
-  padding-right: 4px;
-  margin-top: 0;
-  transform: translateY(-50%);
-}
-
-/* Wrapper das colunas dos dias — altura igual à régua, grid 7 colunas */
-.one-ag-tl-cols {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  flex: 1;
-  min-width: 0;
-  height: 1236px; /* 36 header + 1200 body */
-  position: relative;
-}
-
-/* Cada coluna de dia: individualizada com bordas suaves */
-.one-ag-kday-col {
-  background: #FBF8F2;
-  border: 1.5px solid rgba(92,136,112,0.15);
-  border-radius: 14px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  position: relative;
-  transition: border-color .15s, transform .15s;
-}
-.one-ag-kday-col:hover {
-  border-color: rgba(92,136,112,0.30);
-}
-.one-ag-kday-col.today {
-  border-color: rgba(92,136,112,0.50);
-  box-shadow: 0 0 0 1px rgba(92,136,112,0.20);
-}
-
-/* bloco antigo removido — estilos das colunas da Agenda agora estão na seção "Kanban semanal" acima */
