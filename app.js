@@ -5073,8 +5073,8 @@ function renderOneAgendaPainel() {
   var NOMES = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
   var PALETTE = ['#C97B6A','#D89B5A','#D4B855','#A8B470','#7FA88E','#9DB1A8','#8DA39A'];
 
-  var H_START = 8, H_END = 18, PX = 50;
-  var BODY_H = (H_END - H_START) * PX; // 500px
+  var H_START = 0, H_END = 24, PX = 50;
+  var BODY_H = (H_END - H_START) * PX; // 1200px (00:00–24:00)
 
   // Grid lines (reutilizadas em cada coluna)
   var gridLines = '';
@@ -5140,23 +5140,24 @@ function renderOneAgendaPainel() {
     }(doDia, H_START, PX));
 
     // Header desta coluna — vai para a linha sticky (.one-ag-week-top)
+    // Inclui botão "+ Novo" fixo junto com o dia (não rola com o timeline)
     headerColsHtml +=
       '<div class="one-ag-kday-header' + (isHoje ? ' today' : '') + '" data-date="' + ds + '" style="border-top:3px solid ' + PALETTE[i] + '">' +
         '<div class="one-ag-kday-name-wrap">' +
           '<span class="one-ag-kday-name">' + NOMES[i] + '</span>' +
           numHtml +
         '</div>' +
-        '<span class="one-ag-kday-count">' + doDia.length + '</span>' +
+        '<div class="one-ag-kday-header-right">' +
+          '<span class="one-ag-kday-count">' + doDia.length + '</span>' +
+          '<button class="one-ag-kday-add-hdr" onclick="event.stopPropagation();oneAgModalAbrir(\'' + ds + '\')" title="Novo agendamento">+</button>' +
+        '</div>' +
       '</div>';
 
-    // Body desta coluna — SEM header dentro
+    // Body desta coluna — SEM header e SEM botão add (botão foi para o header sticky)
     colsHtml +=
       '<div class="one-ag-kday-col' + (isHoje ? ' today' : '') + '" data-date="' + ds + '" data-dow="' + dowReal + '">' +
         '<div class="one-ag-kday-body" data-date="' + ds + '" data-hour-offset="' + H_START + '" style="height:' + BODY_H + 'px" onclick="oneAgClickSlotWeek(event,this)">' +
           gridLines + cards +
-        '</div>' +
-        '<div class="one-ag-kday-add-wrap">' +
-          '<button class="one-ag-kday-add" onclick="event.stopPropagation();oneAgModalAbrir(\'' + ds + '\')">+ Novo Agendamento</button>' +
         '</div>' +
       '</div>';
   }
