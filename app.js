@@ -5070,17 +5070,10 @@ function renderOneAgendaPainel() {
   }
 
   var NOMES = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
+  // Paleta narrativa SEG→SEX: ranço de segunda → festa de sexta
+  var PALETTE = ['#C97B6A','#D89B5A','#D4B855','#A8B470','#7FA88E','#9DB1A8','#8DA39A'];
 
-  // Régua de horas 00h-23h (50px/hora → altura total 1200px)
-  var rulerHtml = '<div class="one-ag-tl-ruler">';
-  for (var h = 0; h < 24; h++) {
-    var lbl = (h < 10 ? '0' : '') + h + ':00';
-    rulerHtml += '<div class="one-ag-tl-hour" style="top:' + (h * 50) + 'px">' + lbl + '</div>';
-  }
-  rulerHtml += '</div>';
-
-  // Colunas dos 7 dias
-  var colsHtml = '<div class="one-ag-tl-cols">';
+  var colsHtml = '';
   for (var i = 0; i < 7; i++) {
     var d = new Date(seg); d.setDate(seg.getDate() + i);
     var ds = d.toISOString().slice(0,10);
@@ -5092,26 +5085,26 @@ function renderOneAgendaPainel() {
 
     var numDia = d.getDate();
     var numHtml = isHoje
-      ? '<div class="one-ag-kday-num" style="background:#7FA88E;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px">' + numDia + '</div>'
-      : '<div class="one-ag-kday-num">' + numDia + '</div>';
+      ? '<span class="one-ag-kday-num today-circle">' + numDia + '</span>'
+      : '<span class="one-ag-kday-num">' + numDia + '</span>';
+
+    var emptyMsg = doDia.length === 0
+      ? '<div class="one-ag-kday-empty">Nenhum compromisso</div>'
+      : '';
 
     var cards = doDia.map(function(c) {
       var realizado = !!c.status && c.status.toLowerCase() === 'realizado';
-      var hora = c.hora || '08:00';
+      var hora = c.hora || '';
       var nome = (c.nome || c.descricao || 'Compromisso').replace(/</g,'&lt;');
       var tipo = (c.tipo || '').replace(/</g,'&lt;');
       var checkBg  = realizado ? '#4CAF50' : 'transparent';
       var checkBdr = realizado ? '#4CAF50' : '#C0BAD0';
       var checkTxt = realizado ? '✓' : '';
       var cat = oneAgCorCategoria(tipo);
-      var top = oneHoraParaTop(hora);
-      var dur = parseInt(c.duracao) || 50; // duração em min (default 50)
-      // 50px/hora → 1min = 0.833px. Mínimo 56px pra caber hora + nome + tipo sem cortar
-      var hPx = Math.max(56, Math.round(dur * (50/60)));
-      return '<div class="one-ag-kcard' + (realizado ? ' realizado' : '') + '" draggable="true" data-event-id="' + c.id + '" data-cid="' + c.id + '" onclick="oneAgModalEditar(this.dataset.cid)" style="top:' + top + 'px;height:' + hPx + 'px;border-left-color:' + cat.cor + ';background:' + cat.bg + '">' +
+      return '<div class="one-ag-kcard' + (realizado ? ' realizado' : '') + '" data-cid="' + c.id + '" onclick="oneAgModalEditar(this.dataset.cid)" style="border-left-color:' + cat.cor + ';background:' + cat.bg + '">' +
         '<div class="one-ag-kcard-check" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgToggleRealizado(this.dataset.cid)" style="background:' + checkBg + ';border-color:' + checkBdr + '">' + checkTxt + '</div>' +
         '<div class="one-ag-kcard-body">' +
-          '<div class="one-ag-kcard-hora" style="color:' + cat.cor + '">' + hora + '</div>' +
+          (hora ? '<div class="one-ag-kcard-hora" style="color:' + cat.cor + '">' + hora + '</div>' : '') +
           '<div class="one-ag-kcard-nome">' + nome + '</div>' +
           (tipo ? '<div class="one-ag-kcard-tipo"><span class="one-ag-kcard-dot" style="background:' + cat.cor + '"></span>' + tipo + '</div>' : '') +
         '</div>' +
@@ -5121,39 +5114,27 @@ function renderOneAgendaPainel() {
       '</div>';
     }).join('');
 
-    // Linhas de hora horizontais como fundo
-    var gridLines = '';
-    for (var gh = 0; gh < 24; gh++) {
-      gridLines += '<div class="one-ag-tl-grid-line" style="top:' + (gh * 50) + 'px"></div>';
-    }
-
-    // data-dow: 1=SEG, 2=TER, 3=QUA, 4=QUI, 5=SEX, 6=SAB, 0=DOM (igual ao Date.getDay())
+    // data-dow: 1=SEG, 2=TER, 3=QUA, 4=QUI, 5=SEX, 6=SAB, 0=DOM
     var dowReal = d.getDay();
-    colsHtml += '<div class="one-ag-kday-col' + (isHoje ? ' today' : '') + '" data-date="' + ds + '" data-dow="' + dowReal + '">' +
-      '<div class="one-ag-kday-header">' +
-        '<div class="one-ag-kday-name">' + NOMES[i] + '</div>' +
-        numHtml +
-      '</div>' +
-      '<div class="one-ag-kday-body" data-date="' + ds + '" onclick="oneAgClickSlot(event, this)">' +
-        gridLines +
-        cards +
-      '</div>' +
-    '</div>';
+    colsHtml +=
+      '<div class="one-ag-kday-col' + (isHoje ? ' today' : '') + '" data-date="' + ds + '" data-dow="' + dowReal + '" style="border-top:3px solid ' + PALETTE[i] + '">' +
+        '<div class="one-ag-kday-header">' +
+          '<div class="one-ag-kday-name-wrap">' +
+            '<span class="one-ag-kday-name">' + NOMES[i] + '</span>' +
+            numHtml +
+          '</div>' +
+          '<span class="one-ag-kday-count">' + doDia.length + '</span>' +
+        '</div>' +
+        '<div class="one-ag-kday-body" data-date="' + ds + '">' +
+          emptyMsg + cards +
+        '</div>' +
+        '<div class="one-ag-kday-add-wrap">' +
+          '<button class="one-ag-kday-add" onclick="event.stopPropagation();oneAgModalAbrir(\'' + ds + '\')">+ Novo compromisso</button>' +
+        '</div>' +
+      '</div>';
   }
-  colsHtml += '</div>';
 
-  kanban.innerHTML = rulerHtml + colsHtml;
-
-  // Scroll inicial em 08h (8h × 50px = 400px) — só uma vez por render
-  setTimeout(function(){
-    if (kanban.scrollTop < 10) kanban.scrollTop = 8 * 50 - 8;
-  }, 50);
-
-  // Marcador de "agora" se for a semana atual
-  if (oneAgWeekOffset === 0) oneAgRenderAgoraLinha(kanban);
-
-  // Inicializa drag-and-drop após render (cards arrastáveis entre dias/horas)
-  oneInitDragDrop();
+  kanban.innerHTML = colsHtml;
 }
 
 /* Linha horizontal de "agora" — atravessa todas as colunas */
