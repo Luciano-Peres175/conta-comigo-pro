@@ -4322,19 +4322,20 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 }
 .one-ag-kday-add:active { transform: translateY(1px); }
 
-/* Card de compromisso — fluxo normal (sem timeline posicionada) */
+/* Card de compromisso — timeline posicionada */
 .one-ag-kcard {
   background: #FBF8F2;
-  border-radius: 8px;
-  padding: 7px 8px 7px 6px;
-  border-left: 4px solid #7FA88E;
+  border-radius: 6px;
+  padding: 3px 6px 3px 5px;
+  border-left: 3px solid #7FA88E;
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: 4px;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(58,88,72,0.08);
   transition: box-shadow .15s, transform .15s;
   position: relative;
+  overflow: hidden;
 }
 .one-ag-kcard:hover {
   box-shadow: 0 4px 12px rgba(58,88,72,0.18);
@@ -4359,37 +4360,42 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 .one-ag-kcard.realizado { opacity: 0.45; }
 .one-ag-kcard.realizado .one-ag-kcard-nome { text-decoration: line-through; color: #8A8480; }
 .one-ag-kcard-check {
-  width: 13px; height: 13px;
+  width: 11px; height: 11px;
   border-radius: 50%;
   border: 1.5px solid #BDCCB5;
   flex-shrink: 0;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  font-size: 7px; color: #fff;
+  font-size: 6px; color: #fff;
   margin-top: 1px;
   transition: background .12s, border-color .12s;
 }
-.one-ag-kcard-body { flex: 1; min-width: 0; line-height: 1.15; }
+.one-ag-kcard-body { flex: 1; min-width: 0; line-height: 1.1; overflow: hidden; }
 .one-ag-kcard-hora {
-  font-size: 9.5px;
+  font-size: 8.5px;
   font-weight: 700;
   color: #7FA88E;
   font-family: system-ui;
-  letter-spacing: .3px;
+  letter-spacing: .2px;
+  white-space: nowrap;
 }
 .one-ag-kcard-nome {
-  font-size: 11px;
+  font-size: 9.5px;
   color: #2D2D2D;
-  line-height: 1.2;
-  word-break: break-word;
-  margin-top: 1px;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0;
 }
 .one-ag-kcard-tipo {
-  font-size: 9.5px;
+  font-size: 8.5px;
   color: #9A94A4;
-  margin-top: 2px;
+  margin-top: 1px;
   font-family: system-ui;
   display: flex; align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .one-ag-kcard-actions {
   position: absolute;

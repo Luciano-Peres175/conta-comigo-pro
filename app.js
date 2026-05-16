@@ -4283,16 +4283,10 @@ function swapToCenter(target) {
   // 4. Dispara render do novo painel — com re-sync Supabase em background
   var renderers = {
     agenda: function() {
-      // Renderiza a view ativa da Agenda v2 + cards + label do período
-      if (typeof oneAgRenderTopCards === 'function') oneAgRenderTopCards();
-      if (typeof oneAgAtualizarLabelPeriodo === 'function') oneAgAtualizarLabelPeriodo();
+      // Garante que a view ativa seja aplicada (tabs + vistas + render)
       var view = window.oneAgViewAtiva || 'semana';
-      if (view === 'hoje' && typeof oneAgRenderHoje === 'function') oneAgRenderHoje();
-      else if (view === 'mes' && typeof oneAgRenderMes === 'function') oneAgRenderMes();
-      else {
-        if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
-        if (typeof oneAgRenderResumoSemana === 'function') oneAgRenderResumoSemana();
-      }
+      if (typeof oneAgSetView === 'function') oneAgSetView(view);
+      if (typeof oneAgRenderTopCards === 'function') oneAgRenderTopCards();
     },
     tarefas:    function() { if (typeof renderOneTarefasPainel   === 'function') renderOneTarefasPainel(); },
     financeiro: function() { if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel(); }
@@ -5010,12 +5004,19 @@ function oneAgGoToSemana(weekOffset) {
 }
 
 function oneAgNavegar(delta) {
-  if (oneAgView === 'semana') {
+  var curView = (window.oneAgViewAtiva || oneAgView || 'semana');
+  if (curView === 'semana') {
     oneAgWeekOffset += delta;
-  } else if (oneAgView === 'mes') {
+    renderOneAgendaPainel();
+  } else if (curView === 'mes') {
     oneAgMonthOffset += delta;
+    if (typeof oneAgRenderMes === 'function') oneAgRenderMes();
+  } else if (curView === 'hoje') {
+    var d = new Date(((window.oneAgHojeSelecionado || new Date().toISOString().slice(0,10))) + 'T00:00:00');
+    d.setDate(d.getDate() + delta);
+    window.oneAgHojeSelecionado = d.toISOString().slice(0,10);
+    if (typeof oneAgRenderHoje === 'function') oneAgRenderHoje();
   }
-  renderOneAgendaPainel();
 }
 
 /* Paleta de categorias da Agenda — cor (borda + hora + dot) e bg (card)
@@ -5149,7 +5150,7 @@ function renderOneAgendaPainel() {
           gridLines + cards +
         '</div>' +
         '<div class="one-ag-kday-add-wrap">' +
-          '<button class="one-ag-kday-add" onclick="event.stopPropagation();oneAgModalAbrir(\'' + ds + '\')">+ Novo compromisso</button>' +
+          '<button class="one-ag-kday-add" onclick="event.stopPropagation();oneAgModalAbrir(\'' + ds + '\')">+ Novo Agendamento</button>' +
         '</div>' +
       '</div>';
   }
