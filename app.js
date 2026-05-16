@@ -3529,6 +3529,70 @@ function pinahExecutarTool(nome, input) {
   }
 }
 
+/* Fix A + B (16/05/2026):
+   Quando a Pinah dispara uma tool, o stream SSE normalmente encerra logo após —
+   então o texto que ela ia escrever fica cortado ("Salvando já!" em vez de
+   "✓ Nota salva: [título]"). Esta função injeta uma bolha visível de confirmação
+   no chat (Fix A) e registra uma memória implícita no pinahHistory (Fix B) pra
+   que a Pinah lembre nas próximas mensagens o que ela já salvou. */
+function pinahFeedbackTool(nome, input, ctx) {
+  ctx = ctx || {};
+  function brl(v) { return 'R$ ' + (Number(v)||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+  function dataBR(iso) {
+    if (!iso || iso.length < 10) return iso || '';
+    var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0];
+  }
+
+  var visivel = '';   // texto que aparece na bolha (markdown leve)
+  var memoria = '';   // texto que entra no pinahHistory (limpo, sem markdown)
+  switch (nome) {
+    case 'criar_nota':
+      var titN = input.titulo || 'Nota';
+      visivel = '✅ Salvei a nota **' + titN + '** no Segundo Cérebro.';
+      memoria = 'Salvei a nota "' + titN + '" no Segundo Cérebro.' + (input.categoria ? ' Categoria: ' + input.categoria + '.' : '');
+      break;
+    case 'criar_compromisso':
+      var partes = [];
+      if (input.nome) partes.push(input.nome);
+      if (input.data) partes.push(dataBR(input.data));
+      if (input.hora) partes.push('às ' + input.hora);
+      var labelC = partes.join(' · ');
+      visivel = '✅ Compromisso marcado: **' + labelC + '**.';
+      memoria = 'Criei compromisso: ' + labelC + (input.tipo ? ' (' + input.tipo + ')' : '') + '.';
+      break;
+    case 'criar_tarefa':
+      var titT = input.titulo || 'Tarefa';
+      visivel = '✅ Tarefa criada: **' + titT + '**' + (input.area ? ' (' + input.area + ')' : '') + '.';
+      memoria = 'Criei tarefa: "' + titT + '"' + (input.area ? ' na área ' + input.area : '') + (input.prioridade ? ', prioridade ' + input.prioridade : '') + '.';
+      break;
+    case 'registrar_transacao':
+      var rotulo = input.tipo === 'receita' ? 'Receita' : 'Despesa';
+      visivel = '✅ ' + rotulo + ' registrada: **' + brl(input.valor) + '** — ' + (input.descricao || '');
+      memoria = rotulo + ' registrada: ' + brl(input.valor) + ' (' + (input.descricao || '') + ')' + (input.categoria ? ', categoria ' + input.categoria : '') + '.';
+      break;
+    default: return;
+  }
+
+  /* Fix A — bolha visual no chat */
+  if (ctx.emChat) {
+    pinahAddBubble('pinah', visivel);
+  } else if (ctx.isMobile && ctx.msgsMob) {
+    var b = document.createElement('div');
+    b.className = 'chat-bubble pinah-bubble';
+    b.innerHTML = pinahRenderText(visivel);
+    ctx.msgsMob.appendChild(b);
+    ctx.msgsMob.scrollTop = ctx.msgsMob.scrollHeight;
+  } else if (typeof window.toast === 'function') {
+    /* Fora do chat: feedback como toast */
+    window.toast(visivel.replace(/\*\*/g, ''), null, { duration: 5000 });
+  }
+
+  /* Fix B — memória implícita no histórico (Pinah "lembra" o que salvou) */
+  if (typeof pinahHistory !== 'undefined' && Array.isArray(pinahHistory)) {
+    pinahHistory.push({ role: 'assistant', content: '(' + memoria + ')' });
+  }
+}
+
 function pinahCriarNota(input) {
   var store = _pinahGetSet('notas_cerebro');
   var lista = store.get();
@@ -4018,6 +4082,12 @@ async function pinahEnviar(texto, arquivo) {
           const ev = JSON.parse(line.slice(6));
           if (ev.tool) {
             pinahExecutarTool(ev.tool, ev.input || {});
+            /* Fix A + B: feedback visual + memória implícita */
+            pinahFeedbackTool(ev.tool, ev.input || {}, {
+              emChat:   emChat,
+              isMobile: isMobile,
+              msgsMob:  msgsMob
+            });
           }
           if (ev.text) {
             fullText += ev.text;
