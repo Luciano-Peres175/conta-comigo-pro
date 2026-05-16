@@ -5075,17 +5075,6 @@ function renderOneAgendaPainel() {
 
   var H_START = 8, H_END = 18, PX = 50;
   var BODY_H = (H_END - H_START) * PX; // 500px
-  var HDR_H  = 38; // altura aprox. do header das colunas (para alinhar régua)
-
-  // Régua única à esquerda (08:00–18:00)
-  // O cap sticky cobre a área do header das colunas, mantendo alinhamento ao rolar
-  var rulerHtml = '<div class="one-ag-tl-ruler one-ag-week-ruler">' +
-    '<div class="one-ag-ruler-cap" style="height:' + HDR_H + 'px"></div>';
-  for (var rh = H_START; rh <= H_END; rh++) {
-    var rt = HDR_H + (rh - H_START) * PX;
-    rulerHtml += '<div class="one-ag-tl-hour" style="top:' + rt + 'px">' + (rh < 10 ? '0' : '') + rh + ':00</div>';
-  }
-  rulerHtml += '</div>';
 
   // Grid lines (reutilizadas em cada coluna)
   var gridLines = '';
@@ -5093,7 +5082,18 @@ function renderOneAgendaPainel() {
     gridLines += '<div class="one-ag-tl-grid-line" style="top:' + (gh * PX) + 'px"></div>';
   }
 
+  // Régua única à esquerda — SEM cap (o cap fica na .one-ag-week-top)
+  var rulerHtml = '<div class="one-ag-tl-ruler one-ag-week-ruler">';
+  for (var rh = H_START; rh <= H_END; rh++) {
+    var rt = (rh - H_START) * PX;
+    rulerHtml += '<div class="one-ag-tl-hour" style="top:' + rt + 'px">' + (rh < 10 ? '0' : '') + rh + ':00</div>';
+  }
+  rulerHtml += '</div>';
+
+  // Acumula headers (linha sticky) e bodies (colunas) separadamente
+  var headerColsHtml = '';
   var colsHtml = '';
+
   for (var i = 0; i < 7; i++) {
     var d = new Date(seg); d.setDate(seg.getDate() + i);
     var ds = d.toISOString().slice(0,10);
@@ -5139,15 +5139,19 @@ function renderOneAgendaPainel() {
       }).join('');
     }(doDia, H_START, PX));
 
-    colsHtml +=
-      '<div class="one-ag-kday-col' + (isHoje ? ' today' : '') + '" data-date="' + ds + '" data-dow="' + dowReal + '" style="border-top:3px solid ' + PALETTE[i] + '">' +
-        '<div class="one-ag-kday-header">' +
-          '<div class="one-ag-kday-name-wrap">' +
-            '<span class="one-ag-kday-name">' + NOMES[i] + '</span>' +
-            numHtml +
-          '</div>' +
-          '<span class="one-ag-kday-count">' + doDia.length + '</span>' +
+    // Header desta coluna — vai para a linha sticky (.one-ag-week-top)
+    headerColsHtml +=
+      '<div class="one-ag-kday-header' + (isHoje ? ' today' : '') + '" data-date="' + ds + '" style="border-top:3px solid ' + PALETTE[i] + '">' +
+        '<div class="one-ag-kday-name-wrap">' +
+          '<span class="one-ag-kday-name">' + NOMES[i] + '</span>' +
+          numHtml +
         '</div>' +
+        '<span class="one-ag-kday-count">' + doDia.length + '</span>' +
+      '</div>';
+
+    // Body desta coluna — SEM header dentro
+    colsHtml +=
+      '<div class="one-ag-kday-col' + (isHoje ? ' today' : '') + '" data-date="' + ds + '" data-dow="' + dowReal + '">' +
         '<div class="one-ag-kday-body" data-date="' + ds + '" data-hour-offset="' + H_START + '" style="height:' + BODY_H + 'px" onclick="oneAgClickSlotWeek(event,this)">' +
           gridLines + cards +
         '</div>' +
@@ -5157,7 +5161,16 @@ function renderOneAgendaPainel() {
       '</div>';
   }
 
-  kanban.innerHTML = rulerHtml + '<div class="one-ag-tl-cols one-ag-week-cols">' + colsHtml + '</div>';
+  // Linha sticky de headers + body scrollável separados
+  kanban.innerHTML =
+    '<div class="one-ag-week-top">' +
+      '<div class="one-ag-ruler-cap" style="width:44px;flex-shrink:0"></div>' +
+      '<div class="one-ag-week-header-cols">' + headerColsHtml + '</div>' +
+    '</div>' +
+    '<div class="one-ag-week-main">' +
+      rulerHtml +
+      '<div class="one-ag-tl-cols one-ag-week-cols">' + colsHtml + '</div>' +
+    '</div>';
 
   // Garante que a vista semana está visível (proteção contra chamadas concorrentes)
   document.querySelectorAll('.one-desktop-agenda .one-fin-vista').forEach(function(v) {

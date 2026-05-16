@@ -4106,9 +4106,9 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 .one-ag-tl-wrapper {
   flex: 1;
   display: flex;
-  flex-direction: row;
+  flex-direction: column; /* coluna: header-row em cima, body em baixo */
   gap: 0;
-  padding: 8px 8px 8px 0;
+  padding: 0; /* padding movido para .one-ag-week-top e .one-ag-week-main */
   overflow-x: auto;
   overflow-y: auto;
   min-height: 0;
@@ -4116,7 +4116,45 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 .one-ag-tl-wrapper::-webkit-scrollbar { height: 4px; }
 .one-ag-tl-wrapper::-webkit-scrollbar-thumb { background: rgba(92,136,112,0.25); border-radius: 2px; }
 
-/* Régua das horas — sticky à esquerda */
+/* Linha sticky: cap do ruler + 7 headers das colunas */
+.one-ag-week-top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #FBF8F2;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex-shrink: 0;
+  padding: 8px 8px 0 0;
+}
+
+/* Cap do ruler dentro da linha sticky (alinha com a régua abaixo) */
+.one-ag-ruler-cap {
+  flex-shrink: 0;
+  background: #FBF8F2;
+  border-right: 1px solid rgba(127,168,142,0.12);
+}
+
+/* Faixa dos 7 headers dentro do .one-ag-week-top */
+.one-ag-week-header-cols {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  padding: 0 6px;
+  min-width: 0;
+}
+
+/* Body row: ruler + colunas (sem headers) */
+.one-ag-week-main {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  padding: 0 8px 8px 0;
+  min-height: 0;
+}
+
+/* Régua das horas — sticky à esquerda (dentro do .one-ag-week-main) */
 .one-ag-tl-ruler {
   position: sticky;
   left: 0;
@@ -4193,7 +4231,7 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   min-width: 120px;
   max-width: none;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 0 0 12px 12px; /* topo reto — header fica em linha separada acima */
   box-shadow:
     0 0 0 1.5px rgba(92,136,112,0.45),
     0 0 0 4px rgba(92,136,112,0.10),
@@ -4202,7 +4240,6 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   display: flex;
   flex-direction: column;
   max-height: 100%;
-  /* border-top colorida (paleta SEG→SEX) aplicada via style inline */
 }
 @media (max-width: 900px) {
   .one-ag-kday-col {
@@ -4216,25 +4253,27 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
     0 0 0 5px rgba(92,136,112,0.18),
     0 4px 10px rgba(0,0,0,.08);
 }
+
+/* Header das colunas — agora dentro de .one-ag-week-header-cols (linha sticky) */
 .one-ag-kday-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 9px 12px 8px;
-  border-bottom: 1px solid rgba(92,136,112,0.10);
   flex-shrink: 0;
+  flex: 1;
+  min-width: 120px;
   background: #FDFAFF;
-  position: sticky;
-  top: 0;
-  z-index: 5;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid rgba(92,136,112,0.10);
+  box-shadow:
+    0 0 0 1.5px rgba(92,136,112,0.45),
+    0 0 0 4px rgba(92,136,112,0.10);
 }
-/* Cap do ruler que fica por cima quando o header está sticky */
-.one-ag-ruler-cap {
-  position: sticky;
-  top: 0;
-  z-index: 6;
-  background: #FBF8F2;
-  flex-shrink: 0;
+.one-ag-kday-header.today {
+  box-shadow:
+    0 0 0 2px #7FA88E,
+    0 0 0 5px rgba(92,136,112,0.18);
 }
 .one-ag-kday-name-wrap {
   display: flex;
