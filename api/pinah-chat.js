@@ -211,10 +211,16 @@ module.exports = async (req, res) => {
   // Limita histórico pra não estourar contexto
   const messagesLimitados = messages.slice(-MAX_MESSAGES_HISTORY);
 
-  // Injeta contexto dos dados do usuário no início da primeira mensagem user
+  // Injeta contexto dos dados do usuário no início da primeira mensagem user.
+  // Importante: quando a primeira mensagem tem arquivo (PDF/imagem), m.content é um ARRAY
+  // de blocos. Concatenar string com array destruía o arquivo virando "[object Object]".
+  // Fix (16/05/2026): se for array, insere o contexto como bloco de texto NO INÍCIO do array.
   const contextStr = formatarContexto(context);
   const messagesComCtx = messagesLimitados.map((m, i) => {
     if (i === 0 && m.role === 'user' && contextStr) {
+      if (Array.isArray(m.content)) {
+        return { ...m, content: [{ type: 'text', text: contextStr }, ...m.content] };
+      }
       return { ...m, content: contextStr + '\n\n' + m.content };
     }
     return m;
