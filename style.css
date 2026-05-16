@@ -2466,6 +2466,69 @@
 .one-tar-mob-prio.baixa{background:#F0FBF5;color:#5C8870;}
 .one-tar-mob-empty{text-align:center;padding:32px 16px;color:#C0B8D0;font-size:13px;}
 
+/* ── Tarefas mobile — Fase 4: kanban portado ──────────────────── */
+/* Header com pills + ações (filtros / +Área / +Tarefa) */
+.one-tar-mob-header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 0 8px;flex-shrink:0;}
+.one-tar-mob-pills{display:flex;gap:5px;align-items:center;flex-wrap:nowrap;min-width:0;overflow:hidden;}
+.one-tar-mob-pill{font-size:10px;font-weight:700;color:#5C8870;background:#F0E8F8;padding:3px 8px;border-radius:10px;white-space:nowrap;font-family:system-ui,-apple-system,sans-serif;}
+.one-tar-mob-pill.em-and{background:#FFF4E0;color:#C97D2E;}
+.one-tar-mob-actions{display:flex;gap:5px;flex-shrink:0;}
+.one-tar-mob-iconbtn{width:32px;height:32px;border:1.5px solid rgba(92,136,112,.30);background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;color:#5C8870;padding:0;line-height:1;box-shadow:0 1px 4px rgba(92,136,112,.10);}
+.one-tar-mob-iconbtn.primary{background:#5C8870;color:#fff;border-color:#5C8870;font-weight:600;font-size:18px;box-shadow:0 3px 10px rgba(92,136,112,.30);}
+.one-tar-mob-iconbtn:active{transform:scale(.95);}
+
+/* Kanban mobile: 1.5 coluna visível, scroll horizontal interno, buffer lateral pro swipe */
+.one-tar-kanban-mob{flex:1;display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 36px 6px 0;min-height:0;touch-action:pan-x pan-y;}
+.one-tar-kanban-mob::-webkit-scrollbar{display:none;}
+.one-tar-kanban-mob .one-tar-col-mob{flex:0 0 220px;scroll-snap-align:start;display:flex;flex-direction:column;background:#fff;border-radius:14px;box-shadow:0 0 0 1.5px rgba(92,136,112,.30),0 0 0 4px rgba(92,136,112,.08),0 4px 12px rgba(0,0,0,.06);overflow:hidden;max-height:100%;}
+.one-tar-kanban-mob .one-tar-col-mob.one-tar-col-ghost{opacity:.40;background:rgba(92,136,112,.08);}
+
+.one-tar-col-mob-header{display:flex;align-items:center;justify-content:space-between;padding:9px 11px 8px;border-bottom:1px solid rgba(92,136,112,.10);flex-shrink:0;background:#FDFAFF;gap:6px;}
+.one-tar-col-mob-drag{display:flex;align-items:center;gap:6px;min-width:0;flex:1;cursor:grab;touch-action:none;}
+.one-tar-col-mob-drag:active{cursor:grabbing;}
+.one-tar-col-mob-emoji{font-size:15px;flex-shrink:0;}
+.one-tar-col-mob-nome{font-family:'Playfair Display',Georgia,serif;font-size:13px;font-weight:500;color:#2D2D2D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;}
+.one-tar-col-mob-count{background:#F0E8F8;color:#5C8870;font-size:9px;font-weight:700;padding:2px 6px;border-radius:9px;flex-shrink:0;font-family:system-ui,-apple-system,sans-serif;}
+.one-tar-col-mob-handle{font-size:14px;color:#C0BAD0;line-height:1;flex-shrink:0;padding:0 2px;letter-spacing:-2px;}
+
+.one-tar-col-mob-body{flex:1;overflow-y:auto;padding:7px;display:flex;flex-direction:column;gap:5px;scrollbar-width:none;}
+.one-tar-col-mob-body::-webkit-scrollbar{display:none;}
+.one-tar-col-mob-empty{color:#C0BAD0;font-size:10.5px;font-style:italic;padding:7px 4px;text-align:center;}
+
+.one-tar-card-mob{background:#FBF8F2;border-radius:9px;padding:7px 8px;display:flex;align-items:center;gap:7px;border-left:3px solid #7FA88E;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+.one-tar-card-mob.concluida{opacity:.45;}
+.one-tar-card-mob-check{width:16px;height:16px;border-radius:50%;border:1.5px solid #C0BAD0;background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;line-height:1;}
+.one-tar-card-mob-check.done{background:#4CAF50;border-color:#4CAF50;}
+.one-tar-card-mob-info{flex:1;min-width:0;}
+.one-tar-card-mob-nome{font-size:12px;font-weight:500;color:#3A3050;line-height:1.25;word-break:break-word;}
+.one-tar-card-mob-nome.done{text-decoration:line-through;color:#9A94A4;}
+.one-tar-card-mob-prio{font-size:9px;padding:2px 6px;border-radius:7px;font-weight:700;flex-shrink:0;letter-spacing:.2px;font-family:system-ui,-apple-system,sans-serif;}
+.one-tar-card-mob-prio.alta{background:#FDECEA;color:#C0392B;}
+.one-tar-card-mob-prio.normal{background:#EEF1F7;color:#5A6A8A;}
+.one-tar-card-mob-prio.baixa{background:#E3F5F0;color:#27856A;}
+
+.one-tar-col-mob-add{margin:6px 7px 8px;padding:7px;font-size:11px;font-weight:600;color:#5C8870;background:transparent;border:1.5px dashed rgba(92,136,112,.35);border-radius:8px;cursor:pointer;flex-shrink:0;}
+.one-tar-col-mob-add:active{background:rgba(92,136,112,.06);}
+
+/* Sheet de filtros (overlay sobre o slide) */
+.one-tar-mob-sheet{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;z-index:50;}
+.one-tar-mob-sheet[hidden]{display:none;}
+.one-tar-mob-sheet-backdrop{position:absolute;inset:0;background:rgba(46,38,60,.40);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
+.one-tar-mob-sheet-panel{position:relative;width:100%;max-width:480px;background:#FDFAFF;border-radius:18px 18px 0 0;padding:14px 16px 22px;box-shadow:0 -10px 28px rgba(46,38,60,.18);animation:oneTarSheetUp .22s ease-out;}
+@keyframes oneTarSheetUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.one-tar-mob-sheet-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid rgba(92,136,112,.12);margin-bottom:10px;}
+.one-tar-mob-sheet-head>span{font-family:'Playfair Display',Georgia,serif;font-size:14px;font-weight:500;color:#3A3050;}
+.one-tar-mob-sheet-close{background:transparent;border:none;font-size:16px;color:#9A94A4;cursor:pointer;padding:2px 8px;line-height:1;}
+.one-tar-mob-sheet-section{margin:8px 0 10px;}
+.one-tar-mob-sheet-label{font-size:10px;font-weight:700;color:#9A94A4;letter-spacing:.4px;text-transform:uppercase;margin:0 0 6px;}
+.one-tar-mob-sheet-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.one-tar-mob-chip{font-size:11.5px;font-weight:600;color:#5A5060;background:#fff;border:1.5px solid rgba(92,136,112,.20);border-radius:10px;padding:6px 11px;cursor:pointer;}
+.one-tar-mob-chip.active{background:#5C8870;color:#fff;border-color:#5C8870;}
+.one-tar-mob-chip:active{transform:scale(.96);}
+
+/* O slide tarefas precisa de position:relative pro sheet absoluto se ancorar nele */
+.one-tarefas-mob{position:relative;}
+
 /* ── Screen-one: mobile — overlay sobre o app antigo ─────────── */
 /* A sidebar só vira drawer no mobile (regra de @media max-width:767px já existe).
    No desktop ela aparece sempre — incluindo dentro do screen-one — pra dar acesso

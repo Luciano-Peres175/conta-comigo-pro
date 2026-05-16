@@ -4689,6 +4689,7 @@ function oneTarToggle(id) {
     supaUpsert('tarefas', lista[idx]);
   }
   if (typeof renderOneTarefasPainel==='function') renderOneTarefasPainel();
+  if (typeof renderOneTarefasMobile==='function') renderOneTarefasMobile();
 }
 
 
@@ -4700,6 +4701,7 @@ function oneTarExcluir(id) {
   supaDelete('tarefas', id);
   if (typeof oneToast==='function') oneToast('Tarefa excluída.');
   renderOneTarefasPainel();
+  if (typeof renderOneTarefasMobile==='function') renderOneTarefasMobile();
 }
 
 function oneTarModalAbrir(area) {
@@ -5654,33 +5656,209 @@ function renderOneFinanceiro() {
   });
 }
 
-/* ── Tarefas mobile (4º slide) ───────────────────────────────── */
+/* ── Tarefas mobile — Fase 4: kanban portado ─────────────────── */
+/* Filtros mobile (independentes do desktop pra não brigar com a sidebar) */
+var oneTarMobFilterStatus = 'todos';
+var oneTarMobFilterPrio   = 'qualquer';
+
 function renderOneTarefasMobile() {
-  var el = document.getElementById('one-tar-mob-list');
+  var el = document.getElementById('one-tar-kanban-mob');
   if (!el) return;
-  var tarefas = [];
-  try { tarefas = JSON.parse(localStorage.getItem(oneU('tarefas')) || '[]'); } catch(e) {}
-  var pendentes = tarefas.filter(function(t) { return !t.concluida && t.status !== 'concluida'; });
-  if (!pendentes.length) {
-    el.innerHTML = '<div class="one-tar-mob-empty">Nenhuma tarefa pendente 🎉</div>';
-    return;
+  var todasTarefas = [];
+  try { todasTarefas = JSON.parse(localStorage.getItem(oneU('tarefas')) || '[]'); } catch(e) {}
+
+  /* Contadores do header */
+  var elTotal = document.getElementById('one-tar-mob-total');
+  var elEm    = document.getElementById('one-tar-mob-em-and');
+  var totalQ  = todasTarefas.length;
+  var emAndQ  = todasTarefas.filter(function(t){ return t.status === 'em-andamento' && !t.concluida; }).length;
+  if (elTotal) elTotal.textContent = totalQ + ' tarefa' + (totalQ === 1 ? '' : 's');
+  if (elEm)    elEm.textContent    = emAndQ + ' em and.';
+
+  function emojiArea(a) {
+    var s = (a||'').toLowerCase();
+    if (/pinah|app|produto|one|tech/.test(s)) return '🐾';
+    if (/enrosco|problema|pendência|pendencia/.test(s)) return '🍅';
+    if (/ideia|ideias\s*pa|projeto|criativ/.test(s)) return '💡';
+    if (/casa|famil|lar/.test(s)) return '🏠';
+    if (/baú|bau|milhão|milhao|dinheiro|financ|conta/.test(s)) return '💰';
+    if (/clin|saúde|saude|médic|medic|fonoaud|terapeut/.test(s)) return '🩺';
+    if (/trabalho|cap|escrit|negócio|negocio/.test(s)) return '💼';
+    if (/estudo|curso|aprend|escola/.test(s)) return '📚';
+    if (/compra|mercado/.test(s)) return '🛒';
+    return '📋';
+  }
+  function corArea(a) {
+    var paleta = ['#5C8870','#E87A7A','#5EB585','#F0A830','#5BA8D8','#C97DD4','#7EC8B8','#E0835C'];
+    var h = 0;
+    for (var i = 0; i < a.length; i++) h = a.charCodeAt(i) + ((h << 5) - h);
+    return paleta[Math.abs(h) % paleta.length];
   }
   var prioBadge = { 'Alta':'alta', 'Normal':'normal', 'Baixa':'baixa' };
-  el.innerHTML = pendentes.slice(0, 20).map(function(t) {
-    var prio = t.prioridade || 'Normal';
-    var cls  = prioBadge[prio] || 'normal';
-    return '<div class="one-tar-mob-item">'
-      + '<div class="one-tar-mob-check" onclick="oneTarMobToggle(\'' + t.id + '\',this)">'
-      + '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="opacity:0" id="ck-' + t.id + '">'
-      + '<polyline points="1.5 5 4 7.5 8.5 2" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
-      + '</svg></div>'
-      + '<div class="one-tar-mob-info">'
-      + '<div class="one-tar-mob-nome">' + (t.titulo || t.nome || '—') + '</div>'
-      + '<div class="one-tar-mob-area">' + (t.area || '') + '</div>'
-      + '</div>'
-      + '<span class="one-tar-mob-prio ' + cls + '">' + prio + '</span>'
-      + '</div>';
-  }).join('');
+
+  /* Áreas persistidas (mesma fonte do desktop) */
+  var areaNames = oneTarGetAreas();
+  todasTarefas.forEach(function(t){
+    var a = t.area || 'Geral';
+    if (areaNames.indexOf(a) === -1) { areaNames.push(a); oneTarSaveAreas(areaNames); }
+  });
+
+  /* Aplicar filtros mobile */
+  var tarefasFiltradas = todasTarefas.filter(function(t){
+    if (oneTarMobFilterStatus === 'pendente'  && !!t.concluida) return false;
+    if (oneTarMobFilterStatus === 'concluida' && !t.concluida)  return false;
+    if (oneTarMobFilterPrio !== 'qualquer' && (t.prioridade||'Normal') !== oneTarMobFilterPrio) return false;
+    return true;
+  });
+
+  /* Render colunas */
+  var html = '';
+  areaNames.forEach(function(area) {
+    var tasks = tarefasFiltradas.filter(function(t){ return (t.area||'Geral') === area; });
+    var total = todasTarefas.filter(function(t){ return (t.area||'Geral') === area; });
+    var conclN = total.filter(function(t){ return !!t.concluida; }).length;
+    var cor   = corArea(area);
+    var emoji = emojiArea(area);
+    var areaEnc = area.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+
+    var cards = tasks.map(function(t) {
+      var conc = !!t.concluida;
+      var cls  = prioBadge[t.prioridade || 'Normal'] || 'normal';
+      return '<div class="one-tar-card-mob' + (conc ? ' concluida' : '') + '"' +
+              ' data-tid="' + t.id + '"' +
+              ' style="border-left-color:' + (conc ? '#4CAF50' : cor) + '">' +
+        '<div class="one-tar-card-mob-check' + (conc?' done':'') + '" data-tid="' + t.id + '">' +
+          (conc ? '✓' : '') +
+        '</div>' +
+        '<div class="one-tar-card-mob-info">' +
+          '<div class="one-tar-card-mob-nome' + (conc?' done':'') + '">' + ((t.nome||t.titulo||'Sem nome')+'').replace(/</g,'&lt;') + '</div>' +
+        '</div>' +
+        '<span class="one-tar-card-mob-prio ' + cls + '">' + (t.prioridade||'Normal') + '</span>' +
+      '</div>';
+    }).join('');
+    var emptyMsg = tasks.length === 0 ? '<div class="one-tar-col-mob-empty">Nenhuma tarefa</div>' : '';
+
+    html += '<div class="one-tar-col-mob" data-area="' + area.replace(/"/g,'&quot;') + '">' +
+      '<div class="one-tar-col-mob-header" style="border-top:3px solid ' + cor + '">' +
+        '<div class="one-tar-col-mob-drag">' +
+          '<span class="one-tar-col-mob-emoji">' + emoji + '</span>' +
+          '<span class="one-tar-col-mob-nome">' + area.replace(/</g,'&lt;') + '</span>' +
+          '<span class="one-tar-col-mob-count">' + conclN + '/' + total.length + '</span>' +
+        '</div>' +
+        '<span class="one-tar-col-mob-handle" aria-hidden="true">⋮⋮</span>' +
+      '</div>' +
+      '<div class="one-tar-col-mob-body">' + emptyMsg + cards + '</div>' +
+      '<button class="one-tar-col-mob-add" onclick="oneTarModalAbrir(\'' + areaEnc + '\')">+ Nova tarefa</button>' +
+    '</div>';
+  });
+  el.innerHTML = html;
+
+  /* Bind interações: check, long-press, sortable */
+  oneTarMobBindCards(el);
+  oneInitTarefasSortableMob(el);
+}
+
+/* Liga eventos de check e long-press (edit/del) nos cards mobile */
+function oneTarMobBindCards(root) {
+  var checks = root.querySelectorAll('.one-tar-card-mob-check');
+  checks.forEach(function(ck) {
+    ck.addEventListener('click', function(ev) {
+      ev.stopPropagation();
+      var tid = ck.dataset.tid;
+      if (typeof oneTarToggle === 'function') oneTarToggle(tid);
+    });
+  });
+  var cards = root.querySelectorAll('.one-tar-card-mob');
+  cards.forEach(function(card) {
+    var pressTimer = null;
+    var startX = 0, startY = 0, moved = false;
+    function clear() { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } }
+    card.addEventListener('pointerdown', function(ev) {
+      if (ev.target.closest('.one-tar-card-mob-check')) return;
+      startX = ev.clientX; startY = ev.clientY; moved = false;
+      pressTimer = setTimeout(function() {
+        if (moved) return;
+        var tid = card.dataset.tid;
+        oneTarMobAcoesCard(tid);
+      }, 450);
+    });
+    card.addEventListener('pointermove', function(ev) {
+      if (Math.abs(ev.clientX - startX) > 8 || Math.abs(ev.clientY - startY) > 8) { moved = true; clear(); }
+    });
+    card.addEventListener('pointerup', clear);
+    card.addEventListener('pointercancel', clear);
+    card.addEventListener('pointerleave', clear);
+  });
+}
+
+/* Long-press num card → menu rápido de ações (edit / del) */
+function oneTarMobAcoesCard(tid) {
+  /* Versão V1: confirm nativo. Pode virar sheet visual numa fase 4.1. */
+  var acao = window.prompt('Tarefa — digite "e" pra editar ou "x" pra excluir:', 'e');
+  if (!acao) return;
+  acao = acao.trim().toLowerCase();
+  if (acao === 'e' && typeof oneTarModalEditar === 'function') {
+    oneTarModalEditar(tid);
+  } else if (acao === 'x' && typeof oneTarExcluir === 'function') {
+    if (confirm('Excluir esta tarefa?')) oneTarExcluir(tid);
+  }
+}
+
+/* P023 portado — SortableJS com forceFallback pra touch no mobile */
+function oneInitTarefasSortableMob(el) {
+  if (typeof Sortable === 'undefined') return;
+  if (window._oneTarSortableMob) { try { window._oneTarSortableMob.destroy(); } catch(e){} }
+  window._oneTarSortableMob = Sortable.create(el, {
+    handle: '.one-tar-col-mob-drag',
+    direction: 'horizontal',
+    animation: 160,
+    forceFallback: true,
+    fallbackTolerance: 5,
+    delay: 250,
+    delayOnTouchOnly: true,
+    touchStartThreshold: 4,
+    ghostClass: 'one-tar-col-ghost',
+    onEnd: function() {
+      var novaOrdem = Array.prototype.map.call(
+        el.querySelectorAll('.one-tar-col-mob'),
+        function(col) { return col.dataset.area; }
+      );
+      oneTarSaveAreas(novaOrdem);
+      if (typeof oneToast === 'function') oneToast('✓ Ordem das áreas atualizada');
+      /* Mantém desktop sincronizado se estiver aberto */
+      if (typeof renderOneTarefasPainel === 'function') renderOneTarefasPainel();
+    }
+  });
+}
+
+/* Sheet de filtros mobile (abre/fecha) */
+function oneTarMobAbrirFiltros() {
+  var sheet = document.getElementById('one-tar-mob-sheet');
+  if (!sheet) return;
+  /* Sincroniza o estado dos chips com as vars atuais */
+  document.querySelectorAll('#one-tar-mob-status .one-tar-mob-chip').forEach(function(b){
+    b.classList.toggle('active', b.dataset.f === oneTarMobFilterStatus);
+  });
+  document.querySelectorAll('#one-tar-mob-prio .one-tar-mob-chip').forEach(function(b){
+    b.classList.toggle('active', b.dataset.p === oneTarMobFilterPrio);
+  });
+  sheet.hidden = false;
+}
+function oneTarMobFecharFiltros() {
+  var sheet = document.getElementById('one-tar-mob-sheet');
+  if (sheet) sheet.hidden = true;
+}
+function oneTarMobSetFilter(btn) {
+  oneTarMobFilterStatus = btn.dataset.f;
+  document.querySelectorAll('#one-tar-mob-status .one-tar-mob-chip').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderOneTarefasMobile();
+}
+function oneTarMobSetPrio(btn) {
+  oneTarMobFilterPrio = btn.dataset.p;
+  document.querySelectorAll('#one-tar-mob-prio .one-tar-mob-chip').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderOneTarefasMobile();
 }
 
 /* Nova área no mobile — campo inline (sem prompt()) */
@@ -5699,25 +5877,24 @@ function oneTarMobAreaSalvar() {
   if (nome) {
     var areas = oneTarGetAreas();
     if (areas.indexOf(nome) === -1) { areas.push(nome); oneTarSaveAreas(areas); }
+    renderOneTarefasMobile();
     if (typeof renderOneTarefasPainel === 'function') renderOneTarefasPainel();
   }
   if (wrap) wrap.style.display = 'none';
 }
 
+/* Mantida por compat — agora rerenderiza o kanban */
 function oneTarMobToggle(id, btn) {
   var tarefas = [];
   try { tarefas = JSON.parse(localStorage.getItem(oneU('tarefas')) || '[]'); } catch(e) {}
   var idx = tarefas.findIndex(function(t){ return t.id === id; });
   if (idx === -1) return;
-  tarefas[idx].concluida = true;
-  tarefas[idx].status = 'concluida';
+  tarefas[idx].concluida = !tarefas[idx].concluida;
+  tarefas[idx].status = tarefas[idx].concluida ? 'concluida' : 'pendente';
   localStorage.setItem(oneU('tarefas'), JSON.stringify(tarefas));
   if (typeof supaUpsert === 'function') supaUpsert('tarefas', tarefas[idx]);
-  /* Anima o check e some o item */
-  btn.classList.add('done');
-  var ck = document.getElementById('ck-' + id);
-  if (ck) ck.style.opacity = '1';
-  setTimeout(function() { renderOneTarefasMobile(); }, 600);
+  if (btn && btn.classList) btn.classList.toggle('done', tarefas[idx].concluida);
+  setTimeout(function() { renderOneTarefasMobile(); }, 250);
 }
 
 /* Dots — atualiza ao rolar entre telas e dispara render do slide ativo */

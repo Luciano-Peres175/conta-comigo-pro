@@ -266,23 +266,56 @@
         </div>
       </div>
 
-      <!-- TAREFAS (4º slide mobile) -->
+      <!-- TAREFAS (4º slide mobile) — Fase 4: kanban portado com drag das colunas -->
       <div class="one-screen one-tarefas-mob" style="padding:8px 0 0;">
         <div class="one-tar-mob-wrap">
-          <div class="one-tar-mob-nav">
-            <span class="one-tar-mob-title">📋 Tarefas pendentes</span>
-            <div style="display:flex;gap:6px">
-              <button class="one-agenda-add" style="background:transparent;color:#5C8870;border:1.5px solid rgba(92,136,112,.40)" onclick="oneTarMobNovaArea()">+ Área</button>
-              <button class="one-agenda-add" onclick="oneTarModalAbrir()">+ Tarefa</button>
+          <!-- Header: pills + ações (filtro / +Área / +Tarefa) -->
+          <div class="one-tar-mob-header">
+            <div class="one-tar-mob-pills">
+              <span class="one-tar-mob-pill" id="one-tar-mob-total">0 tarefas</span>
+              <span class="one-tar-mob-pill em-and" id="one-tar-mob-em-and">0 em and.</span>
+            </div>
+            <div class="one-tar-mob-actions">
+              <button class="one-tar-mob-iconbtn" id="one-tar-mob-btn-filtros" onclick="oneTarMobAbrirFiltros()" title="Filtros" aria-label="Filtros">🔍</button>
+              <button class="one-tar-mob-iconbtn" onclick="oneTarMobNovaArea()" title="Nova área" aria-label="Nova área">＋📂</button>
+              <button class="one-tar-mob-iconbtn primary" onclick="oneTarModalAbrir()" title="Nova tarefa" aria-label="Nova tarefa">＋</button>
             </div>
           </div>
-          <!-- Campo inline nova área (aparece ao clicar "+ Área") -->
-          <div id="one-tar-mob-area-wrap" style="display:none;padding:0 0 8px;gap:6px;align-items:center;flex-shrink:0;display:none">
+          <!-- Campo inline nova área (aparece ao tocar "+📂") -->
+          <div id="one-tar-mob-area-wrap" style="display:none;padding:0 0 8px;gap:6px;align-items:center;flex-shrink:0">
             <input id="one-tar-mob-area-input" class="one-field" placeholder="Nome da área..." style="flex:1;margin:0;font-size:13px;padding:9px 12px">
             <button class="one-agenda-add" onclick="oneTarMobAreaSalvar()" style="flex-shrink:0">OK</button>
           </div>
-          <div class="one-tar-mob-list" id="one-tar-mob-list">
+          <!-- Kanban mobile (1.5 coluna visível + scroll horizontal interno) -->
+          <div class="one-tar-kanban-mob" id="one-tar-kanban-mob">
             <!-- JS renderiza -->
+          </div>
+          <!-- Sheet de filtros (overlay) -->
+          <div class="one-tar-mob-sheet" id="one-tar-mob-sheet" hidden>
+            <div class="one-tar-mob-sheet-backdrop" onclick="oneTarMobFecharFiltros()"></div>
+            <div class="one-tar-mob-sheet-panel">
+              <div class="one-tar-mob-sheet-head">
+                <span>Filtros</span>
+                <button class="one-tar-mob-sheet-close" onclick="oneTarMobFecharFiltros()" aria-label="Fechar">✕</button>
+              </div>
+              <div class="one-tar-mob-sheet-section">
+                <div class="one-tar-mob-sheet-label">Status</div>
+                <div class="one-tar-mob-sheet-chips" id="one-tar-mob-status">
+                  <button class="one-tar-mob-chip active" data-f="todos"     onclick="oneTarMobSetFilter(this)">Todos</button>
+                  <button class="one-tar-mob-chip"        data-f="pendente"  onclick="oneTarMobSetFilter(this)">Pendente</button>
+                  <button class="one-tar-mob-chip"        data-f="concluida" onclick="oneTarMobSetFilter(this)">Concluída</button>
+                </div>
+              </div>
+              <div class="one-tar-mob-sheet-section">
+                <div class="one-tar-mob-sheet-label">Prioridade</div>
+                <div class="one-tar-mob-sheet-chips" id="one-tar-mob-prio">
+                  <button class="one-tar-mob-chip active" data-p="qualquer" onclick="oneTarMobSetPrio(this)">Qualquer</button>
+                  <button class="one-tar-mob-chip"        data-p="Alta"     onclick="oneTarMobSetPrio(this)">Alta</button>
+                  <button class="one-tar-mob-chip"        data-p="Normal"   onclick="oneTarMobSetPrio(this)">Normal</button>
+                  <button class="one-tar-mob-chip"        data-p="Baixa"    onclick="oneTarMobSetPrio(this)">Baixa</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
