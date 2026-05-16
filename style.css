@@ -4253,15 +4253,41 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 }
 .one-ag-kday-body {
   flex: 1;
-  overflow-y: auto;
-  padding: 8px;
+  overflow: hidden;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  background: #fff;
   scrollbar-width: none;
   cursor: default;
 }
 .one-ag-kday-body::-webkit-scrollbar { display: none; }
+.one-ag-hours-gutter {
+  width: 18px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 0 8px 3px;
+  border-right: 1px solid rgba(92,136,112,0.08);
+}
+.one-ag-hour-tick {
+  font-size: 8px;
+  color: #C4BEB8;
+  font-family: system-ui, sans-serif;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.one-ag-cards-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 8px 6px 6px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.one-ag-cards-col::-webkit-scrollbar { display: none; }
 .one-ag-kday-empty {
   font-size: 11px;
   color: #B0AEA8;

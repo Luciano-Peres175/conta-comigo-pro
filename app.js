@@ -5126,7 +5126,10 @@ function renderOneAgendaPainel() {
           '<span class="one-ag-kday-count">' + doDia.length + '</span>' +
         '</div>' +
         '<div class="one-ag-kday-body" data-date="' + ds + '">' +
-          emptyMsg + cards +
+          '<div class="one-ag-hours-gutter">' +
+            ['08','09','10','11','12','13','14','15','16','17','18'].map(function(h){ return '<span class="one-ag-hour-tick">' + h + '</span>'; }).join('') +
+          '</div>' +
+          '<div class="one-ag-cards-col">' + emptyMsg + cards + '</div>' +
         '</div>' +
         '<div class="one-ag-kday-add-wrap">' +
           '<button class="one-ag-kday-add" onclick="event.stopPropagation();oneAgModalAbrir(\'' + ds + '\')">+ Novo compromisso</button>' +
