@@ -3605,6 +3605,9 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   transition: opacity .15s;
 }
 .one-tar-col-header:hover .one-tar-col-actions { opacity: 1; }
+/* P023 — Drag das colunas de área */
+.one-tar-col-drag:active { cursor: grabbing; }
+.one-tar-col-ghost { opacity: 0.4; background: rgba(92,136,112,0.08); }
 .one-tar-area-btn {
   background: none;
   border: none;

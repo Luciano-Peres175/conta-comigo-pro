@@ -4563,7 +4563,7 @@ function renderOneTarefasPainel() {
     var collapsed = oneTarCollapsed[area] ? ' one-tar-col-collapsed' : '';
     html += '<div class="one-tar-col' + collapsed + '" data-area="' + area.replace(/"/g,'&quot;') + '">' +
       '<div class="one-tar-col-header" style="border-top:3px solid ' + cor + '">' +
-        '<div style="display:flex;align-items:center;gap:6px;min-width:0;flex:1">' +
+        '<div class="one-tar-col-drag" style="display:flex;align-items:center;gap:6px;min-width:0;flex:1;cursor:grab">' +
           '<span style="font-size:15px;flex-shrink:0">' + emoji + '</span>' +
           '<span class="one-tar-col-nome">' + area.replace(/</g,'&lt;') + '</span>' +
           '<span class="one-tar-col-count">' + conclN + '/' + total.length + '</span>' +
@@ -4582,6 +4582,26 @@ function renderOneTarefasPainel() {
   });
   html += '</div>';
   el.innerHTML = html;
+
+  // P023 — Drag horizontal das colunas de área (SortableJS)
+  var kanbanEl = el.querySelector('.one-tar-kanban');
+  if (kanbanEl && typeof Sortable !== 'undefined') {
+    if (window._oneTarSortable) { try { window._oneTarSortable.destroy(); } catch(e){} }
+    window._oneTarSortable = Sortable.create(kanbanEl, {
+      handle: '.one-tar-col-drag',
+      direction: 'horizontal',
+      animation: 150,
+      ghostClass: 'one-tar-col-ghost',
+      onEnd: function() {
+        var novaOrdem = Array.prototype.map.call(
+          kanbanEl.querySelectorAll('.one-tar-col'),
+          function(col) { return col.dataset.area; }
+        );
+        oneTarSaveAreas(novaOrdem);
+        if (typeof oneToast === 'function') oneToast('✓ Ordem das áreas atualizada');
+      }
+    });
+  }
 }
 
 /* ── Financeiro inline ──────────────────────────────── */
