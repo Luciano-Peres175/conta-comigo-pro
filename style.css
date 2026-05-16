@@ -4224,6 +4224,17 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   border-bottom: 1px solid rgba(92,136,112,0.10);
   flex-shrink: 0;
   background: #FDFAFF;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+/* Cap do ruler que fica por cima quando o header está sticky */
+.one-ag-ruler-cap {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background: #FBF8F2;
+  flex-shrink: 0;
 }
 .one-ag-kday-name-wrap {
   display: flex;

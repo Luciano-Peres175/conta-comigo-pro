@@ -5078,7 +5078,9 @@ function renderOneAgendaPainel() {
   var HDR_H  = 38; // altura aprox. do header das colunas (para alinhar régua)
 
   // Régua única à esquerda (08:00–18:00)
-  var rulerHtml = '<div class="one-ag-tl-ruler one-ag-week-ruler">';
+  // O cap sticky cobre a área do header das colunas, mantendo alinhamento ao rolar
+  var rulerHtml = '<div class="one-ag-tl-ruler one-ag-week-ruler">' +
+    '<div class="one-ag-ruler-cap" style="height:' + HDR_H + 'px"></div>';
   for (var rh = H_START; rh <= H_END; rh++) {
     var rt = HDR_H + (rh - H_START) * PX;
     rulerHtml += '<div class="one-ag-tl-hour" style="top:' + rt + 'px">' + (rh < 10 ? '0' : '') + rh + ':00</div>';
