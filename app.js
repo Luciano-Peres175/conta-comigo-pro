@@ -4823,11 +4823,11 @@ function renderOneFinanceiroPainel() {
   // Se a vista ativa não for Extrato, renderiza ela em vez da lista de lançamentos
   var vistaAtual = window.oneFinVistaAtiva || 'geral';
   if (vistaAtual === 'geral' && typeof oneFinRenderGeral === 'function') {
-    // Garante visibilidade da view geral, esconde outras
-    document.querySelectorAll('.one-fin-vista').forEach(function(v){ v.hidden = v.getAttribute('data-vista') !== 'geral'; });
+    // Garante visibilidade da view geral, esconde outras — ESCOPO no painel financeiro
+    document.querySelectorAll('.one-desktop-financeiro .one-fin-vista').forEach(function(v){ v.hidden = v.getAttribute('data-vista') !== 'geral'; });
     setTimeout(oneFinRenderGeral, 0);
   } else if (vistaAtual === 'dashboard' && typeof oneFinRenderCategorias === 'function') {
-    document.querySelectorAll('.one-fin-vista').forEach(function(v){ v.hidden = v.getAttribute('data-vista') !== 'dashboard'; });
+    document.querySelectorAll('.one-desktop-financeiro .one-fin-vista').forEach(function(v){ v.hidden = v.getAttribute('data-vista') !== 'dashboard'; });
     setTimeout(oneFinRenderCategorias, 0);
   }
 
@@ -7603,7 +7603,7 @@ function oneFinSetVista(vista) {
   document.querySelectorAll('.one-fin-vista-tab').forEach(function(t){
     t.classList.toggle('active', t.getAttribute('data-vista') === vista);
   });
-  document.querySelectorAll('.one-fin-vista').forEach(function(v){
+  document.querySelectorAll('.one-desktop-financeiro .one-fin-vista').forEach(function(v){
     v.hidden = v.getAttribute('data-vista') !== vista;
   });
   // Render apropriado pra cada vista
