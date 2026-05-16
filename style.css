@@ -3110,16 +3110,16 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   min-height: 0;
 }
 
-/* Variante Agenda no centro — mesma linguagem visual da Chat */
+/* Variante Agenda no centro — mesma linguagem visual do Tarefas */
 .one-desktop-agenda {
   background: #F4F1EA;
   border-radius: 20px;
-  padding: 14px 20px 16px 20px;
+  padding: 18px 24px 22px 24px;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
   box-shadow:
     0 0 0 2px rgba(92,136,112,0.90),
     0 8px 24px rgba(0,0,0,.07);
@@ -4269,35 +4269,45 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   font-family: system-ui;
 }
 .one-ag-kday-add-wrap {
-  padding: 0 6px 6px;
+  padding: 0;
   flex-shrink: 0;
 }
 .one-ag-kday-add {
   display: block;
-  width: 100%;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #7FA88E;
-  background: #FEFCFF;
-  border: 1.5px solid rgba(92,136,112,0.30);
-  border-radius: 10px;
+  width: calc(100% - 12px);
+  margin: 8px 6px 6px;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, #F4EBFA 0%, #E5D3F2 100%);
+  border: none;
+  border-radius: 14px;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6E4F87;
   cursor: pointer;
   text-align: center;
-  font-family: system-ui;
+  border-top: 1.5px solid rgba(255,255,255,0.95);
+  border-left: 1.5px solid rgba(255,255,255,0.85);
+  border-right: 1.5px solid rgba(110,79,135,0.22);
+  border-bottom: 1.5px solid rgba(110,79,135,0.28);
   box-shadow:
-    0 0 0 0 transparent,
+    0 0 0 1.5px rgba(92,136,112,0.60),
+    0 0 0 4px rgba(92,136,112,0.14),
+    0 6px 14px rgba(92,136,112,0.22),
+    0 2px 6px rgba(0,0,0,.06),
     inset 0 2px 0 rgba(255,255,255,1),
-    inset 0 -2px 0 rgba(0,0,0,.04);
+    inset 0 -2px 0 rgba(0,0,0,.06);
   transition: transform .14s ease, box-shadow .14s ease;
 }
 .one-ag-kday-add:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 0 0 1.5px rgba(92,136,112,0.60),
-    0 4px 12px rgba(92,136,112,0.18),
+    0 0 0 1.5px rgba(92,136,112,0.70),
+    0 0 0 5px rgba(92,136,112,0.20),
+    0 10px 22px rgba(92,136,112,0.32),
+    0 3px 8px rgba(0,0,0,.08),
     inset 0 2px 0 rgba(255,255,255,1),
-    inset 0 -2px 0 rgba(0,0,0,.04);
+    inset 0 -2px 0 rgba(0,0,0,.06);
 }
 .one-ag-kday-add:active { transform: translateY(1px); }
 
@@ -7205,155 +7215,4 @@ button.one-fin-card:hover {
   box-shadow: 0 0 0 1px rgba(92,136,112,0.20);
 }
 
-/* Header de cada coluna do dia — colorido por dia da semana (gradient narrative SEG->SEX) */
-.one-ag-kday-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  color: #fff;
-  font-weight: 600;
-  border-radius: 12px 12px 0 0;
-  flex-shrink: 0;
-  gap: 6px;
-}
-.one-ag-kday-name {
-  font-size: 11px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  font-weight: 700;
-  opacity: 0.95;
-}
-.one-ag-kday-num {
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-/* Paleta gradient SEG->SEX + fim de semana neutro */
-.one-ag-kday-col[data-dow="1"] .one-ag-kday-header { background: #C97B6A; } /* SEG terracota */
-.one-ag-kday-col[data-dow="2"] .one-ag-kday-header { background: #D89B5A; } /* TER ambar pessego */
-.one-ag-kday-col[data-dow="3"] .one-ag-kday-header { background: #D4B855; } /* QUA dourado mostarda */
-.one-ag-kday-col[data-dow="4"] .one-ag-kday-header { background: #A8B470; } /* QUI verde-ambar */
-.one-ag-kday-col[data-dow="5"] .one-ag-kday-header { background: #7FA88E; } /* SEX verde menta */
-.one-ag-kday-col[data-dow="6"] .one-ag-kday-header { background: #9DB1A8; } /* SAB cinza-verde claro */
-.one-ag-kday-col[data-dow="0"] .one-ag-kday-header { background: #8DA39A; } /* DOM cinza-verde mais escuro */
-
-/* Body da coluna — area de eventos com altura fixa (24h x 50px/h) */
-.one-ag-kday-body {
-  position: relative;
-  height: 1200px; /* 24h x 50px/h - sempre 1200px */
-  flex-shrink: 0;
-  cursor: pointer;
-  background: #FFFFFF;
-}
-
-/* Linhas de hora horizontais (guias discretas) */
-.one-ag-tl-grid-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: rgba(92,136,112,0.08);
-  pointer-events: none;
-}
-
-/* Cards de evento — estilo limpo igual cards de tarefa */
-.one-ag-kcard {
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  background: #FBF8F2;
-  border-left: 3px solid #7FA88E;
-  border-radius: 8px;
-  padding: 6px 8px;
-  font-size: 11px;
-  cursor: pointer;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,.06);
-  transition: transform .12s, box-shadow .12s;
-  display: flex;
-  gap: 6px;
-  align-items: flex-start;
-}
-.one-ag-kcard:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0,0,0,.10);
-}
-.one-ag-kcard.realizado {
-  opacity: 0.7;
-  background: #EAF6F1;
-}
-.one-ag-kcard-check {
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  border: 1.5px solid #C0BAD0;
-  flex-shrink: 0;
-  margin-top: 1px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  color: #fff;
-  cursor: pointer;
-}
-.one-ag-kcard-body { flex: 1; min-width: 0; }
-.one-ag-kcard-hora {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  margin-bottom: 1px;
-}
-.one-ag-kcard-nome {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #2D2D2D;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.one-ag-kcard-tipo {
-  font-size: 10px;
-  color: #6B7F6F;
-  margin-top: 2px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.one-ag-kcard-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.one-ag-kcard-actions {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  display: none;
-}
-.one-ag-kcard:hover .one-ag-kcard-actions {
-  display: flex;
-}
-
-/* Linha do "agora" — discreta atravessando todas as colunas */
-.one-ag-tl-agora {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #C0392B;
-  pointer-events: none;
-  z-index: 5;
-}
-.one-ag-tl-agora-dot {
-  position: absolute;
-  left: -4px;
-  top: -4px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #C0392B;
-}
+/* bloco antigo removido — estilos das colunas da Agenda agora estão na seção "Kanban semanal" acima */
