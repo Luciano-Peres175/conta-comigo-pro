@@ -5441,15 +5441,17 @@ function oneAgClickSlot(ev, bodyEl) {
   }, 50);
 }
 
-/* Click em slot vazio na view semanal — calcula hora com offset de H_START */
+/* Click em slot vazio na view semanal — calcula hora com offset de H_START e snap parametrizável (default 15min) */
 function oneAgClickSlotWeek(ev, bodyEl) {
   if (ev.target !== bodyEl && !ev.target.classList.contains('one-ag-tl-grid-line')) return;
+  var snapMin = parseInt(bodyEl.getAttribute('data-snap-min')) || 15;
   var rect = bodyEl.getBoundingClientRect();
   var y = ev.clientY - rect.top;
   var hourOffset = parseInt(bodyEl.getAttribute('data-hour-offset') || '0');
   var totalMin = hourOffset * 60 + Math.max(0, Math.round(y / 50 * 60));
-  totalMin = Math.round(totalMin / 15) * 15;
-  if (totalMin > 23*60+45) totalMin = 23*60+45;
+  totalMin = Math.round(totalMin / snapMin) * snapMin;
+  var maxMin = 23*60 + (60 - snapMin);
+  if (totalMin > maxMin) totalMin = maxMin;
   var hh = Math.floor(totalMin / 60);
   var mm = totalMin % 60;
   var horaStr = (hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm;
@@ -5472,13 +5474,15 @@ function oneHoraParaTop(hora) {
   return Math.round(px); // 50px/h, range 00h-23h, altura total 1200px
 }
 
-/* Converte posição Y (em px dentro do body da coluna) em string "HH:MM" snap a 15min */
-function oneAgTopParaHora(yPx) {
+/* Converte posição Y (em px dentro do body da coluna) em string "HH:MM" com snap parametrizável (default 15min) */
+function oneAgTopParaHora(yPx, snapMin) {
+  snapMin = snapMin || 15;
   if (yPx < 0) yPx = 0;
   if (yPx > 1200) yPx = 1200;
   var totalMin = Math.round(yPx / 50 * 60);
-  totalMin = Math.round(totalMin / 15) * 15; // snap 15min
-  if (totalMin > 23*60+45) totalMin = 23*60+45;
+  totalMin = Math.round(totalMin / snapMin) * snapMin;
+  var maxMin = 23*60 + (60 - snapMin);
+  if (totalMin > maxMin) totalMin = maxMin;
   var hh = Math.floor(totalMin / 60);
   var mm = totalMin % 60;
   return (hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm;
@@ -5544,82 +5548,18 @@ function oneInitAgendaSortable() {
   });
 }
 
-/* ── Agenda (screen-one) ─────────────────────────────────── */
+/* ── Agenda (screen-one mobile) ──────────────────────────────────
+   Mantida por compatibilidade — agora delega pro render mobile v4
+   (Fase 2: porta da estrutura desktop TaskAreas + timeline 00–24h).
+   Markup antigo #one-ag-week foi substituído por #one-ag-kanban-mob
+   no index.html. As ~8 chamadas existentes desta função continuam
+   válidas, agora apontando pra função nova. */
 function renderOneAgenda() {
-  var wrap = document.getElementById('one-ag-week');
-  var periodEl = document.getElementById('one-ag-period');
-  if (!wrap) return;
-
-  var today = new Date();
-  var dow = today.getDay(); // 0=Dom
-  var mondayOffset = dow === 0 ? -6 : 1 - dow;
-  var monday = new Date(today);
-  monday.setDate(today.getDate() + mondayOffset);
-
-  var compromissos = [];
-  try { compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
-
-  var dias = ['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];
-  var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-
-  var sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  if (periodEl) {
-    if (monday.getMonth() === sunday.getMonth()) {
-      periodEl.textContent = monday.getDate() + '–' + sunday.getDate() + ' de ' + meses[monday.getMonth()];
-    } else {
-      periodEl.textContent = monday.getDate() + ' ' + meses[monday.getMonth()] + ' – ' + sunday.getDate() + ' ' + meses[sunday.getMonth()];
-    }
+  if (typeof renderOneAgendaPainelMob === 'function') {
+    renderOneAgendaPainelMob();
   }
-
-  function toDateStr(d) {
-    return d.getFullYear() + '-'
-      + String(d.getMonth()+1).padStart(2,'0') + '-'
-      + String(d.getDate()).padStart(2,'0');
-  }
-  var todayStr = toDateStr(today);
-
-  wrap.innerHTML = '';
-  for (var i = 0; i < 7; i++) {
-    var day = new Date(monday);
-    day.setDate(monday.getDate() + i);
-    var dayStr = toDateStr(day);
-    var isToday = dayStr === todayStr;
-
-    var dayComps = compromissos
-      .filter(function(c){ return c.data === dayStr; })
-      .sort(function(a,b){ return (a.hora||'00:00').localeCompare(b.hora||'00:00'); });
-
-    var col = document.createElement('div');
-    col.className = 'one-agenda-col';
-
-    var header = document.createElement('div');
-    header.className = 'one-agenda-day-header';
-    header.innerHTML = '<div class="one-agenda-day-name">' + dias[i] + '</div>'
-      + '<div class="one-agenda-day-num' + (isToday ? ' today' : '') + '">' + day.getDate() + '</div>';
-
-    var cardsDiv = document.createElement('div');
-    cardsDiv.className = 'one-agenda-day-cards';
-
-    if (dayComps.length === 0) {
-      var empty = document.createElement('div');
-      empty.className = 'one-agenda-empty-col';
-      cardsDiv.appendChild(empty);
-    } else {
-      dayComps.forEach(function(c) {
-        var card = document.createElement('div');
-        var cls = c.realizado ? 'realizado' : (c.status === 'Confirmado' ? 'confirmado' : 'pendente');
-        card.className = 'one-agenda-card-mini ' + cls;
-        var firstName = (c.nome || '').split(' ')[0];
-        card.innerHTML = '<div class="one-agenda-card-mini-name">' + firstName + '</div>'
-          + (c.hora ? '<div class="one-agenda-card-mini-time">' + c.hora + '</div>' : '');
-        cardsDiv.appendChild(card);
-      });
-    }
-
-    col.appendChild(header);
-    col.appendChild(cardsDiv);
-    wrap.appendChild(col);
+  if (typeof oneAgRenderTopCardsMob === 'function') {
+    oneAgRenderTopCardsMob();
   }
 }
 
@@ -8261,4 +8201,372 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', oneDeskAtualizarMeta);
 } else {
   oneDeskAtualizarMeta();
+}
+
+/* ════════════════════════════════════════════════════════════════
+   AGENDA MOBILE — Fase 2 v4 (porta TaskAreas + timeline 00–24h)
+
+   Decisões fechadas (16/05/2026):
+   - A2: markup paralelo com IDs sufix -mob, zero conflito de IDs
+   - Só Semana primeiro (Hoje + Mês ficam pra Fase 2.5 — placeholders)
+   - 3 colunas visíveis (hoje+offset-1, hoje+offset, hoje+offset+1)
+     com setas ‹/› dia-a-dia. Evita conflito com swipe horizontal
+     entre módulos (.one-screens-wrap scroll-snap x).
+   - DnD via Pointer Events (touch nativo, sem polyfill).
+     Snap 30min em vez de 15min do desktop.
+
+   Estado: oneAgMobDayOffset, oneAgViewAtivaMob.
+   Render principal: renderOneAgendaPainelMob().
+   Helper compartilhado: oneAgCorCategoria (já existe).
+   ════════════════════════════════════════════════════════════════ */
+
+window.oneAgMobDayOffset = window.oneAgMobDayOffset || 0;
+window.oneAgViewAtivaMob = window.oneAgViewAtivaMob || 'semana';
+
+/* Render principal — 3 colunas centradas em (hoje + oneAgMobDayOffset) */
+function renderOneAgendaPainelMob() {
+  var kanban = document.getElementById('one-ag-kanban-mob');
+  var label  = document.getElementById('one-ag-periodo-label-mob');
+  if (!kanban) return;
+
+  // Só renderiza se a view ativa for "semana" (Hoje/Mês ficam pra 2.5)
+  if (window.oneAgViewAtivaMob !== 'semana') {
+    oneAgAtualizarLabelPeriodoMob();
+    return;
+  }
+
+  var compromissos = [];
+  try { compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
+
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var hojeStr = hoje.toISOString().slice(0,10);
+
+  // Âncora = hoje + offset; janela = [âncora-1, âncora, âncora+1]
+  var anc = new Date(hoje); anc.setDate(hoje.getDate() + (window.oneAgMobDayOffset || 0));
+
+  var NOMES_FULL = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+  var MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+  // Paleta SEG→SEX → reaproveita as cores do desktop (indexa por DOW real)
+  var PALETTE_DOW = { 0:'#8DA39A', 1:'#C97B6A', 2:'#D89B5A', 3:'#D4B855', 4:'#A8B470', 5:'#7FA88E', 6:'#9DB1A8' };
+
+  var H_START = 0, H_END = 24, PX = 50, SNAP_MIN = 30;
+  var BODY_H = (H_END - H_START) * PX; // 1200px
+
+  // Label do período: 3 dias visíveis
+  var d0 = new Date(anc); d0.setDate(anc.getDate() - 1);
+  var d2 = new Date(anc); d2.setDate(anc.getDate() + 1);
+  if (label) {
+    if (d0.getMonth() === d2.getMonth()) {
+      label.textContent = d0.getDate() + '–' + d2.getDate() + ' ' + MESES[d0.getMonth()] + ' ' + d2.getFullYear();
+    } else {
+      label.textContent = d0.getDate() + ' ' + MESES[d0.getMonth()] + ' – ' + d2.getDate() + ' ' + MESES[d2.getMonth()];
+    }
+  }
+
+  // Régua única à esquerda
+  var rulerHtml = '<div class="one-ag-tl-ruler one-ag-week-ruler">';
+  for (var rh = H_START; rh <= H_END; rh++) {
+    rulerHtml += '<div class="one-ag-tl-hour" style="top:' + ((rh - H_START) * PX) + 'px">' + (rh < 10 ? '0' : '') + rh + ':00</div>';
+  }
+  rulerHtml += '</div>';
+
+  // Grid lines (reutilizadas em cada coluna)
+  var gridLines = '';
+  for (var gh = 0; gh <= H_END - H_START; gh++) {
+    gridLines += '<div class="one-ag-tl-grid-line" style="top:' + (gh * PX) + 'px"></div>';
+  }
+
+  var headerColsHtml = '';
+  var colsHtml = '';
+
+  for (var i = -1; i <= 1; i++) {
+    var d = new Date(anc); d.setDate(anc.getDate() + i);
+    var ds = d.toISOString().slice(0,10);
+    var isHoje = ds === hojeStr;
+    var dowReal = d.getDay();
+    var cor = PALETTE_DOW[dowReal] || '#7FA88E';
+
+    var doDia = compromissos
+      .filter(function(c){ return c.data === ds; })
+      .sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
+
+    var numDia = d.getDate();
+    var numHtml = isHoje
+      ? '<span class="one-ag-kday-num today-circle">' + numDia + '</span>'
+      : '<span class="one-ag-kday-num">' + numDia + '</span>';
+
+    var cards = (function(list, hStart, px) {
+      return list.map(function(c) {
+        var realizado = !!c.status && c.status.toLowerCase() === 'realizado';
+        var hora = c.hora || '08:00';
+        var nome = (c.nome || c.descricao || 'Compromisso').replace(/</g,'&lt;');
+        var tipo = (c.tipo || '').replace(/</g,'&lt;');
+        var cat  = (typeof oneAgCorCategoria === 'function') ? oneAgCorCategoria(tipo) : { cor:'#7FA88E', bg:'#F0E8F4' };
+        var checkBg  = realizado ? '#4CAF50' : 'transparent';
+        var checkBdr = realizado ? '#4CAF50' : '#C0BAD0';
+        var checkTxt = realizado ? '✓' : '';
+        var parts = String(hora).split(':');
+        var hh = parseInt(parts[0]) || 0;
+        var mm = parseInt(parts[1]) || 0;
+        var top = ((hh - hStart) + mm / 60) * px;
+        if (top < 0) top = 0;
+        var dur = parseInt(c.duracao) || 60;
+        var hPx = Math.max(28, Math.round(dur * (px / 60))); // touch target mínimo 28px
+        var valor = c.valor ? ' · R$' + Number(c.valor).toFixed(0) : '';
+        return '<div class="one-ag-kcard one-ag-tl-card one-ag-tl-card-mob' + (realizado ? ' realizado' : '') + '" data-event-id="' + c.id + '" data-cid="' + c.id + '" onclick="oneAgModalEditar(this.dataset.cid)" style="top:' + top + 'px;height:' + hPx + 'px;border-left-color:' + cat.cor + ';background:' + cat.bg + ';touch-action:none">' +
+          '<div class="one-ag-kcard-check" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgToggleRealizado(this.dataset.cid)" style="background:' + checkBg + ';border-color:' + checkBdr + '">' + checkTxt + '</div>' +
+          '<div class="one-ag-kcard-body">' +
+            '<div class="one-ag-kcard-hora" style="color:' + cat.cor + '">' + hora + (valor ? '<span style="margin-left:5px;opacity:.7;font-size:10px">' + valor + '</span>' : '') + '</div>' +
+            '<div class="one-ag-kcard-nome">' + nome + '</div>' +
+            (tipo ? '<div class="one-ag-kcard-tipo"><span class="one-ag-kcard-dot" style="background:' + cat.cor + '"></span>' + tipo + '</div>' : '') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }(doDia, H_START, PX));
+
+    // Header da coluna
+    headerColsHtml +=
+      '<div class="one-ag-kday-header' + (isHoje ? ' today' : '') + '" data-date="' + ds + '" style="border-top:3px solid ' + cor + '">' +
+        '<div class="one-ag-kday-name-wrap">' +
+          '<span class="one-ag-kday-name">' + NOMES_FULL[dowReal] + '</span>' +
+          numHtml +
+        '</div>' +
+        '<div class="one-ag-kday-header-right">' +
+          '<span class="one-ag-kday-count">' + doDia.length + '</span>' +
+        '</div>' +
+      '</div>';
+
+    // Body da coluna (snap-min 30 via data-attr, lido pelo oneAgClickSlotWeek)
+    colsHtml +=
+      '<div class="one-ag-kday-col' + (isHoje ? ' today' : '') + '" data-date="' + ds + '" data-dow="' + dowReal + '">' +
+        '<div class="one-ag-kday-body" data-date="' + ds + '" data-hour-offset="' + H_START + '" data-snap-min="' + SNAP_MIN + '" style="height:' + BODY_H + 'px" onclick="oneAgClickSlotWeek(event,this)">' +
+          gridLines + cards +
+        '</div>' +
+      '</div>';
+  }
+
+  kanban.innerHTML =
+    '<div class="one-ag-week-top">' +
+      '<div class="one-ag-ruler-cap" style="width:32px;flex-shrink:0"></div>' +
+      '<div class="one-ag-week-header-cols">' + headerColsHtml + '</div>' +
+    '</div>' +
+    '<div class="one-ag-week-main">' +
+      rulerHtml +
+      '<div class="one-ag-tl-cols one-ag-week-cols">' + colsHtml + '</div>' +
+    '</div>';
+
+  // Garante view Semana visível dentro do mobile
+  document.querySelectorAll('.one-screen.one-agenda .one-fin-vista-mob').forEach(function(v) {
+    v.hidden = v.getAttribute('data-view') !== 'semana';
+  });
+
+  // Inicia DnD touch nas colunas/cards mobile
+  oneInitAgendaTouchDnDMob('#one-ag-kanban-mob', SNAP_MIN);
+  oneAgRenderTopCardsMob();
+}
+window.renderOneAgendaPainelMob = renderOneAgendaPainelMob;
+
+/* Trocar view mobile (Hoje | Semana | Mês) — só Semana renderiza por enquanto */
+function oneAgSetViewMob(view) {
+  window.oneAgViewAtivaMob = view;
+  document.querySelectorAll('#one-ag-filters-mob .one-tar-filter[data-view]').forEach(function(t){
+    t.classList.toggle('active', t.getAttribute('data-view') === view);
+  });
+  document.querySelectorAll('.one-screen.one-agenda .one-fin-vista-mob').forEach(function(v){
+    v.hidden = v.getAttribute('data-view') !== view;
+  });
+  oneAgAtualizarLabelPeriodoMob();
+  if (view === 'semana') {
+    renderOneAgendaPainelMob();
+  } else {
+    // Hoje e Mês: placeholders por enquanto
+    var alvoHoje = document.getElementById('one-ag-hoje-list-mob');
+    var alvoMes  = document.getElementById('one-ag-mes-mob');
+    if (view === 'hoje' && alvoHoje && !alvoHoje.innerHTML) {
+      alvoHoje.innerHTML = '<p class="one-ag-hoje-empty">View Hoje mobile chega na Fase 2.5.</p>';
+    }
+    if (view === 'mes' && alvoMes && !alvoMes.innerHTML) {
+      alvoMes.innerHTML = '<p class="one-ag-hoje-empty" style="padding:16px;text-align:center">View Mês mobile chega na Fase 2.5.</p>';
+    }
+  }
+  oneAgRenderTopCardsMob();
+}
+window.oneAgSetViewMob = oneAgSetViewMob;
+
+/* Setas ‹/› — navegam DIA A DIA na janela de 3 colunas */
+function oneAgNavegarMob(delta) {
+  window.oneAgMobDayOffset = (window.oneAgMobDayOffset || 0) + delta;
+  renderOneAgendaPainelMob();
+  oneAgAtualizarLabelPeriodoMob();
+}
+window.oneAgNavegarMob = oneAgNavegarMob;
+
+/* Label do período mobile — depende da view ativa */
+function oneAgAtualizarLabelPeriodoMob() {
+  var lbl = document.getElementById('one-ag-periodo-label-mob');
+  if (!lbl) return;
+  var hoje = new Date();
+  var view = window.oneAgViewAtivaMob || 'semana';
+  var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  if (view === 'hoje') {
+    lbl.textContent = hoje.getDate() + ' ' + meses[hoje.getMonth()];
+  } else if (view === 'mes') {
+    lbl.textContent = meses[hoje.getMonth()] + ' ' + hoje.getFullYear();
+  }
+  // Semana: label fica em branco aqui — o render preenche com o intervalo dos 3 dias
+}
+window.oneAgAtualizarLabelPeriodoMob = oneAgAtualizarLabelPeriodoMob;
+
+/* Pills do header mobile — contagem de Hoje/Semana/Mês */
+function oneAgRenderTopCardsMob() {
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var hojeStr = hoje.toISOString().slice(0,10);
+  var dow = hoje.getDay();
+  var diffSeg = (dow === 0 ? -6 : 1 - dow);
+  var seg = new Date(hoje); seg.setDate(hoje.getDate() + diffSeg);
+  var dom = new Date(seg); dom.setDate(seg.getDate() + 6);
+  var segStr = seg.toISOString().slice(0,10);
+  var domStr = dom.toISOString().slice(0,10);
+  var mesIni = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
+  var mesFim = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).toISOString().slice(0,10);
+
+  var compromissos = [];
+  try { compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
+
+  var qH = 0, qS = 0, qM = 0;
+  compromissos.forEach(function(c){
+    if (!c.data) return;
+    if (c.data === hojeStr)                    qH++;
+    if (c.data >= segStr && c.data <= domStr)  qS++;
+    if (c.data >= mesIni && c.data <= mesFim)  qM++;
+  });
+
+  var set = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
+  set('one-ag-pill-hoje-mob',   qH + ' hoje');
+  set('one-ag-pill-semana-mob', qS + ' sem');
+  set('one-ag-pill-mes-mob',    qM + ' mês');
+}
+window.oneAgRenderTopCardsMob = oneAgRenderTopCardsMob;
+
+/* DnD touch nativo via Pointer Events — snap parametrizável (default 30min mobile) */
+function oneInitAgendaTouchDnDMob(rootSel, snapMin) {
+  snapMin = snapMin || 30;
+  var root = document.querySelector(rootSel);
+  if (!root) return;
+
+  var dragState = null; // { id, ghost, startX, startY, originRect }
+
+  function endDrag(commit) {
+    if (!dragState) return;
+    if (dragState.ghost && dragState.ghost.parentNode) {
+      dragState.ghost.parentNode.removeChild(dragState.ghost);
+    }
+    document.querySelectorAll('.one-ag-drop-target').forEach(function(c){ c.classList.remove('one-ag-drop-target'); });
+    var ds = dragState;
+    dragState = null;
+    if (!commit || !ds.targetCol) return;
+
+    var rect = ds.targetCol.getBoundingClientRect();
+    var hourOffset = parseInt(ds.targetCol.getAttribute('data-hour-offset') || '0');
+    var y = ds.lastClientY - rect.top - (ds.offsetY || 0);
+    var novaHora = oneAgTopParaHora(y + hourOffset * 50, snapMin);
+    var novaData = ds.targetCol.parentNode.getAttribute('data-date');
+
+    var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
+    var idx = lista.findIndex(function(x){ return x.id === ds.id; });
+    if (idx === -1) return;
+    lista[idx].data = novaData;
+    lista[idx].hora = novaHora;
+    localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
+
+    var rec = []; try { rec = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
+    var rIdx = rec.findIndex(function(r){ return r.compromissoId === ds.id; });
+    if (rIdx !== -1) { rec[rIdx].data = novaData; localStorage.setItem(oneU('receitas'), JSON.stringify(rec)); }
+
+    if (typeof oneToast === 'function') oneToast('✓ ' + novaData.split('-').reverse().join('/') + ' às ' + novaHora);
+    renderOneAgendaPainelMob();
+    if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  }
+
+  // Long-press 350ms pra entrar em modo drag (evita ativar em scroll/tap)
+  var cards = root.querySelectorAll('.one-ag-kcard');
+  cards.forEach(function(card){
+    if (card._dndReady) return;
+    card._dndReady = true;
+    var longPressTimer = null;
+    var started = false;
+
+    card.addEventListener('pointerdown', function(ev){
+      if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+      var rect = card.getBoundingClientRect();
+      var offsetY = ev.clientY - rect.top;
+      started = false;
+      longPressTimer = setTimeout(function(){
+        started = true;
+        // Cria fantasma
+        var ghost = card.cloneNode(true);
+        ghost.style.position = 'fixed';
+        ghost.style.left = rect.left + 'px';
+        ghost.style.top  = rect.top + 'px';
+        ghost.style.width = rect.width + 'px';
+        ghost.style.height = rect.height + 'px';
+        ghost.style.opacity = '0.85';
+        ghost.style.zIndex = '9999';
+        ghost.style.pointerEvents = 'none';
+        ghost.style.transform = 'scale(1.03)';
+        ghost.style.boxShadow = '0 8px 20px rgba(0,0,0,.25)';
+        document.body.appendChild(ghost);
+        dragState = { id: card.getAttribute('data-event-id') || card.getAttribute('data-cid'), ghost: ghost, offsetY: offsetY, lastClientY: ev.clientY, targetCol: null };
+        card.classList.add('one-ag-event-dragging');
+        if (navigator.vibrate) try { navigator.vibrate(20); } catch(e){}
+      }, 350);
+    });
+
+    card.addEventListener('pointermove', function(ev){
+      if (!started || !dragState) return;
+      ev.preventDefault();
+      dragState.lastClientY = ev.clientY;
+      // Move fantasma seguindo o dedo
+      var top = ev.clientY - dragState.offsetY;
+      dragState.ghost.style.top  = top + 'px';
+      dragState.ghost.style.left = (ev.clientX - dragState.ghost.offsetWidth/2) + 'px';
+      // Detecta coluna alvo
+      var below = document.elementFromPoint(ev.clientX, ev.clientY);
+      var col = below && below.closest ? below.closest('.one-ag-kday-body') : null;
+      document.querySelectorAll('.one-ag-drop-target').forEach(function(c){ c.classList.remove('one-ag-drop-target'); });
+      if (col) {
+        col.classList.add('one-ag-drop-target');
+        dragState.targetCol = col;
+      } else {
+        dragState.targetCol = null;
+      }
+    });
+
+    var cancelAndEnd = function(commit){
+      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+      if (started) {
+        card.classList.remove('one-ag-event-dragging');
+        endDrag(commit);
+      }
+      started = false;
+    };
+
+    card.addEventListener('pointerup',     function(){ cancelAndEnd(true);  });
+    card.addEventListener('pointercancel', function(){ cancelAndEnd(false); });
+    card.addEventListener('pointerleave',  function(){
+      // Se sair do card durante long-press ainda não confirmado, cancela
+      if (longPressTimer && !started) { clearTimeout(longPressTimer); longPressTimer = null; }
+    });
+  });
+}
+window.oneInitAgendaTouchDnDMob = oneInitAgendaTouchDnDMob;
+
+/* Render inicial mobile no DOM ready (caso o app carregue direto na tela Agenda) */
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function(){
+    try { renderOneAgendaPainelMob(); } catch(e){}
+  });
+} else {
+  try { renderOneAgendaPainelMob(); } catch(e){}
 }

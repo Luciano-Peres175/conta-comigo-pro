@@ -192,17 +192,49 @@
         <div class="one-chat-msgs-mob" id="one-chat-msgs-mob"></div>
       </div>
 
-      <!-- AGENDA -->
-      <div class="one-screen one-agenda" style="padding:8px 0 0;">
-        <div class="one-agenda-wrap">
-          <div class="one-agenda-nav">
-            <span class="one-agenda-nav-period" id="one-ag-period">—</span>
-            <button class="one-agenda-add" onclick="oneAgModalAbrir()">+ Novo</button>
+      <!-- AGENDA — Fase 2 mobile (v4 portado: pills + bar + 3 views, IDs sufix -mob) -->
+      <div class="one-screen one-agenda" style="padding:0;">
+
+        <!-- Header TaskAreas compacto -->
+        <div class="one-tar-header one-tar-header-mob">
+          <div class="one-tar-header-left">
+            <span class="one-tar-logo">📅 Agenda</span>
+            <span class="one-tar-pill" id="one-ag-pill-hoje-mob">0 hoje</span>
+            <span class="one-tar-pill em-and" id="one-ag-pill-semana-mob">0 sem</span>
+            <span class="one-tar-pill conc" id="one-ag-pill-mes-mob">0 mês</span>
           </div>
-          <div class="one-agenda-week" id="one-ag-week">
-            <!-- JS renderiza as 7 colunas -->
+          <div class="one-tar-header-right">
+            <button class="one-tar-btn-nova one-tar-btn-nova-mob" onclick="oneAgModalAbrir()">+</button>
           </div>
         </div>
+
+        <!-- Bar: setas + label + tabs (3 vistas) -->
+        <div class="one-tar-bar one-tar-bar-mob">
+          <div class="one-tar-filters" id="one-ag-filters-mob">
+            <button class="one-ag-nav-btn-pill" onclick="oneAgNavegarMob(-1)" title="Anterior">‹</button>
+            <button class="one-ag-nav-btn-pill" onclick="oneAgNavegarMob(1)" title="Próximo">›</button>
+            <span class="one-ag-periodo-label-inline" id="one-ag-periodo-label-mob">—</span>
+            <div class="one-tar-sep"></div>
+            <button class="one-tar-filter"        data-view="hoje"   onclick="oneAgSetViewMob('hoje')">Hoje</button>
+            <button class="one-tar-filter active" data-view="semana" onclick="oneAgSetViewMob('semana')">Semana</button>
+            <button class="one-tar-filter"        data-view="mes"    onclick="oneAgSetViewMob('mes')">Mês</button>
+          </div>
+        </div>
+
+        <!-- 3 views (Hoje/Mês entram na Fase 2.5 — só placeholders) -->
+        <div class="one-fin-content one-fin-content-mob">
+          <div class="one-fin-vista one-fin-vista-mob" data-view="hoje" hidden>
+            <div class="one-ag-week-strip" id="one-ag-week-strip-mob"></div>
+            <div class="one-ag-hoje-list" id="one-ag-hoje-list-mob"></div>
+          </div>
+          <div class="one-fin-vista one-fin-vista-mob" data-view="semana">
+            <div id="one-ag-kanban-mob" class="one-ag-tl-wrapper mob"></div>
+          </div>
+          <div class="one-fin-vista one-fin-vista-mob" data-view="mes" hidden>
+            <div id="one-ag-mes-mob" class="one-ag-mes-wrapper"></div>
+          </div>
+        </div>
+
       </div>
 
       <!-- FINANCEIRO -->

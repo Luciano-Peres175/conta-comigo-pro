@@ -7240,3 +7240,158 @@ button.one-fin-card:hover {
   flex-shrink: 0;
 }
 
+/* ════════════════════════════════════════════════════════════════
+   AGENDA MOBILE — Fase 2 v4 (porta TaskAreas + timeline 00–24h)
+   3 colunas visíveis, régua estreita (32px), DnD touch (Pointer Events)
+   ════════════════════════════════════════════════════════════════ */
+
+/* Header TaskAreas compacto */
+.one-tar-header-mob {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  flex-shrink: 0;
+  background: #FBF8F2;
+  border-bottom: 1px solid rgba(127,168,142,0.10);
+}
+.one-tar-header-mob .one-tar-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.one-tar-header-mob .one-tar-logo {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.one-tar-header-mob .one-tar-pill {
+  font-size: 10.5px;
+  padding: 3px 7px;
+}
+.one-tar-btn-nova-mob {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+/* Bar mobile (setas + label + tabs) */
+.one-tar-bar-mob {
+  padding: 6px 12px;
+  flex-shrink: 0;
+  background: #FBF8F2;
+  border-bottom: 1px solid rgba(127,168,142,0.08);
+}
+.one-tar-bar-mob #one-ag-filters-mob {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.one-tar-bar-mob #one-ag-filters-mob::-webkit-scrollbar { display: none; }
+.one-tar-bar-mob .one-tar-filter {
+  font-size: 11.5px;
+  padding: 5px 10px;
+  flex-shrink: 0;
+}
+.one-tar-bar-mob .one-ag-nav-btn-pill {
+  width: 30px; height: 30px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Container das 3 views mobile */
+.one-fin-content-mob {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.one-fin-vista-mob {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.one-fin-vista-mob[hidden] { display: none; }
+
+/* Wrapper timeline mobile: scroll Y, sem scroll X (3 colunas fixas em 100vw) */
+.one-ag-tl-wrapper.mob {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;  /* sem scroll X interno — evita conflito com swipe entre módulos */
+  overflow-y: auto;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+.one-ag-tl-wrapper.mob .one-ag-week-top {
+  padding: 6px 6px 0 0;
+}
+.one-ag-tl-wrapper.mob .one-ag-week-header-cols {
+  gap: 4px;
+  padding: 0 4px;
+}
+.one-ag-tl-wrapper.mob .one-ag-week-main {
+  padding: 0 6px 8px 0;
+}
+.one-ag-tl-wrapper.mob .one-ag-tl-ruler,
+.one-ag-tl-wrapper.mob .one-ag-week-ruler {
+  flex: 0 0 32px;
+  width: 32px;
+}
+.one-ag-tl-wrapper.mob .one-ag-tl-hour {
+  font-size: 8.5px;
+  padding: 0 3px 0 0;
+}
+.one-ag-tl-wrapper.mob .one-ag-tl-cols {
+  gap: 4px;
+  padding: 0 4px;
+}
+.one-ag-tl-wrapper.mob .one-ag-kday-col {
+  flex: 1 1 0;          /* 3 colunas dividindo a largura disponível igualmente */
+  min-width: 0;
+  max-width: none;
+}
+.one-ag-tl-wrapper.mob .one-ag-kday-header {
+  padding: 6px 8px 5px;
+  min-width: 0;
+  flex: 1;
+}
+.one-ag-tl-wrapper.mob .one-ag-kday-name { font-size: 10.5px; }
+.one-ag-tl-wrapper.mob .one-ag-kday-num { font-size: 14px; }
+.one-ag-tl-wrapper.mob .one-ag-kcard-nome { font-size: 11px; }
+.one-ag-tl-wrapper.mob .one-ag-kcard-hora { font-size: 10.5px; }
+.one-ag-tl-wrapper.mob .one-ag-kcard-tipo { font-size: 9.5px; }
+.one-ag-tl-wrapper.mob .one-ag-kcard {
+  min-height: 30px;     /* touch target mínimo */
+  padding: 4px 6px;
+}
+.one-ag-tl-wrapper.mob .one-ag-ruler-cap {
+  width: 32px !important;
+}
+
+/* Estado visual durante drag (touch) */
+.one-ag-tl-wrapper.mob .one-ag-event-dragging { opacity: 0.4; }
+.one-ag-tl-wrapper.mob .one-ag-drop-target {
+  background: rgba(127,168,142,0.08);
+  outline: 2px dashed rgba(127,168,142,0.45);
+  outline-offset: -2px;
+}
+
+/* Bottom safe area no iPhone (notch) */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .one-ag-tl-wrapper.mob {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
