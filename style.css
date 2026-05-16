@@ -4287,12 +4287,15 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   display: block;
   width: calc(100% - 12px);
   margin: 6px 6px 5px;
-  padding: 6px 14px;
+  padding: 6px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   background: linear-gradient(180deg, #F4EBFA 0%, #E5D3F2 100%);
   border: none;
   border-radius: 14px;
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   color: #6E4F87;
   cursor: pointer;

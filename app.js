@@ -5156,6 +5156,12 @@ function renderOneAgendaPainel() {
   }
 
   kanban.innerHTML = rulerHtml + '<div class="one-ag-tl-cols one-ag-week-cols">' + colsHtml + '</div>';
+
+  // Garante que a vista semana está visível (proteção contra chamadas concorrentes)
+  document.querySelectorAll('.one-desktop-agenda .one-fin-vista').forEach(function(v) {
+    v.hidden = v.getAttribute('data-view') !== 'semana';
+  });
+
   oneInitAgendaSortable();
 }
 
