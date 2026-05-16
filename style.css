@@ -2447,6 +2447,85 @@
 .one-fin-add-row{padding:8px 0 2px;flex-shrink:0;}
 .one-fin-add-row button{background:#5C8870;color:#fff;border:none;border-radius:13px;font-size:12px;font-weight:600;padding:10px;cursor:pointer;box-shadow:0 3px 10px rgba(92,136,112,.30);width:100%;}
 
+/* ── Financeiro mobile — Fase 3: 3 cards + 2 abas ──────────────── */
+.one-fin-mob-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:0 10px 6px;}
+.one-fin-mob-header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 0 8px;flex-shrink:0;}
+.one-fin-mob-titulo{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1;}
+.one-fin-mob-logo{font-size:14px;font-weight:600;color:#3A3050;font-family:'Playfair Display',Georgia,serif;}
+.one-fin-mob-mes{font-size:10px;color:#9A94A4;letter-spacing:.3px;text-transform:uppercase;font-family:system-ui,-apple-system,sans-serif;}
+.one-fin-mob-btn-novo{width:36px;height:36px;border-radius:11px;background:#5C8870;color:#fff;border:none;font-size:20px;font-weight:600;cursor:pointer;box-shadow:0 3px 10px rgba(92,136,112,.30);line-height:1;flex-shrink:0;}
+.one-fin-mob-btn-novo:active{transform:scale(.95);}
+
+/* 3 cards slim no topo */
+.one-fin-mob-top-cards{display:grid;grid-template-columns:1fr 1fr;gap:7px;flex-shrink:0;padding:0 0 9px;}
+.one-fin-mob-card{background:#fff;border:none;border-radius:12px;padding:9px 11px;text-align:left;cursor:pointer;box-shadow:0 1px 6px rgba(92,136,112,.10);display:flex;flex-direction:column;gap:2px;font-family:system-ui,-apple-system,sans-serif;}
+.one-fin-mob-card:active{transform:scale(.98);}
+.one-fin-mob-card.pendentes{border-left:3px solid #5BA8D8;}
+.one-fin-mob-card.vencendo{border-left:3px solid #E87A7A;}
+.one-fin-mob-card.saldo{grid-column:1 / -1;background:linear-gradient(135deg,#5C8870 0%,#9B7FF0 100%);color:#fff;padding:11px 13px;border-left:none;box-shadow:0 4px 14px rgba(92,136,112,.30);}
+.one-fin-mob-card-row{display:flex;align-items:baseline;gap:6px;}
+.one-fin-mob-card-num{font-size:18px;font-weight:700;color:#3A3050;}
+.one-fin-mob-card.vencendo .one-fin-mob-card-num{color:#C0392B;}
+.one-fin-mob-card.pendentes .one-fin-mob-card-num{color:#3A6B8A;}
+.one-fin-mob-card-lbl{font-size:10.5px;color:#9A94A4;font-weight:500;}
+.one-fin-mob-card.saldo .one-fin-mob-card-lbl{color:rgba(255,255,255,.80);font-size:9.5px;text-transform:uppercase;letter-spacing:.4px;}
+.one-fin-mob-card-sub{font-size:11px;font-weight:600;color:#5A5060;}
+.one-fin-mob-card.vencendo .one-fin-mob-card-sub{color:#C0392B;}
+.one-fin-mob-card.pendentes .one-fin-mob-card-sub{color:#3A6B8A;}
+.one-fin-mob-card-saldo{font-size:22px;font-weight:600;color:#fff;letter-spacing:-.4px;margin-bottom:2px;}
+.one-fin-mob-card-stats{display:flex;gap:8px;margin-top:5px;font-size:10.5px;}
+.one-fin-mob-card-stats span{background:rgba(255,255,255,.18);padding:3px 7px;border-radius:7px;font-weight:600;color:#fff;}
+.one-fin-mob-card-stats .in{background:rgba(127,168,142,.45);}
+.one-fin-mob-card-stats .out{background:rgba(224,122,107,.45);}
+
+/* Tabs Lançamentos / Categorias */
+.one-fin-mob-tabs{display:flex;gap:4px;background:#F0E8F8;padding:3px;border-radius:10px;flex-shrink:0;margin-bottom:9px;}
+.one-fin-mob-tab{flex:1;background:transparent;border:none;font-size:11.5px;font-weight:600;color:#5A5060;padding:7px 10px;border-radius:8px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif;}
+.one-fin-mob-tab.active{background:#fff;color:#5C8870;box-shadow:0 1px 4px rgba(92,136,112,.15);}
+
+/* Vista (área de conteúdo da aba ativa) */
+.one-fin-mob-vista{flex:1;display:flex;flex-direction:column;min-height:0;}
+.one-fin-mob-vista[hidden]{display:none;}
+
+/* Filtros de período */
+.one-fin-mob-period-tabs{display:flex;gap:5px;flex-shrink:0;margin-bottom:7px;}
+.one-fin-mob-period{flex:1;background:#fff;border:1.5px solid rgba(92,136,112,.20);border-radius:9px;padding:6px;font-size:11px;font-weight:600;color:#5A5060;cursor:pointer;font-family:system-ui,-apple-system,sans-serif;}
+.one-fin-mob-period.active{background:#5C8870;border-color:#5C8870;color:#fff;}
+.one-fin-mob-period:active{transform:scale(.97);}
+
+.one-fin-mob-filtro-ativo{display:flex;align-items:center;gap:6px;background:#FFF4E0;border-radius:8px;padding:5px 8px;margin-bottom:6px;flex-shrink:0;}
+.one-fin-mob-filtro-ativo[hidden]{display:none;}
+.one-fin-mob-filtro-chip{font-size:11px;color:#C97D2E;font-weight:600;flex:1;}
+.one-fin-mob-filtro-clear{background:transparent;border:none;font-size:12px;color:#C97D2E;cursor:pointer;padding:2px 6px;line-height:1;}
+
+/* Lista de lançamentos */
+.one-fin-mob-list{flex:1;overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:5px;padding-bottom:6px;}
+.one-fin-mob-list::-webkit-scrollbar{display:none;}
+.one-fin-mob-list .one-fin-item{background:#fff;border-radius:12px;padding:8px 10px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 5px rgba(0,0,0,.05);user-select:none;-webkit-user-select:none;}
+.one-fin-mob-list .one-fin-item.pend{opacity:.70;}
+.one-fin-mob-empty{text-align:center;padding:24px 16px;color:#C0B8D0;font-size:12px;font-style:italic;}
+
+/* Aba Categorias: toggle Despesas/Receitas */
+.one-fin-mob-cat-toggle{display:flex;gap:5px;background:#F4F0EC;border-radius:9px;padding:3px;flex-shrink:0;margin-bottom:8px;}
+.one-fin-mob-cat-btn{flex:1;background:transparent;border:none;font-size:11px;font-weight:600;color:#5A5060;padding:6px 8px;border-radius:7px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif;}
+.one-fin-mob-cat-btn.active{background:#fff;color:#3A3050;box-shadow:0 1px 3px rgba(0,0,0,.10);}
+
+/* Donut */
+.one-fin-mob-donut-wrap{position:relative;height:180px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:8px;}
+.one-fin-mob-donut-wrap canvas{max-height:180px;}
+.one-fin-mob-donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
+.one-fin-mob-donut-lbl{font-size:9.5px;color:#9A94A4;text-transform:uppercase;letter-spacing:.5px;font-family:system-ui,-apple-system,sans-serif;}
+.one-fin-mob-donut-val{font-size:16px;font-weight:700;color:#3A3050;font-family:system-ui,-apple-system,sans-serif;margin-top:2px;}
+
+/* Lista de categorias (donut > barras) */
+.one-fin-mob-cat-list{flex:1;overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:5px;padding-bottom:6px;}
+.one-fin-mob-cat-list::-webkit-scrollbar{display:none;}
+.one-fin-mob-cat-row{display:flex;align-items:center;gap:8px;background:#fff;border-radius:10px;padding:7px 10px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.one-fin-mob-cat-dot{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.one-fin-mob-cat-nome{flex:1;font-size:12px;font-weight:500;color:#3A3050;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.one-fin-mob-cat-val{font-size:11.5px;font-weight:700;color:#5A5060;flex-shrink:0;}
+.one-fin-mob-cat-pct{font-size:9.5px;font-weight:700;color:#fff;padding:2px 6px;border-radius:6px;flex-shrink:0;min-width:32px;text-align:center;}
+
 /* ── Tarefas mobile (4º slide) ───────────────────────────────── */
 .one-tar-mob-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:0 10px 6px;}
 .one-tar-mob-nav{display:flex;align-items:center;justify-content:space-between;padding:4px 0 8px;flex-shrink:0;}

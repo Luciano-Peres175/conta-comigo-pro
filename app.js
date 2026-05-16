@@ -5566,16 +5566,25 @@ function renderOneAgenda() {
 }
 
 /* ── Financeiro (screen-one) ─────────────────────────────── */
+/* ── Financeiro mobile — Fase 3: 3 cards + 2 abas ─────────────── */
+/* Estado da tela mobile (independente do desktop) */
+var oneFinMobVista       = 'lancamentos';   // 'lancamentos' | 'categorias'
+var oneFinMobPeriodo     = 'mes';            // 'mes' | '30' | '15' | '7'
+var oneFinMobCatTipo     = 'despesas';       // 'despesas' | 'receitas'
+var oneFinMobFiltroAtivo = null;             // null | 'pendentes' | 'vencendo'
+var oneFinMobDonutChart  = null;
+
+function _oneFinFmt(v) {
+  return 'R$ ' + Math.abs(v||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+
 function renderOneFinanceiro() {
   var now = new Date();
-  var mes = now.getMonth();
-  var ano = now.getFullYear();
-  var mesStr = String(mes+1).padStart(2,'0');
-  var mesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-                  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  var prefix = ano + '-' + mesStr;
+  var mes = now.getMonth(), ano = now.getFullYear();
+  var mesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var prefix = ano + '-' + String(mes+1).padStart(2,'0');
 
-  var receitas = []; var despesas = []; var fixas = [];
+  var receitas = [], despesas = [], fixas = [];
   try { receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
   try { despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){}
   try { fixas    = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]'); } catch(e){}
@@ -5583,78 +5592,296 @@ function renderOneFinanceiro() {
   var recMes  = receitas.filter(function(r){ return r.data && r.data.startsWith(prefix); });
   var despMes = despesas.filter(function(d){ return d.data && d.data.startsWith(prefix); });
 
-  var totalRec   = recMes.filter(function(r){ return r.status==='Pago'; })
-                         .reduce(function(s,r){ return s+(r.valor||0); },0);
-  var totalDesp  = despMes.filter(function(d){ return d.status==='Pago'; })
-                          .reduce(function(s,d){ return s+(d.valor||0); },0);
+  var totalRec   = recMes.filter(function(r){ return r.status === 'Pago'; }).reduce(function(s,r){ return s+(r.valor||0); },0);
+  var totalDesp  = despMes.filter(function(d){ return (d.status||'').toLowerCase() === 'pago'; }).reduce(function(s,d){ return s+(d.valor||0); },0);
   var totalFixas = fixas.reduce(function(s,f){ return s+(f.valor||0); },0);
   totalDesp += totalFixas;
-  var pendente   = recMes.filter(function(r){ return r.status!=='Pago'; })
-                         .reduce(function(s,r){ return s+(r.valor||0); },0);
+  var pendenteVal = recMes.filter(function(r){ return r.status !== 'Pago'; }).reduce(function(s,r){ return s+(r.valor||0); },0);
   var saldo = totalRec - totalDesp;
 
-  function fmt(v) {
-    return 'R$ ' + Math.abs(v).toFixed(2)
-      .replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  /* Pendentes = receitas do mês não pagas */
+  var pendQtd = recMes.filter(function(r){ return r.status !== 'Pago'; }).length;
+
+  /* Vencendo = despesas não pagas com data ≤ hoje+7d */
+  var hojeISO = now.toISOString().slice(0,10);
+  var limISO  = new Date(now.getTime() + 7*86400000).toISOString().slice(0,10);
+  var venc = despMes.filter(function(d){
+    var st = (d.status||'').toLowerCase();
+    return st !== 'pago' && d.data && d.data <= limISO;
+  });
+  var vencVal = venc.reduce(function(s,d){ return s+(d.valor||0); },0);
+
+  /* Header: mês */
+  var mesEl = document.getElementById('one-fin-mob-mes');
+  if (mesEl) mesEl.textContent = mesNomes[mes].toUpperCase() + ' / ' + ano;
+
+  /* 3 cards slim */
+  function _set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+  _set('one-fin-mob-num-pend', String(pendQtd));
+  _set('one-fin-mob-val-pend', _oneFinFmt(pendenteVal));
+  _set('one-fin-mob-num-venc', String(venc.length));
+  _set('one-fin-mob-val-venc', _oneFinFmt(vencVal));
+  _set('one-fin-mob-saldo',    (saldo < 0 ? '−' : '') + _oneFinFmt(saldo));
+  _set('one-fin-mob-ent',      _oneFinFmt(totalRec));
+  _set('one-fin-mob-sai',      _oneFinFmt(totalDesp));
+  _set('one-fin-mob-pen',      _oneFinFmt(pendenteVal));
+
+  /* Render da aba ativa */
+  if (oneFinMobVista === 'lancamentos') {
+    oneFinMobRenderLista(receitas, despesas);
+  } else {
+    oneFinMobRenderCategorias();
   }
+}
 
-  var mesEl    = document.getElementById('one-fin-mes');
-  var saldoEl  = document.getElementById('one-fin-saldo');
-  var entEl    = document.getElementById('one-fin-entradas');
-  var saiEl    = document.getElementById('one-fin-saidas');
-  var penEl    = document.getElementById('one-fin-pendente-one');
-  var listEl   = document.getElementById('one-fin-list');
+/* Troca aba Lançamentos / Categorias */
+function oneFinMobSetVista(vista) {
+  oneFinMobVista = vista;
+  document.querySelectorAll('.one-fin-mob-tab').forEach(function(b){
+    b.classList.toggle('active', b.dataset.vista === vista);
+  });
+  document.querySelectorAll('.one-fin-mob-vista').forEach(function(v){
+    v.hidden = v.dataset.vista !== vista;
+  });
+  if (vista === 'lancamentos') oneFinMobRenderLista();
+  else oneFinMobRenderCategorias();
+}
 
-  if (mesEl)   mesEl.textContent   = mesNomes[mes].toUpperCase();
-  if (saldoEl) saldoEl.textContent = (saldo < 0 ? '−' : '') + fmt(saldo);
-  if (entEl)   entEl.textContent   = fmt(totalRec);
-  if (saiEl)   saiEl.textContent   = fmt(totalDesp);
-  if (penEl)   penEl.textContent   = fmt(pendente);
+/* Filtro de período */
+function oneFinMobSetPeriodo(btn) {
+  oneFinMobPeriodo = btn.dataset.periodo;
+  document.querySelectorAll('#one-fin-mob-period .one-fin-mob-period').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  oneFinMobRenderLista();
+}
 
+/* Filtros do top-card */
+function oneFinMobFiltrarPendentes() {
+  oneFinMobFiltroAtivo = oneFinMobFiltroAtivo === 'pendentes' ? null : 'pendentes';
+  if (oneFinMobVista !== 'lancamentos') oneFinMobSetVista('lancamentos');
+  oneFinMobRenderLista();
+}
+function oneFinMobFiltrarVencendo() {
+  oneFinMobFiltroAtivo = oneFinMobFiltroAtivo === 'vencendo' ? null : 'vencendo';
+  if (oneFinMobVista !== 'lancamentos') oneFinMobSetVista('lancamentos');
+  oneFinMobRenderLista();
+}
+function oneFinMobLimparFiltro() {
+  oneFinMobFiltroAtivo = null;
+  oneFinMobRenderLista();
+}
+
+/* Aba Lançamentos: lista filtrada por período + filtros opcionais */
+function oneFinMobRenderLista(receitasParam, despesasParam) {
+  var listEl = document.getElementById('one-fin-mob-list');
   if (!listEl) return;
 
+  var receitas = receitasParam, despesas = despesasParam;
+  if (!receitas) { try { receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){ receitas = []; } }
+  if (!despesas) { try { despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){ despesas = []; } }
+
+  /* Janela de período */
+  var hoje = new Date();
+  var dataInicio;
+  if (oneFinMobPeriodo === 'mes') {
+    dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  } else {
+    var dias = parseInt(oneFinMobPeriodo, 10) || 30;
+    dataInicio = new Date(hoje.getTime() - dias*86400000);
+  }
+  var inicioISO = dataInicio.toISOString().slice(0,10);
+
   var items = [];
-  recMes.forEach(function(r){
-    items.push({data:r.data, nome:r.nome||r.tipo||'Receita',
-                tipo:'rec', valor:r.valor||0, status:r.status, cat:r.categoria});
+  receitas.forEach(function(r){
+    if (!r.data || r.data < inicioISO) return;
+    items.push({key:'receitas', id:r.id, data:r.data, nome:r.nome||r.tipo||'Receita', tipo:'rec', valor:r.valor||0, status:r.status, cat:r.categoria});
   });
-  despMes.forEach(function(d){
-    items.push({data:d.data, nome:d.descricao||'Despesa',
-                tipo:'desp', valor:d.valor||0, status:d.status, cat:d.categoria});
+  despesas.forEach(function(d){
+    if (!d.data || d.data < inicioISO) return;
+    items.push({key:'despesas', id:d.id, data:d.data, nome:d.descricao||d.nome||'Despesa', tipo:'desp', valor:d.valor||0, status:d.status, cat:d.categoria});
   });
+
+  /* Aplica filtro do top-card */
+  var chipEl  = document.getElementById('one-fin-mob-filtro-chip');
+  var chipWrap= document.getElementById('one-fin-mob-filtro-ativo');
+  if (oneFinMobFiltroAtivo === 'pendentes') {
+    items = items.filter(function(it){ return it.tipo === 'rec' && it.status !== 'Pago'; });
+    if (chipEl)  chipEl.textContent = '⏳ Apenas receitas pendentes';
+    if (chipWrap) chipWrap.hidden = false;
+  } else if (oneFinMobFiltroAtivo === 'vencendo') {
+    var lim = new Date(hoje.getTime() + 7*86400000).toISOString().slice(0,10);
+    items = items.filter(function(it){ return it.tipo === 'desp' && (it.status||'').toLowerCase() !== 'pago' && it.data <= lim; });
+    if (chipEl)  chipEl.textContent = '⚠️ Apenas despesas vencendo';
+    if (chipWrap) chipWrap.hidden = false;
+  } else {
+    if (chipWrap) chipWrap.hidden = true;
+  }
+
   items.sort(function(a,b){ return b.data.localeCompare(a.data); });
-  items = items.slice(0, 10);
+
+  if (items.length === 0) {
+    listEl.innerHTML = '<div class="one-fin-mob-empty">Nenhum lançamento no período</div>';
+    return;
+  }
 
   var catIcons = {
     'Atendimento':'🩺','Avaliação':'📋','Capacitação':'📚',
     'Material Estudo':'📖','Equipamentos':'🔧','Alimentação':'🍽️',
     'Transporte':'🚗','Saúde':'💊','default':'💰'
   };
-
   listEl.innerHTML = '';
-  if (items.length === 0) {
-    listEl.innerHTML = '<p style="text-align:center;font-size:12px;color:#9A94A4;'
-      + 'padding:20px 0;font-family:system-ui;">Nenhum lançamento este mês</p>';
-    return;
-  }
   items.forEach(function(item){
     var icon  = catIcons[item.cat] || (item.tipo==='rec' ? '💚' : '🔴');
     var bg    = item.tipo==='rec' ? '#EDF7F2' : '#FDF2F2';
     var parts = (item.data||'----').split('-');
     var dateLabel = (parts[2]||'?') + '/' + (parts[1]||'?');
+    var stLow = (item.status||'').toLowerCase();
+    var ehPend = item.tipo==='rec' ? item.status !== 'Pago' : stLow !== 'pago';
     var el = document.createElement('div');
-    el.className = 'one-fin-item';
+    el.className = 'one-fin-item' + (ehPend ? ' pend' : '');
+    el.dataset.key = item.key;
+    el.dataset.id  = item.id;
     el.innerHTML = '<div class="one-fin-item-icon" style="background:' + bg + '">' + icon + '</div>'
       + '<div class="one-fin-item-info">'
-      + '<div class="one-fin-item-name">' + item.nome + '</div>'
-      + '<div class="one-fin-item-date">' + dateLabel
-        + (item.status!=='Pago' ? ' · pendente' : '') + '</div>'
+      + '<div class="one-fin-item-name">' + (item.nome+'').replace(/</g,'&lt;') + '</div>'
+      + '<div class="one-fin-item-date">' + dateLabel + (ehPend ? ' · pendente' : '') + '</div>'
       + '</div>'
       + '<div class="one-fin-item-value ' + item.tipo + '">'
-      + (item.tipo==='rec' ? '+' : '−') + fmt(item.valor) + '</div>';
+      + (item.tipo==='rec' ? '+' : '−') + _oneFinFmt(item.valor)
+      + '</div>';
     listEl.appendChild(el);
   });
+  oneFinMobBindItens(listEl);
 }
+
+/* Long-press num lançamento → editar / excluir */
+function oneFinMobBindItens(root) {
+  var items = root.querySelectorAll('.one-fin-item');
+  items.forEach(function(card) {
+    var pressTimer = null, startX = 0, startY = 0, moved = false;
+    function clear() { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } }
+    card.addEventListener('pointerdown', function(ev) {
+      startX = ev.clientX; startY = ev.clientY; moved = false;
+      pressTimer = setTimeout(function() {
+        if (moved) return;
+        oneFinMobAcoesItem(card.dataset.key, card.dataset.id);
+      }, 450);
+    });
+    card.addEventListener('pointermove', function(ev) {
+      if (Math.abs(ev.clientX - startX) > 8 || Math.abs(ev.clientY - startY) > 8) { moved = true; clear(); }
+    });
+    card.addEventListener('pointerup', clear);
+    card.addEventListener('pointercancel', clear);
+    card.addEventListener('pointerleave', clear);
+  });
+}
+function oneFinMobAcoesItem(key, id) {
+  /* V1 — prompt nativo. Mesmo padrão das Tarefas. P024 cobre a versão visual. */
+  var acao = window.prompt('Lançamento — digite "e" pra editar ou "x" pra excluir:', 'e');
+  if (!acao) return;
+  acao = acao.trim().toLowerCase();
+  if (acao === 'e' && typeof oneFinModalEditar === 'function') {
+    oneFinModalEditar(key, id);
+  } else if (acao === 'x') {
+    if (!confirm('Excluir este lançamento?')) return;
+    var lista = [];
+    try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+    lista = lista.filter(function(x){ return String(x.id) !== String(id); });
+    localStorage.setItem(oneU(key), JSON.stringify(lista));
+    if (typeof supaDelete === 'function') supaDelete(key, id);
+    if (typeof oneToast === 'function') oneToast('Lançamento excluído.');
+    renderOneFinanceiro();
+    if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  }
+}
+
+/* Aba Categorias: toggle + donut + lista */
+function oneFinMobSetCatTipo(tipo) {
+  oneFinMobCatTipo = tipo;
+  document.querySelectorAll('.one-fin-mob-cat-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.tipo === tipo);
+  });
+  oneFinMobRenderCategorias();
+}
+
+function oneFinMobRenderCategorias() {
+  var dados;
+  try {
+    dados = (oneFinMobCatTipo === 'receitas')
+      ? JSON.parse(localStorage.getItem(oneU('receitas')) || '[]')
+      : JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
+  } catch(e) { dados = []; }
+
+  var hoje = new Date();
+  var mes = hoje.getMonth(), ano = hoje.getFullYear();
+  var doMes = dados.filter(function(it){
+    if (!it.data) return false;
+    var d = new Date(it.data + 'T00:00:00');
+    return d.getMonth() === mes && d.getFullYear() === ano;
+  });
+
+  var grupos = {};
+  doMes.forEach(function(it){
+    var cat = it.categoria || it.tipo || 'Outros';
+    grupos[cat] = (grupos[cat] || 0) + (Number(it.valor) || 0);
+  });
+  var entries = Object.entries(grupos)
+    .map(function(e){ return { categoria: e[0], total: e[1] }; })
+    .sort(function(a,b){ return b.total - a.total; });
+  var totalGeral = entries.reduce(function(s,e){ return s + e.total; }, 0);
+
+  var totalEl = document.getElementById('one-fin-mob-donut-total');
+  if (totalEl) totalEl.textContent = _oneFinFmt(totalGeral);
+
+  var palette = ['#7FA88E','#D4A655','#9B72B0','#5B7CFA','#FF8B5A','#27856A','#E67BB0','#7B5CF0','#C0392B','#B8860B'];
+
+  var listEl = document.getElementById('one-fin-mob-cat-list');
+  if (listEl) {
+    if (!entries.length) {
+      listEl.innerHTML = '<div class="one-fin-mob-empty">Sem ' + oneFinMobCatTipo + ' neste mês</div>';
+    } else {
+      listEl.innerHTML = entries.map(function(e, i){
+        var cat = (typeof oneFinCatIcon === 'function')
+          ? oneFinCatIcon(e.categoria)
+          : { emoji:(oneFinMobCatTipo==='receitas'?'💚':'🔴'), cor:'#6B7F6F', bg:'#F2F6F1' };
+        var pct = totalGeral > 0 ? Math.round((e.total / totalGeral) * 100) : 0;
+        return '<div class="one-fin-mob-cat-row">' +
+                 '<div class="one-fin-mob-cat-dot" style="background:' + cat.bg + ';color:' + cat.cor + '">' + cat.emoji + '</div>' +
+                 '<div class="one-fin-mob-cat-nome">' + e.categoria.replace(/</g,'&lt;') + '</div>' +
+                 '<div class="one-fin-mob-cat-val">' + _oneFinFmt(e.total) + '</div>' +
+                 '<div class="one-fin-mob-cat-pct" style="background:' + palette[i % palette.length] + '">' + pct + '%</div>' +
+               '</div>';
+      }).join('');
+    }
+  }
+
+  /* Donut */
+  var canvas = document.getElementById('one-fin-mob-donut');
+  if (!canvas || typeof Chart === 'undefined') return;
+  if (oneFinMobDonutChart) { try { oneFinMobDonutChart.destroy(); } catch(e){} }
+  if (!entries.length) { oneFinMobDonutChart = null; return; }
+  oneFinMobDonutChart = new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: entries.map(function(e){ return e.categoria; }),
+      datasets: [{
+        data: entries.map(function(e){ return e.total; }),
+        backgroundColor: entries.map(function(_, i){ return palette[i % palette.length]; }),
+        borderColor: '#fff', borderWidth: 3, hoverOffset: 5
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true, cutout: '70%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.label + ': ' + _oneFinFmt(ctx.parsed); } } }
+      },
+      animation: { duration: 350 }
+    }
+  });
+}
+
+/* (resíduo do renderOneFinanceiro antigo limpo na Fase 3 — 16/05/2026) */
 
 /* ── Tarefas mobile — Fase 4: kanban portado ─────────────────── */
 /* Filtros mobile (independentes do desktop pra não brigar com a sidebar) */
