@@ -7468,12 +7468,23 @@ function oneToast(msg) {
       'Dia a dia / contexto: ' + (r.contexto || '(não informado)') + '\n' +
       'Tom preferido: ' + (r.tom || '(não informado)');
 
+    // Preserva bio_pinah pré-injetada manualmente no Supabase (ex: Lê em 16/05/2026).
+    // Se a row do usuário já tem bio com conteúdo, o onboarding NÃO sobrescreve —
+    // ele só marca onboarded:true pra não disparar de novo na próxima sessão.
+    // As respostas do usuário ficam só na experiência da tela (não persistem).
+    var bioJaExiste = !!(window.authProfile
+      && window.authProfile.bio_pinah
+      && String(window.authProfile.bio_pinah).trim().length > 0);
+
     // Tenta salvar no Supabase
     if (window.supa && window.authUser && window.authUser.id) {
       try {
+        var payload = bioJaExiste
+          ? { onboarded: true }
+          : { onboarded: true, bio_pinah: bio };
         var res = await window.supa
           .from('profiles')
-          .update({ onboarded: true, bio_pinah: bio })
+          .update(payload)
           .eq('id', window.authUser.id);
         if (res.error) {
           console.error('[onboarding] erro ao salvar profile:', res.error);
@@ -7485,7 +7496,10 @@ function oneToast(msg) {
         // Atualiza o perfil local
         if (window.authProfile) {
           window.authProfile.onboarded = true;
-          window.authProfile.bio_pinah = bio;
+          if (!bioJaExiste) window.authProfile.bio_pinah = bio;
+        }
+        if (bioJaExiste) {
+          console.log('[onboarding] bio_pinah preexistente detectada — respostas do onboarding NÃO foram salvas, bio rica preservada.');
         }
       } catch (e) {
         console.error('[onboarding] exceção ao salvar:', e);
