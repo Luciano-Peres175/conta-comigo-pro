@@ -4145,13 +4145,11 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   min-width: 0;
 }
 
-/* Body row: ruler + colunas (sem headers) */
+/* Body row: ruler + colunas (sem headers) — altura natural para o wrapper rolar */
 .one-ag-week-main {
   display: flex;
   flex-direction: row;
-  flex: 1;
   padding: 0 8px 8px 0;
-  min-height: 0;
 }
 
 /* Régua das horas — sticky à esquerda (dentro do .one-ag-week-main) */
