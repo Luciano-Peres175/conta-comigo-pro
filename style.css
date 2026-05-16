@@ -3131,7 +3131,8 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   display: flex;
   flex-direction: column;
 }
-.one-desktop-agenda .one-fin-vista {
+.one-desktop-agenda .one-fin-vista[hidden] { display: none !important; }
+.one-desktop-agenda .one-fin-vista:not([hidden]) {
   flex: 1;
   min-height: 0;
   display: flex;
