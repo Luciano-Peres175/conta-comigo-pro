@@ -5349,14 +5349,24 @@ function renderOneFinanceiroPainel() {
     rFil = []; // vencendo é só de despesas
   }
 
+  /* Pra instâncias virtuais de fixas (vêm com _fixa=true), o editar/excluir
+     precisa apontar pra tabela das FIXAS, não pra receitas/despesas reais.
+     Sem isso, oneFinModalEditar busca o id da instância virtual dentro de
+     'despesas' e não acha — sai em silêncio. */
   var lancamentos = rFil.map(function(r){
-    return { tipo:'in', key:'receitas', id:r.id, nome:r.nome || r.descricao || 'Receita',
+    var ehFixa = !!r._fixa;
+    return { tipo:'in', key: ehFixa ? 'receitasFixas' : 'receitas',
+             id: ehFixa ? (r._fixaId || r.id) : r.id,
+             nome:r.nome || r.descricao || 'Receita',
              categoria: r.categoria || r.tipo || '', valor:Number(r.valor)||0, data:r.data,
-             status: r.status || '' };
+             status: r.status || '', _fixa: ehFixa };
   }).concat(dFil.map(function(d){
-    return { tipo:'out', key:'despesas', id:d.id, nome:d.descricao || d.nome || 'Despesa',
+    var ehFixa = !!d._fixa;
+    return { tipo:'out', key: ehFixa ? 'despesasFixas' : 'despesas',
+             id: ehFixa ? (d._fixaId || d.id) : d.id,
+             nome:d.descricao || d.nome || 'Despesa',
              categoria: d.categoria || '', valor:Number(d.valor)||0, data:d.data,
-             status: d.status || '' };
+             status: d.status || '', _fixa: ehFixa };
   })).sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
 
   if (!lancamentos.length) {
