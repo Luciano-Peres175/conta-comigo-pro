@@ -8662,12 +8662,122 @@ function oneFinModalRefreshCategorias() {
   sel.innerHTML = '';
   lista.forEach(function(c) {
     var o = document.createElement('option');
-    o.value = c; o.textContent = c;
+    var ico = (typeof oneFinCatIcon === 'function') ? oneFinCatIcon(c).emoji : '';
+    o.value = c;
+    o.textContent = (ico ? ico + ' ' : '') + c;
     sel.appendChild(o);
   });
   if (atual && lista.indexOf(atual) !== -1) sel.value = atual;
 }
 window.oneFinModalRefreshCategorias = oneFinModalRefreshCategorias;
+
+/* Lista as contas no select do modal de lançamento.
+   Receita: só contas tipo banco.
+   Despesa: banco + cartão, agrupados por <optgroup>. */
+function oneFinModalRefreshContas() {
+  var tipo = window.oneFinModalTipo || 'receita';
+  var sel = document.getElementById('one-fin-modal-conta');
+  if (!sel) return;
+  var atual = sel.value;
+  var contas  = oneFinGetContas();
+  var bancos  = contas.filter(function(c){ return c.tipo === 'banco';  });
+  var cartoes = contas.filter(function(c){ return c.tipo === 'cartao'; });
+
+  sel.innerHTML = '';
+
+  if (tipo === 'receita') {
+    if (bancos.length === 0) {
+      var oVazio = document.createElement('option');
+      oVazio.value = '';
+      oVazio.textContent = '— cadastre um banco —';
+      sel.appendChild(oVazio);
+      sel.disabled = true;
+    } else {
+      sel.disabled = false;
+      bancos.forEach(function(c){
+        var o = document.createElement('option');
+        o.value = c.id;
+        o.textContent = (c.icone || '🏦') + ' ' + c.nome;
+        sel.appendChild(o);
+      });
+    }
+  } else {
+    if (bancos.length === 0 && cartoes.length === 0) {
+      var oVazio2 = document.createElement('option');
+      oVazio2.value = '';
+      oVazio2.textContent = '— cadastre uma conta —';
+      sel.appendChild(oVazio2);
+      sel.disabled = true;
+    } else {
+      sel.disabled = false;
+      if (bancos.length > 0) {
+        var gB = document.createElement('optgroup');
+        gB.label = 'Bancos';
+        bancos.forEach(function(c){
+          var o = document.createElement('option');
+          o.value = c.id;
+          o.textContent = (c.icone || '🏦') + ' ' + c.nome;
+          gB.appendChild(o);
+        });
+        sel.appendChild(gB);
+      }
+      if (cartoes.length > 0) {
+        var gC = document.createElement('optgroup');
+        gC.label = 'Cartões de crédito';
+        cartoes.forEach(function(c){
+          var o = document.createElement('option');
+          o.value = c.id;
+          o.textContent = (c.icone || '💳') + ' ' + c.nome;
+          gC.appendChild(o);
+        });
+        sel.appendChild(gC);
+      }
+    }
+  }
+
+  if (atual) {
+    var existe = Array.prototype.some.call(sel.options, function(op){ return op.value === atual; });
+    if (existe) sel.value = atual;
+  }
+  oneFinModalAtualizarPreviewFatura();
+}
+window.oneFinModalRefreshContas = oneFinModalRefreshContas;
+
+/* Atalho: abre o modal de Nova Conta a partir do modal de lançamento.
+   Fecha o de lançamento; ao salvar a conta, o usuário reabre o lançamento. */
+function oneFinModalNovaConta() {
+  oneFinModalFechar();
+  if (typeof oneFinContaModalAbrir === 'function') oneFinContaModalAbrir();
+}
+window.oneFinModalNovaConta = oneFinModalNovaConta;
+
+/* Quando despesa + cartão, mostra "Cai na fatura de MM/YYYY" embaixo do select.
+   Caso contrário, esconde o preview. */
+function oneFinModalAtualizarPreviewFatura() {
+  var prev = document.getElementById('one-fin-modal-fatura-preview');
+  if (!prev) return;
+  var tipo  = window.oneFinModalTipo || 'receita';
+  var rec   = window.oneFinModalRecorrencia || 'esporadica';
+  var selC  = document.getElementById('one-fin-modal-conta');
+  var contaId = selC ? selC.value : '';
+  if (tipo !== 'despesa' || !contaId) { prev.style.display = 'none'; return; }
+  var conta = oneFinGetConta(contaId);
+  if (!conta || conta.tipo !== 'cartao') { prev.style.display = 'none'; return; }
+  if (rec === 'fixa') {
+    prev.textContent = 'Despesa fixa no cartão: cada mês cai na fatura correspondente.';
+    prev.style.display = '';
+    return;
+  }
+  var dataInp = document.getElementById('one-fin-modal-data');
+  var dataVal = dataInp ? dataInp.value : '';
+  if (!dataVal) { prev.style.display = 'none'; return; }
+  var fatura = oneFinCalcularFatura(dataVal, conta.diaFechamento);
+  if (!fatura) { prev.style.display = 'none'; return; }
+  var partes = fatura.split('-');
+  prev.textContent = 'Cai na fatura de ' + partes[1] + '/' + partes[0] + '.';
+  prev.style.display = '';
+}
+window.oneFinModalAtualizarPreviewFatura = oneFinModalAtualizarPreviewFatura;
 
 function oneFinModalNovaCategoria() {
   var tipo = window.oneFinModalTipo || 'receita';
@@ -8706,6 +8816,7 @@ function oneFinModalSetRecorrencia(rec) {
   setDisplay('one-fin-modal-dia-wrap',     ehFixa);
   setDisplay('one-fin-modal-inicio-wrap',  ehFixa);
   setDisplay('one-fin-modal-parc-wrap',   !ehFixa);
+  if (typeof oneFinModalAtualizarPreviewFatura === 'function') oneFinModalAtualizarPreviewFatura();
 }
 window.oneFinModalSetRecorrencia = oneFinModalSetRecorrencia;
 
@@ -8730,6 +8841,14 @@ function oneFinModalAbrir(tipoInicial) {
   oneFinModalSetTipo(tipoInicial || 'receita');
   oneFinModalSetRecorrencia('esporadica');
   oneFinModalToggleParcelas();
+
+  /* Listener da data atualiza preview da fatura (idempotente) */
+  var dataInp = document.getElementById('one-fin-modal-data');
+  if (dataInp && !dataInp.dataset.bindFatura) {
+    dataInp.addEventListener('change', oneFinModalAtualizarPreviewFatura);
+    dataInp.dataset.bindFatura = '1';
+  }
+
   modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-fin-modal-nome').focus(); }, 100);
 }
@@ -8767,8 +8886,21 @@ function oneFinModalEditar(key, id) {
     }
     if (catSel) catSel.value = catVal;
   }
+  /* Carrega contaId no select (se a conta ainda existir) */
+  var contaSel = document.getElementById('one-fin-modal-conta');
+  if (contaSel && it.contaId) {
+    var existe = Array.prototype.some.call(contaSel.options, function(op){ return op.value === String(it.contaId); });
+    if (existe) contaSel.value = String(it.contaId);
+  }
   oneFinModalSetRecorrencia(ehFixa ? 'fixa' : 'esporadica');
   oneFinModalToggleParcelas();
+
+  var dataInp = document.getElementById('one-fin-modal-data');
+  if (dataInp && !dataInp.dataset.bindFatura) {
+    dataInp.addEventListener('change', oneFinModalAtualizarPreviewFatura);
+    dataInp.dataset.bindFatura = '1';
+  }
+  oneFinModalAtualizarPreviewFatura();
 
   modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-fin-modal-nome').focus(); }, 100);
@@ -8795,6 +8927,7 @@ function oneFinModalSetTipo(tipo) {
       : '<option value="pendente">Pendente</option><option value="pago">Pago</option>';
   }
   oneFinModalRefreshCategorias();
+  oneFinModalRefreshContas();
 }
 window.oneFinModalSetTipo = oneFinModalSetTipo;
 
@@ -8806,11 +8939,26 @@ function oneFinModalSalvar() {
   var status  = document.getElementById('one-fin-modal-status').value;
   var tipo    = window.oneFinModalTipo || 'receita';
   var rec     = window.oneFinModalRecorrencia || 'esporadica';
+  var contaId = (document.getElementById('one-fin-modal-conta').value || '').trim();
 
   if (!nome || !valor) {
     if (typeof oneToast === 'function') oneToast('Preencha descrição e valor.', 'error');
     return;
   }
+  if (!contaId) {
+    if (typeof oneToast === 'function') oneToast('Escolha uma conta. Se ainda não tem, clica em + Nova.', 'error');
+    return;
+  }
+  var contaSel = oneFinGetConta(contaId);
+  if (!contaSel) {
+    if (typeof oneToast === 'function') oneToast('Conta inválida.', 'error');
+    return;
+  }
+  if (tipo === 'receita' && contaSel.tipo !== 'banco') {
+    if (typeof oneToast === 'function') oneToast('Receita só entra em conta tipo banco.', 'error');
+    return;
+  }
+  var ehCartao = (contaSel.tipo === 'cartao');
 
   var uid = function() { return (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2,8); };
 
@@ -8826,13 +8974,15 @@ function oneFinModalSalvar() {
       if (idxF >= 0) {
         objF = Object.assign(listaF[idxF], {
           nome: nome, descricao: nome, valor: valor, categoria: cat,
-          tipo: tipo, recorrencia: 'fixa', diaDoMes: diaDoMes, inicio: inicio
+          tipo: tipo, recorrencia: 'fixa', diaDoMes: diaDoMes, inicio: inicio,
+          contaId: contaId
         });
       }
     } else {
       objF = {
         id: uid(), nome: nome, descricao: nome, valor: valor, categoria: cat,
         tipo: tipo, recorrencia: 'fixa', diaDoMes: diaDoMes, inicio: inicio,
+        contaId: contaId,
         criado: new Date().toISOString()
       };
       listaF.push(objF);
@@ -8850,6 +9000,10 @@ function oneFinModalSalvar() {
     var parcTotal  = parseInt(document.getElementById('one-fin-modal-parc-total').value, 10) || 1;
     var parcInterv = document.getElementById('one-fin-modal-parc-intervalo').value;
 
+    var faturaPara = function(dataStr) {
+      return ehCartao ? oneFinCalcularFatura(dataStr, contaSel.diaFechamento) : null;
+    };
+
     if (id) {
       /* Edição: trata como lançamento único (não recriamos parcelas) */
       var idxE = listaE.findIndex(function(x){ return String(x.id) === String(id); });
@@ -8857,7 +9011,9 @@ function oneFinModalSalvar() {
         var objE = Object.assign(listaE[idxE], {
           nome: nome, descricao: nome, valor: valor, data: data, categoria: cat,
           tipo: tipo, recorrencia: 'esporadica',
-          status: (tipo === 'receita') ? status : (status || 'pago')
+          status: (tipo === 'receita') ? status : (status || 'pago'),
+          contaId: contaId,
+          faturaMesAno: faturaPara(data)
         });
         localStorage.setItem(oneU(keyE), JSON.stringify(listaE));
         if (typeof supaUpsert === 'function') supaUpsert(keyE, objE);
@@ -8881,6 +9037,8 @@ function oneFinModalSalvar() {
           tipo: tipo, recorrencia: 'esporadica',
           loteId: loteNovoId, parcelaAtual: i, parcelasTotal: parcTotal,
           status: 'pendente',
+          contaId: contaId,
+          faturaMesAno: faturaPara(pData),
           criado: new Date().toISOString()
         };
         listaE.push(objP);
@@ -8893,6 +9051,8 @@ function oneFinModalSalvar() {
         id: uid(), nome: nome, descricao: nome, valor: valor, data: data, categoria: cat,
         tipo: tipo, recorrencia: 'esporadica',
         status: (tipo === 'receita') ? status : (status || 'pago'),
+        contaId: contaId,
+        faturaMesAno: faturaPara(data),
         criado: new Date().toISOString()
       };
       listaE.push(objU);
@@ -8905,6 +9065,7 @@ function oneFinModalSalvar() {
   if (typeof oneToast === 'function') oneToast('✓ Lançamento salvo!');
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
   if (typeof renderDesktopSidebar === 'function') renderDesktopSidebar();
+  if (typeof oneFinRenderContas === 'function') oneFinRenderContas();
 }
 window.oneFinModalSalvar = oneFinModalSalvar;
 

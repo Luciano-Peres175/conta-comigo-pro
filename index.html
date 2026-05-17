@@ -2069,6 +2069,14 @@
       <label class="one-modal-label">Início (a partir de qual mês)</label>
       <input id="one-fin-modal-inicio" class="one-modal-input" type="month">
     </div>
+    <div class="one-modal-field" id="one-fin-modal-conta-wrap">
+      <label class="one-modal-label">Conta</label>
+      <div style="display:flex; gap:6px; align-items:stretch">
+        <select id="one-fin-modal-conta" class="one-modal-select" style="flex:1" onchange="oneFinModalAtualizarPreviewFatura()"></select>
+        <button type="button" class="one-modal-btn-cancel" style="padding:0 12px; white-space:nowrap" onclick="oneFinModalNovaConta()">+ Nova</button>
+      </div>
+      <div id="one-fin-modal-fatura-preview" style="display:none; font-size:11px; color:rgba(0,0,0,0.55); margin-top:6px; line-height:1.4"></div>
+    </div>
     <div class="one-modal-field">
       <label class="one-modal-label">Categoria</label>
       <div style="display:flex; gap:6px; align-items:stretch">
