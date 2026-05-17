@@ -82,6 +82,29 @@ const TOOLS = [
       },
       required: ['titulo', 'conteudo']
     }
+  },
+  {
+    name: 'buscar_nota',
+    description: 'Busca notas no Segundo Cérebro por termo no título, conteúdo ou tags. Use quando o usuário pedir para encontrar, procurar ou listar notas sobre algum assunto (ex: "tem alguma nota sobre dermatite?", "acha tudo que tem da Keylla", "me mostra as notas sobre nutrição"). Retorna o CONTEÚDO COMPLETO das notas que batem, pra você responder de verdade ao usuário.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        termo: { type: 'string', description: 'Texto a buscar (título, conteúdo ou tags). Busca literal, case-insensitive.' },
+        max:   { type: 'number', description: 'Quantas notas retornar no máximo. Padrão: 3.' }
+      },
+      required: ['termo']
+    }
+  },
+  {
+    name: 'ler_nota',
+    description: 'Lê o conteúdo COMPLETO de uma nota específica do Segundo Cérebro. Use quando o usuário pedir pra ver uma nota inteira que você já sabe que existe (porque viu no contexto ou em busca anterior), ex: "me lê o exame de citologia da Pinah", "abre a prescrição da imunoterapia". Recebe id da nota OU trecho do título.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        identificador: { type: 'string', description: 'ID exato da nota OU trecho do título que identifica a nota. Se ambíguo, retorna a primeira que bate.' }
+      },
+      required: ['identificador']
+    }
   }
 ];
 
@@ -338,8 +361,9 @@ module.exports = async (req, res) => {
             if (currentBlock?.type === 'tool_use') {
               try {
                 const input = JSON.parse(currentBlock.inputBuffer || '{}');
-                res.write(`data: ${JSON.stringify({ tool: currentBlock.name, input })}\n\n`);
-                console.log('[pinah-chat] tool_use:', currentBlock.name, JSON.stringify(input));
+                // id é necessário pra fazer multi-turn tool use (frontend pareia tool_result)
+                res.write(`data: ${JSON.stringify({ tool: currentBlock.name, input, id: currentBlock.id })}\n\n`);
+                console.log('[pinah-chat] tool_use:', currentBlock.name, currentBlock.id, JSON.stringify(input));
               } catch (parseErr) {
                 console.error('[pinah-chat] Erro ao parsear tool input:', parseErr, currentBlock.inputBuffer);
               }

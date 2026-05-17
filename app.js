@@ -3535,8 +3535,87 @@ function pinahExecutarTool(nome, input) {
     case 'criar_tarefa':        pinahCriarTarefa(input);        break;
     case 'registrar_transacao': pinahRegistrarTransacao(input); break;
     case 'criar_nota':          pinahCriarNota(input);          break;
+    /* Tools de leitura: não modificam estado, só consultam.
+       O resultado é retornado pra pinahEnviar via pinahExecutarToolLeitura(). */
+    case 'buscar_nota':         break; // tratado em pinahEnviar via pinahExecutarToolLeitura
+    case 'ler_nota':            break;
     default: console.warn('[Pinah] tool desconhecida:', nome);
   }
+}
+
+/* ─── Tools de LEITURA — retornam dados pra Pinah usar na resposta ─────
+   (P028) Estas tools não escrevem nada. São consultadas pelo pinahEnviar
+   pra montar um tool_result que volta pra Pinah numa segunda chamada,
+   permitindo que ela responda com base nas notas encontradas.
+   ──────────────────────────────────────────────────────────────────── */
+
+function pinahExecutarToolLeitura(nome, input) {
+  switch (nome) {
+    case 'buscar_nota': return pinahBuscarNotaLocal(input.termo || '', input.max || 3);
+    case 'ler_nota':    return pinahLerNotaLocal(input.identificador || '');
+    default: return { erro: 'tool de leitura desconhecida: ' + nome };
+  }
+}
+
+function pinahBuscarNotaLocal(termo, max) {
+  var notas = _pinahGetSet('notas_cerebro').get();
+  var t = String(termo || '').toLowerCase().trim();
+  if (!t) return { encontradas: 0, notas: [], aviso: 'Termo de busca vazio.' };
+
+  var bate = notas.filter(function(n) {
+    var titulo    = String(n.titulo    || '').toLowerCase();
+    var conteudo  = String(n.conteudo  || '').toLowerCase();
+    var categoria = String(n.categoria || '').toLowerCase();
+    var tags      = (Array.isArray(n.tags) ? n.tags : []).join(' ').toLowerCase();
+    return titulo.indexOf(t) !== -1
+        || conteudo.indexOf(t) !== -1
+        || categoria.indexOf(t) !== -1
+        || tags.indexOf(t) !== -1;
+  });
+
+  /* Ordena por data desc (mais recente primeiro) e limita */
+  bate.sort(function(a, b) { return String(b.criadoEm || '').localeCompare(String(a.criadoEm || '')); });
+  var top = bate.slice(0, Math.max(1, Math.min(max || 3, 10)));
+
+  return {
+    encontradas: bate.length,
+    retornadas:  top.length,
+    notas: top.map(function(n) {
+      return {
+        id:        n.id,
+        titulo:    n.titulo,
+        categoria: n.categoria,
+        tags:      n.tags,
+        criadoEm:  n.criadoEm,
+        conteudo:  String(n.conteudo || '')
+      };
+    })
+  };
+}
+
+function pinahLerNotaLocal(identificador) {
+  var notas = _pinahGetSet('notas_cerebro').get();
+  var ident = String(identificador || '').toLowerCase().trim();
+  if (!ident) return { erro: 'Identificador vazio.' };
+
+  /* Tenta por id exato primeiro */
+  var nota = notas.find(function(n) { return String(n.id || '').toLowerCase() === ident; });
+  /* Se não achou, tenta trecho do título (case-insensitive) */
+  if (!nota) {
+    nota = notas.find(function(n) {
+      return String(n.titulo || '').toLowerCase().indexOf(ident) !== -1;
+    });
+  }
+  if (!nota) return { erro: 'Nota não encontrada com identificador: ' + identificador };
+
+  return {
+    id:        nota.id,
+    titulo:    nota.titulo,
+    categoria: nota.categoria,
+    tags:      nota.tags,
+    criadoEm:  nota.criadoEm,
+    conteudo:  String(nota.conteudo || '')
+  };
 }
 
 /* Fix A + B (16/05/2026):
@@ -3547,6 +3626,26 @@ function pinahExecutarTool(nome, input) {
    que a Pinah lembre nas próximas mensagens o que ela já salvou. */
 function pinahFeedbackTool(nome, input, ctx) {
   ctx = ctx || {};
+
+  /* (P028) Tools de LEITURA não geram bolha de "✅ feito" — a resposta real
+     da Pinah vem na segunda chamada (com base no tool_result). Só
+     mostramos um indicador discreto de "estou procurando". */
+  if (nome === 'buscar_nota' || nome === 'ler_nota') {
+    var msg = nome === 'buscar_nota'
+      ? '🔍 Procurando: *' + (input.termo || '') + '*'
+      : '📖 Lendo: *' + (input.identificador || '') + '*';
+    if (ctx.emChat) {
+      pinahAddBubble('pinah', msg);
+    } else if (ctx.isMobile && ctx.msgsMob) {
+      var b = document.createElement('div');
+      b.className = 'chat-bubble pinah-bubble';
+      b.innerHTML = pinahRenderText(msg);
+      ctx.msgsMob.appendChild(b);
+      ctx.msgsMob.scrollTop = ctx.msgsMob.scrollHeight;
+    }
+    return;
+  }
+
   function brl(v) { return 'R$ ' + (Number(v)||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
   function dataBR(iso) {
     if (!iso || iso.length < 10) return iso || '';
@@ -4046,85 +4145,162 @@ async function pinahEnviar(texto, arquivo) {
   }
 
   try {
-    const resp = await fetch('/api/pinah-chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: apiMessages,
-        context: pinahGetContext(),
-        profile: window.authProfile ? {
-          nome:      window.authProfile.nome      || null,
-          bio_pinah: window.authProfile.bio_pinah || null
-        } : null
-      })
-    });
-
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-
+    /* (P028) Loop multi-turn: até 3 iterações pra suportar tool use de
+       leitura (buscar_nota / ler_nota) — Pinah dispara tool, frontend
+       executa e devolve resultado numa segunda chamada, Pinah responde
+       de verdade. Iterações 2 e 3 só rolam se a anterior teve tool de
+       leitura; senão sai no primeiro turno. */
+    var currentMessages = apiMessages;
+    var consolidatedText = '';      // texto da bolha atual em construção
+    var textoTodosOsTurnos = '';    // soma de tudo que a Pinah disse no turno multi-step (vai pro pinahHistory no fim)
     var bubble   = emChat ? pinahAddBubble('pinah', '') : null;
-    var fullText = '';
+    var mobBubble = null;
 
     /* Mobile: substitui bolha de typing pela bolha de resposta */
-    var mobBubble = null;
     if (isMobile && msgsMob) {
       var tb = document.getElementById('mob-typing-bub');
       if (tb) { tb.className = 'chat-bubble pinah-bubble'; tb.innerHTML = ''; }
       mobBubble = tb;
     }
-
     if (emChat) pinahTypingHide();
 
-    const reader  = resp.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
+    for (var turno = 0; turno < 3; turno++) {
+      const resp = await fetch('/api/pinah-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: currentMessages,
+          context: pinahGetContext(),
+          profile: window.authProfile ? {
+            nome:      window.authProfile.nome      || null,
+            bio_pinah: window.authProfile.bio_pinah || null
+          } : null
+        })
+      });
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
 
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
+      var fullText = '';
+      var toolsLeitura = []; // { id, name, input, result }
+      var toolsAssistantBlocks = []; // pra reconstituir o assistant message na próxima chamada
 
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        try {
-          const ev = JSON.parse(line.slice(6));
-          if (ev.tool) {
-            pinahExecutarTool(ev.tool, ev.input || {});
-            /* Fix A + B: feedback visual + memória implícita */
-            pinahFeedbackTool(ev.tool, ev.input || {}, {
-              emChat:   emChat,
-              isMobile: isMobile,
-              msgsMob:  msgsMob
-            });
-          }
-          if (ev.text) {
-            fullText += ev.text;
-            if (emChat && bubble) {
-              bubble.innerHTML = pinahRenderText(fullText);
-              if (msgs) msgs.scrollTop = msgs.scrollHeight;
+      const reader  = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          try {
+            const ev = JSON.parse(line.slice(6));
+            if (ev.tool) {
+              var ehLeitura = (ev.tool === 'buscar_nota' || ev.tool === 'ler_nota');
+              if (ehLeitura) {
+                /* Executa leitura local, guarda resultado pra segunda chamada */
+                var resultado = pinahExecutarToolLeitura(ev.tool, ev.input || {});
+                toolsLeitura.push({
+                  id:     ev.id,
+                  name:   ev.tool,
+                  input:  ev.input || {},
+                  result: resultado
+                });
+                toolsAssistantBlocks.push({
+                  type:  'tool_use',
+                  id:    ev.id,
+                  name:  ev.tool,
+                  input: ev.input || {}
+                });
+                /* Feedback discreto "🔍 Procurando..." */
+                pinahFeedbackTool(ev.tool, ev.input || {}, {
+                  emChat:   emChat,
+                  isMobile: isMobile,
+                  msgsMob:  msgsMob
+                });
+              } else {
+                /* Tool de criação: comportamento normal */
+                pinahExecutarTool(ev.tool, ev.input || {});
+                pinahFeedbackTool(ev.tool, ev.input || {}, {
+                  emChat:   emChat,
+                  isMobile: isMobile,
+                  msgsMob:  msgsMob
+                });
+              }
             }
-            if (mobBubble) {
-              mobBubble.innerHTML = pinahRenderText(fullText);
-              if (msgsMob) msgsMob.scrollTop = msgsMob.scrollHeight;
+            if (ev.text) {
+              fullText += ev.text;
+              if (emChat && bubble) {
+                bubble.innerHTML = pinahRenderText(consolidatedText + fullText);
+                if (msgs) msgs.scrollTop = msgs.scrollHeight;
+              }
+              if (mobBubble) {
+                mobBubble.innerHTML = pinahRenderText(consolidatedText + fullText);
+                if (msgsMob) msgsMob.scrollTop = msgsMob.scrollHeight;
+              }
             }
-          }
-          if (ev.done) {
-            pinahHistory.push({ role: 'assistant', content: fullText });
-            // Fora do chat: mostra resposta da Pinah como toast
-            if (!emChat && fullText.trim()) {
-              var resumo = fullText.trim().replace(/\n/g, ' ');
-              if (resumo.length > 120) resumo = resumo.slice(0, 117) + '…';
-              if (window.toast) window.toast('Pinah: ' + resumo, null, { duration: 6000 });
+            if (ev.error) {
+              if (emChat && bubble) bubble.innerHTML = '⚠️ ' + pinahRenderText(ev.error);
+              else if (window.toast) window.toast('⚠️ ' + ev.error, 'error');
             }
-          }
-          if (ev.error) {
-            if (emChat && bubble) bubble.innerHTML = '⚠️ ' + pinahRenderText(ev.error);
-            else if (window.toast) window.toast('⚠️ ' + ev.error, 'error');
-          }
-        } catch (e) { /* linha mal formada — ignora */ }
+            /* ev.done é tratado depois do loop, pra saber se há multi-turn */
+          } catch (e) { /* linha mal formada — ignora */ }
+        }
       }
+
+      /* Consolida texto deste turno (pra render da bolha atual + soma total) */
+      consolidatedText += fullText;
+      if (fullText) {
+        textoTodosOsTurnos += (textoTodosOsTurnos ? '\n\n' : '') + fullText;
+      }
+
+      /* Se houve tool de leitura, monta próxima rodada e continua o loop */
+      if (toolsLeitura.length > 0) {
+        /* Bloco assistant: [text opcional, tool_use(s)] */
+        var assistantContent = [];
+        if (fullText.trim()) assistantContent.push({ type: 'text', text: fullText });
+        toolsAssistantBlocks.forEach(function(b) { assistantContent.push(b); });
+
+        /* Bloco user: tool_result(s) com payload JSON do resultado */
+        var userContent = toolsLeitura.map(function(t) {
+          return {
+            type: 'tool_result',
+            tool_use_id: t.id,
+            content: JSON.stringify(t.result)
+          };
+        });
+
+        currentMessages = currentMessages.concat([
+          { role: 'assistant', content: assistantContent },
+          { role: 'user',      content: userContent }
+        ]);
+
+        /* Cria bolha nova pro próximo turno (a anterior já tem o texto desse turno) */
+        if (emChat) bubble = pinahAddBubble('pinah', '');
+        if (isMobile && msgsMob) {
+          var nb = document.createElement('div');
+          nb.className = 'chat-bubble pinah-bubble';
+          msgsMob.appendChild(nb);
+          mobBubble = nb;
+        }
+        consolidatedText = ''; // próxima bolha começa zerada
+        continue;
+      }
+
+      /* Sem tool de leitura: turno final. Empilha resposta consolidada (todos os subturnos) no histórico. */
+      var textoFinal = textoTodosOsTurnos || fullText;
+      pinahHistory.push({ role: 'assistant', content: textoFinal });
+      if (!emChat && textoFinal.trim()) {
+        var resumo = textoFinal.trim().replace(/\n/g, ' ');
+        if (resumo.length > 120) resumo = resumo.slice(0, 117) + '…';
+        if (window.toast) window.toast('Pinah: ' + resumo, null, { duration: 6000 });
+      }
+      break;
     }
 
   } catch (err) {
