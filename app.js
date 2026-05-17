@@ -3911,7 +3911,24 @@ function _supaMapFromRow(localKey, row) {
   }
 }
 
-/* Busca todos os dados do Supabase e popula localStorage do usuário atual */
+/* Campos que o servidor Supabase atualmente NÃO tem coluna, mas que o app
+   precisa preservar no localStorage. Sem isso, supaSync sobrescreve o local
+   e perde contaId/faturaMesAno em cada reload — quebrando a vinculação de
+   lançamentos a cartões. Patch defensivo até as colunas serem adicionadas
+   no schema do Supabase (próxima sessão). */
+var SUPA_CAMPOS_LOCAIS = {
+  receitas:       ['contaId'],
+  despesas:       ['contaId', 'faturaMesAno', 'loteId', 'parcelaAtual', 'parcelasTotal', 'recorrencia'],
+  despesas_fixas: ['nome', 'diaDoMes', 'inicio', 'contaId'],
+  compromissos:   [],
+  tarefas:        [],
+  notas_cerebro:  []
+};
+
+/* Busca todos os dados do Supabase e popula localStorage do usuário atual.
+   Faz merge defensivo: preserva campos local-only listados em SUPA_CAMPOS_LOCAIS
+   quando o servidor não devolve o valor. Isso evita perder contaId/faturaMesAno
+   em cada reload enquanto o schema do Supabase ainda não cobre essas colunas. */
 async function supaSync() {
   if (!window.supa || !window.authUser) return;
   var userId = window.authUser.id;
@@ -3927,9 +3944,37 @@ async function supaSync() {
           return;
         }
         var rows = result.data || [];
-        var itens = rows.map(function(row) { return _supaMapFromRow(localKey, row); });
-        localStorage.setItem(prefix + localKey, JSON.stringify(itens));
-        console.log('[supaSync]', tabela, '→', itens.length, 'itens');
+        var itensServer = rows.map(function(row) { return _supaMapFromRow(localKey, row); });
+        var itensLocal = [];
+        try { itensLocal = JSON.parse(localStorage.getItem(prefix + localKey) || '[]'); } catch(e) {}
+        var camposLocais = SUPA_CAMPOS_LOCAIS[localKey] || [];
+        /* Indexa local por id pra merge rápido */
+        var idxLocal = {};
+        itensLocal.forEach(function(l){ if (l && l.id) idxLocal[l.id] = l; });
+        /* Merge: pra cada item do server, preserva campos locais que o server
+           não devolveu (ou veio vazio) — mas só os campos listados em
+           SUPA_CAMPOS_LOCAIS. Campos cobertos pelo mapper são autoritativos. */
+        var merged = itensServer.map(function(srv){
+          var loc = idxLocal[srv.id];
+          if (!loc) return srv;
+          camposLocais.forEach(function(k){
+            if ((srv[k] === undefined || srv[k] === null || srv[k] === '') && loc[k] !== undefined) {
+              srv[k] = loc[k];
+            }
+          });
+          return srv;
+        });
+        /* Preserva itens que estão SÓ no local (ainda não sincronizaram com o
+           server — supaUpsert pode ter falhado por RLS ou rede). Sem isso, o
+           sync apagaria fixas/lançamentos recém-criados no offline ou após
+           erro silencioso. */
+        var idsServer = {};
+        itensServer.forEach(function(s){ if (s && s.id) idsServer[s.id] = true; });
+        itensLocal.forEach(function(l){
+          if (l && l.id && !idsServer[l.id]) merged.push(l);
+        });
+        localStorage.setItem(prefix + localKey, JSON.stringify(merged));
+        console.log('[supaSync]', tabela, '→', merged.length, 'itens (' + itensServer.length + ' do server + ' + (merged.length - itensServer.length) + ' só locais)');
       } catch(e) {
         console.warn('[supaSync] Exceção na tabela', tabela, e);
       }
