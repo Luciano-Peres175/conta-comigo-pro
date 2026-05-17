@@ -3917,8 +3917,8 @@ function _supaMapFromRow(localKey, row) {
    lançamentos a cartões. Patch defensivo até as colunas serem adicionadas
    no schema do Supabase (próxima sessão). */
 var SUPA_CAMPOS_LOCAIS = {
-  receitas:       ['contaId'],
-  despesas:       ['contaId', 'faturaMesAno', 'loteId', 'parcelaAtual', 'parcelasTotal', 'recorrencia'],
+  receitas:       ['contaId', 'status'],
+  despesas:       ['contaId', 'faturaMesAno', 'loteId', 'parcelaAtual', 'parcelasTotal', 'recorrencia', 'status'],
   despesas_fixas: ['nome', 'diaDoMes', 'inicio', 'contaId'],
   compromissos:   [],
   tarefas:        [],
