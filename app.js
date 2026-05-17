@@ -535,15 +535,9 @@
   }
 
   /* ── Inicialização de dados ─────────────────────────────────── */
-  const FIXAS_DEFAULT = [
-    { id:'f1', descricao:'Aluguel',            categoria:'Infraestrutura',           valor:1200 },
-    { id:'f2', descricao:'Secretária',          categoria:'Equipe',                   valor:800  },
-    { id:'f3', descricao:'Combustível',         categoria:'Deslocamento Profissional',valor:300  },
-    { id:'f4', descricao:'Materiais Clínicos',  categoria:'Materiais Clínicos',       valor:250  },
-    { id:'f5', descricao:'Internet / Telefone', categoria:'Comunicação Profissional', valor:150  },
-    { id:'f6', descricao:'Contador',            categoria:'Serviços Profissionais',   valor:200  },
-    { id:'f7', descricao:'Tecnologia',          categoria:'Tecnologia',               valor:100  },
-  ];
+  // FIXAS_DEFAULT zerado em 17/05/2026: app entra em fase de uso real,
+  // novos users começam sem lançamentos demo.
+  const FIXAS_DEFAULT = [];
 
   /* Migração one-shot: copia dados legados (sem prefixo) pra chave do user atual.
      Roda só uma vez por user (flag migrated_legacy_v1). Remove a chave legada
@@ -576,26 +570,30 @@
       // Seed por grupo — cada perfil recebe dados adequados ao seu contexto.
       const grupo = (window.authProfile && window.authProfile.grupo) || 'admin';
 
+      // Seed financeiro zerado em 17/05/2026: app entra em fase de uso real,
+      // lançamentos demo removidos pra que cada user cadastre os reais dele.
+      // Compromissos, notas e tarefas demo mantidas porque ajudam a entender
+      // o app na primeira abertura.
       if (grupo === 'admin') {
-        // Luciano — fonoaudiologia (dados demo)
-        localStorage.setItem(oneU('receitas'),      JSON.stringify(getReceitasDemo()));
-        localStorage.setItem(oneU('despesas'),      JSON.stringify(getDespesasDemo()));
+        // Luciano — fonoaudiologia (compromissos e notas demo)
+        localStorage.setItem(oneU('receitas'),      JSON.stringify([]));
+        localStorage.setItem(oneU('despesas'),      JSON.stringify([]));
         localStorage.setItem(oneU('compromissos'),  JSON.stringify(getCompromissosDemo()));
         localStorage.setItem(oneU('notas_cerebro'), JSON.stringify(getNotasDemo()));
         localStorage.setItem(oneU('tarefas'),       JSON.stringify([]));
 
       } else if (grupo === 'familia') {
-        // Cátia — Conta Comigo Pinah: histórico real do pet + notas do vault Obsidian
+        // Cátia — Conta Comigo Pinah: agenda + tarefas + notas reais do pet
         localStorage.setItem(oneU('receitas'),      JSON.stringify([]));
-        localStorage.setItem(oneU('despesas'),      JSON.stringify(getDespesasPinah()));
+        localStorage.setItem(oneU('despesas'),      JSON.stringify([]));
         localStorage.setItem(oneU('compromissos'),  JSON.stringify(getCompromissosPinah()));
         localStorage.setItem(oneU('tarefas'),       JSON.stringify(getTarefasPinah()));
         localStorage.setItem(oneU('notas_cerebro'), JSON.stringify(getNotasPinah()));
 
       } else if (grupo === 'fono') {
-        // Letícia — fonoaudióloga: 9 artigos reais do vault (amamentação, frênulo, desenvolvimento)
-        localStorage.setItem(oneU('receitas'),      JSON.stringify(getReceitasFono()));
-        localStorage.setItem(oneU('despesas'),      JSON.stringify(getDespesasFono()));
+        // Letícia — fonoaudióloga: agenda + tarefas + 9 artigos reais do vault
+        localStorage.setItem(oneU('receitas'),      JSON.stringify([]));
+        localStorage.setItem(oneU('despesas'),      JSON.stringify([]));
         localStorage.setItem(oneU('compromissos'),  JSON.stringify(getCompromissosFono()));
         localStorage.setItem(oneU('tarefas'),       JSON.stringify(getTarefasFono()));
         localStorage.setItem(oneU('notas_cerebro'), JSON.stringify(getNotasFono()));
