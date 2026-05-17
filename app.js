@@ -551,7 +551,7 @@
   function migrarDadosLegado() {
     if (!window.authUser || !window.authUser.id) return;
     if (localStorage.getItem(oneU('migrated_legacy_v1'))) return;
-    var chaves = ['compromissos','tarefas','tarefas_areas','receitas','despesas','despesasFixas','notas_cerebro','usuario','ccp_imposto_pct','ccp_forma_pagamento','ccp_ia_uso','ccp_initialized','one_init'];
+    var chaves = ['compromissos','tarefas','tarefas_areas','receitas','despesas','despesasFixas','receitasFixas','categorias_receita','categorias_despesa','notas_cerebro','usuario','ccp_imposto_pct','ccp_forma_pagamento','ccp_ia_uso','ccp_initialized','one_init'];
     var migrou = 0;
     chaves.forEach(function(k){
       var legado = localStorage.getItem(k);
@@ -1393,11 +1393,26 @@
     const receitas      = JSON.parse(localStorage.getItem(oneU('receitas'))      || '[]');
     const despesas      = JSON.parse(localStorage.getItem(oneU('despesas'))      || '[]');
     const despesasFixas = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
+    const receitasFixas = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]');
 
     const deMes = item => {
       if (!item.data) return true;
       const d = new Date(item.data + 'T00:00:00');
       return d.getFullYear() === ano && d.getMonth() === mes;
+    };
+
+    /* Fixa só aparece no mês se "inicio" (YYYY-MM) é menor ou igual ao mês atual */
+    const fixaAtiva = (f) => {
+      if (!f.inicio) return true;
+      const [iAno, iMes] = String(f.inicio).split('-').map(Number);
+      if (!iAno || !iMes) return true;
+      return (ano > iAno) || (ano === iAno && mes >= (iMes - 1));
+    };
+
+    /* Data computada da fixa pra este mês (usando o diaDoMes) */
+    const dataFixaNoMes = (f) => {
+      const dia = Math.min(Math.max(parseInt(f.diaDoMes, 10) || 1, 1), 28);
+      return `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
     };
 
     const items = [];
@@ -1420,12 +1435,21 @@
       status: d.status || 'Pago'
     }));
 
-    despesasFixas.forEach(df => items.push({
+    despesasFixas.filter(fixaAtiva).forEach(df => items.push({
       nome: df.descricao || df.nome || 'Despesa Fixa',
       categoria: df.categoria || 'Fixo',
-      data: primeiroMes,
+      data: dataFixaNoMes(df),
       valor: Number(df.valor) || 0,
       tipo: 'despesa',
+      status: 'Fixo'
+    }));
+
+    receitasFixas.filter(fixaAtiva).forEach(rf => items.push({
+      nome: rf.descricao || rf.nome || 'Receita Fixa',
+      categoria: rf.categoria || 'Fixo',
+      data: dataFixaNoMes(rf),
+      valor: Number(rf.valor) || 0,
+      tipo: 'receita',
       status: 'Fixo'
     }));
 
@@ -8199,19 +8223,125 @@ window.oneRelRenderBalanco = oneRelRenderBalanco;
 /* ════════════════════════════════════════════════════════════════
    MODAL NOVO/EDITAR LANÇAMENTO — substitui o form inline do painel financeiro
    ════════════════════════════════════════════════════════════════ */
-window.oneFinModalTipo = window.oneFinModalTipo || 'receita';
+window.oneFinModalTipo        = window.oneFinModalTipo        || 'receita';
+window.oneFinModalRecorrencia = window.oneFinModalRecorrencia || 'esporadica';
+
+var ONE_FIN_CATEGORIAS_DEFAULT = {
+  receita: ['Atendimento', 'Consulta', 'Avaliação', 'Salário', 'Recebimento', 'Outros'],
+  despesa: ['Aluguel', 'Material', 'Transporte', 'Alimentação', 'Impostos', 'Eletrônicos', 'Serviços', 'Outros']
+};
+
+function oneFinGetCategorias(tipo) {
+  var chave = 'categorias_' + tipo;
+  var raw = localStorage.getItem(oneU(chave));
+  if (!raw) {
+    var def = (ONE_FIN_CATEGORIAS_DEFAULT[tipo] || []).slice();
+    localStorage.setItem(oneU(chave), JSON.stringify(def));
+    return def;
+  }
+  try { return JSON.parse(raw) || []; } catch(e) { return []; }
+}
+window.oneFinGetCategorias = oneFinGetCategorias;
+
+function oneFinAddCategoria(tipo, nome) {
+  nome = String(nome || '').trim();
+  if (!nome) return false;
+  var lista = oneFinGetCategorias(tipo);
+  if (lista.indexOf(nome) !== -1) return false;
+  lista.push(nome);
+  localStorage.setItem(oneU('categorias_' + tipo), JSON.stringify(lista));
+  return true;
+}
+window.oneFinAddCategoria = oneFinAddCategoria;
+
+function oneFinModalPreencherDias() {
+  var sel = document.getElementById('one-fin-modal-dia');
+  if (!sel || sel.options.length > 0) return;
+  for (var i = 1; i <= 31; i++) {
+    var opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = 'Dia ' + i;
+    sel.appendChild(opt);
+  }
+}
+
+function oneFinModalRefreshCategorias() {
+  var tipo = window.oneFinModalTipo || 'receita';
+  var sel = document.getElementById('one-fin-modal-cat');
+  if (!sel) return;
+  var atual = sel.value;
+  var lista = oneFinGetCategorias(tipo);
+  sel.innerHTML = '';
+  lista.forEach(function(c) {
+    var o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    sel.appendChild(o);
+  });
+  if (atual && lista.indexOf(atual) !== -1) sel.value = atual;
+}
+window.oneFinModalRefreshCategorias = oneFinModalRefreshCategorias;
+
+function oneFinModalNovaCategoria() {
+  var tipo = window.oneFinModalTipo || 'receita';
+  var nome = prompt('Nome da nova categoria de ' + tipo + ':');
+  if (!nome) return;
+  if (oneFinAddCategoria(tipo, nome.trim())) {
+    oneFinModalRefreshCategorias();
+    document.getElementById('one-fin-modal-cat').value = nome.trim();
+    if (typeof oneToast === 'function') oneToast('Categoria criada.');
+  } else {
+    if (typeof oneToast === 'function') oneToast('Categoria já existe ou inválida.', 'error');
+  }
+}
+window.oneFinModalNovaCategoria = oneFinModalNovaCategoria;
+
+function oneFinModalToggleParcelas() {
+  var check = document.getElementById('one-fin-modal-parcelar');
+  var bloco = document.getElementById('one-fin-modal-parc-bloco');
+  if (bloco) bloco.style.display = (check && check.checked) ? '' : 'none';
+}
+window.oneFinModalToggleParcelas = oneFinModalToggleParcelas;
+
+function oneFinModalSetRecorrencia(rec) {
+  window.oneFinModalRecorrencia = rec;
+  var tabEsp = document.getElementById('one-fin-modal-tab-esp');
+  var tabFix = document.getElementById('one-fin-modal-tab-fix');
+  if (tabEsp) tabEsp.classList.toggle('active', rec === 'esporadica');
+  if (tabFix) tabFix.classList.toggle('active', rec === 'fixa');
+
+  var ehFixa = (rec === 'fixa');
+  var setDisplay = function(id, show) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = show ? '' : 'none';
+  };
+  setDisplay('one-fin-modal-data-wrap',   !ehFixa);
+  setDisplay('one-fin-modal-dia-wrap',     ehFixa);
+  setDisplay('one-fin-modal-inicio-wrap',  ehFixa);
+  setDisplay('one-fin-modal-parc-wrap',   !ehFixa);
+}
+window.oneFinModalSetRecorrencia = oneFinModalSetRecorrencia;
 
 function oneFinModalAbrir(tipoInicial) {
   var modal = document.getElementById('one-fin-modal');
   if (!modal) return;
+  oneFinModalPreencherDias();
+
   document.getElementById('one-fin-modal-title').textContent = 'Novo lançamento';
-  document.getElementById('one-fin-modal-id').value = '';
-  document.getElementById('one-fin-modal-nome').value = '';
-  document.getElementById('one-fin-modal-valor').value = '';
-  document.getElementById('one-fin-modal-data').value = new Date().toISOString().slice(0,10);
-  document.getElementById('one-fin-modal-cat').value = '';
-  document.getElementById('one-fin-modal-status').value = 'pendente';
+  document.getElementById('one-fin-modal-id').value         = '';
+  document.getElementById('one-fin-modal-lote-id').value    = '';
+  document.getElementById('one-fin-modal-nome').value       = '';
+  document.getElementById('one-fin-modal-valor').value      = '';
+  document.getElementById('one-fin-modal-data').value       = new Date().toISOString().slice(0,10);
+  document.getElementById('one-fin-modal-inicio').value     = new Date().toISOString().slice(0,7);
+  document.getElementById('one-fin-modal-dia').value        = '5';
+  document.getElementById('one-fin-modal-status').value     = 'pendente';
+  document.getElementById('one-fin-modal-parcelar').checked = false;
+  document.getElementById('one-fin-modal-parc-total').value = '12';
+  document.getElementById('one-fin-modal-parc-intervalo').value = 'mensal';
+
   oneFinModalSetTipo(tipoInicial || 'receita');
+  oneFinModalSetRecorrencia('esporadica');
+  oneFinModalToggleParcelas();
   modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-fin-modal-nome').focus(); }, 100);
 }
@@ -8223,14 +8353,35 @@ function oneFinModalEditar(key, id) {
   if (!it) return;
   var modal = document.getElementById('one-fin-modal');
   if (!modal) return;
+  oneFinModalPreencherDias();
+
+  var ehFixa   = (key === 'despesasFixas' || key === 'receitasFixas');
+  var tipoLanc = (key === 'receitas' || key === 'receitasFixas') ? 'receita' : 'despesa';
+
   document.getElementById('one-fin-modal-title').textContent = 'Editar lançamento';
-  document.getElementById('one-fin-modal-id').value = it.id;
-  document.getElementById('one-fin-modal-nome').value = it.nome || it.descricao || '';
-  document.getElementById('one-fin-modal-valor').value = it.valor || '';
-  document.getElementById('one-fin-modal-data').value = it.data || '';
-  document.getElementById('one-fin-modal-cat').value = it.categoria || it.tipo || '';
-  document.getElementById('one-fin-modal-status').value = it.status || (key === 'receitas' ? 'pendente' : 'pago');
-  oneFinModalSetTipo(key === 'receitas' ? 'receita' : 'despesa');
+  document.getElementById('one-fin-modal-id').value      = it.id;
+  document.getElementById('one-fin-modal-lote-id').value = it.loteId || '';
+  document.getElementById('one-fin-modal-nome').value    = it.nome || it.descricao || '';
+  document.getElementById('one-fin-modal-valor').value   = it.valor || '';
+  document.getElementById('one-fin-modal-data').value    = it.data || new Date().toISOString().slice(0,10);
+  document.getElementById('one-fin-modal-inicio').value  = it.inicio || new Date().toISOString().slice(0,7);
+  document.getElementById('one-fin-modal-dia').value     = String(it.diaDoMes || 5);
+  document.getElementById('one-fin-modal-status').value  = it.status || (tipoLanc === 'receita' ? 'pendente' : 'pago');
+  document.getElementById('one-fin-modal-parcelar').checked = false;
+
+  oneFinModalSetTipo(tipoLanc);
+  var catVal = it.categoria || '';
+  if (catVal) {
+    var catSel = document.getElementById('one-fin-modal-cat');
+    if (catSel && !catSel.querySelector('option[value="' + catVal.replace(/"/g, '\\"') + '"]')) {
+      oneFinAddCategoria(tipoLanc, catVal);
+      oneFinModalRefreshCategorias();
+    }
+    if (catSel) catSel.value = catVal;
+  }
+  oneFinModalSetRecorrencia(ehFixa ? 'fixa' : 'esporadica');
+  oneFinModalToggleParcelas();
+
   modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-fin-modal-nome').focus(); }, 100);
 }
@@ -8244,53 +8395,124 @@ window.oneFinModalFechar = oneFinModalFechar;
 
 function oneFinModalSetTipo(tipo) {
   window.oneFinModalTipo = tipo;
-  var tabRec = document.getElementById('one-fin-modal-tab-rec');
+  var tabRec  = document.getElementById('one-fin-modal-tab-rec');
   var tabDesp = document.getElementById('one-fin-modal-tab-desp');
-  if (tabRec)  tabRec.classList.toggle('active', tipo === 'receita');
+  if (tabRec)  tabRec.classList.toggle('active',  tipo === 'receita');
   if (tabDesp) tabDesp.classList.toggle('active', tipo === 'despesa');
-  // Status só faz sentido pra receita (pendente/pago). Pra despesa esconde.
-  var stWrap = document.getElementById('one-fin-modal-status-wrap');
-  if (stWrap) stWrap.style.display = (tipo === 'receita') ? '' : 'none';
+
+  var sel = document.getElementById('one-fin-modal-status');
+  if (sel) {
+    sel.innerHTML = (tipo === 'receita')
+      ? '<option value="pendente">Pendente</option><option value="pago">Recebido</option>'
+      : '<option value="pendente">Pendente</option><option value="pago">Pago</option>';
+  }
+  oneFinModalRefreshCategorias();
 }
 window.oneFinModalSetTipo = oneFinModalSetTipo;
 
 function oneFinModalSalvar() {
-  var id     = document.getElementById('one-fin-modal-id').value;
-  var nome   = (document.getElementById('one-fin-modal-nome').value || '').trim();
-  var valor  = parseFloat(document.getElementById('one-fin-modal-valor').value) || 0;
-  var data   = document.getElementById('one-fin-modal-data').value || new Date().toISOString().slice(0,10);
-  var cat    = (document.getElementById('one-fin-modal-cat').value || '').trim();
-  var status = document.getElementById('one-fin-modal-status').value;
-  var tipo   = window.oneFinModalTipo || 'receita';
+  var id      = document.getElementById('one-fin-modal-id').value;
+  var nome    = (document.getElementById('one-fin-modal-nome').value || '').trim();
+  var valor   = parseFloat(document.getElementById('one-fin-modal-valor').value) || 0;
+  var cat     = (document.getElementById('one-fin-modal-cat').value || '').trim();
+  var status  = document.getElementById('one-fin-modal-status').value;
+  var tipo    = window.oneFinModalTipo || 'receita';
+  var rec     = window.oneFinModalRecorrencia || 'esporadica';
+
   if (!nome || !valor) {
     if (typeof oneToast === 'function') oneToast('Preencha descrição e valor.', 'error');
     return;
   }
-  var key = (tipo === 'receita') ? 'receitas' : 'despesas';
-  var lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]');
-  var novoFin;
-  if (id) {
-    var idx = lista.findIndex(function(x){ return String(x.id) === String(id); });
-    if (idx >= 0) {
-      lista[idx] = Object.assign(lista[idx], {
-        nome: nome, descricao: nome, valor: valor, data: data, categoria: cat,
-        tipo: tipo,
-        status: (tipo === 'receita') ? status : 'pago'
-      });
-      novoFin = lista[idx];
+
+  var uid = function() { return (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2,8); };
+
+  if (rec === 'fixa') {
+    /* ─── Fixa: vai pra receitasFixas ou despesasFixas ─── */
+    var keyF = (tipo === 'receita') ? 'receitasFixas' : 'despesasFixas';
+    var diaDoMes = parseInt(document.getElementById('one-fin-modal-dia').value, 10) || 5;
+    var inicio   = document.getElementById('one-fin-modal-inicio').value || new Date().toISOString().slice(0,7);
+    var listaF = JSON.parse(localStorage.getItem(oneU(keyF)) || '[]');
+    var objF;
+    if (id) {
+      var idxF = listaF.findIndex(function(x){ return String(x.id) === String(id); });
+      if (idxF >= 0) {
+        objF = Object.assign(listaF[idxF], {
+          nome: nome, descricao: nome, valor: valor, categoria: cat,
+          tipo: tipo, recorrencia: 'fixa', diaDoMes: diaDoMes, inicio: inicio
+        });
+      }
+    } else {
+      objF = {
+        id: uid(), nome: nome, descricao: nome, valor: valor, categoria: cat,
+        tipo: tipo, recorrencia: 'fixa', diaDoMes: diaDoMes, inicio: inicio,
+        criado: new Date().toISOString()
+      };
+      listaF.push(objF);
     }
+    localStorage.setItem(oneU(keyF), JSON.stringify(listaF));
+    if (typeof supaUpsert === 'function' && objF) supaUpsert(keyF, objF);
+
   } else {
-    novoFin = {
-      id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(),
-      nome: nome, descricao: nome, valor: valor, data: data, categoria: cat,
-      tipo: tipo,
-      status: (tipo === 'receita') ? status : 'pago',
-      criado: new Date().toISOString()
-    };
-    lista.push(novoFin);
+    /* ─── Esporádica: vai pra receitas ou despesas ─── */
+    var keyE   = (tipo === 'receita') ? 'receitas' : 'despesas';
+    var data   = document.getElementById('one-fin-modal-data').value || new Date().toISOString().slice(0,10);
+    var listaE = JSON.parse(localStorage.getItem(oneU(keyE)) || '[]');
+
+    var parcelar   = document.getElementById('one-fin-modal-parcelar').checked;
+    var parcTotal  = parseInt(document.getElementById('one-fin-modal-parc-total').value, 10) || 1;
+    var parcInterv = document.getElementById('one-fin-modal-parc-intervalo').value;
+
+    if (id) {
+      /* Edição: trata como lançamento único (não recriamos parcelas) */
+      var idxE = listaE.findIndex(function(x){ return String(x.id) === String(id); });
+      if (idxE >= 0) {
+        var objE = Object.assign(listaE[idxE], {
+          nome: nome, descricao: nome, valor: valor, data: data, categoria: cat,
+          tipo: tipo, recorrencia: 'esporadica',
+          status: (tipo === 'receita') ? status : (status || 'pago')
+        });
+        localStorage.setItem(oneU(keyE), JSON.stringify(listaE));
+        if (typeof supaUpsert === 'function') supaUpsert(keyE, objE);
+      }
+    } else if (parcelar && parcTotal >= 2) {
+      /* Gera N parcelas vinculadas por loteId */
+      var loteNovoId = uid();
+      var valorParc  = Math.round((valor / parcTotal) * 100) / 100;
+      var dataBase   = new Date(data + 'T00:00:00');
+      for (var i = 1; i <= parcTotal; i++) {
+        var d = new Date(dataBase);
+        if (parcInterv === 'mensal')    d.setMonth(d.getMonth() + (i - 1));
+        if (parcInterv === 'semanal')   d.setDate(d.getDate() + (i - 1) * 7);
+        if (parcInterv === 'quinzenal') d.setDate(d.getDate() + (i - 1) * 15);
+        var pData = d.toISOString().slice(0,10);
+        var objP = {
+          id: uid(),
+          nome: nome + ' ' + i + '/' + parcTotal,
+          descricao: nome + ' ' + i + '/' + parcTotal,
+          valor: valorParc, data: pData, categoria: cat,
+          tipo: tipo, recorrencia: 'esporadica',
+          loteId: loteNovoId, parcelaAtual: i, parcelasTotal: parcTotal,
+          status: 'pendente',
+          criado: new Date().toISOString()
+        };
+        listaE.push(objP);
+        if (typeof supaUpsert === 'function') supaUpsert(keyE, objP);
+      }
+      localStorage.setItem(oneU(keyE), JSON.stringify(listaE));
+    } else {
+      /* Lançamento único esporádico (comportamento clássico) */
+      var objU = {
+        id: uid(), nome: nome, descricao: nome, valor: valor, data: data, categoria: cat,
+        tipo: tipo, recorrencia: 'esporadica',
+        status: (tipo === 'receita') ? status : (status || 'pago'),
+        criado: new Date().toISOString()
+      };
+      listaE.push(objU);
+      localStorage.setItem(oneU(keyE), JSON.stringify(listaE));
+      if (typeof supaUpsert === 'function') supaUpsert(keyE, objU);
+    }
   }
-  localStorage.setItem(oneU(key), JSON.stringify(lista));
-  if (typeof supaUpsert === 'function' && novoFin) supaUpsert(key, novoFin);
+
   oneFinModalFechar();
   if (typeof oneToast === 'function') oneToast('✓ Lançamento salvo!');
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();

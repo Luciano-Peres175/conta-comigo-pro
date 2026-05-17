@@ -2015,10 +2015,16 @@
       <button class="one-modal-close" onclick="oneFinModalFechar()">✕</button>
     </div>
     <input type="hidden" id="one-fin-modal-id">
+    <input type="hidden" id="one-fin-modal-lote-id">
 
     <div class="one-fin-modal-tabs">
       <button class="one-fin-modal-tab active" id="one-fin-modal-tab-rec" type="button" onclick="oneFinModalSetTipo('receita')">↑ Receita</button>
       <button class="one-fin-modal-tab" id="one-fin-modal-tab-desp" type="button" onclick="oneFinModalSetTipo('despesa')">↓ Despesa</button>
+    </div>
+
+    <div class="one-fin-modal-tabs" style="margin-top:8px">
+      <button class="one-fin-modal-tab active" id="one-fin-modal-tab-esp" type="button" onclick="oneFinModalSetRecorrencia('esporadica')">Esporádica</button>
+      <button class="one-fin-modal-tab" id="one-fin-modal-tab-fix" type="button" onclick="oneFinModalSetRecorrencia('fixa')">Fixa (todo mês)</button>
     </div>
 
     <div class="one-modal-field">
@@ -2030,14 +2036,25 @@
         <label class="one-modal-label">Valor (R$)</label>
         <input id="one-fin-modal-valor" class="one-modal-input" type="number" step="0.01" placeholder="0,00">
       </div>
-      <div class="one-modal-field">
+      <div class="one-modal-field" id="one-fin-modal-data-wrap">
         <label class="one-modal-label">Data</label>
         <input id="one-fin-modal-data" class="one-modal-input" type="date">
       </div>
+      <div class="one-modal-field" id="one-fin-modal-dia-wrap" style="display:none">
+        <label class="one-modal-label">Dia do mês</label>
+        <select id="one-fin-modal-dia" class="one-modal-select"></select>
+      </div>
+    </div>
+    <div class="one-modal-field" id="one-fin-modal-inicio-wrap" style="display:none">
+      <label class="one-modal-label">Início (a partir de qual mês)</label>
+      <input id="one-fin-modal-inicio" class="one-modal-input" type="month">
     </div>
     <div class="one-modal-field">
       <label class="one-modal-label">Categoria</label>
-      <input id="one-fin-modal-cat" class="one-modal-input" placeholder="Atendimento, Avaliação, Material…">
+      <div style="display:flex; gap:6px; align-items:stretch">
+        <select id="one-fin-modal-cat" class="one-modal-select" style="flex:1"></select>
+        <button type="button" class="one-modal-btn-cancel" style="padding:0 12px; white-space:nowrap" onclick="oneFinModalNovaCategoria()">+ Nova</button>
+      </div>
     </div>
     <div class="one-modal-field" id="one-fin-modal-status-wrap">
       <label class="one-modal-label">Status</label>
@@ -2046,6 +2063,32 @@
         <option value="pago">Pago / Recebido</option>
       </select>
     </div>
+
+    <div class="one-modal-field" id="one-fin-modal-parc-wrap">
+      <label class="one-modal-label" style="display:flex; align-items:center; gap:8px; cursor:pointer">
+        <input type="checkbox" id="one-fin-modal-parcelar" onchange="oneFinModalToggleParcelas()"> Parcelar este lançamento
+      </label>
+      <div id="one-fin-modal-parc-bloco" style="display:none; margin-top:8px; padding:10px; background:rgba(0,0,0,0.03); border-radius:8px">
+        <div class="one-modal-row">
+          <div class="one-modal-field">
+            <label class="one-modal-label">Parcelas</label>
+            <input id="one-fin-modal-parc-total" class="one-modal-input" type="number" min="2" max="60" value="12">
+          </div>
+          <div class="one-modal-field">
+            <label class="one-modal-label">Intervalo</label>
+            <select id="one-fin-modal-parc-intervalo" class="one-modal-select">
+              <option value="mensal">Mensal</option>
+              <option value="semanal">Semanal</option>
+              <option value="quinzenal">Quinzenal</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size:11px; color:rgba(0,0,0,0.55); margin-top:6px; line-height:1.4">
+          Vira N lançamentos vinculados (ex: "Celular 1/12", "2/12"…). O valor é dividido pelas parcelas.
+        </div>
+      </div>
+    </div>
+
     <div class="one-modal-footer">
       <button class="one-modal-btn-cancel" onclick="oneFinModalFechar()">Cancelar</button>
       <button class="one-modal-btn-save" onclick="oneFinModalSalvar()">Salvar lançamento</button>
