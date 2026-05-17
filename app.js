@@ -5270,8 +5270,14 @@ function renderOneFinanceiroPainel() {
     var dias = parseInt(periodo, 10) || 30;
     var inicio = new Date(hoje); inicio.setDate(inicio.getDate() - dias);
     var inicioStr = inicio.toISOString().slice(0,10);
-    rFil = receitas.filter(function(r){ return (r.data||'') >= inicioStr; });
-    dFil = despesas.filter(function(d){ return (d.data||'') >= inicioStr; });
+    var hojeStr = hoje.toISOString().slice(0,10);
+    /* Inclui instâncias virtuais de fixas no intervalo — sem isso o Extrato
+       em 7/15/30d ficava só com lançamentos reais e omitia as fixas. */
+    var _instInt = (typeof oneFinInstanciasNoIntervalo === 'function')
+                     ? oneFinInstanciasNoIntervalo(inicioStr, hojeStr)
+                     : { receitas: [], despesas: [] };
+    rFil = receitas.filter(function(r){ return (r.data||'') >= inicioStr; }).concat(_instInt.receitas);
+    dFil = despesas.filter(function(d){ return (d.data||'') >= inicioStr; }).concat(_instInt.despesas);
   }
 
   // Filtro adicional vindo dos cards de alerta (pendentes / vencendo)
@@ -8470,13 +8476,15 @@ function oneFinFaturaAberta(contaId) {
   var totalReais = despesas.filter(function(d){
     return String(d.contaId) === String(contaId) && d.faturaMesAno === faturaAtual;
   }).reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
-  /* Soma também instâncias virtuais de despesas fixas atreladas a esse cartão na fatura atual */
+  /* Soma instâncias virtuais de despesas fixas que caem nesta fatura.
+     Olhar mês anterior + atual + próximo: uma fixa do mês X com cartão de
+     fechamento antes do dia da fixa cai na fatura de X+1. */
   var totalFixas = 0;
-  if (typeof oneFinInstanciasDoMes === 'function' && faturaAtual) {
+  if (typeof oneFinInstanciasVizinhas === 'function' && faturaAtual) {
     var partes = faturaAtual.split('-');
     var anoF = parseInt(partes[0], 10);
     var mesF = parseInt(partes[1], 10) - 1;
-    var inst = oneFinInstanciasDoMes(mesF, anoF);
+    var inst = oneFinInstanciasVizinhas(mesF, anoF);
     totalFixas = inst.despesas.filter(function(d){
       return String(d.contaId) === String(contaId) && d.faturaMesAno === faturaAtual;
     }).reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
@@ -8629,8 +8637,13 @@ function _oneFinRenderCartaoDet(conta) {
                    status:d.status||'pendente', _fixa:false });
     }
   });
-  /* Instâncias de fixas: pegamos do próprio mês m/a (data e fatura batem) */
-  var inst = oneFinInstanciasDoMes(m, a);
+  /* Instâncias de fixas: olhar mês anterior + atual + próximo. Uma fixa
+     instanciada no mês X com diaFechamento do cartão menor que o dia da fixa
+     cai na fatura de X+1 — então pra montar a "Fatura de Junho" precisamos
+     pegar instâncias de Maio também. Os 3 meses cobrem todos os casos. */
+  var inst = (typeof oneFinInstanciasVizinhas === 'function')
+               ? oneFinInstanciasVizinhas(m, a)
+               : oneFinInstanciasDoMes(m, a);
   inst.despesas.forEach(function(d){
     if (String(d.contaId) === String(conta.id) && d.faturaMesAno === faturaTag) {
       doMes.push({ tipo:'out', key:'despesasFixas', id:d._fixaId, nome:d.nome,
@@ -8706,6 +8719,58 @@ window.oneFinDataFixaNoMes = oneFinDataFixaNoMes;
 
 /* Devolve as instâncias virtuais das fixas pro mês+ano,
    normalizadas como objetos parecidos com despesas/receitas reais. */
+/* Coleta instâncias virtuais de fixas em UM INTERVALO de datas (YYYY-MM-DD).
+   Itera mês a mês entre as duas datas (inclusivo) chamando oneFinInstanciasDoMes
+   e filtra cada instância pela data. Resolve o bug de Extrato 7/15/30d, onde
+   antes só o mês ativo era considerado e fixas em outros meses sumiam. */
+function oneFinInstanciasNoIntervalo(inicioStr, fimStr) {
+  if (!inicioStr || !fimStr) return { receitas: [], despesas: [] };
+  var dIni = new Date(inicioStr + 'T00:00:00');
+  var dFim = new Date(fimStr + 'T00:00:00');
+  if (isNaN(dIni.getTime()) || isNaN(dFim.getTime())) return { receitas: [], despesas: [] };
+  var receitas = [], despesas = [];
+  var m = dIni.getMonth(), a = dIni.getFullYear();
+  var mFim = dFim.getMonth(), aFim = dFim.getFullYear();
+  /* guard de sanidade: no máximo 24 meses (evita loop em datas malucas) */
+  for (var i = 0; i < 24; i++) {
+    var inst = oneFinInstanciasDoMes(m, a);
+    inst.receitas.forEach(function(r){
+      if (r.data >= inicioStr && r.data <= fimStr) receitas.push(r);
+    });
+    inst.despesas.forEach(function(d){
+      if (d.data >= inicioStr && d.data <= fimStr) despesas.push(d);
+    });
+    if (a === aFim && m === mFim) break;
+    m++;
+    if (m > 11) { m = 0; a++; }
+  }
+  return { receitas: receitas, despesas: despesas };
+}
+window.oneFinInstanciasNoIntervalo = oneFinInstanciasNoIntervalo;
+
+/* Coleta instâncias virtuais de fixas dos MESES VIZINHOS ao mês alvo (anterior,
+   atual, próximo). Usado pra montar a fatura de cartão: uma fixa do mês X pode
+   cair na fatura de X+1 (caso comum) ou raramente em X-1. Cobrir os 3 vizinhos
+   evita perder qualquer instância sem ter que iterar muitos meses. */
+function oneFinInstanciasVizinhas(mes, ano) {
+  var meses = [
+    { m: mes - 1, a: ano },
+    { m: mes,     a: ano },
+    { m: mes + 1, a: ano }
+  ];
+  var receitas = [], despesas = [];
+  meses.forEach(function(p){
+    var mm = p.m, aa = p.a;
+    if (mm < 0)  { mm = 11; aa--; }
+    if (mm > 11) { mm = 0;  aa++; }
+    var inst = oneFinInstanciasDoMes(mm, aa);
+    receitas = receitas.concat(inst.receitas);
+    despesas = despesas.concat(inst.despesas);
+  });
+  return { receitas: receitas, despesas: despesas };
+}
+window.oneFinInstanciasVizinhas = oneFinInstanciasVizinhas;
+
 function oneFinInstanciasDoMes(mes, ano) {
   var receitasFixas = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]');
   var despesasFixas = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
