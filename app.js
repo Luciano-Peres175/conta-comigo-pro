@@ -9466,7 +9466,7 @@ function oneFinRenderGeral() {
     }
   }
 
-  // 2) Gráfico de barras dos últimos 6 meses
+  // 2) Gráfico de barras: mês ativo + 5 próximos, considerando reais + fixas instanciadas
   var canvas = document.getElementById('one-fin-bars-geral');
   if (!canvas || typeof Chart === 'undefined') {
     if (canvas) setTimeout(oneFinRenderGeral, 200);
@@ -9477,22 +9477,27 @@ function oneFinRenderGeral() {
   }
   if (!window.oneFinInlineCharts) window.oneFinInlineCharts = {};
 
-  var hoje = new Date();
-  var mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
   var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var mesBase = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : (new Date()).getMonth();
+  var anoBase = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : (new Date()).getFullYear();
   var labels = [], rData = [], dData = [];
-  for (var i = 5; i >= 0; i--) {
-    var m = mesAtual - i, a = anoAtual;
-    while (m < 0) { m += 12; a--; }
-    labels.push(meses[m]);
-    var rTot = receitas
-      .filter(function(r){ if (!r.data) return false; var d = new Date(r.data+'T00:00:00'); return d.getMonth()===m && d.getFullYear()===a && r.status !== 'pendente'; })
+  for (var i = 0; i < 6; i++) {
+    var m = mesBase + i, a = anoBase;
+    while (m > 11) { m -= 12; a++; }
+    var labelMes = meses[m];
+    if (a !== anoBase) labelMes += '/' + String(a).slice(-2);
+    labels.push(labelMes);
+    var rReais = receitas
+      .filter(function(r){ if (!r.data) return false; var d = new Date(r.data+'T00:00:00'); return d.getMonth()===m && d.getFullYear()===a; })
       .reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
-    var dTot = despesas
+    var dReais = despesas
       .filter(function(d){ if (!d.data) return false; var dt = new Date(d.data+'T00:00:00'); return dt.getMonth()===m && dt.getFullYear()===a; })
       .reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
-    rData.push(rTot);
-    dData.push(dTot);
+    var instM = (typeof oneFinInstanciasDoMes === 'function') ? oneFinInstanciasDoMes(m, a) : { receitas:[], despesas:[] };
+    var rFix = instM.receitas.reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
+    var dFix = instM.despesas.reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+    rData.push(rReais + rFix);
+    dData.push(dReais + dFix);
   }
 
   window.oneFinInlineCharts.barsGeral = new Chart(canvas, {
