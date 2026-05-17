@@ -8435,6 +8435,201 @@ function oneFinFaturaAberta(contaId) {
 window.oneFinFaturaAberta = oneFinFaturaAberta;
 
 /* ════════════════════════════════════════════════════════════════
+   TELA INDIVIDUAL DA CONTA (Sessão C frente 2)
+   ════════════════════════════════════════════════════════════════ */
+window.oneFinContaAberta = null;
+window.oneFinFaturaOffset = 0;
+
+function oneFinAbrirConta(id) {
+  window.oneFinContaAberta = id;
+  window.oneFinFaturaOffset = 0;
+  ['one-fin-contas-modo-lista', 'one-fin-mob-contas-modo-lista'].forEach(function(el){
+    var e = document.getElementById(el); if (e) e.hidden = true;
+  });
+  ['one-fin-contas-modo-detalhe', 'one-fin-mob-contas-modo-detalhe'].forEach(function(el){
+    var e = document.getElementById(el); if (e) e.hidden = false;
+  });
+  oneFinRenderContaDetalhe();
+}
+window.oneFinAbrirConta = oneFinAbrirConta;
+
+function oneFinVoltarContas() {
+  window.oneFinContaAberta = null;
+  ['one-fin-contas-modo-lista', 'one-fin-mob-contas-modo-lista'].forEach(function(el){
+    var e = document.getElementById(el); if (e) e.hidden = false;
+  });
+  ['one-fin-contas-modo-detalhe', 'one-fin-mob-contas-modo-detalhe'].forEach(function(el){
+    var e = document.getElementById(el); if (e) e.hidden = true;
+  });
+  oneFinRenderContas();
+}
+window.oneFinVoltarContas = oneFinVoltarContas;
+
+function oneFinEditarContaAberta() {
+  if (window.oneFinContaAberta) oneFinContaModalEditar(window.oneFinContaAberta);
+}
+window.oneFinEditarContaAberta = oneFinEditarContaAberta;
+
+function oneFinFaturaPrev() { window.oneFinFaturaOffset--; oneFinRenderContaDetalhe(); }
+function oneFinFaturaProx() { window.oneFinFaturaOffset++; oneFinRenderContaDetalhe(); }
+function oneFinFaturaHoje() { window.oneFinFaturaOffset = 0; oneFinRenderContaDetalhe(); }
+window.oneFinFaturaPrev = oneFinFaturaPrev;
+window.oneFinFaturaProx = oneFinFaturaProx;
+window.oneFinFaturaHoje = oneFinFaturaHoje;
+
+function _oneFinBrlDet(v) {
+  return 'R$ ' + (Number(v)||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+/* Lança em lista todos os lançamentos (reais + instâncias virtuais de fixas)
+   atrelados à conta. Pra fixas, gera instâncias dos próximos 6 meses + atual. */
+function _oneFinLancamentosDaConta(contaId) {
+  var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
+  var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
+  var lista = [];
+  receitas.forEach(function(r){
+    if (String(r.contaId) === String(contaId)) {
+      lista.push({ tipo:'in', key:'receitas', id:r.id, nome:r.nome||r.descricao||'Receita',
+                   categoria:r.categoria||'', valor:Number(r.valor)||0, data:r.data,
+                   status:r.status||'pendente', _fixa:false });
+    }
+  });
+  despesas.forEach(function(d){
+    if (String(d.contaId) === String(contaId)) {
+      lista.push({ tipo:'out', key:'despesas', id:d.id, nome:d.descricao||d.nome||'Despesa',
+                   categoria:d.categoria||'', valor:Number(d.valor)||0, data:d.data,
+                   faturaMesAno:d.faturaMesAno, status:d.status||'pago', _fixa:false });
+    }
+  });
+  /* Instâncias de fixas: gera mês atual + próximos 11 (1 ano à frente) */
+  var hoje = new Date();
+  for (var k = 0; k < 12; k++) {
+    var m = hoje.getMonth() + k, a = hoje.getFullYear();
+    while (m > 11) { m -= 12; a++; }
+    var inst = oneFinInstanciasDoMes(m, a);
+    inst.receitas.forEach(function(r){
+      if (String(r.contaId) === String(contaId)) {
+        lista.push({ tipo:'in', key:'receitasFixas', id:r._fixaId, nome:r.nome,
+                     categoria:r.categoria||'', valor:r.valor, data:r.data,
+                     status:'pendente', _fixa:true });
+      }
+    });
+    inst.despesas.forEach(function(d){
+      if (String(d.contaId) === String(contaId)) {
+        lista.push({ tipo:'out', key:'despesasFixas', id:d._fixaId, nome:d.nome,
+                     categoria:d.categoria||'', valor:d.valor, data:d.data,
+                     faturaMesAno:d.faturaMesAno, status:'pendente', _fixa:true });
+      }
+    });
+  }
+  lista.sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
+  return lista;
+}
+
+function _oneFinItemDetHtml(l) {
+  var cat = (typeof oneFinCatIcon === 'function') ? oneFinCatIcon(l.categoria) : { emoji:'💸', cor:'#6B7F6F', bg:'#F2F6F1' };
+  var sinal = l.tipo === 'in' ? '+' : '-';
+  var dataF = l.data ? l.data.split('-').reverse().slice(0,2).join('/') : '';
+  var nome = (l.nome||'').replace(/</g,'&lt;');
+  var catLabel = l.categoria ? l.categoria.replace(/</g,'&lt;') : (l.tipo==='in' ? 'Receita' : 'Despesa');
+  var badgeFixa = l._fixa ? ' <span style="font-size:9px;color:#9B72B0;background:rgba(155,114,176,0.12);padding:1px 5px;border-radius:6px;font-weight:600">↻ fixa</span>' : '';
+  return '<div class="one-fin-conta-det-item">' +
+           '<div class="one-fin-conta-det-item-ico" style="background:' + cat.bg + ';color:' + cat.cor + '">' + cat.emoji + '</div>' +
+           '<div class="one-fin-conta-det-item-body">' +
+             '<div class="one-fin-conta-det-item-nome">' + nome + badgeFixa + '</div>' +
+             '<div class="one-fin-conta-det-item-meta">' + dataF + ' · ' + catLabel + '</div>' +
+           '</div>' +
+           '<div class="one-fin-conta-det-item-val ' + (l.tipo==='in'?'in':'out') + '">' + sinal + _oneFinBrlDet(l.valor) + '</div>' +
+         '</div>';
+}
+
+function _oneFinRenderBancoDet(conta) {
+  var saldo = oneFinSaldoBanco(conta.id);
+  var corSaldo = saldo >= 0 ? '#27856A' : '#C0392B';
+  var lista = _oneFinLancamentosDaConta(conta.id);
+  var corpoLista = lista.length
+    ? lista.map(_oneFinItemDetHtml).join('')
+    : '<div class="one-fin-conta-det-vazio">Nenhum lançamento nesta conta ainda.</div>';
+  return '<div class="one-fin-conta-det-saldo">' +
+           '<div class="one-fin-conta-det-saldo-lbl">Saldo atual</div>' +
+           '<div class="one-fin-conta-det-saldo-val" style="color:' + corSaldo + '">' + _oneFinBrlDet(saldo) + '</div>' +
+         '</div>' +
+         '<div class="one-fin-conta-det-lista">' + corpoLista + '</div>';
+}
+
+function _oneFinRenderCartaoDet(conta) {
+  /* Carrossel de faturas. Offset 0 = fatura do mês ativo do app. */
+  var mesBase = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : new Date().getMonth();
+  var anoBase = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : new Date().getFullYear();
+  var off = window.oneFinFaturaOffset || 0;
+  var m = mesBase + off, a = anoBase;
+  while (m < 0)  { m += 12; a--; }
+  while (m > 11) { m -= 12; a++; }
+  var faturaTag = a + '-' + String(m + 1).padStart(2, '0');
+  var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  /* Despesas reais nessa fatura + instâncias de fixas com mesma faturaMesAno */
+  var despesasReais = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
+  var doMes = [];
+  despesasReais.forEach(function(d){
+    if (String(d.contaId) === String(conta.id) && d.faturaMesAno === faturaTag) {
+      doMes.push({ tipo:'out', key:'despesas', id:d.id, nome:d.descricao||d.nome||'Despesa',
+                   categoria:d.categoria||'', valor:Number(d.valor)||0, data:d.data,
+                   status:d.status||'pendente', _fixa:false });
+    }
+  });
+  /* Instâncias de fixas: pegamos do próprio mês m/a (data e fatura batem) */
+  var inst = oneFinInstanciasDoMes(m, a);
+  inst.despesas.forEach(function(d){
+    if (String(d.contaId) === String(conta.id) && d.faturaMesAno === faturaTag) {
+      doMes.push({ tipo:'out', key:'despesasFixas', id:d._fixaId, nome:d.nome,
+                   categoria:d.categoria||'', valor:d.valor, data:d.data,
+                   status:'pendente', _fixa:true });
+    }
+  });
+  doMes.sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
+
+  var totalFatura = doMes.reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+  var corpoLista = doMes.length
+    ? doMes.map(_oneFinItemDetHtml).join('')
+    : '<div class="one-fin-conta-det-vazio">Sem despesas nesta fatura.</div>';
+
+  var btnHoje = (off !== 0)
+    ? '<button class="one-fin-mes-btn one-fin-mes-hoje" onclick="oneFinFaturaHoje()" title="Voltar pro mês atual">↺</button>'
+    : '';
+
+  return '<div class="one-fin-conta-det-fatura-nav">' +
+           '<button class="one-fin-mes-btn" onclick="oneFinFaturaPrev()" title="Fatura anterior">‹</button>' +
+           '<span class="one-fin-conta-det-fatura-lbl">Fatura de ' + meses[m] + '/' + a + '</span>' +
+           '<button class="one-fin-mes-btn" onclick="oneFinFaturaProx()" title="Próxima fatura">›</button>' +
+           btnHoje +
+         '</div>' +
+         '<div class="one-fin-conta-det-saldo">' +
+           '<div class="one-fin-conta-det-saldo-lbl">Total da fatura</div>' +
+           '<div class="one-fin-conta-det-saldo-val" style="color:#C0392B">' + _oneFinBrlDet(totalFatura) + '</div>' +
+           '<div class="one-fin-conta-det-saldo-sub">Fecha dia ' + conta.diaFechamento + ' · Vence dia ' + conta.diaVencimento + '</div>' +
+         '</div>' +
+         '<div class="one-fin-conta-det-lista">' + corpoLista + '</div>';
+}
+
+function oneFinRenderContaDetalhe() {
+  var conta = oneFinGetConta(window.oneFinContaAberta);
+  if (!conta) { oneFinVoltarContas(); return; }
+  var titHtml = '<span style="display:inline-flex;align-items:center;gap:8px">' +
+                  '<span style="width:30px;height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;background:' + conta.cor + '22;color:' + conta.cor + ';font-size:17px">' + conta.icone + '</span>' +
+                  '<span>' + (conta.nome||'').replace(/</g,'&lt;') + '</span>' +
+                '</span>';
+  ['one-fin-conta-det-titulo','one-fin-mob-conta-det-titulo'].forEach(function(id){
+    var e = document.getElementById(id); if (e) e.innerHTML = titHtml;
+  });
+  var html = (conta.tipo === 'banco') ? _oneFinRenderBancoDet(conta) : _oneFinRenderCartaoDet(conta);
+  ['one-fin-conta-det-body','one-fin-mob-conta-det-body'].forEach(function(id){
+    var e = document.getElementById(id); if (e) e.innerHTML = html;
+  });
+}
+window.oneFinRenderContaDetalhe = oneFinRenderContaDetalhe;
+
+/* ════════════════════════════════════════════════════════════════
    INSTANCIAMENTO DE FIXAS (Sessão C)
    Fixas vivem só como template. Em cada mês ativo, viram instâncias virtuais
    com data calculada (diaDoMes), categoria/contaId herdados.
@@ -8527,7 +8722,7 @@ function oneFinRenderContas() {
     var dataDetalhe = (conta.tipo === 'cartao')
       ? ('Fecha dia ' + conta.diaFechamento + ' · Vence dia ' + conta.diaVencimento)
       : '';
-    return '<div class="one-fin-conta-item" onclick="oneFinContaModalEditar(\'' + conta.id + '\')">' +
+    return '<div class="one-fin-conta-item" onclick="oneFinAbrirConta(\'' + conta.id + '\')">' +
              '<div class="one-fin-conta-ico" style="background:' + conta.cor + '22;color:' + conta.cor + '">' + conta.icone + '</div>' +
              '<div class="one-fin-conta-body">' +
                '<div class="one-fin-conta-nome">' + (conta.nome || '').replace(/</g,'&lt;') + '</div>' +
@@ -8537,6 +8732,7 @@ function oneFinRenderContas() {
                '<div class="one-fin-conta-val-lbl">' + sufixo + '</div>' +
                '<div class="one-fin-conta-val-num">' + _brlContas(saldo) + '</div>' +
              '</div>' +
+             '<button class="one-fin-conta-edit-btn" onclick="event.stopPropagation(); oneFinContaModalEditar(\'' + conta.id + '\')" title="Editar conta">⚙️</button>' +
            '</div>';
   };
 

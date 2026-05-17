@@ -311,11 +311,21 @@
 
           <!-- Aba Contas: bancos + cartões de crédito -->
           <div class="one-fin-mob-vista" data-vista="contas" hidden>
-            <div class="one-fin-contas-header">
-              <span class="one-fin-contas-title">Minhas contas</span>
-              <button class="one-fin-btn-novo" onclick="oneFinContaModalAbrir()">+ Nova conta</button>
+            <div id="one-fin-mob-contas-modo-lista">
+              <div class="one-fin-contas-header">
+                <span class="one-fin-contas-title">Minhas contas</span>
+                <button class="one-fin-btn-novo" onclick="oneFinContaModalAbrir()">+ Nova conta</button>
+              </div>
+              <div class="one-fin-contas-lista" id="one-fin-mob-contas-lista"></div>
             </div>
-            <div class="one-fin-contas-lista" id="one-fin-mob-contas-lista"></div>
+            <div id="one-fin-mob-contas-modo-detalhe" hidden>
+              <div class="one-fin-conta-det-header">
+                <button class="one-fin-conta-det-back" onclick="oneFinVoltarContas()" title="Voltar">‹ Contas</button>
+                <span class="one-fin-conta-det-titulo" id="one-fin-mob-conta-det-titulo">—</span>
+                <button class="one-fin-conta-det-edit" onclick="oneFinEditarContaAberta()" title="Editar conta">⚙️</button>
+              </div>
+              <div id="one-fin-mob-conta-det-body"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -683,11 +693,21 @@
 
           <!-- View Contas — bancos e cartões de crédito -->
           <div class="one-fin-vista" data-vista="contas" hidden>
-            <div class="one-fin-contas-header">
-              <span class="one-fin-contas-title">Minhas contas</span>
-              <button class="one-fin-btn-novo" onclick="oneFinContaModalAbrir()">+ Nova conta</button>
+            <div id="one-fin-contas-modo-lista">
+              <div class="one-fin-contas-header">
+                <span class="one-fin-contas-title">Minhas contas</span>
+                <button class="one-fin-btn-novo" onclick="oneFinContaModalAbrir()">+ Nova conta</button>
+              </div>
+              <div class="one-fin-contas-lista" id="one-fin-contas-lista"></div>
             </div>
-            <div class="one-fin-contas-lista" id="one-fin-contas-lista"></div>
+            <div id="one-fin-contas-modo-detalhe" hidden>
+              <div class="one-fin-conta-det-header">
+                <button class="one-fin-conta-det-back" onclick="oneFinVoltarContas()" title="Voltar">‹ Contas</button>
+                <span class="one-fin-conta-det-titulo" id="one-fin-conta-det-titulo">—</span>
+                <button class="one-fin-conta-det-edit" onclick="oneFinEditarContaAberta()" title="Editar conta">⚙️</button>
+              </div>
+              <div id="one-fin-conta-det-body"></div>
+            </div>
           </div>
 
         </div>

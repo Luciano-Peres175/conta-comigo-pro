@@ -7738,3 +7738,154 @@ button.one-fin-card:hover {
   .one-fin-conta-nome { font-size: 13.5px; }
   .one-fin-conta-val-num { font-size: 13px; }
 }
+
+/* Botão engrenagem dentro do item da lista de contas */
+.one-fin-conta-edit-btn {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  opacity: 0.5;
+  transition: opacity 0.15s ease, background 0.15s ease;
+  margin-left: 4px;
+}
+.one-fin-conta-edit-btn:hover { opacity: 1; background: rgba(127,168,142,0.10); }
+
+/* ── Tela individual da conta (Sessão C frente 2) ── */
+.one-fin-conta-det-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px 14px;
+  gap: 10px;
+  border-bottom: 1px solid rgba(127,168,142,0.18);
+  margin-bottom: 12px;
+}
+.one-fin-conta-det-back {
+  border: none;
+  background: rgba(127,168,142,0.10);
+  color: #5C8870;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.one-fin-conta-det-back:hover { background: rgba(127,168,142,0.22); color: #2D3D2F; }
+.one-fin-conta-det-titulo {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2D3D2F;
+  font-family: 'Playfair Display', Georgia, serif;
+  text-align: left;
+}
+.one-fin-conta-det-edit {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  opacity: 0.6;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+.one-fin-conta-det-edit:hover { opacity: 1; background: rgba(127,168,142,0.10); }
+
+.one-fin-conta-det-fatura-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 12px;
+}
+.one-fin-conta-det-fatura-lbl {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #2D3D2F;
+  font-family: 'Playfair Display', Georgia, serif;
+  flex: 1;
+}
+
+.one-fin-conta-det-saldo {
+  background: #FBFAF7;
+  border: 1px solid rgba(127,168,142,0.18);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.one-fin-conta-det-saldo-lbl {
+  font-size: 11px;
+  color: #9CAB9C;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.one-fin-conta-det-saldo-val {
+  font-size: 24px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.one-fin-conta-det-saldo-sub {
+  font-size: 11px;
+  color: #6B7F6F;
+  margin-top: 4px;
+}
+
+.one-fin-conta-det-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #FBFAF7;
+  border: 1px solid rgba(127,168,142,0.18);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.one-fin-conta-det-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(127,168,142,0.10);
+}
+.one-fin-conta-det-item:last-child { border-bottom: none; }
+.one-fin-conta-det-item-ico {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.one-fin-conta-det-item-body { flex: 1; min-width: 0; }
+.one-fin-conta-det-item-nome {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #2D3D2F;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.one-fin-conta-det-item-meta {
+  font-size: 11px;
+  color: #6B7F6F;
+  margin-top: 2px;
+}
+.one-fin-conta-det-item-val {
+  font-size: 13.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.one-fin-conta-det-item-val.in  { color: #27856A; }
+.one-fin-conta-det-item-val.out { color: #C0392B; }
+.one-fin-conta-det-vazio {
+  padding: 22px 16px;
+  font-size: 12.5px;
+  color: #9CAB9C;
+  font-style: italic;
+  text-align: center;
+  font-family: 'Playfair Display', Georgia, serif;
+}
