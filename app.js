@@ -3499,7 +3499,17 @@ function pinahGetContext() {
     compromissos: get('compromissos'),
     tarefas:      get('tarefas'),
     receitas:     get('receitas'),
-    despesas:     get('despesas')
+    despesas:     get('despesas'),
+    notas_cerebro: get('notas_cerebro').slice(-50).map(function(n) {
+      return {
+        id:        n.id,
+        titulo:    n.titulo,
+        categoria: n.categoria,
+        tags:      n.tags,
+        criadoEm:  n.criadoEm,
+        preview:   String(n.conteudo || '').slice(0, 200)
+      };
+    })
   };
 }
 

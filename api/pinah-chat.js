@@ -183,6 +183,21 @@ function formatarContexto(ctx) {
     partes.push('DESPESAS RECENTES:\n' + recentes);
   }
 
+  if (Array.isArray(ctx.notas_cerebro) && ctx.notas_cerebro.length > 0) {
+    const notas = ctx.notas_cerebro
+      .slice(-50)
+      .map(n => {
+        const cat = n.categoria || 'geral';
+        const tags = Array.isArray(n.tags) && n.tags.length > 0 ? ',' + n.tags.join(',') : '';
+        const data = (n.criadoEm || '').slice(0, 10);
+        const dataBR = data ? data.split('-').reverse().join('/') : '';
+        const preview = (n.preview || '').replace(/\s+/g, ' ').trim();
+        return `  • [${cat}${tags}] ${n.titulo || 'Sem título'}${dataBR ? ' (' + dataBR + ')' : ''}${preview ? ' — ' + preview : ''}`;
+      })
+      .join('\n');
+    partes.push('SEGUNDO CÉREBRO — NOTAS RECENTES (até 50):\n' + notas);
+  }
+
   return partes.length > 0
     ? '=== DADOS ATUAIS DO LUCIANO ===\n' + partes.join('\n\n') + '\n==='
     : '';
