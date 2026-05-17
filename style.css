@@ -7537,3 +7537,175 @@ button.one-fin-card:hover {
   }
 }
 
+/* ════════════════════════════════════════════════════════════════
+   CONTAS — aba e modal (Sessão A reforma financeiro)
+   ════════════════════════════════════════════════════════════════ */
+
+.one-fin-contas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px 12px;
+  gap: 12px;
+}
+.one-fin-contas-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2D3D2F;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+.one-fin-contas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 2px 16px;
+}
+
+.one-fin-conta-secao {
+  background: #FBFAF7;
+  border: 1px solid rgba(127,168,142,0.18);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.one-fin-conta-secao-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(127,168,142,0.06);
+  border-bottom: 1px solid rgba(127,168,142,0.12);
+}
+.one-fin-conta-secao-tit {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2D3D2F;
+}
+.one-fin-conta-secao-cnt {
+  font-size: 11px;
+  color: #6B7F6F;
+  background: rgba(127,168,142,0.14);
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 22px;
+  text-align: center;
+}
+.one-fin-conta-vazio {
+  padding: 18px 14px;
+  font-size: 12.5px;
+  color: #9CAB9C;
+  font-style: italic;
+  text-align: center;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.one-fin-conta-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(127,168,142,0.10);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.one-fin-conta-item:last-child { border-bottom: none; }
+.one-fin-conta-item:hover { background: rgba(127,168,142,0.04); }
+.one-fin-conta-ico {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.one-fin-conta-body {
+  flex: 1;
+  min-width: 0;
+}
+.one-fin-conta-nome {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2D3D2F;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.one-fin-conta-sub {
+  font-size: 11px;
+  color: #6B7F6F;
+  margin-top: 2px;
+}
+.one-fin-conta-val {
+  text-align: right;
+  flex-shrink: 0;
+}
+.one-fin-conta-val-lbl {
+  font-size: 10px;
+  color: #9CAB9C;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.one-fin-conta-val-num {
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* Modal Nova conta — grades de ícones e cores */
+.one-fin-conta-modal-icones-grade {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 5px;
+}
+.one-fin-conta-modal-icone {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1.5px solid transparent;
+  background: rgba(0,0,0,0.04);
+  border-radius: 8px;
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+.one-fin-conta-modal-icone:hover { background: rgba(0,0,0,0.07); }
+.one-fin-conta-modal-icone.active {
+  border-color: #7FA88E;
+  background: rgba(127,168,142,0.15);
+  transform: scale(1.06);
+}
+
+.one-fin-conta-modal-cores-grade {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 5px;
+}
+.one-fin-conta-modal-cor {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 2.5px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+.one-fin-conta-modal-cor:hover { transform: scale(1.1); }
+.one-fin-conta-modal-cor.active {
+  border-color: #2D3D2F;
+  transform: scale(1.15);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+}
+
+/* Mobile — grades um pouco menores pra caber bem na tela */
+@media (max-width: 640px) {
+  .one-fin-conta-modal-icones-grade { grid-template-columns: repeat(8, 1fr); }
+  .one-fin-conta-modal-cores-grade  { grid-template-columns: repeat(10, 1fr); }
+  .one-fin-conta-item { padding: 10px 12px; }
+  .one-fin-conta-ico  { width: 36px; height: 36px; font-size: 18px; }
+  .one-fin-conta-nome { font-size: 13.5px; }
+  .one-fin-conta-val-num { font-size: 13px; }
+}

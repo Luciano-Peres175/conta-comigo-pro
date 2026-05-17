@@ -551,7 +551,7 @@
   function migrarDadosLegado() {
     if (!window.authUser || !window.authUser.id) return;
     if (localStorage.getItem(oneU('migrated_legacy_v1'))) return;
-    var chaves = ['compromissos','tarefas','tarefas_areas','receitas','despesas','despesasFixas','receitasFixas','categorias_receita','categorias_despesa','notas_cerebro','usuario','ccp_imposto_pct','ccp_forma_pagamento','ccp_ia_uso','ccp_initialized','one_init'];
+    var chaves = ['compromissos','tarefas','tarefas_areas','receitas','despesas','despesasFixas','receitasFixas','categorias_receita','categorias_despesa','notas_cerebro','usuario','ccp_imposto_pct','ccp_forma_pagamento','ccp_ia_uso','ccp_initialized','one_init','contas'];
     var migrou = 0;
     chaves.forEach(function(k){
       var legado = localStorage.getItem(k);
@@ -5981,6 +5981,7 @@ function oneFinMobSetVista(vista) {
     v.hidden = v.dataset.vista !== vista;
   });
   if (vista === 'lancamentos') oneFinMobRenderLista();
+  else if (vista === 'contas') { if (typeof oneFinRenderContas === 'function') oneFinRenderContas(); }
   else oneFinMobRenderCategorias();
 }
 
@@ -8254,6 +8255,393 @@ function oneFinAddCategoria(tipo, nome) {
 }
 window.oneFinAddCategoria = oneFinAddCategoria;
 
+/* ════════════════════════════════════════════════════════════════
+   CONTAS — banco e cartão de crédito (Sessão A reforma financeiro)
+   ════════════════════════════════════════════════════════════════ */
+
+var ONE_FIN_CONTA_ICONES = [
+  '🏦','💳','💰','🪙','💵','📊','🐷','🏛️','📈','🎯','⭐','🛡️',
+  '🟢','🔵','🟠','🟣','🟡','🔴','⚪','⚫'
+];
+var ONE_FIN_CONTA_CORES = [
+  '#7FA88E', '#5B7CFA', '#E07A6B', '#D4A655',
+  '#9B72B0', '#27856A', '#C0392B', '#E67BB0',
+  '#7B5CF0', '#FF8B5A', '#B8860B', '#6B7F6F'
+];
+
+function oneFinGetContas() {
+  var raw = localStorage.getItem(oneU('contas'));
+  if (!raw) return [];
+  try { return JSON.parse(raw) || []; } catch(e) { return []; }
+}
+window.oneFinGetContas = oneFinGetContas;
+
+function oneFinGetConta(id) {
+  return oneFinGetContas().find(function(c){ return String(c.id) === String(id); }) || null;
+}
+window.oneFinGetConta = oneFinGetConta;
+
+function _oneFinSaveContas(lista) {
+  localStorage.setItem(oneU('contas'), JSON.stringify(lista));
+}
+
+function oneFinAddConta(obj) {
+  var lista = oneFinGetContas();
+  var uid = (typeof crypto !== 'undefined' && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : Date.now().toString() + Math.random().toString(36).slice(2,8);
+  var tipo = (obj.tipo === 'cartao') ? 'cartao' : 'banco';
+  var conta = {
+    id: uid,
+    nome: String(obj.nome || '').trim(),
+    tipo: tipo,
+    icone: obj.icone || (tipo === 'cartao' ? '💳' : '🏦'),
+    cor: obj.cor || ONE_FIN_CONTA_CORES[0],
+    diaFechamento: (tipo === 'cartao') ? (parseInt(obj.diaFechamento, 10) || 1)  : null,
+    diaVencimento: (tipo === 'cartao') ? (parseInt(obj.diaVencimento, 10) || 10) : null,
+    criado: new Date().toISOString()
+  };
+  lista.push(conta);
+  _oneFinSaveContas(lista);
+  if (typeof supaUpsert === 'function') supaUpsert('contas', conta);
+  return conta;
+}
+window.oneFinAddConta = oneFinAddConta;
+
+function oneFinUpdateConta(id, obj) {
+  var lista = oneFinGetContas();
+  var idx = lista.findIndex(function(c){ return String(c.id) === String(id); });
+  if (idx < 0) return null;
+  var atual = lista[idx];
+  if (obj.nome != null)  atual.nome  = String(obj.nome).trim();
+  if (obj.tipo)          atual.tipo  = (obj.tipo === 'cartao') ? 'cartao' : 'banco';
+  if (obj.icone)         atual.icone = obj.icone;
+  if (obj.cor)           atual.cor   = obj.cor;
+  if (atual.tipo === 'cartao') {
+    if (obj.diaFechamento != null) atual.diaFechamento = parseInt(obj.diaFechamento, 10) || atual.diaFechamento || 1;
+    if (obj.diaVencimento != null) atual.diaVencimento = parseInt(obj.diaVencimento, 10) || atual.diaVencimento || 10;
+  } else {
+    atual.diaFechamento = null;
+    atual.diaVencimento = null;
+  }
+  _oneFinSaveContas(lista);
+  if (typeof supaUpsert === 'function') supaUpsert('contas', atual);
+  return atual;
+}
+window.oneFinUpdateConta = oneFinUpdateConta;
+
+function oneFinDeleteConta(id) {
+  var lista = oneFinGetContas();
+  var idx = lista.findIndex(function(c){ return String(c.id) === String(id); });
+  if (idx < 0) return false;
+  lista.splice(idx, 1);
+  _oneFinSaveContas(lista);
+  if (typeof supaDelete === 'function') supaDelete('contas', id);
+  return true;
+}
+window.oneFinDeleteConta = oneFinDeleteConta;
+
+/* Dada uma data de lançamento e o dia de fechamento da conta-cartão,
+   retorna 'YYYY-MM' da fatura que vai receber esse lançamento.
+   Regra: se o dia do lançamento é <= dia de fechamento, cai na fatura do MESMO mês.
+   Se é > dia de fechamento, cai na fatura do MÊS SEGUINTE. */
+function oneFinCalcularFatura(dataLancamento, diaFechamento) {
+  if (!dataLancamento || !diaFechamento) return null;
+  var d = (dataLancamento instanceof Date) ? dataLancamento : new Date(dataLancamento + 'T00:00:00');
+  if (isNaN(d.getTime())) return null;
+  var ano = d.getFullYear();
+  var mes = d.getMonth();
+  var dia = d.getDate();
+  if (dia > diaFechamento) {
+    mes++;
+    if (mes > 11) { mes = 0; ano++; }
+  }
+  var mm = String(mes + 1).padStart(2, '0');
+  return ano + '-' + mm;
+}
+window.oneFinCalcularFatura = oneFinCalcularFatura;
+
+/* Saldo simples de banco: receitas recebidas - despesas pagas da conta */
+function oneFinSaldoBanco(contaId) {
+  var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
+  var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
+  var entrou = receitas.filter(function(r){
+    return String(r.contaId) === String(contaId) && r.status === 'pago';
+  }).reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
+  var saiu = despesas.filter(function(d){
+    return String(d.contaId) === String(contaId) && d.status === 'pago';
+  }).reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+  return entrou - saiu;
+}
+window.oneFinSaldoBanco = oneFinSaldoBanco;
+
+/* Fatura aberta do cartão: total dos lançamentos cuja faturaMesAno é a próxima a fechar */
+function oneFinFaturaAberta(contaId) {
+  var conta = oneFinGetConta(contaId);
+  if (!conta || conta.tipo !== 'cartao') return 0;
+  var hoje = new Date();
+  var faturaAtual = oneFinCalcularFatura(hoje.toISOString().slice(0,10), conta.diaFechamento);
+  var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
+  return despesas.filter(function(d){
+    return String(d.contaId) === String(contaId) && d.faturaMesAno === faturaAtual;
+  }).reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+}
+window.oneFinFaturaAberta = oneFinFaturaAberta;
+
+/* ── Render da aba Contas (desktop + mobile, mesmo HTML) ── */
+function _brlContas(v) {
+  return 'R$ ' + (Number(v)||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function oneFinRenderContas() {
+  var lista = oneFinGetContas();
+  var bancos  = lista.filter(function(c){ return c.tipo === 'banco';  });
+  var cartoes = lista.filter(function(c){ return c.tipo === 'cartao'; });
+
+  var renderItem = function(conta) {
+    var saldo = (conta.tipo === 'cartao') ? oneFinFaturaAberta(conta.id) : oneFinSaldoBanco(conta.id);
+    var sufixo = (conta.tipo === 'cartao') ? 'Fatura aberta' : 'Saldo';
+    var corValor = (conta.tipo === 'cartao')
+      ? '#C0392B'
+      : (saldo >= 0 ? '#27856A' : '#C0392B');
+    var dataDetalhe = (conta.tipo === 'cartao')
+      ? ('Fecha dia ' + conta.diaFechamento + ' · Vence dia ' + conta.diaVencimento)
+      : '';
+    return '<div class="one-fin-conta-item" onclick="oneFinContaModalEditar(\'' + conta.id + '\')">' +
+             '<div class="one-fin-conta-ico" style="background:' + conta.cor + '22;color:' + conta.cor + '">' + conta.icone + '</div>' +
+             '<div class="one-fin-conta-body">' +
+               '<div class="one-fin-conta-nome">' + (conta.nome || '').replace(/</g,'&lt;') + '</div>' +
+               (dataDetalhe ? '<div class="one-fin-conta-sub">' + dataDetalhe + '</div>' : '') +
+             '</div>' +
+             '<div class="one-fin-conta-val" style="color:' + corValor + '">' +
+               '<div class="one-fin-conta-val-lbl">' + sufixo + '</div>' +
+               '<div class="one-fin-conta-val-num">' + _brlContas(saldo) + '</div>' +
+             '</div>' +
+           '</div>';
+  };
+
+  var renderSecao = function(titulo, icone, arr, vazioMsg) {
+    var h = '<div class="one-fin-conta-secao">' +
+              '<div class="one-fin-conta-secao-head">' +
+                '<span class="one-fin-conta-secao-tit">' + icone + ' ' + titulo + '</span>' +
+                '<span class="one-fin-conta-secao-cnt">' + arr.length + '</span>' +
+              '</div>';
+    if (arr.length === 0) {
+      h += '<div class="one-fin-conta-vazio">' + vazioMsg + '</div>';
+    } else {
+      h += arr.map(renderItem).join('');
+    }
+    h += '</div>';
+    return h;
+  };
+
+  var html = renderSecao('Bancos', '🏦', bancos, 'Nenhum banco cadastrado ainda.') +
+             renderSecao('Cartões de crédito', '💳', cartoes, 'Nenhum cartão cadastrado ainda.');
+
+  var alvoDesk = document.getElementById('one-fin-contas-lista');
+  if (alvoDesk) alvoDesk.innerHTML = html;
+
+  var alvoMob = document.getElementById('one-fin-mob-contas-lista');
+  if (alvoMob) alvoMob.innerHTML = html;
+}
+window.oneFinRenderContas = oneFinRenderContas;
+
+/* ── Modal Nova/Editar Conta ── */
+function _oneFinContaModalPreencherIcones() {
+  var grade = document.getElementById('one-fin-conta-modal-icones');
+  if (!grade || grade.children.length > 0) return;
+  ONE_FIN_CONTA_ICONES.forEach(function(ico){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'one-fin-conta-modal-icone';
+    b.textContent = ico;
+    b.setAttribute('data-icone', ico);
+    b.onclick = function(){ _oneFinContaModalSelIcone(ico); };
+    grade.appendChild(b);
+  });
+}
+
+function _oneFinContaModalPreencherCores() {
+  var grade = document.getElementById('one-fin-conta-modal-cores');
+  if (!grade || grade.children.length > 0) return;
+  ONE_FIN_CONTA_CORES.forEach(function(cor){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'one-fin-conta-modal-cor';
+    b.style.background = cor;
+    b.setAttribute('data-cor', cor);
+    b.onclick = function(){ _oneFinContaModalSelCor(cor); };
+    grade.appendChild(b);
+  });
+}
+
+function _oneFinContaModalPreencherDias(selectId) {
+  var sel = document.getElementById(selectId);
+  if (!sel || sel.options.length > 0) return;
+  for (var i = 1; i <= 31; i++) {
+    var opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = 'Dia ' + i;
+    sel.appendChild(opt);
+  }
+}
+
+function _oneFinContaModalSelIcone(ico) {
+  window.oneFinContaModalIcone = ico;
+  document.querySelectorAll('.one-fin-conta-modal-icone').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-icone') === ico);
+  });
+}
+
+function _oneFinContaModalSelCor(cor) {
+  window.oneFinContaModalCor = cor;
+  document.querySelectorAll('.one-fin-conta-modal-cor').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-cor') === cor);
+  });
+}
+
+function oneFinContaModalAbrir() {
+  var modal = document.getElementById('one-fin-conta-modal');
+  if (!modal) return;
+  _oneFinContaModalPreencherIcones();
+  _oneFinContaModalPreencherCores();
+  _oneFinContaModalPreencherDias('one-fin-conta-modal-fechamento');
+  _oneFinContaModalPreencherDias('one-fin-conta-modal-vencimento');
+
+  document.getElementById('one-fin-conta-modal-title').textContent = 'Nova conta';
+  document.getElementById('one-fin-conta-modal-id').value = '';
+  document.getElementById('one-fin-conta-modal-nome').value = '';
+  document.getElementById('one-fin-conta-modal-fechamento').value = '1';
+  document.getElementById('one-fin-conta-modal-vencimento').value = '10';
+  document.getElementById('one-fin-conta-modal-btn-excluir').style.display = 'none';
+
+  window.oneFinContaModalIcone = null;
+  window.oneFinContaModalCor   = null;
+
+  oneFinContaModalSetTipo('banco');
+  modal.classList.add('open');
+  setTimeout(function(){ document.getElementById('one-fin-conta-modal-nome').focus(); }, 100);
+}
+window.oneFinContaModalAbrir = oneFinContaModalAbrir;
+
+function oneFinContaModalEditar(id) {
+  var conta = oneFinGetConta(id);
+  if (!conta) return;
+  var modal = document.getElementById('one-fin-conta-modal');
+  if (!modal) return;
+  _oneFinContaModalPreencherIcones();
+  _oneFinContaModalPreencherCores();
+  _oneFinContaModalPreencherDias('one-fin-conta-modal-fechamento');
+  _oneFinContaModalPreencherDias('one-fin-conta-modal-vencimento');
+
+  document.getElementById('one-fin-conta-modal-title').textContent = 'Editar conta';
+  document.getElementById('one-fin-conta-modal-id').value = conta.id;
+  document.getElementById('one-fin-conta-modal-nome').value = conta.nome || '';
+  document.getElementById('one-fin-conta-modal-fechamento').value = String(conta.diaFechamento || 1);
+  document.getElementById('one-fin-conta-modal-vencimento').value = String(conta.diaVencimento || 10);
+  document.getElementById('one-fin-conta-modal-btn-excluir').style.display = '';
+
+  oneFinContaModalSetTipo(conta.tipo || 'banco');
+  _oneFinContaModalSelIcone(conta.icone || (conta.tipo === 'cartao' ? '💳' : '🏦'));
+  _oneFinContaModalSelCor(conta.cor || ONE_FIN_CONTA_CORES[0]);
+  modal.classList.add('open');
+}
+window.oneFinContaModalEditar = oneFinContaModalEditar;
+
+function oneFinContaModalFechar() {
+  var modal = document.getElementById('one-fin-conta-modal');
+  if (modal) modal.classList.remove('open');
+}
+window.oneFinContaModalFechar = oneFinContaModalFechar;
+
+function oneFinContaModalSetTipo(tipo) {
+  tipo = (tipo === 'cartao') ? 'cartao' : 'banco';
+  window.oneFinContaModalTipo = tipo;
+  var tabBanco  = document.getElementById('one-fin-conta-modal-tab-banco');
+  var tabCartao = document.getElementById('one-fin-conta-modal-tab-cartao');
+  if (tabBanco)  tabBanco.classList.toggle('active',  tipo === 'banco');
+  if (tabCartao) tabCartao.classList.toggle('active', tipo === 'cartao');
+  var blocoCartao = document.getElementById('one-fin-conta-modal-bloco-cartao');
+  if (blocoCartao) blocoCartao.style.display = (tipo === 'cartao') ? '' : 'none';
+  if (!window.oneFinContaModalIcone) {
+    _oneFinContaModalSelIcone(tipo === 'cartao' ? '💳' : '🏦');
+  }
+  if (!window.oneFinContaModalCor) {
+    _oneFinContaModalSelCor(ONE_FIN_CONTA_CORES[0]);
+  }
+}
+window.oneFinContaModalSetTipo = oneFinContaModalSetTipo;
+
+function oneFinContaModalSalvar() {
+  var id    = document.getElementById('one-fin-conta-modal-id').value;
+  var nome  = (document.getElementById('one-fin-conta-modal-nome').value || '').trim();
+  var tipo  = window.oneFinContaModalTipo || 'banco';
+  var icone = window.oneFinContaModalIcone || (tipo === 'cartao' ? '💳' : '🏦');
+  var cor   = window.oneFinContaModalCor || ONE_FIN_CONTA_CORES[0];
+  var dFech = parseInt(document.getElementById('one-fin-conta-modal-fechamento').value, 10);
+  var dVenc = parseInt(document.getElementById('one-fin-conta-modal-vencimento').value, 10);
+
+  if (!nome) {
+    if (typeof oneToast === 'function') oneToast('Dá um nome pra conta.', 'error');
+    return;
+  }
+  if (tipo === 'cartao') {
+    if (!dFech || dFech < 1 || dFech > 31) {
+      if (typeof oneToast === 'function') oneToast('Dia de fechamento inválido.', 'error');
+      return;
+    }
+    if (!dVenc || dVenc < 1 || dVenc > 31) {
+      if (typeof oneToast === 'function') oneToast('Dia de vencimento inválido.', 'error');
+      return;
+    }
+  }
+
+  var obj = { nome: nome, tipo: tipo, icone: icone, cor: cor };
+  if (tipo === 'cartao') {
+    obj.diaFechamento = dFech;
+    obj.diaVencimento = dVenc;
+  }
+
+  if (id) {
+    oneFinUpdateConta(id, obj);
+    if (typeof oneToast === 'function') oneToast('✓ Conta atualizada.');
+  } else {
+    oneFinAddConta(obj);
+    if (typeof oneToast === 'function') oneToast('✓ Conta criada.');
+  }
+
+  window.oneFinContaModalIcone = null;
+  window.oneFinContaModalCor   = null;
+
+  oneFinContaModalFechar();
+  oneFinRenderContas();
+}
+window.oneFinContaModalSalvar = oneFinContaModalSalvar;
+
+function oneFinContaModalExcluir() {
+  var id = document.getElementById('one-fin-conta-modal-id').value;
+  if (!id) return;
+  var conta = oneFinGetConta(id);
+  if (!conta) return;
+  var receitas      = JSON.parse(localStorage.getItem(oneU('receitas'))      || '[]');
+  var despesas      = JSON.parse(localStorage.getItem(oneU('despesas'))      || '[]');
+  var receitasFixas = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]');
+  var despesasFixas = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
+  var todos = receitas.concat(despesas).concat(receitasFixas).concat(despesasFixas);
+  var atrelados = todos.filter(function(l){ return String(l.contaId) === String(id); }).length;
+  var msg = atrelados > 0
+    ? 'Excluir "' + conta.nome + '"? Tem ' + atrelados + ' lançamento(s) atrelado(s) que vão ficar sem conta. Continuar?'
+    : 'Excluir conta "' + conta.nome + '"?';
+  if (!confirm(msg)) return;
+  oneFinDeleteConta(id);
+  oneFinContaModalFechar();
+  oneFinRenderContas();
+  if (typeof oneToast === 'function') oneToast('Conta excluída.');
+}
+window.oneFinContaModalExcluir = oneFinContaModalExcluir;
+
+/* ════════════════════════════════════════════════════════════════ */
+
 function oneFinModalPreencherDias() {
   var sel = document.getElementById('one-fin-modal-dia');
   if (!sel || sel.options.length > 0) return;
@@ -8543,6 +8931,8 @@ function oneFinSetVista(vista) {
     else oneFinRenderCategorias();
   } else if (vista === 'extrato') {
     if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  } else if (vista === 'contas') {
+    if (typeof oneFinRenderContas === 'function') oneFinRenderContas();
   }
 }
 window.oneFinSetVista = oneFinSetVista;

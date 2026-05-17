@@ -271,10 +271,11 @@
             </div>
           </div>
 
-          <!-- Tabs: Lançamentos / Categorias -->
+          <!-- Tabs: Lançamentos / Categorias / Contas -->
           <div class="one-fin-mob-tabs" role="tablist">
             <button class="one-fin-mob-tab active" data-vista="lancamentos" onclick="oneFinMobSetVista('lancamentos')">Lançamentos</button>
             <button class="one-fin-mob-tab"        data-vista="categorias"  onclick="oneFinMobSetVista('categorias')">Categorias</button>
+            <button class="one-fin-mob-tab"        data-vista="contas"      onclick="oneFinMobSetVista('contas')">Contas</button>
           </div>
 
           <!-- Aba Lançamentos: filtros de período + lista -->
@@ -306,6 +307,15 @@
               </div>
             </div>
             <div class="one-fin-mob-cat-list" id="one-fin-mob-cat-list"></div>
+          </div>
+
+          <!-- Aba Contas: bancos + cartões de crédito -->
+          <div class="one-fin-mob-vista" data-vista="contas" hidden>
+            <div class="one-fin-contas-header">
+              <span class="one-fin-contas-title">Minhas contas</span>
+              <button class="one-fin-btn-novo" onclick="oneFinContaModalAbrir()">+ Nova conta</button>
+            </div>
+            <div class="one-fin-contas-lista" id="one-fin-mob-contas-lista"></div>
           </div>
         </div>
       </div>
@@ -562,6 +572,7 @@
             <button class="one-fin-vista-tab active" data-vista="geral"      onclick="oneFinSetVista('geral')">Visão geral</button>
             <button class="one-fin-vista-tab"        data-vista="dashboard"  onclick="oneFinSetVista('dashboard')">Dashboard</button>
             <button class="one-fin-vista-tab"        data-vista="extrato"    onclick="oneFinSetVista('extrato')">Extrato</button>
+            <button class="one-fin-vista-tab"        data-vista="contas"     onclick="oneFinSetVista('contas')">Contas</button>
           </div>
           <div class="one-fin-header-right">
             <button onclick="oneFinModalAbrir()" title="Novo lançamento" class="one-fin-btn-novo">+ Novo lançamento</button>
@@ -663,6 +674,15 @@
               </div>
             </div>
             <div class="one-pn-body" id="one-fin-list-big" style="flex:1;overflow-y:auto"></div>
+          </div>
+
+          <!-- View Contas — bancos e cartões de crédito -->
+          <div class="one-fin-vista" data-vista="contas" hidden>
+            <div class="one-fin-contas-header">
+              <span class="one-fin-contas-title">Minhas contas</span>
+              <button class="one-fin-btn-novo" onclick="oneFinContaModalAbrir()">+ Nova conta</button>
+            </div>
+            <div class="one-fin-contas-lista" id="one-fin-contas-lista"></div>
           </div>
 
         </div>
@@ -2092,6 +2112,61 @@
     <div class="one-modal-footer">
       <button class="one-modal-btn-cancel" onclick="oneFinModalFechar()">Cancelar</button>
       <button class="one-modal-btn-save" onclick="oneFinModalSalvar()">Salvar lançamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MODAL — Nova / Editar Conta (banco ou cartão de crédito)
+═══════════════════════════════════════════════════════════════ -->
+<div id="one-fin-conta-modal" class="one-modal-overlay">
+  <div class="one-modal-box">
+    <div class="one-modal-title">
+      <span id="one-fin-conta-modal-title">Nova conta</span>
+      <button class="one-modal-close" onclick="oneFinContaModalFechar()">✕</button>
+    </div>
+    <input type="hidden" id="one-fin-conta-modal-id">
+
+    <div class="one-fin-modal-tabs">
+      <button class="one-fin-modal-tab active" id="one-fin-conta-modal-tab-banco"  type="button" onclick="oneFinContaModalSetTipo('banco')">🏦 Banco</button>
+      <button class="one-fin-modal-tab"        id="one-fin-conta-modal-tab-cartao" type="button" onclick="oneFinContaModalSetTipo('cartao')">💳 Cartão</button>
+    </div>
+
+    <div class="one-modal-field">
+      <label class="one-modal-label">Nome</label>
+      <input id="one-fin-conta-modal-nome" class="one-modal-input" placeholder="Ex: BTG Corrente, Itaú TudoAzul…">
+    </div>
+
+    <div class="one-modal-field">
+      <label class="one-modal-label">Ícone</label>
+      <div class="one-fin-conta-modal-icones-grade" id="one-fin-conta-modal-icones"></div>
+    </div>
+
+    <div class="one-modal-field">
+      <label class="one-modal-label">Cor</label>
+      <div class="one-fin-conta-modal-cores-grade" id="one-fin-conta-modal-cores"></div>
+    </div>
+
+    <div id="one-fin-conta-modal-bloco-cartao" style="display:none">
+      <div class="one-modal-row">
+        <div class="one-modal-field">
+          <label class="one-modal-label">Dia de fechamento</label>
+          <select id="one-fin-conta-modal-fechamento" class="one-modal-select"></select>
+        </div>
+        <div class="one-modal-field">
+          <label class="one-modal-label">Dia de vencimento</label>
+          <select id="one-fin-conta-modal-vencimento" class="one-modal-select"></select>
+        </div>
+      </div>
+      <div style="font-size:11px; color:rgba(0,0,0,0.55); margin-top:-4px; line-height:1.4">
+        Compras feitas até o dia de fechamento entram na fatura do mês atual. Depois, vão pra próxima.
+      </div>
+    </div>
+
+    <div class="one-modal-footer">
+      <button class="one-modal-btn-cancel" id="one-fin-conta-modal-btn-excluir" onclick="oneFinContaModalExcluir()" style="display:none; color:#C0392B; border-color:#C0392B">Excluir</button>
+      <button class="one-modal-btn-cancel" onclick="oneFinContaModalFechar()">Cancelar</button>
+      <button class="one-modal-btn-save"   onclick="oneFinContaModalSalvar()">Salvar conta</button>
     </div>
   </div>
 </div>
