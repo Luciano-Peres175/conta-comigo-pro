@@ -9144,13 +9144,21 @@ window.oneFinSetVista = oneFinSetVista;
 
 /* ── View "Visão geral" — lista resumida + barras balanço 6 meses ── */
 function oneFinRenderGeral() {
-  // 1) Últimos 6 lançamentos
+  // 1) Lançamentos do mês ativo (até 6 mais recentes)
   var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
   var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
-  var todos = receitas.map(function(r){
+  var hojeRG = new Date();
+  var mesRG = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : hojeRG.getMonth();
+  var anoRG = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : hojeRG.getFullYear();
+  var noMesAtivo = function(dataStr) {
+    if (!dataStr) return false;
+    var d = new Date(dataStr + 'T00:00:00');
+    return d.getMonth() === mesRG && d.getFullYear() === anoRG;
+  };
+  var todos = receitas.filter(function(r){ return noMesAtivo(r.data); }).map(function(r){
     return { tipo:'in', key:'receitas', id:r.id, nome:r.nome || r.descricao || 'Receita',
              categoria: r.categoria || r.tipo || '', valor:Number(r.valor)||0, data:r.data };
-  }).concat(despesas.map(function(d){
+  }).concat(despesas.filter(function(d){ return noMesAtivo(d.data); }).map(function(d){
     return { tipo:'out', key:'despesas', id:d.id, nome:d.descricao || d.nome || 'Despesa',
              categoria: d.categoria || '', valor:Number(d.valor)||0, data:d.data };
   })).sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); }).slice(0, 6);
@@ -9158,7 +9166,7 @@ function oneFinRenderGeral() {
   var listEl = document.getElementById('one-fin-geral-recent');
   if (listEl) {
     if (!todos.length) {
-      listEl.innerHTML = '<p style="text-align:center;color:#9CAB9C;font-size:12px;padding:12px 0;font-style:italic;font-family:Playfair Display,Georgia,serif">Nenhum lançamento ainda</p>';
+      listEl.innerHTML = '<p style="text-align:center;color:#9CAB9C;font-size:12px;padding:12px 0;font-style:italic;font-family:Playfair Display,Georgia,serif">Nenhum lançamento neste mês</p>';
     } else {
       listEl.innerHTML = todos.map(function(l){
         var cat = (typeof oneFinCatIcon === 'function') ? oneFinCatIcon(l.categoria) : { emoji:'💸', cor:'#6B7F6F', bg:'#F2F6F1' };
