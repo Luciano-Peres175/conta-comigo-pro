@@ -5193,8 +5193,19 @@ function renderOneFinanceiroPainel() {
   var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
   var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
   var hoje = new Date(); hoje.setHours(0,0,0,0);
-  var mes = hoje.getMonth(), ano = hoje.getFullYear();
+  /* Mês ativo: começa em hoje, navega via setas. Vive em window pra sobreviver entre renders. */
+  if (typeof window.oneFinMesAtivo !== 'number') window.oneFinMesAtivo = hoje.getMonth();
+  if (typeof window.oneFinAnoAtivo !== 'number') window.oneFinAnoAtivo = hoje.getFullYear();
+  var mes = window.oneFinMesAtivo;
+  var ano = window.oneFinAnoAtivo;
   var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  /* Botão "voltar pro hoje" só aparece quando estamos fora do mês corrente */
+  var btnHoje = document.getElementById('one-fin-mes-hoje-btn');
+  if (btnHoje) {
+    var foraDoMes = (mes !== hoje.getMonth() || ano !== hoje.getFullYear());
+    btnHoje.style.display = foraDoMes ? '' : 'none';
+  }
 
   function noMes(d) {
     var date = new Date(d + 'T00:00:00');
@@ -5317,6 +5328,39 @@ function zerarFinanceiro() {
   if (typeof renderCardFinanceiro==='function') renderCardFinanceiro();
   if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
 }
+
+/* ── Navegação de mês na Visão Geral (remendo Sessão C) ── */
+function oneFinMesPrev() {
+  if (typeof window.oneFinMesAtivo !== 'number') {
+    var h = new Date();
+    window.oneFinMesAtivo = h.getMonth();
+    window.oneFinAnoAtivo = h.getFullYear();
+  }
+  window.oneFinMesAtivo--;
+  if (window.oneFinMesAtivo < 0) { window.oneFinMesAtivo = 11; window.oneFinAnoAtivo--; }
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+}
+window.oneFinMesPrev = oneFinMesPrev;
+
+function oneFinMesProx() {
+  if (typeof window.oneFinMesAtivo !== 'number') {
+    var h = new Date();
+    window.oneFinMesAtivo = h.getMonth();
+    window.oneFinAnoAtivo = h.getFullYear();
+  }
+  window.oneFinMesAtivo++;
+  if (window.oneFinMesAtivo > 11) { window.oneFinMesAtivo = 0; window.oneFinAnoAtivo++; }
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+}
+window.oneFinMesProx = oneFinMesProx;
+
+function oneFinMesHoje() {
+  var h = new Date();
+  window.oneFinMesAtivo = h.getMonth();
+  window.oneFinAnoAtivo = h.getFullYear();
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+}
+window.oneFinMesHoje = oneFinMesHoje;
 window.zerarFinanceiro = zerarFinanceiro;
 
 function oneFinExcluir(key, id) {

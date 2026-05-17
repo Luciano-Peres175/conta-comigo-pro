@@ -566,7 +566,12 @@
         <div class="one-ag-header one-fin-header" style="flex-shrink:0">
           <div class="one-fin-header-left">
             <span class="one-ag-mes-label">💰 Financeiro</span>
-            <span class="one-pn-sub" id="one-fin-periodo">—</span>
+            <span class="one-fin-mes-nav">
+              <button class="one-fin-mes-btn" type="button" onclick="oneFinMesPrev()" title="Mês anterior">‹</button>
+              <span class="one-pn-sub" id="one-fin-periodo">—</span>
+              <button class="one-fin-mes-btn" type="button" onclick="oneFinMesProx()" title="Próximo mês">›</button>
+              <button class="one-fin-mes-btn one-fin-mes-hoje" type="button" id="one-fin-mes-hoje-btn" onclick="oneFinMesHoje()" title="Voltar pro mês atual" style="display:none">↺</button>
+            </span>
           </div>
           <div class="one-fin-header-tabs">
             <button class="one-fin-vista-tab active" data-vista="geral"      onclick="oneFinSetVista('geral')">Visão geral</button>
