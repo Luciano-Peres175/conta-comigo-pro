@@ -6452,6 +6452,119 @@ button.one-fin-card:hover {
 }
 .one-fin-geral-link:hover { text-decoration: underline; }
 
+/* Toggle Por categoria | Por conta na lista da Visão Geral */
+.one-fin-geral-toggle {
+  display: inline-flex;
+  gap: 0;
+  background: rgba(127,168,142,0.10);
+  border-radius: 8px;
+  padding: 2px;
+  margin-bottom: 10px;
+}
+.one-fin-geral-toggle-btn {
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6B7F6F;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-geral-toggle-btn:hover { color: #2D3D2F; }
+.one-fin-geral-toggle-btn.active {
+  background: #fff;
+  color: #2D3D2F;
+  box-shadow: 0 1px 3px rgba(58,88,72,0.10);
+}
+
+/* Blocos colapsáveis na lista de lançamentos do mês */
+.one-fin-grupo {
+  border-bottom: 1px solid rgba(127,168,142,0.10);
+}
+.one-fin-grupo:last-child { border-bottom: none; }
+.one-fin-grupo-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-grupo-head:hover { background: rgba(127,168,142,0.04); }
+.one-fin-grupo-seta {
+  font-size: 10px;
+  color: #9CAB9C;
+  width: 10px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.one-fin-grupo-ico {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.one-fin-grupo-info {
+  flex: 1;
+  min-width: 0;
+}
+.one-fin-grupo-nome {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #2D3D2F;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.one-fin-grupo-cnt {
+  font-size: 10px;
+  color: #6B7F6F;
+  margin-top: 1px;
+}
+.one-fin-grupo-total {
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.one-fin-grupo-itens {
+  padding: 2px 4px 8px 38px;
+  background: rgba(127,168,142,0.03);
+}
+.one-fin-grupo-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-grupo-item-info { flex: 1; min-width: 0; }
+.one-fin-grupo-item-nome {
+  font-size: 12px;
+  color: #2D3D2F;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.one-fin-grupo-item-meta {
+  font-size: 10px;
+  color: #6B7F6F;
+}
+.one-fin-grupo-item-val {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* ── View Extrato — tabs de período MINI + filtros ativos ── */
 .one-fin-extrato-controls {
   display: flex;

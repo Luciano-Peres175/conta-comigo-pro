@@ -5363,6 +5363,21 @@ function oneFinMesHoje() {
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
 }
 window.oneFinMesHoje = oneFinMesHoje;
+
+/* ── Blocos colapsáveis na Visão Geral (Sessão C frente 4) ── */
+function oneFinSetAgrupamento(modo) {
+  window.oneFinAgrupamento = (modo === 'conta') ? 'conta' : 'categoria';
+  window.oneFinGruposAbertos = {}; /* reset ao trocar modo */
+  if (typeof oneFinRenderGeral === 'function') oneFinRenderGeral();
+}
+window.oneFinSetAgrupamento = oneFinSetAgrupamento;
+
+function oneFinToggleGrupo(chave) {
+  if (!window.oneFinGruposAbertos) window.oneFinGruposAbertos = {};
+  window.oneFinGruposAbertos[chave] = !window.oneFinGruposAbertos[chave];
+  if (typeof oneFinRenderGeral === 'function') oneFinRenderGeral();
+}
+window.oneFinToggleGrupo = oneFinToggleGrupo;
 window.zerarFinanceiro = zerarFinanceiro;
 
 function oneFinExcluir(key, id) {
@@ -9432,36 +9447,93 @@ function oneFinRenderGeral() {
   var _instRG = (typeof oneFinInstanciasDoMes === 'function') ? oneFinInstanciasDoMes(mesRG, anoRG) : { receitas: [], despesas: [] };
   var todos = receitas.filter(function(r){ return noMesAtivo(r.data); }).map(function(r){
     return { tipo:'in', key:'receitas', id:r.id, nome:r.nome || r.descricao || 'Receita',
-             categoria: r.categoria || r.tipo || '', valor:Number(r.valor)||0, data:r.data, _fixa:false };
+             categoria: r.categoria || r.tipo || '', valor:Number(r.valor)||0, data:r.data, contaId:r.contaId||'', _fixa:false };
   }).concat(_instRG.receitas.map(function(r){
     return { tipo:'in', key:'receitasFixas', id:r._fixaId, nome:r.nome,
-             categoria:r.categoria || '', valor:Number(r.valor)||0, data:r.data, _fixa:true };
+             categoria:r.categoria || '', valor:Number(r.valor)||0, data:r.data, contaId:r.contaId||'', _fixa:true };
   })).concat(despesas.filter(function(d){ return noMesAtivo(d.data); }).map(function(d){
     return { tipo:'out', key:'despesas', id:d.id, nome:d.descricao || d.nome || 'Despesa',
-             categoria: d.categoria || '', valor:Number(d.valor)||0, data:d.data, _fixa:false };
+             categoria: d.categoria || '', valor:Number(d.valor)||0, data:d.data, contaId:d.contaId||'', _fixa:false };
   })).concat(_instRG.despesas.map(function(d){
     return { tipo:'out', key:'despesasFixas', id:d._fixaId, nome:d.nome,
-             categoria:d.categoria || '', valor:Number(d.valor)||0, data:d.data, _fixa:true };
-  })).sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); }).slice(0, 6);
+             categoria:d.categoria || '', valor:Number(d.valor)||0, data:d.data, contaId:d.contaId||'', _fixa:true };
+  })).sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
+
+  /* Estado dos blocos colapsáveis (Sessão C frente 4) */
+  if (typeof window.oneFinAgrupamento !== 'string') window.oneFinAgrupamento = 'categoria';
+  if (!window.oneFinGruposAbertos) window.oneFinGruposAbertos = {};
+  var modo = window.oneFinAgrupamento;
 
   var listEl = document.getElementById('one-fin-geral-recent');
   if (listEl) {
+    var togHtml = '<div class="one-fin-geral-toggle">' +
+                    '<button type="button" class="one-fin-geral-toggle-btn' + (modo==='categoria'?' active':'') + '" onclick="oneFinSetAgrupamento(\'categoria\')">Por categoria</button>' +
+                    '<button type="button" class="one-fin-geral-toggle-btn' + (modo==='conta'?' active':'') + '" onclick="oneFinSetAgrupamento(\'conta\')">Por conta</button>' +
+                  '</div>';
     if (!todos.length) {
-      listEl.innerHTML = '<p style="text-align:center;color:#9CAB9C;font-size:12px;padding:12px 0;font-style:italic;font-family:Playfair Display,Georgia,serif">Nenhum lançamento neste mês</p>';
+      listEl.innerHTML = togHtml + '<p style="text-align:center;color:#9CAB9C;font-size:12px;padding:12px 0;font-style:italic;font-family:Playfair Display,Georgia,serif">Nenhum lançamento neste mês</p>';
     } else {
-      listEl.innerHTML = todos.map(function(l){
-        var cat = (typeof oneFinCatIcon === 'function') ? oneFinCatIcon(l.categoria) : { emoji:'💸', cor:'#6B7F6F', bg:'#F2F6F1' };
-        var sinal = l.tipo === 'in' ? '+' : '-';
-        var dataF = l.data ? l.data.split('-').reverse().slice(0,2).join('/') : '';
-        var badgeFixa = l._fixa ? ' <span style="font-size:9px;color:#9B72B0;background:rgba(155,114,176,0.12);padding:1px 5px;border-radius:6px;margin-left:4px;font-weight:600">↻ fixa</span>' : '';
-        return '<div style="display:flex;align-items:center;gap:9px;padding:6px 2px;border-bottom:1px solid rgba(127,168,142,0.10);font-family:system-ui,-apple-system,sans-serif">' +
-                 '<div style="width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;background:' + cat.bg + ';color:' + cat.cor + ';flex-shrink:0">' + cat.emoji + '</div>' +
-                 '<div style="flex:1;min-width:0">' +
-                   '<div style="font-size:12.5px;color:#2D3D2F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + l.nome.replace(/</g,'&lt;') + badgeFixa + '</div>' +
-                   '<div style="font-size:10px;color:#6B7F6F">' + dataF + '</div>' +
-                 '</div>' +
-                 '<div style="font-size:12.5px;font-weight:600;color:' + (l.tipo==='in'?'#27856A':'#C0392B') + ';white-space:nowrap">' + sinal + _brlFin(l.valor).replace('R$ ','R$') + '</div>' +
-               '</div>';
+      var grupos = {};
+      var ordemGrupos = [];
+      todos.forEach(function(l){
+        var chave, label, ico;
+        if (modo === 'categoria') {
+          chave = (l.categoria || 'Sem categoria') + '__' + l.tipo;
+          label = l.categoria || 'Sem categoria';
+          var icoCat = (typeof oneFinCatIcon === 'function') ? oneFinCatIcon(l.categoria) : { emoji:'💸', cor:'#6B7F6F', bg:'#F2F6F1' };
+          ico = icoCat;
+        } else {
+          var conta = l.contaId ? oneFinGetConta(l.contaId) : null;
+          chave = (l.contaId || 'sem-conta') + '__' + l.tipo;
+          label = conta ? conta.nome : 'Sem conta';
+          ico = conta ? { emoji: conta.icone || '🏦', cor: conta.cor || '#6B7F6F', bg: (conta.cor || '#6B7F6F') + '22' } : { emoji:'❔', cor:'#9CAB9C', bg:'#F2F6F1' };
+        }
+        if (!grupos[chave]) {
+          grupos[chave] = { label: label, ico: ico, tipo: l.tipo, total: 0, itens: [] };
+          ordemGrupos.push(chave);
+        }
+        grupos[chave].total += l.valor;
+        grupos[chave].itens.push(l);
+      });
+      /* Ordena: despesas primeiro (maior total acima), depois receitas */
+      ordemGrupos.sort(function(a, b){
+        var ga = grupos[a], gb = grupos[b];
+        if (ga.tipo !== gb.tipo) return ga.tipo === 'out' ? -1 : 1;
+        return gb.total - ga.total;
+      });
+
+      listEl.innerHTML = togHtml + ordemGrupos.map(function(chave){
+        var g = grupos[chave];
+        var aberto = !!window.oneFinGruposAbertos[chave];
+        var corVal = g.tipo === 'in' ? '#27856A' : '#C0392B';
+        var sinal = g.tipo === 'in' ? '+' : '-';
+        var seta = aberto ? '▾' : '▸';
+        var labelSafe = (g.label||'').replace(/</g,'&lt;');
+        var head = '<div class="one-fin-grupo-head" onclick="oneFinToggleGrupo(\'' + chave.replace(/'/g,"\\'") + '\')">' +
+                     '<span class="one-fin-grupo-seta">' + seta + '</span>' +
+                     '<div class="one-fin-grupo-ico" style="background:' + g.ico.bg + ';color:' + g.ico.cor + '">' + g.ico.emoji + '</div>' +
+                     '<div class="one-fin-grupo-info">' +
+                       '<div class="one-fin-grupo-nome">' + labelSafe + '</div>' +
+                       '<div class="one-fin-grupo-cnt">' + g.itens.length + ' ' + (g.itens.length === 1 ? 'lançamento' : 'lançamentos') + '</div>' +
+                     '</div>' +
+                     '<div class="one-fin-grupo-total" style="color:' + corVal + '">' + sinal + _brlFin(g.total).replace('R$ ', 'R$') + '</div>' +
+                   '</div>';
+        var corpo = '';
+        if (aberto) {
+          corpo = '<div class="one-fin-grupo-itens">' + g.itens.map(function(l){
+            var dataF = l.data ? l.data.split('-').reverse().slice(0,2).join('/') : '';
+            var badgeFixa = l._fixa ? ' <span style="font-size:9px;color:#9B72B0;background:rgba(155,114,176,0.12);padding:1px 5px;border-radius:6px;font-weight:600">↻ fixa</span>' : '';
+            var nomeS = (l.nome||'').replace(/</g,'&lt;');
+            return '<div class="one-fin-grupo-item">' +
+                     '<div class="one-fin-grupo-item-info">' +
+                       '<div class="one-fin-grupo-item-nome">' + nomeS + badgeFixa + '</div>' +
+                       '<div class="one-fin-grupo-item-meta">' + dataF + '</div>' +
+                     '</div>' +
+                     '<div class="one-fin-grupo-item-val" style="color:' + corVal + '">' + sinal + _brlFin(l.valor).replace('R$ ','R$') + '</div>' +
+                   '</div>';
+          }).join('') + '</div>';
+        }
+        return '<div class="one-fin-grupo">' + head + corpo + '</div>';
       }).join('');
     }
   }
