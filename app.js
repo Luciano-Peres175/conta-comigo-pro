@@ -4362,25 +4362,47 @@ function oneMobSuggest(texto) {
   setTimeout(function() { if (input) input.focus(); }, 320);
 }
 
-function oneEnviar() {
+async function oneEnviar() {
   var inputDesk = document.getElementById('one-input-desk');
   var inputMob  = document.getElementById('one-input');
   var input = (inputDesk && inputDesk.value.trim()) ? inputDesk : inputMob;
 
-  var texto  = input ? input.value.trim() : '';
-  var arquivo = _chatArquivoAtual;
+  var texto    = input ? input.value.trim() : '';
+  var arquivos = (_chatArquivosAtuais && _chatArquivosAtuais.length) ? _chatArquivosAtuais.slice() : [];
 
-  // Precisa de texto OU arquivo para enviar
-  if (!texto && !arquivo) return;
+  // Precisa de texto OU pelo menos 1 arquivo para enviar
+  if (!texto && arquivos.length === 0) return;
 
   if (input) { input.value = ''; input.style.height = 'auto'; }
   _chatLimparArquivo();
 
-  pinahEnviar(texto, arquivo);
+  /* Sem arquivos: chamada única (texto puro) */
+  if (arquivos.length === 0) {
+    pinahEnviar(texto, null);
+    return;
+  }
+
+  /* 1 arquivo: chamada única (comportamento clássico) */
+  if (arquivos.length === 1) {
+    pinahEnviar(texto, arquivos[0]);
+    return;
+  }
+
+  /* Múltiplos arquivos: dispara em sequência, um por vez.
+     Cada um vira uma nota separada. O texto do usuário acompanha
+     todos (mesma instrução). Aguarda o anterior terminar antes de
+     mandar o próximo, pra não atropelar o stream. */
+  for (var i = 0; i < arquivos.length; i++) {
+    var prefixoLote = '[Arquivo ' + (i + 1) + ' de ' + arquivos.length + '] ';
+    var textoArquivo = texto
+      ? (prefixoLote + texto)
+      : (prefixoLote + 'Salva este documento no Segundo Cérebro.');
+    await pinahEnviar(textoArquivo, arquivos[i]);
+  }
 }
 
-// ── Anexar arquivo no chat ────────────────────────────────────────
-var _chatArquivoAtual = null;
+// ── Anexar arquivo no chat (suporta múltiplos arquivos) ──────────
+var _chatArquivosAtuais = [];
 
 function oneAnexar() {
   var input = document.getElementById('chat-file-input');
@@ -4389,73 +4411,108 @@ function oneAnexar() {
 window.oneAnexar = oneAnexar;
 
 function _chatOnFileSelect(input) {
-  var file = input && input.files && input.files[0];
-  if (!file) return;
-  input.value = ''; // permite re-selecionar o mesmo arquivo
-  var ext = (file.name || '').split('.').pop().toLowerCase();
+  var files = (input && input.files) ? Array.from(input.files) : [];
+  if (files.length === 0) return;
+  input.value = ''; // permite re-selecionar os mesmos arquivos
+
   var extOk = ['pdf','docx','jpg','jpeg','png','webp'];
-  if (!extOk.includes(ext)) { toast('Use PDF, DOCX, JPG ou PNG.', 'error'); return; }
-  if (file.size > 20 * 1024 * 1024) { toast('Arquivo muito grande (máx 20MB).', 'error'); return; }
 
-  _chatMostrarChip(file.name, true); // loading
-
-  if (ext === 'docx') {
-    // DOCX: extração client-side com mammoth
-    if (!window.mammoth) {
-      var s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
-      s.onload = function() { _chatLerDOCX(file); };
-      s.onerror = function() { toast('Falha ao carregar leitor de DOCX.', 'error'); _chatLimparArquivo(); };
-      document.head.appendChild(s);
-    } else {
-      _chatLerDOCX(file);
+  /* Valida cada arquivo antes de começar a processar */
+  var validos = [];
+  files.forEach(function(file) {
+    var ext = (file.name || '').split('.').pop().toLowerCase();
+    if (!extOk.includes(ext)) {
+      toast('Ignorado (formato): ' + file.name, 'error', { duration: 4000 });
+      return;
     }
-  } else {
-    // PDF ou imagem — lê como base64
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      var dataUrl = e.target.result;
-      var base64  = dataUrl.split(',')[1];
-      _chatArquivoAtual = {
-        nome:     file.name,
-        tipo:     ext === 'pdf' ? 'pdf' : 'imagem',
-        base64:   base64,
-        mimeType: ext === 'pdf' ? 'application/pdf' : file.type
+    if (file.size > 20 * 1024 * 1024) {
+      toast('Ignorado (>20MB): ' + file.name, 'error', { duration: 4000 });
+      return;
+    }
+    validos.push({ file: file, ext: ext });
+  });
+
+  if (validos.length === 0) return;
+
+  /* Mostra chip resumido enquanto processa */
+  _chatAtualizarChip(true);
+
+  /* Processa cada arquivo em paralelo. Cada um chama _chatRegistrarArquivo() quando pronto. */
+  validos.forEach(function(item) {
+    if (item.ext === 'docx') {
+      if (!window.mammoth) {
+        var s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+        s.onload  = function() { _chatLerDOCX(item.file); };
+        s.onerror = function() { toast('Falha ao carregar leitor de DOCX para ' + item.file.name, 'error'); };
+        document.head.appendChild(s);
+      } else {
+        _chatLerDOCX(item.file);
+      }
+    } else {
+      /* PDF ou imagem — lê como base64 */
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var dataUrl = e.target.result;
+        var base64  = dataUrl.split(',')[1];
+        _chatRegistrarArquivo({
+          nome:     item.file.name,
+          tipo:     item.ext === 'pdf' ? 'pdf' : 'imagem',
+          base64:   base64,
+          mimeType: item.ext === 'pdf' ? 'application/pdf' : item.file.type
+        });
       };
-      _chatMostrarChip(file.name, false);
-    };
-    reader.onerror = function() { toast('Erro ao ler arquivo.', 'error'); _chatLimparArquivo(); };
-    reader.readAsDataURL(file);
-  }
+      reader.onerror = function() { toast('Erro ao ler ' + item.file.name, 'error'); };
+      reader.readAsDataURL(item.file);
+    }
+  });
 }
 window._chatOnFileSelect = _chatOnFileSelect;
+
+function _chatRegistrarArquivo(arquivo) {
+  _chatArquivosAtuais.push(arquivo);
+  _chatAtualizarChip(false);
+}
 
 function _chatLerDOCX(file) {
   var reader = new FileReader();
   reader.onload = function(e) {
     window.mammoth.extractRawText({ arrayBuffer: e.target.result })
       .then(function(result) {
-        _chatArquivoAtual = { nome: file.name, tipo: 'texto', textoExtraido: result.value || '' };
-        _chatMostrarChip(file.name, false);
+        _chatRegistrarArquivo({ nome: file.name, tipo: 'texto', textoExtraido: result.value || '' });
       })
-      .catch(function() { toast('Erro ao ler DOCX.', 'error'); _chatLimparArquivo(); });
+      .catch(function() { toast('Erro ao ler DOCX: ' + file.name, 'error'); });
   };
   reader.readAsArrayBuffer(file);
 }
 
-function _chatMostrarChip(nome, loading) {
+/* Mostra chip único quando há 1 arquivo, ou contagem quando há vários */
+function _chatAtualizarChip(loading) {
+  var n = _chatArquivosAtuais.length;
+  var label;
+  if (n === 0 && loading)      label = '📎 Carregando…';
+  else if (n === 1)            label = '📎 ' + _chatArquivosAtuais[0].nome;
+  else if (n > 1 && !loading)  label = '📎 ' + n + ' arquivos prontos';
+  else if (n > 1 && loading)   label = '📎 ' + n + ' arquivos (carregando mais…)';
+  else                         label = '📎 Carregando…';
+
   ['mob','desk'].forEach(function(v) {
     var chip = document.getElementById('chat-file-chip-' + v);
     var span = document.getElementById('chat-file-chip-' + v + '-nome');
     if (!chip) return;
     chip.style.display = 'flex';
-    chip.classList.toggle('loading', !!loading);
-    if (span) span.textContent = '📎 ' + nome;
+    chip.classList.toggle('loading', !!loading && n === 0);
+    if (span) span.textContent = label;
   });
 }
 
+/* Mantida pra compatibilidade — alguns callers ainda usam */
+function _chatMostrarChip(nome, loading) {
+  _chatAtualizarChip(loading);
+}
+
 function _chatLimparArquivo() {
-  _chatArquivoAtual = null;
+  _chatArquivosAtuais = [];
   ['mob','desk'].forEach(function(v) {
     var chip = document.getElementById('chat-file-chip-' + v);
     if (chip) chip.style.display = 'none';

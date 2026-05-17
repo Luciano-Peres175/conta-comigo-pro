@@ -697,7 +697,7 @@
 
         <!-- Prompt da Pinah GLOBAL — comum a todos os módulos -->
         <!-- Input file oculto — único, compartilhado por mobile e desktop -->
-        <input type="file" id="chat-file-input" accept=".pdf,.docx,image/jpeg,image/png,image/webp" style="display:none" onchange="_chatOnFileSelect(this)">
+        <input type="file" id="chat-file-input" accept=".pdf,.docx,image/jpeg,image/png,image/webp" multiple style="display:none" onchange="_chatOnFileSelect(this)">
         <div id="chat-file-chip-desk" class="chat-file-chip" style="display:none">
           <span id="chat-file-chip-desk-nome">📎 arquivo.pdf</span>
           <button onclick="_chatLimparArquivo()" class="chat-file-chip-x">✕</button>
