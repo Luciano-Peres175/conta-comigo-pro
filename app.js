@@ -8741,13 +8741,14 @@ function oneFinRenderContas() {
               '<div class="one-fin-conta-secao-head">' +
                 '<span class="one-fin-conta-secao-tit">' + icone + ' ' + titulo + '</span>' +
                 '<span class="one-fin-conta-secao-cnt">' + arr.length + '</span>' +
-              '</div>';
+              '</div>' +
+              '<div class="one-fin-conta-secao-items">';
     if (arr.length === 0) {
       h += '<div class="one-fin-conta-vazio">' + vazioMsg + '</div>';
     } else {
       h += arr.map(renderItem).join('');
     }
-    h += '</div>';
+    h += '</div></div>';
     return h;
   };
 
