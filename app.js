@@ -3991,19 +3991,51 @@ async function supaResync() {
 }
 window.supaResync = supaResync;
 
-/* Remove um item do Supabase pelo id */
+/* Remove um item do Supabase pelo id.
+   Usa .select() pra trazer as linhas afetadas — assim conseguimos detectar
+   o caso silencioso "operação passou mas RLS bloqueou e zero linhas foram
+   apagadas". Sem isso, o Supabase responde error=null mesmo quando nada foi
+   removido, e o reload trazia tudo de volta via supaSync. */
 async function supaDelete(localKey, id) {
-  if (!window.supa || !window.authUser) return;
+  if (!window.supa || !window.authUser) {
+    console.warn('[supaDelete] supa ou authUser nulo — abortado');
+    if (typeof oneToast === 'function') oneToast('⚠ Não autenticado — exclusão só local');
+    return { ok: false, motivo: 'no-auth' };
+  }
   var tabela = SUPA_TABLES[localKey];
-  if (!tabela) return;
+  if (!tabela) {
+    console.warn('[supaDelete] tabela desconhecida:', localKey);
+    return { ok: false, motivo: 'tabela-desconhecida' };
+  }
   try {
     var result = await window.supa.from(tabela).delete()
-      .eq('id', id).eq('user_id', window.authUser.id);
-    if (result.error) console.warn('[supaDelete]', tabela, id, result.error.message);
+      .eq('id', id).eq('user_id', window.authUser.id)
+      .select();
+    if (result.error) {
+      console.error('[supaDelete] ERRO', tabela, id, result.error);
+      if (typeof oneToast === 'function') {
+        oneToast('⚠ Erro ao apagar no servidor: ' + (result.error.message || result.error.code || 'desconhecido'));
+      }
+      return { ok: false, motivo: 'erro', error: result.error };
+    }
+    var afetadas = (result.data && result.data.length) || 0;
+    if (afetadas === 0) {
+      console.warn('[supaDelete] ZERO LINHAS afetadas', tabela, id,
+        '— provável RLS bloqueando DELETE ou id inexistente no servidor');
+      if (typeof oneToast === 'function') {
+        oneToast('⚠ Servidor não apagou (RLS?). Item pode voltar no próximo reload.');
+      }
+      return { ok: false, motivo: 'zero-linhas' };
+    }
+    console.log('[supaDelete] OK', tabela, id, '— linhas apagadas:', afetadas);
+    return { ok: true, afetadas: afetadas };
   } catch(e) {
-    console.warn('[supaDelete] Exceção:', e);
+    console.error('[supaDelete] Exceção:', e);
+    if (typeof oneToast === 'function') oneToast('⚠ Exceção ao apagar: ' + e.message);
+    return { ok: false, motivo: 'excecao', error: e };
   }
 }
+window.supaDelete = supaDelete;
 
 function pinahCriarCompromisso(input) {
   var store = _pinahGetSet('compromissos');
