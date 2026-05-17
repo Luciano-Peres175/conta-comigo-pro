@@ -613,11 +613,9 @@
     if (!localStorage.getItem(oneU('notas_cerebro'))) {
       localStorage.setItem(oneU('notas_cerebro'), JSON.stringify([]));
     }
-    // Garante fixas mesmo em app já inicializado mas vazio
-    const fixas = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
-    if (fixas.length === 0) {
-      localStorage.setItem(oneU('despesasFixas'), JSON.stringify(FIXAS_DEFAULT));
-    }
+    // Antes existia um "garante fixas" que re-semeava FIXAS_DEFAULT toda vez que
+    // a lista de fixas ficasse vazia. Foi removido em 17/05/2026: o usuário precisa
+    // poder zerar fixas de propósito (uso real) sem o app re-popular demo sozinho.
   }
 
   /* ── Navegação ──────────────────────────────────────────────── */
@@ -7253,24 +7251,20 @@ function oneToast(msg) {
     // Multi-tenant: só semeia demo se o user real estiver logado
     if (!window.authUser || !window.authUser.id) return;
     if (localStorage.getItem(oneU('one_init'))) return;
+    // Seed financeiro do One zerado em 17/05/2026: app em fase de uso real.
+    // Receitas e despesas demo (Maria S., Leonardo B., etc.) removidas pra que
+    // o usuário comece limpo. Compromissos demo mantidos só pra usuários
+    // novos sentirem a agenda viva na primeira abertura.
     var now = new Date();
     var ano = now.getFullYear();
     var mes = String(now.getMonth()+1).padStart(2,'0');
     var h = now.getDate();
     var d = function(dia) { return ano+'-'+mes+'-'+String(Math.max(1,Math.min(28,dia))).padStart(2,'0'); };
     if (!localStorage.getItem(oneU('receitas'))) {
-      localStorage.setItem(oneU('receitas'), JSON.stringify([
-        {id:'d1',data:d(h-8),nome:'Maria S.',tipo:'Atendimento',valor:280,formaPagamento:'Pix',status:'Pago',categoria:'Atendimento'},
-        {id:'d2',data:d(h-5),nome:'Leonardo B.',tipo:'Avaliação',valor:350,formaPagamento:'Pix',status:'Pago',categoria:'Avaliação'},
-        {id:'d3',data:d(h-3),nome:'Ana K.',tipo:'Atendimento',valor:280,formaPagamento:'Pix',status:'Pago',categoria:'Atendimento'},
-        {id:'d4',data:d(h),nome:'Beatriz N.',tipo:'Atendimento',valor:280,formaPagamento:'Pix',status:'Pendente',categoria:'Atendimento'}
-      ]));
+      localStorage.setItem(oneU('receitas'), JSON.stringify([]));
     }
     if (!localStorage.getItem(oneU('despesas'))) {
-      localStorage.setItem(oneU('despesas'), JSON.stringify([
-        {id:'e1',data:d(h-7),descricao:'Material de consultório',categoria:'Material',valor:180,status:'Pago'},
-        {id:'e2',data:d(h-2),descricao:'Curso online',categoria:'Capacitação',valor:320,status:'Pago'}
-      ]));
+      localStorage.setItem(oneU('despesas'), JSON.stringify([]));
     }
     if (!localStorage.getItem(oneU('compromissos'))) {
       localStorage.setItem(oneU('compromissos'), JSON.stringify([
