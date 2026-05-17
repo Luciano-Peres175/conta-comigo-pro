@@ -7559,6 +7559,9 @@ button.one-fin-card:hover {
   flex-direction: column;
   gap: 14px;
   padding: 0 2px 16px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .one-fin-conta-secao {
