@@ -5272,12 +5272,14 @@ function renderOneFinanceiroPainel() {
     var inicioStr = inicio.toISOString().slice(0,10);
     var hojeStr = hoje.toISOString().slice(0,10);
     /* Inclui instâncias virtuais de fixas no intervalo — sem isso o Extrato
-       em 7/15/30d ficava só com lançamentos reais e omitia as fixas. */
+       em 7/15/30d ficava só com lançamentos reais e omitia as fixas.
+       Cap superior em hojeStr: "últimos N dias" não inclui parcelas futuras
+       (8/10, 9/10 de despesas parceladas têm datas em meses à frente). */
     var _instInt = (typeof oneFinInstanciasNoIntervalo === 'function')
                      ? oneFinInstanciasNoIntervalo(inicioStr, hojeStr)
                      : { receitas: [], despesas: [] };
-    rFil = receitas.filter(function(r){ return (r.data||'') >= inicioStr; }).concat(_instInt.receitas);
-    dFil = despesas.filter(function(d){ return (d.data||'') >= inicioStr; }).concat(_instInt.despesas);
+    rFil = receitas.filter(function(r){ var dd = r.data||''; return dd >= inicioStr && dd <= hojeStr; }).concat(_instInt.receitas);
+    dFil = despesas.filter(function(d){ var dd = d.data||''; return dd >= inicioStr && dd <= hojeStr; }).concat(_instInt.despesas);
   }
 
   // Filtro adicional vindo dos cards de alerta (pendentes / vencendo)
