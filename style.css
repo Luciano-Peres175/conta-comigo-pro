@@ -4072,6 +4072,14 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   margin-top: 22px; padding-top: 18px;
   border-top: 1px solid rgba(127,168,142,0.14);
 }
+.one-modal-btn-excluir {
+  padding: 10px 16px; border-radius: 12px;
+  border: 1.5px solid rgba(192,57,43,0.22); background: #fff;
+  font-size: 12.5px; font-weight: 600; cursor: pointer; color: #C0392B;
+  margin-right: auto; /* empurra pra esquerda, separado dos outros */
+  transition: all .15s;
+}
+.one-modal-btn-excluir:hover { background: rgba(192,57,43,0.08); }
 .one-modal-btn-cancel {
   padding: 10px 20px; border-radius: 12px;
   border: 1.5px solid rgba(127,168,142,0.22); background: #fff;

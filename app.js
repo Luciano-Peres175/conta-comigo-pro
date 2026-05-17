@@ -8443,9 +8443,21 @@ function oneFinFaturaAberta(contaId) {
   var hoje = new Date();
   var faturaAtual = oneFinCalcularFatura(hoje.toISOString().slice(0,10), conta.diaFechamento);
   var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
-  return despesas.filter(function(d){
+  var totalReais = despesas.filter(function(d){
     return String(d.contaId) === String(contaId) && d.faturaMesAno === faturaAtual;
   }).reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+  /* Soma também instâncias virtuais de despesas fixas atreladas a esse cartão na fatura atual */
+  var totalFixas = 0;
+  if (typeof oneFinInstanciasDoMes === 'function' && faturaAtual) {
+    var partes = faturaAtual.split('-');
+    var anoF = parseInt(partes[0], 10);
+    var mesF = parseInt(partes[1], 10) - 1;
+    var inst = oneFinInstanciasDoMes(mesF, anoF);
+    totalFixas = inst.despesas.filter(function(d){
+      return String(d.contaId) === String(contaId) && d.faturaMesAno === faturaAtual;
+    }).reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+  }
+  return totalReais + totalFixas;
 }
 window.oneFinFaturaAberta = oneFinFaturaAberta;
 
@@ -9174,6 +9186,10 @@ function oneFinModalAbrir(tipoInicial) {
   oneFinModalSetRecorrencia('esporadica');
   oneFinModalToggleParcelas();
 
+  /* Botão excluir: escondido em novo lançamento */
+  var btnDel = document.getElementById('one-fin-modal-btn-excluir');
+  if (btnDel) btnDel.style.display = 'none';
+
   /* Listener da data atualiza preview da fatura (idempotente) */
   var dataInp = document.getElementById('one-fin-modal-data');
   if (dataInp && !dataInp.dataset.bindFatura) {
@@ -9234,6 +9250,10 @@ function oneFinModalEditar(key, id) {
   }
   oneFinModalAtualizarPreviewFatura();
 
+  /* Botão excluir disponível em edição */
+  var btnDel = document.getElementById('one-fin-modal-btn-excluir');
+  if (btnDel) btnDel.style.display = '';
+
   modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-fin-modal-nome').focus(); }, 100);
 }
@@ -9244,6 +9264,24 @@ function oneFinModalFechar() {
   if (modal) modal.classList.remove('open');
 }
 window.oneFinModalFechar = oneFinModalFechar;
+
+/* Excluir lançamento direto do modal de edição.
+   Identifica chave pela recorrência e tipo atuais do modal. */
+function oneFinModalExcluir() {
+  var id = document.getElementById('one-fin-modal-id').value;
+  if (!id) return;
+  var tipo = window.oneFinModalTipo || 'receita';
+  var rec  = window.oneFinModalRecorrencia || 'esporadica';
+  var key;
+  if (rec === 'fixa') {
+    key = (tipo === 'receita') ? 'receitasFixas' : 'despesasFixas';
+  } else {
+    key = (tipo === 'receita') ? 'receitas' : 'despesas';
+  }
+  oneFinModalFechar();
+  if (typeof oneFinExcluir === 'function') oneFinExcluir(key, id);
+}
+window.oneFinModalExcluir = oneFinModalExcluir;
 
 function oneFinModalSetTipo(tipo) {
   window.oneFinModalTipo = tipo;
