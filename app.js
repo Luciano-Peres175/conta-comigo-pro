@@ -5211,8 +5211,10 @@ function renderOneFinanceiroPainel() {
     var date = new Date(d + 'T00:00:00');
     return date.getMonth() === mes && date.getFullYear() === ano;
   }
-  var rMes = receitas.filter(function(r){ return noMes(r.data); });
-  var dMes = despesas.filter(function(d){ return noMes(d.data); });
+  /* Instâncias virtuais das fixas pra esse mês — pendentes, contam como lançamentos do mês */
+  var _instMes = (typeof oneFinInstanciasDoMes === 'function') ? oneFinInstanciasDoMes(mes, ano) : { receitas: [], despesas: [] };
+  var rMes = receitas.filter(function(r){ return noMes(r.data); }).concat(_instMes.receitas);
+  var dMes = despesas.filter(function(d){ return noMes(d.data); }).concat(_instMes.despesas);
 
   var totalReceitas  = rMes.filter(function(r){ return r.status !== 'pendente'; }).reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
   var totalDespesas  = dMes.reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
@@ -8432,6 +8434,80 @@ function oneFinFaturaAberta(contaId) {
 }
 window.oneFinFaturaAberta = oneFinFaturaAberta;
 
+/* ════════════════════════════════════════════════════════════════
+   INSTANCIAMENTO DE FIXAS (Sessão C)
+   Fixas vivem só como template. Em cada mês ativo, viram instâncias virtuais
+   com data calculada (diaDoMes), categoria/contaId herdados.
+   Instâncias virtuais têm flag _fixa=true e _fixaId=id-do-template.
+   ════════════════════════════════════════════════════════════════ */
+function oneFinFixaAtivaNoMes(fixa, mes, ano) {
+  if (!fixa.inicio) return true;
+  var partes = String(fixa.inicio).split('-');
+  var iAno = parseInt(partes[0], 10);
+  var iMes = parseInt(partes[1], 10);
+  if (!iAno || !iMes) return true;
+  return (ano > iAno) || (ano === iAno && mes >= (iMes - 1));
+}
+window.oneFinFixaAtivaNoMes = oneFinFixaAtivaNoMes;
+
+function oneFinDataFixaNoMes(fixa, mes, ano) {
+  var dia = parseInt(fixa.diaDoMes, 10) || 1;
+  if (dia < 1) dia = 1;
+  if (dia > 28) dia = 28;
+  return ano + '-' + String(mes + 1).padStart(2, '0') + '-' + String(dia).padStart(2, '0');
+}
+window.oneFinDataFixaNoMes = oneFinDataFixaNoMes;
+
+/* Devolve as instâncias virtuais das fixas pro mês+ano,
+   normalizadas como objetos parecidos com despesas/receitas reais. */
+function oneFinInstanciasDoMes(mes, ano) {
+  var receitasFixas = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]');
+  var despesasFixas = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
+  var receitas = [], despesas = [];
+
+  receitasFixas.forEach(function(rf){
+    if (!oneFinFixaAtivaNoMes(rf, mes, ano)) return;
+    receitas.push({
+      id: '_fix_r_' + rf.id + '_' + ano + '_' + mes,
+      _fixa: true, _fixaId: rf.id, _fixaKey: 'receitasFixas',
+      nome: rf.nome || rf.descricao || 'Receita fixa',
+      descricao: rf.descricao || rf.nome || 'Receita fixa',
+      valor: Number(rf.valor) || 0,
+      data: oneFinDataFixaNoMes(rf, mes, ano),
+      categoria: rf.categoria || '',
+      contaId: rf.contaId || '',
+      tipo: 'receita',
+      recorrencia: 'fixa',
+      status: 'pendente'
+    });
+  });
+
+  despesasFixas.forEach(function(df){
+    if (!oneFinFixaAtivaNoMes(df, mes, ano)) return;
+    var conta = df.contaId ? oneFinGetConta(df.contaId) : null;
+    var dataF = oneFinDataFixaNoMes(df, mes, ano);
+    despesas.push({
+      id: '_fix_d_' + df.id + '_' + ano + '_' + mes,
+      _fixa: true, _fixaId: df.id, _fixaKey: 'despesasFixas',
+      nome: df.nome || df.descricao || 'Despesa fixa',
+      descricao: df.descricao || df.nome || 'Despesa fixa',
+      valor: Number(df.valor) || 0,
+      data: dataF,
+      categoria: df.categoria || '',
+      contaId: df.contaId || '',
+      tipo: 'despesa',
+      recorrencia: 'fixa',
+      status: 'pendente',
+      faturaMesAno: (conta && conta.tipo === 'cartao')
+        ? oneFinCalcularFatura(dataF, conta.diaFechamento)
+        : null
+    });
+  });
+
+  return { receitas: receitas, despesas: despesas };
+}
+window.oneFinInstanciasDoMes = oneFinInstanciasDoMes;
+
 /* ── Render da aba Contas (desktop + mobile, mesmo HTML) ── */
 function _brlContas(v) {
   return 'R$ ' + (Number(v)||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
@@ -9155,12 +9231,20 @@ function oneFinRenderGeral() {
     var d = new Date(dataStr + 'T00:00:00');
     return d.getMonth() === mesRG && d.getFullYear() === anoRG;
   };
+  /* Instâncias virtuais das fixas no mês ativo entram com flag _fixa */
+  var _instRG = (typeof oneFinInstanciasDoMes === 'function') ? oneFinInstanciasDoMes(mesRG, anoRG) : { receitas: [], despesas: [] };
   var todos = receitas.filter(function(r){ return noMesAtivo(r.data); }).map(function(r){
     return { tipo:'in', key:'receitas', id:r.id, nome:r.nome || r.descricao || 'Receita',
-             categoria: r.categoria || r.tipo || '', valor:Number(r.valor)||0, data:r.data };
-  }).concat(despesas.filter(function(d){ return noMesAtivo(d.data); }).map(function(d){
+             categoria: r.categoria || r.tipo || '', valor:Number(r.valor)||0, data:r.data, _fixa:false };
+  }).concat(_instRG.receitas.map(function(r){
+    return { tipo:'in', key:'receitasFixas', id:r._fixaId, nome:r.nome,
+             categoria:r.categoria || '', valor:Number(r.valor)||0, data:r.data, _fixa:true };
+  })).concat(despesas.filter(function(d){ return noMesAtivo(d.data); }).map(function(d){
     return { tipo:'out', key:'despesas', id:d.id, nome:d.descricao || d.nome || 'Despesa',
-             categoria: d.categoria || '', valor:Number(d.valor)||0, data:d.data };
+             categoria: d.categoria || '', valor:Number(d.valor)||0, data:d.data, _fixa:false };
+  })).concat(_instRG.despesas.map(function(d){
+    return { tipo:'out', key:'despesasFixas', id:d._fixaId, nome:d.nome,
+             categoria:d.categoria || '', valor:Number(d.valor)||0, data:d.data, _fixa:true };
   })).sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); }).slice(0, 6);
 
   var listEl = document.getElementById('one-fin-geral-recent');
@@ -9172,10 +9256,11 @@ function oneFinRenderGeral() {
         var cat = (typeof oneFinCatIcon === 'function') ? oneFinCatIcon(l.categoria) : { emoji:'💸', cor:'#6B7F6F', bg:'#F2F6F1' };
         var sinal = l.tipo === 'in' ? '+' : '-';
         var dataF = l.data ? l.data.split('-').reverse().slice(0,2).join('/') : '';
+        var badgeFixa = l._fixa ? ' <span style="font-size:9px;color:#9B72B0;background:rgba(155,114,176,0.12);padding:1px 5px;border-radius:6px;margin-left:4px;font-weight:600">↻ fixa</span>' : '';
         return '<div style="display:flex;align-items:center;gap:9px;padding:6px 2px;border-bottom:1px solid rgba(127,168,142,0.10);font-family:system-ui,-apple-system,sans-serif">' +
                  '<div style="width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;background:' + cat.bg + ';color:' + cat.cor + ';flex-shrink:0">' + cat.emoji + '</div>' +
                  '<div style="flex:1;min-width:0">' +
-                   '<div style="font-size:12.5px;color:#2D3D2F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + l.nome.replace(/</g,'&lt;') + '</div>' +
+                   '<div style="font-size:12.5px;color:#2D3D2F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + l.nome.replace(/</g,'&lt;') + badgeFixa + '</div>' +
                    '<div style="font-size:10px;color:#6B7F6F">' + dataF + '</div>' +
                  '</div>' +
                  '<div style="font-size:12.5px;font-weight:600;color:' + (l.tipo==='in'?'#27856A':'#C0392B') + ';white-space:nowrap">' + sinal + _brlFin(l.valor).replace('R$ ','R$') + '</div>' +
