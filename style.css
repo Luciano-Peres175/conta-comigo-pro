@@ -7739,6 +7739,30 @@ button.one-fin-card:hover {
   .one-fin-conta-val-num { font-size: 13px; }
 }
 
+/* Wrappers de modo (lista | detalhe) precisam herdar o flex pra lista rolar */
+#one-fin-contas-modo-lista,
+#one-fin-mob-contas-modo-lista,
+#one-fin-contas-modo-detalhe,
+#one-fin-mob-contas-modo-detalhe {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+#one-fin-contas-modo-lista[hidden],
+#one-fin-mob-contas-modo-lista[hidden],
+#one-fin-contas-modo-detalhe[hidden],
+#one-fin-mob-contas-modo-detalhe[hidden] {
+  display: none;
+}
+#one-fin-conta-det-body,
+#one-fin-mob-conta-det-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 12px;
+}
+
 /* Botão engrenagem dentro do item da lista de contas */
 .one-fin-conta-edit-btn {
   border: none;
