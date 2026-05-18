@@ -585,6 +585,7 @@
           </div>
           <div class="one-fin-header-tabs">
             <button class="one-fin-vista-tab active" data-vista="geral"      onclick="oneFinSetVista('geral')">Visão geral</button>
+            <button class="one-fin-vista-tab"        data-vista="resumo"     onclick="oneFinSetVista('resumo')">Resumo</button>
             <button class="one-fin-vista-tab"        data-vista="dashboard"  onclick="oneFinSetVista('dashboard')">Dashboard</button>
             <button class="one-fin-vista-tab"        data-vista="extrato"    onclick="oneFinSetVista('extrato')">Extrato</button>
             <button class="one-fin-vista-tab"        data-vista="fixas"      onclick="oneFinSetVista('fixas')">Fixas</button>
@@ -657,6 +658,15 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- View Resumo — espelho da planilha mestre (caixa do mês + obrigações + investimentos) -->
+          <div class="one-fin-vista" data-vista="resumo" hidden>
+            <div class="one-fin-resumo-grid">
+              <div class="one-fin-resumo-bloco" id="one-fin-resumo-caixa"></div>
+              <div class="one-fin-resumo-bloco one-fin-resumo-bloco-investimentos" id="one-fin-resumo-invest"></div>
+            </div>
+            <div class="one-fin-resumo-bloco one-fin-resumo-bloco-obrigacoes" id="one-fin-resumo-obrigacoes"></div>
           </div>
 
           <!-- View Dashboard — lista de categorias à esquerda + donut à direita (2 colunas) -->
@@ -2177,8 +2187,9 @@
     <input type="hidden" id="one-fin-conta-modal-id">
 
     <div class="one-fin-modal-tabs">
-      <button class="one-fin-modal-tab active" id="one-fin-conta-modal-tab-banco"  type="button" onclick="oneFinContaModalSetTipo('banco')">🏦 Banco</button>
-      <button class="one-fin-modal-tab"        id="one-fin-conta-modal-tab-cartao" type="button" onclick="oneFinContaModalSetTipo('cartao')">💳 Cartão</button>
+      <button class="one-fin-modal-tab active" id="one-fin-conta-modal-tab-banco"     type="button" onclick="oneFinContaModalSetTipo('banco')">🏦 Banco</button>
+      <button class="one-fin-modal-tab"        id="one-fin-conta-modal-tab-cartao"    type="button" onclick="oneFinContaModalSetTipo('cartao')">💳 Cartão</button>
+      <button class="one-fin-modal-tab"        id="one-fin-conta-modal-tab-investimento" type="button" onclick="oneFinContaModalSetTipo('investimento')">📈 Investimento</button>
     </div>
 
     <div class="one-modal-field">
@@ -2209,6 +2220,16 @@
       </div>
       <div style="font-size:11px; color:rgba(0,0,0,0.55); margin-top:-4px; line-height:1.4">
         Compras feitas até o dia de fechamento entram na fatura do mês atual. Depois, vão pra próxima.
+      </div>
+    </div>
+
+    <div id="one-fin-conta-modal-bloco-investimento" style="display:none">
+      <div class="one-modal-field">
+        <label class="one-modal-label">Saldo atual (R$)</label>
+        <input id="one-fin-conta-modal-saldo" class="one-modal-input" type="number" step="0.01" placeholder="0,00">
+      </div>
+      <div style="font-size:11px; color:rgba(0,0,0,0.55); margin-top:-4px; line-height:1.4">
+        Investimentos somam pro patrimônio total, mas não entram no caixa do mês. Atualize esse valor quando aplicar ou resgatar.
       </div>
     </div>
 

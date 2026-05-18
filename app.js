@@ -5275,6 +5275,9 @@ function renderOneFinanceiroPainel() {
     // Garante visibilidade da view geral, esconde outras — ESCOPO no painel financeiro
     document.querySelectorAll('.one-desktop-financeiro .one-fin-vista').forEach(function(v){ v.hidden = v.getAttribute('data-vista') !== 'geral'; });
     setTimeout(oneFinRenderGeral, 0);
+  } else if (vistaAtual === 'resumo' && typeof oneFinRenderResumo === 'function') {
+    document.querySelectorAll('.one-desktop-financeiro .one-fin-vista').forEach(function(v){ v.hidden = v.getAttribute('data-vista') !== 'resumo'; });
+    setTimeout(oneFinRenderResumo, 0);
   } else if (vistaAtual === 'dashboard' && typeof oneFinRenderCategorias === 'function') {
     document.querySelectorAll('.one-desktop-financeiro .one-fin-vista').forEach(function(v){ v.hidden = v.getAttribute('data-vista') !== 'dashboard'; });
     setTimeout(oneFinRenderCategorias, 0);
@@ -9298,11 +9301,15 @@ function _brlContas(v) {
 
 function oneFinRenderContas() {
   var lista = oneFinGetContas();
-  var bancos  = lista.filter(function(c){ return c.tipo === 'banco';  });
-  var cartoes = lista.filter(function(c){ return c.tipo === 'cartao'; });
+  var bancos        = lista.filter(function(c){ return c.tipo === 'banco';  });
+  var cartoes       = lista.filter(function(c){ return c.tipo === 'cartao'; });
+  var investimentos = lista.filter(function(c){ return c.tipo === 'investimento'; });
 
   var renderItem = function(conta) {
-    var saldo = (conta.tipo === 'cartao') ? oneFinFaturaAberta(conta.id) : oneFinSaldoBanco(conta.id);
+    var saldo;
+    if (conta.tipo === 'cartao')         saldo = oneFinFaturaAberta(conta.id);
+    else if (conta.tipo === 'investimento') saldo = Number(conta.saldo) || 0;
+    else                                  saldo = oneFinSaldoBanco(conta.id);
     var sufixo = (conta.tipo === 'cartao') ? 'Fatura aberta' : 'Saldo';
     var corValor = (conta.tipo === 'cartao')
       ? '#C0392B'
@@ -9341,7 +9348,8 @@ function oneFinRenderContas() {
   };
 
   var html = renderSecao('Bancos', '🏦', bancos, 'Nenhum banco cadastrado ainda.') +
-             renderSecao('Cartões de crédito', '💳', cartoes, 'Nenhum cartão cadastrado ainda.');
+             renderSecao('Cartões de crédito', '💳', cartoes, 'Nenhum cartão cadastrado ainda.') +
+             renderSecao('Investimentos', '📈', investimentos, 'Nenhum investimento cadastrado ainda.');
 
   var alvoDesk = document.getElementById('one-fin-contas-lista');
   if (alvoDesk) alvoDesk.innerHTML = html;
@@ -9418,6 +9426,8 @@ function oneFinContaModalAbrir() {
   document.getElementById('one-fin-conta-modal-nome').value = '';
   document.getElementById('one-fin-conta-modal-fechamento').value = '1';
   document.getElementById('one-fin-conta-modal-vencimento').value = '10';
+  var saldoInp = document.getElementById('one-fin-conta-modal-saldo');
+  if (saldoInp) saldoInp.value = '';
   document.getElementById('one-fin-conta-modal-btn-excluir').style.display = 'none';
 
   window.oneFinContaModalIcone = null;
@@ -9444,10 +9454,13 @@ function oneFinContaModalEditar(id) {
   document.getElementById('one-fin-conta-modal-nome').value = conta.nome || '';
   document.getElementById('one-fin-conta-modal-fechamento').value = String(conta.diaFechamento || 1);
   document.getElementById('one-fin-conta-modal-vencimento').value = String(conta.diaVencimento || 10);
+  var saldoInp = document.getElementById('one-fin-conta-modal-saldo');
+  if (saldoInp) saldoInp.value = (conta.tipo === 'investimento' && conta.saldo != null) ? String(conta.saldo) : '';
   document.getElementById('one-fin-conta-modal-btn-excluir').style.display = '';
 
   oneFinContaModalSetTipo(conta.tipo || 'banco');
-  _oneFinContaModalSelIcone(conta.icone || (conta.tipo === 'cartao' ? '💳' : '🏦'));
+  var icoDefault = (conta.tipo === 'cartao') ? '💳' : (conta.tipo === 'investimento' ? '📈' : '🏦');
+  _oneFinContaModalSelIcone(conta.icone || icoDefault);
   _oneFinContaModalSelCor(conta.cor || ONE_FIN_CONTA_CORES[0]);
   modal.classList.add('open');
 }
@@ -9460,16 +9473,21 @@ function oneFinContaModalFechar() {
 window.oneFinContaModalFechar = oneFinContaModalFechar;
 
 function oneFinContaModalSetTipo(tipo) {
-  tipo = (tipo === 'cartao') ? 'cartao' : 'banco';
+  if (tipo !== 'cartao' && tipo !== 'investimento') tipo = 'banco';
   window.oneFinContaModalTipo = tipo;
-  var tabBanco  = document.getElementById('one-fin-conta-modal-tab-banco');
-  var tabCartao = document.getElementById('one-fin-conta-modal-tab-cartao');
-  if (tabBanco)  tabBanco.classList.toggle('active',  tipo === 'banco');
-  if (tabCartao) tabCartao.classList.toggle('active', tipo === 'cartao');
-  var blocoCartao = document.getElementById('one-fin-conta-modal-bloco-cartao');
-  if (blocoCartao) blocoCartao.style.display = (tipo === 'cartao') ? '' : 'none';
+  var tabBanco        = document.getElementById('one-fin-conta-modal-tab-banco');
+  var tabCartao       = document.getElementById('one-fin-conta-modal-tab-cartao');
+  var tabInvestimento = document.getElementById('one-fin-conta-modal-tab-investimento');
+  if (tabBanco)        tabBanco.classList.toggle('active',        tipo === 'banco');
+  if (tabCartao)       tabCartao.classList.toggle('active',       tipo === 'cartao');
+  if (tabInvestimento) tabInvestimento.classList.toggle('active', tipo === 'investimento');
+  var blocoCartao        = document.getElementById('one-fin-conta-modal-bloco-cartao');
+  var blocoInvestimento  = document.getElementById('one-fin-conta-modal-bloco-investimento');
+  if (blocoCartao)       blocoCartao.style.display       = (tipo === 'cartao') ? '' : 'none';
+  if (blocoInvestimento) blocoInvestimento.style.display = (tipo === 'investimento') ? '' : 'none';
   if (!window.oneFinContaModalIcone) {
-    _oneFinContaModalSelIcone(tipo === 'cartao' ? '💳' : '🏦');
+    var defaultIco = (tipo === 'cartao') ? '💳' : (tipo === 'investimento' ? '📈' : '🏦');
+    _oneFinContaModalSelIcone(defaultIco);
   }
   if (!window.oneFinContaModalCor) {
     _oneFinContaModalSelCor(ONE_FIN_CONTA_CORES[0]);
@@ -9481,10 +9499,14 @@ function oneFinContaModalSalvar() {
   var id    = document.getElementById('one-fin-conta-modal-id').value;
   var nome  = (document.getElementById('one-fin-conta-modal-nome').value || '').trim();
   var tipo  = window.oneFinContaModalTipo || 'banco';
-  var icone = window.oneFinContaModalIcone || (tipo === 'cartao' ? '💳' : '🏦');
+  var icoDefault = (tipo === 'cartao') ? '💳' : (tipo === 'investimento' ? '📈' : '🏦');
+  var icone = window.oneFinContaModalIcone || icoDefault;
   var cor   = window.oneFinContaModalCor || ONE_FIN_CONTA_CORES[0];
   var dFech = parseInt(document.getElementById('one-fin-conta-modal-fechamento').value, 10);
   var dVenc = parseInt(document.getElementById('one-fin-conta-modal-vencimento').value, 10);
+  var saldoInp = document.getElementById('one-fin-conta-modal-saldo');
+  var saldoInv = saldoInp ? parseFloat(saldoInp.value) : 0;
+  if (isNaN(saldoInv)) saldoInv = 0;
 
   if (!nome) {
     if (typeof oneToast === 'function') oneToast('Dá um nome pra conta.', 'error');
@@ -9505,6 +9527,9 @@ function oneFinContaModalSalvar() {
   if (tipo === 'cartao') {
     obj.diaFechamento = dFech;
     obj.diaVencimento = dVenc;
+  }
+  if (tipo === 'investimento') {
+    obj.saldo = saldoInv;
   }
 
   if (id) {
@@ -10079,6 +10104,8 @@ function oneFinSetVista(vista) {
   // Render apropriado pra cada vista
   if (vista === 'geral') {
     oneFinRenderGeral();
+  } else if (vista === 'resumo') {
+    if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
   } else if (vista === 'dashboard') {
     if (typeof Chart === 'undefined') setTimeout(oneFinRenderCategorias, 200);
     else oneFinRenderCategorias();
@@ -10219,6 +10246,318 @@ function oneFinRenderFixas() {
   body.innerHTML = html;
 }
 window.oneFinRenderFixas = oneFinRenderFixas;
+
+/* ════════════════════════════════════════════════════════════════
+   ABA RESUMO — espelho da planilha mestre do Mentor
+   Bloco 1: Caixa do mês (saldo, pagamentos, resultado, investimentos, patrimônio).
+   Bloco 2: Obrigações do mês (fixas + faturas) com checkbox "pago".
+   Bloco 3: Investimentos (contas tipo "investimento").
+   ════════════════════════════════════════════════════════════════ */
+function _oneFinResumoBrl(v) {
+  return 'R$ ' + (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/* Saldo somado de todas as contas tipo banco (no momento atual) */
+function _oneFinResumoSaldoEmContas() {
+  var contas = (typeof oneFinGetContas === 'function') ? oneFinGetContas() : [];
+  var total = 0;
+  contas.forEach(function(c){
+    if (c.tipo === 'banco' && typeof oneFinSaldoBanco === 'function') {
+      total += oneFinSaldoBanco(c.id);
+    }
+  });
+  return total;
+}
+
+/* Soma total de investimentos */
+function _oneFinResumoTotalInvestimentos() {
+  var contas = (typeof oneFinGetContas === 'function') ? oneFinGetContas() : [];
+  var total = 0;
+  contas.forEach(function(c){
+    if (c.tipo === 'investimento') total += Number(c.saldo) || 0;
+  });
+  return total;
+}
+
+/* Marca uma fixa como paga no mês (template.mesesPagos) */
+function oneFinFixaMarcarPagaNoMes(key, fixaId, mesAno, marcar) {
+  if (!key || !fixaId || !mesAno) return false;
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+  var idx = lista.findIndex(function(x){ return String(x.id) === String(fixaId); });
+  if (idx < 0) return false;
+  var fix = lista[idx];
+  var pagos = Array.isArray(fix.mesesPagos) ? fix.mesesPagos.slice() : [];
+  if (marcar) {
+    if (pagos.indexOf(mesAno) < 0) pagos.push(mesAno);
+  } else {
+    pagos = pagos.filter(function(m){ return m !== mesAno; });
+  }
+  fix.mesesPagos = pagos;
+  lista[idx] = fix;
+  localStorage.setItem(oneU(key), JSON.stringify(lista));
+  if (typeof supaUpsert === 'function') supaUpsert(key, fix);
+  return true;
+}
+window.oneFinFixaMarcarPagaNoMes = oneFinFixaMarcarPagaNoMes;
+
+/* Marca uma fatura de cartão como paga (conta.faturasPagas) */
+function oneFinCartaoMarcarFaturaPaga(contaId, mesAno, marcar) {
+  if (!contaId || !mesAno) return false;
+  var contas = []; try { contas = JSON.parse(localStorage.getItem(oneU('contas')) || '[]'); } catch(e){}
+  var idx = contas.findIndex(function(c){ return String(c.id) === String(contaId); });
+  if (idx < 0) return false;
+  var c = contas[idx];
+  var pagos = Array.isArray(c.faturasPagas) ? c.faturasPagas.slice() : [];
+  if (marcar) {
+    if (pagos.indexOf(mesAno) < 0) pagos.push(mesAno);
+  } else {
+    pagos = pagos.filter(function(m){ return m !== mesAno; });
+  }
+  c.faturasPagas = pagos;
+  contas[idx] = c;
+  localStorage.setItem(oneU('contas'), JSON.stringify(contas));
+  if (typeof supaUpsert === 'function') supaUpsert('contas', c);
+  return true;
+}
+window.oneFinCartaoMarcarFaturaPaga = oneFinCartaoMarcarFaturaPaga;
+
+/* Toggle pago via clique na bolinha — chamado pelo HTML inline. ref: 'fixa-d:<id>:<mesAno>' | 'fixa-r:<id>:<mesAno>' | 'fatura:<contaId>:<mesAno>' */
+function oneFinResumoTogglePago(ref) {
+  if (!ref) return;
+  var p = ref.split(':');
+  var kind = p[0], a = p[1], b = p[2];
+  if (kind === 'fixa-d') {
+    var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]'); } catch(e){}
+    var fix = lista.find(function(x){ return String(x.id) === String(a); });
+    var jaPago = !!(fix && Array.isArray(fix.mesesPagos) && fix.mesesPagos.indexOf(b) >= 0);
+    oneFinFixaMarcarPagaNoMes('despesasFixas', a, b, !jaPago);
+  } else if (kind === 'fixa-r') {
+    var lista2 = []; try { lista2 = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]'); } catch(e){}
+    var fix2 = lista2.find(function(x){ return String(x.id) === String(a); });
+    var jaPago2 = !!(fix2 && Array.isArray(fix2.mesesPagos) && fix2.mesesPagos.indexOf(b) >= 0);
+    oneFinFixaMarcarPagaNoMes('receitasFixas', a, b, !jaPago2);
+  } else if (kind === 'fatura') {
+    var contas = []; try { contas = JSON.parse(localStorage.getItem(oneU('contas')) || '[]'); } catch(e){}
+    var c = contas.find(function(x){ return String(x.id) === String(a); });
+    var jaPago3 = !!(c && Array.isArray(c.faturasPagas) && c.faturasPagas.indexOf(b) >= 0);
+    oneFinCartaoMarcarFaturaPaga(a, b, !jaPago3);
+  }
+  if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
+}
+window.oneFinResumoTogglePago = oneFinResumoTogglePago;
+
+/* Coleta as obrigações do mês: fixas (despesas) + receitas fixas + faturas de cartão.
+   Cada item: { tipo, dia, nome, esperado, aPagar, diferenca, pago, ref } */
+function _oneFinResumoColetarObrigacoes(mes, ano) {
+  var mesAno = ano + '-' + String(mes + 1).padStart(2, '0');
+  var out = { despesas: [], receitas: [], faturas: [] };
+
+  /* Fixas de despesa do mês — usa pipeline oneFinInstanciasDoMes pra respeitar inicio/fim/mesesPulados */
+  if (typeof oneFinInstanciasDoMes === 'function') {
+    var inst = oneFinInstanciasDoMes(mes, ano);
+    (inst.despesas || []).forEach(function(d){
+      var fixaId = d._fixaId;
+      var listaF = []; try { listaF = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]'); } catch(e){}
+      var template = listaF.find(function(x){ return String(x.id) === String(fixaId); });
+      var pago = !!(template && Array.isArray(template.mesesPagos) && template.mesesPagos.indexOf(mesAno) >= 0);
+      var valor = Number(d.valor) || 0;
+      out.despesas.push({
+        dia: d.diaDoMes || (d.data ? parseInt(d.data.split('-')[2],10) : 1),
+        nome: d.nome || d.descricao || 'Despesa fixa',
+        esperado: valor,
+        aPagar: pago ? 0 : valor,
+        diferenca: pago ? valor : 0,
+        pago: pago,
+        ref: 'fixa-d:' + fixaId + ':' + mesAno
+      });
+    });
+    (inst.receitas || []).forEach(function(r){
+      var fixaId = r._fixaId;
+      var listaR = []; try { listaR = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]'); } catch(e){}
+      var template = listaR.find(function(x){ return String(x.id) === String(fixaId); });
+      var pago = !!(template && Array.isArray(template.mesesPagos) && template.mesesPagos.indexOf(mesAno) >= 0);
+      var valor = Number(r.valor) || 0;
+      out.receitas.push({
+        dia: r.diaDoMes || (r.data ? parseInt(r.data.split('-')[2],10) : 1),
+        nome: r.nome || r.descricao || 'Receita fixa',
+        esperado: valor,
+        aPagar: pago ? 0 : valor,
+        diferenca: pago ? valor : 0,
+        pago: pago,
+        ref: 'fixa-r:' + fixaId + ':' + mesAno
+      });
+    });
+  }
+
+  /* Faturas de cartão — 1 linha por cartão com fatura > 0 no mês */
+  var contas = (typeof oneFinGetContas === 'function') ? oneFinGetContas() : [];
+  contas.forEach(function(c){
+    if (c.tipo !== 'cartao') return;
+    /* Total da fatura desse mês: despesas reais com faturaMesAno = mesAno
+       + instâncias virtuais de fixas com mesma faturaMesAno */
+    var totalFatura = 0;
+    var despesas = []; try { despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){}
+    despesas.forEach(function(d){
+      if (String(d.contaId) === String(c.id) && d.faturaMesAno === mesAno) {
+        totalFatura += Number(d.valor) || 0;
+      }
+    });
+    if (typeof oneFinInstanciasVizinhas === 'function') {
+      var instCar = oneFinInstanciasVizinhas(mes, ano);
+      (instCar.despesas || []).forEach(function(d){
+        if (String(d.contaId) === String(c.id) && d.faturaMesAno === mesAno) {
+          totalFatura += Number(d.valor) || 0;
+        }
+      });
+    }
+    if (totalFatura <= 0) return;
+    var pago = !!(Array.isArray(c.faturasPagas) && c.faturasPagas.indexOf(mesAno) >= 0);
+    out.faturas.push({
+      dia: c.diaVencimento || 10,
+      nome: c.nome || 'Cartão',
+      icone: c.icone || '💳',
+      cor: c.cor || '#9B72B0',
+      esperado: totalFatura,
+      aPagar: pago ? 0 : totalFatura,
+      diferenca: pago ? totalFatura : 0,
+      pago: pago,
+      ref: 'fatura:' + c.id + ':' + mesAno
+    });
+  });
+
+  return out;
+}
+
+function oneFinRenderResumo() {
+  var hoje = new Date();
+  var mes = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : hoje.getMonth();
+  var ano = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : hoje.getFullYear();
+
+  var obrig = _oneFinResumoColetarObrigacoes(mes, ano);
+  var totalAPagarDespesas = obrig.despesas.reduce(function(s,i){ return s + i.aPagar; }, 0) +
+                            obrig.faturas.reduce(function(s,i){ return s + i.aPagar; }, 0);
+  var totalAReceber       = obrig.receitas.reduce(function(s,i){ return s + i.aPagar; }, 0);
+  var saldoContas         = _oneFinResumoSaldoEmContas();
+  var resultadoMes        = saldoContas - totalAPagarDespesas + totalAReceber;
+  var investimentos       = _oneFinResumoTotalInvestimentos();
+  var patrimonio          = resultadoMes + investimentos;
+
+  /* ── Bloco 1: Caixa do mês ── */
+  var caixa = document.getElementById('one-fin-resumo-caixa');
+  if (caixa) {
+    var linhas = [
+      { lbl: 'Saldo em conta(s)',      val: saldoContas,         sinal: '(+)', cor: saldoContas >= 0 ? '#27856A' : '#C0392B' },
+      { lbl: 'Pagamentos do mês',      val: totalAPagarDespesas, sinal: '(−)', cor: '#C0392B' },
+      { lbl: 'A receber este mês',     val: totalAReceber,       sinal: '(+)', cor: '#27856A', oculto: totalAReceber <= 0 },
+      { lbl: 'Resultado do mês',       val: resultadoMes,        sinal: '(=)', cor: resultadoMes >= 0 ? '#27856A' : '#C0392B', destaque: true },
+      { lbl: 'Investimentos',          val: investimentos,       sinal: '(+)', cor: '#5B7CFA' },
+      { lbl: 'Patrimônio total',       val: patrimonio,          sinal: '(=)', cor: patrimonio >= 0 ? '#27856A' : '#C0392B', destaque: true }
+    ];
+    caixa.innerHTML =
+      '<div class="one-fin-resumo-titulo">💰 Caixa do mês</div>' +
+      linhas.filter(function(l){ return !l.oculto; }).map(function(l){
+        return '<div class="one-fin-resumo-caixa-row' + (l.destaque ? ' destaque' : '') + '">' +
+                 '<span class="one-fin-resumo-caixa-lbl">' + l.lbl + '</span>' +
+                 '<span class="one-fin-resumo-caixa-val" style="color:' + l.cor + '">' + _oneFinResumoBrl(l.val) + '</span>' +
+                 '<span class="one-fin-resumo-caixa-sinal">' + l.sinal + '</span>' +
+               '</div>';
+      }).join('');
+  }
+
+  /* ── Bloco 2: Obrigações do mês ── */
+  var bloco2 = document.getElementById('one-fin-resumo-obrigacoes');
+  if (bloco2) {
+    var todas = obrig.despesas.concat(obrig.faturas).sort(function(a,b){ return (a.dia||0) - (b.dia||0); });
+    var rowsDespesa = todas.map(function(it){
+      var pagoCls = it.pago ? ' pago' : '';
+      return '<div class="one-fin-resumo-obr-row' + pagoCls + '">' +
+               '<button class="one-fin-resumo-check" onclick="oneFinResumoTogglePago(\'' + it.ref + '\')" title="' + (it.pago ? 'Desmarcar' : 'Marcar como pago') + '">' +
+                 (it.pago ? '✓' : '○') +
+               '</button>' +
+               '<span class="one-fin-resumo-obr-dia">' + (it.dia || '—') + '</span>' +
+               '<span class="one-fin-resumo-obr-nome">' + (it.icone ? (it.icone + ' ') : '') + (it.nome || '').replace(/</g,'&lt;') + '</span>' +
+               '<span class="one-fin-resumo-obr-esperado">' + _oneFinResumoBrl(it.esperado) + '</span>' +
+               '<span class="one-fin-resumo-obr-apagar"' + (it.aPagar > 0 ? ' style="color:#C0392B;font-weight:600"' : ' style="color:#9CAB9C"') + '>' + _oneFinResumoBrl(it.aPagar) + '</span>' +
+               '<span class="one-fin-resumo-obr-dif" style="color:#9CAB9C">' + _oneFinResumoBrl(it.diferenca) + '</span>' +
+             '</div>';
+    }).join('');
+
+    var rowsReceita = obrig.receitas.length
+      ? '<div class="one-fin-resumo-subtit">Receitas fixas</div>' +
+        obrig.receitas.map(function(it){
+          var pagoCls = it.pago ? ' pago' : '';
+          return '<div class="one-fin-resumo-obr-row' + pagoCls + '">' +
+                   '<button class="one-fin-resumo-check" onclick="oneFinResumoTogglePago(\'' + it.ref + '\')" title="' + (it.pago ? 'Desmarcar' : 'Marcar como recebido') + '">' +
+                     (it.pago ? '✓' : '○') +
+                   '</button>' +
+                   '<span class="one-fin-resumo-obr-dia">' + (it.dia || '—') + '</span>' +
+                   '<span class="one-fin-resumo-obr-nome">' + (it.nome || '').replace(/</g,'&lt;') + '</span>' +
+                   '<span class="one-fin-resumo-obr-esperado">' + _oneFinResumoBrl(it.esperado) + '</span>' +
+                   '<span class="one-fin-resumo-obr-apagar"' + (it.aPagar > 0 ? ' style="color:#27856A;font-weight:600"' : ' style="color:#9CAB9C"') + '>' + _oneFinResumoBrl(it.aPagar) + '</span>' +
+                   '<span class="one-fin-resumo-obr-dif" style="color:#9CAB9C">' + _oneFinResumoBrl(it.diferenca) + '</span>' +
+                 '</div>';
+        }).join('')
+      : '';
+
+    var somaEsperado = todas.reduce(function(s,i){ return s + i.esperado; }, 0);
+    var somaAPagar   = todas.reduce(function(s,i){ return s + i.aPagar;   }, 0);
+    var somaDif      = todas.reduce(function(s,i){ return s + i.diferenca; }, 0);
+
+    bloco2.innerHTML =
+      '<div class="one-fin-resumo-titulo">📋 Contas a pagar este mês</div>' +
+      (todas.length === 0 && obrig.receitas.length === 0
+        ? '<div class="one-fin-resumo-vazio">Sem fixas nem faturas de cartão neste mês.</div>'
+        : (
+          '<div class="one-fin-resumo-obr-head">' +
+            '<span></span>' +
+            '<span>Dia</span>' +
+            '<span>Descritivo</span>' +
+            '<span class="num">Esperado</span>' +
+            '<span class="num">A Pagar</span>' +
+            '<span class="num">Diferença</span>' +
+          '</div>' +
+          rowsDespesa +
+          rowsReceita +
+          (todas.length > 0
+            ? '<div class="one-fin-resumo-obr-row total">' +
+                '<span></span>' +
+                '<span></span>' +
+                '<span class="one-fin-resumo-obr-nome" style="font-weight:700">SOMA →</span>' +
+                '<span class="one-fin-resumo-obr-esperado" style="font-weight:700">' + _oneFinResumoBrl(somaEsperado) + '</span>' +
+                '<span class="one-fin-resumo-obr-apagar" style="font-weight:700;color:#C0392B">' + _oneFinResumoBrl(somaAPagar) + '</span>' +
+                '<span class="one-fin-resumo-obr-dif" style="font-weight:700;color:#27856A">' + _oneFinResumoBrl(somaDif) + '</span>' +
+              '</div>'
+            : '')
+        )
+      );
+  }
+
+  /* ── Bloco 3: Investimentos ── */
+  var bloco3 = document.getElementById('one-fin-resumo-invest');
+  if (bloco3) {
+    var contas = (typeof oneFinGetContas === 'function') ? oneFinGetContas() : [];
+    var invs = contas.filter(function(c){ return c.tipo === 'investimento'; });
+    var rows = invs.map(function(c){
+      return '<div class="one-fin-resumo-inv-row">' +
+               '<span class="one-fin-resumo-inv-ico" style="background:' + (c.cor || '#5B7CFA') + '22;color:' + (c.cor || '#5B7CFA') + '">' + (c.icone || '📈') + '</span>' +
+               '<span class="one-fin-resumo-inv-nome">' + (c.nome || '').replace(/</g,'&lt;') + '</span>' +
+               '<span class="one-fin-resumo-inv-val">' + _oneFinResumoBrl(Number(c.saldo) || 0) + '</span>' +
+             '</div>';
+    }).join('');
+    var totalInv = invs.reduce(function(s,c){ return s + (Number(c.saldo) || 0); }, 0);
+    bloco3.innerHTML =
+      '<div class="one-fin-resumo-titulo">📈 Investimentos</div>' +
+      (invs.length === 0
+        ? '<div class="one-fin-resumo-vazio">Nenhuma conta de investimento. Cadastre uma em Contas → + Nova conta → Investimento.</div>'
+        : rows +
+          '<div class="one-fin-resumo-inv-row total">' +
+            '<span></span>' +
+            '<span class="one-fin-resumo-inv-nome" style="font-weight:700">Total</span>' +
+            '<span class="one-fin-resumo-inv-val" style="font-weight:700;color:#5B7CFA">' + _oneFinResumoBrl(totalInv) + '</span>' +
+          '</div>');
+  }
+}
+window.oneFinRenderResumo = oneFinRenderResumo;
 
 /* ── View "Visão geral" — lista resumida + barras balanço 6 meses ── */
 function oneFinRenderGeral() {
