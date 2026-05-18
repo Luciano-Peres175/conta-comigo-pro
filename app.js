@@ -9623,6 +9623,8 @@ function oneFinContaModalSalvar() {
 
   oneFinContaModalFechar();
   oneFinRenderContas();
+  /* Garante que outras vistas que dependem do saldo (Resumo, Visão Geral) recarreguem */
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
 }
 window.oneFinContaModalSalvar = oneFinContaModalSalvar;
 
