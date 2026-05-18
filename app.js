@@ -8825,20 +8825,32 @@ function _oneFinSaveContas(lista) {
   localStorage.setItem(oneU('contas'), JSON.stringify(lista));
 }
 
+function _oneFinNormalizaTipoConta(t) {
+  if (t === 'cartao' || t === 'investimento') return t;
+  return 'banco';
+}
+function _oneFinIconeDefaultPorTipo(t) {
+  if (t === 'cartao') return '💳';
+  if (t === 'investimento') return '📈';
+  return '🏦';
+}
+
 function oneFinAddConta(obj) {
   var lista = oneFinGetContas();
   var uid = (typeof crypto !== 'undefined' && crypto.randomUUID)
             ? crypto.randomUUID()
             : Date.now().toString() + Math.random().toString(36).slice(2,8);
-  var tipo = (obj.tipo === 'cartao') ? 'cartao' : 'banco';
+  var tipo = _oneFinNormalizaTipoConta(obj.tipo);
   var conta = {
     id: uid,
     nome: String(obj.nome || '').trim(),
     tipo: tipo,
-    icone: obj.icone || (tipo === 'cartao' ? '💳' : '🏦'),
+    icone: obj.icone || _oneFinIconeDefaultPorTipo(tipo),
     cor: obj.cor || ONE_FIN_CONTA_CORES[0],
     diaFechamento: (tipo === 'cartao') ? (parseInt(obj.diaFechamento, 10) || 1)  : null,
     diaVencimento: (tipo === 'cartao') ? (parseInt(obj.diaVencimento, 10) || 10) : null,
+    saldoInicial: (tipo === 'banco') ? (Number(obj.saldoInicial) || 0) : null,
+    saldo:        (tipo === 'investimento') ? (Number(obj.saldo) || 0) : null,
     criado: new Date().toISOString()
   };
   lista.push(conta);
@@ -8854,15 +8866,25 @@ function oneFinUpdateConta(id, obj) {
   if (idx < 0) return null;
   var atual = lista[idx];
   if (obj.nome != null)  atual.nome  = String(obj.nome).trim();
-  if (obj.tipo)          atual.tipo  = (obj.tipo === 'cartao') ? 'cartao' : 'banco';
+  if (obj.tipo)          atual.tipo  = _oneFinNormalizaTipoConta(obj.tipo);
   if (obj.icone)         atual.icone = obj.icone;
   if (obj.cor)           atual.cor   = obj.cor;
   if (atual.tipo === 'cartao') {
     if (obj.diaFechamento != null) atual.diaFechamento = parseInt(obj.diaFechamento, 10) || atual.diaFechamento || 1;
     if (obj.diaVencimento != null) atual.diaVencimento = parseInt(obj.diaVencimento, 10) || atual.diaVencimento || 10;
-  } else {
+    atual.saldoInicial = null;
+    atual.saldo = null;
+  } else if (atual.tipo === 'investimento') {
     atual.diaFechamento = null;
     atual.diaVencimento = null;
+    atual.saldoInicial = null;
+    if (obj.saldo != null) atual.saldo = Number(obj.saldo) || 0;
+  } else {
+    /* banco */
+    atual.diaFechamento = null;
+    atual.diaVencimento = null;
+    atual.saldo = null;
+    if (obj.saldoInicial != null) atual.saldoInicial = Number(obj.saldoInicial) || 0;
   }
   _oneFinSaveContas(lista);
   if (typeof supaUpsert === 'function') supaUpsert('contas', atual);
@@ -9547,7 +9569,8 @@ function oneFinContaModalSalvar() {
   var dFech = parseInt(document.getElementById('one-fin-conta-modal-fechamento').value, 10);
   var dVenc = parseInt(document.getElementById('one-fin-conta-modal-vencimento').value, 10);
   var saldoInp = document.getElementById('one-fin-conta-modal-saldo');
-  var saldoInv = saldoInp ? parseFloat(saldoInp.value) : 0;
+  var rawSaldoInv = saldoInp ? String(saldoInp.value).trim() : '';
+  var saldoInv = parseFloat(rawSaldoInv.replace(',', '.'));
   if (isNaN(saldoInv)) saldoInv = 0;
 
   if (!nome) {
@@ -9574,7 +9597,8 @@ function oneFinContaModalSalvar() {
       var contaAtual = (typeof oneFinGetConta === 'function') ? oneFinGetConta(id) : null;
       obj.saldoInicial = (contaAtual && contaAtual.saldoInicial != null) ? Number(contaAtual.saldoInicial) : 0;
     } else {
-      var saldoIni = parseFloat(rawSaldoIni);
+      /* Aceita vírgula como separador decimal (PT-BR) */
+      var saldoIni = parseFloat(rawSaldoIni.replace(',', '.'));
       obj.saldoInicial = isNaN(saldoIni) ? 0 : saldoIni;
     }
   }
