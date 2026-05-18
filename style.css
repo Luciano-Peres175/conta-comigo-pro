@@ -6200,14 +6200,17 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 .one-fin-resumo-layout {
   display: grid;
   grid-template-columns: 1fr 1.3fr;
+  grid-template-rows: 1fr;
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
+  min-height: 540px;
 }
 .one-fin-resumo-coluna-esq {
   display: flex;
   flex-direction: column;
   gap: 16px;
   min-width: 0;
+  min-height: 0;
 }
 @media (max-width: 1000px) {
   .one-fin-resumo-layout { grid-template-columns: 1fr; }
@@ -6268,19 +6271,14 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   text-align: center;
 }
 
-/* Bloco 2 — Obrigações do mês: altura FIXA com scroll interno garantido */
+/* Bloco 2 — Obrigações do mês: ocupa altura da coluna esquerda, scroll interno */
 .one-fin-resumo-bloco-obrigacoes {
   margin-bottom: 0;
   display: block;
-  height: 600px;
-  max-height: 75vh;
+  height: 100%;
+  min-height: 0;
   overflow-y: scroll;
-  align-self: start;
-}
-@media (max-width: 1000px) {
-  .one-fin-resumo-bloco-obrigacoes {
-    height: 500px;
-  }
+  align-self: stretch;
 }
 .one-fin-resumo-obr-head, .one-fin-resumo-obr-row {
   display: grid;

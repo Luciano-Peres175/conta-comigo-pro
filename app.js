@@ -10687,19 +10687,36 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
     });
   });
 
-  /* Faturas de cartão — 1 linha por cartão com fatura > 0 no mês */
+  /* Faturas de cartão — 1 linha por cartão. Mostra a fatura que VENCE no mês ativo.
+     Se cartão vence depois de fechar (mesmo mês): competência alvo = mês ativo.
+     Se vence antes de fechar (no mês seguinte da competência): competência alvo = mês ativo - 1. */
+  var competenciaQueVencEm = function(conta) {
+    var dF = conta.diaFechamento || 1;
+    var dV = conta.diaVencimento || 10;
+    if (dV >= dF) return mesAno;
+    var ya = ano, ma = mes; /* mes atual (0-based) */
+    ma--;
+    if (ma < 0) { ma = 11; ya--; }
+    return ya + '-' + String(ma + 1).padStart(2, '0');
+  };
   contas.forEach(function(c){
     if (c.tipo !== 'cartao') return;
+    var compAlvo = competenciaQueVencEm(c);
     var totalFatura = 0;
     despesasReais.forEach(function(d){
-      if (String(d.contaId) === String(c.id) && d.faturaMesAno === mesAno) {
+      if (String(d.contaId) === String(c.id) && d.faturaMesAno === compAlvo) {
         totalFatura += Number(d.valor) || 0;
       }
     });
+    /* Pra capturar fixas em cartão, varremos os meses vizinhos (a fixa pode estar
+       no mês anterior mas com faturaMesAno = compAlvo) */
+    var pCompAlvo = compAlvo.split('-');
+    var aAlvo = parseInt(pCompAlvo[0], 10);
+    var mAlvo = parseInt(pCompAlvo[1], 10) - 1;
     if (typeof oneFinInstanciasVizinhas === 'function') {
-      var instCar = oneFinInstanciasVizinhas(mes, ano);
+      var instCar = oneFinInstanciasVizinhas(mAlvo, aAlvo);
       (instCar.despesas || []).forEach(function(d){
-        if (String(d.contaId) === String(c.id) && d.faturaMesAno === mesAno) {
+        if (String(d.contaId) === String(c.id) && d.faturaMesAno === compAlvo) {
           totalFatura += Number(d.valor) || 0;
         }
       });
@@ -10709,7 +10726,7 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
     out.faturas.push({
       kind: 'fatura',
       dia: c.diaVencimento || '—',
-      nome: c.nome || 'Cartão',
+      nome: c.nome + ' (Fatura ' + compAlvo + ')',
       icone: c.icone || '💳',
       cor: c.cor || '#9B72B0',
       esperado: totalFatura,
