@@ -9118,15 +9118,13 @@ function _oneFinRenderCartaoDet(conta) {
     ? doMes.map(_oneFinItemDetHtml).join('')
     : '<div class="one-fin-conta-det-vazio">Sem despesas nesta fatura.</div>';
 
-  var btnHoje = (off !== 0)
-    ? '<button class="one-fin-mes-btn one-fin-mes-hoje" onclick="oneFinFaturaHoje()" title="Voltar pro mês atual">↺</button>'
-    : '';
-
+  /* Botão "voltar pra fatura do mês ativo" removido daqui — fica só o reload
+     global do header (Mentor pediu pra eliminar duplicação visual). Pra voltar
+     pro mês atual, usar o reload geral do header do Financeiro. */
   return '<div class="one-fin-conta-det-fatura-nav">' +
            '<button class="one-fin-mes-btn" onclick="oneFinFaturaPrev()" title="Fatura anterior">‹</button>' +
            '<span class="one-fin-conta-det-fatura-lbl">Fatura de ' + meses[m] + '/' + a + '</span>' +
            '<button class="one-fin-mes-btn" onclick="oneFinFaturaProx()" title="Próxima fatura">›</button>' +
-           btnHoje +
          '</div>' +
          '<div class="one-fin-conta-det-saldo">' +
            '<div class="one-fin-conta-det-saldo-lbl">Total da fatura</div>' +

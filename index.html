@@ -659,20 +659,22 @@
             </div>
           </div>
 
-          <!-- View Dashboard — donut categorias + barras balanço -->
+          <!-- View Dashboard — lista de categorias à esquerda + donut à direita (2 colunas) -->
           <div class="one-fin-vista" data-vista="dashboard" hidden>
             <div class="one-fin-cat-toggle">
               <button class="one-fin-cat-toggle-btn active" data-tipo="despesas" onclick="oneFinInlineSetTipo('despesas')">Despesas</button>
               <button class="one-fin-cat-toggle-btn" data-tipo="receitas" onclick="oneFinInlineSetTipo('receitas')">Receitas</button>
             </div>
-            <div class="one-fin-donut-wrap">
-              <canvas id="one-fin-donut-inline"></canvas>
-              <div class="one-fin-donut-center">
-                <div class="one-fin-donut-lbl">Total</div>
-                <div class="one-fin-donut-val" id="one-fin-donut-total">R$ 0,00</div>
+            <div class="one-fin-dashboard-grid">
+              <div class="one-fin-cat-list-inline" id="one-fin-cat-list-inline"></div>
+              <div class="one-fin-donut-wrap">
+                <canvas id="one-fin-donut-inline"></canvas>
+                <div class="one-fin-donut-center">
+                  <div class="one-fin-donut-lbl">Total</div>
+                  <div class="one-fin-donut-val" id="one-fin-donut-total">R$ 0,00</div>
+                </div>
               </div>
             </div>
-            <div class="one-fin-cat-list-inline" id="one-fin-cat-list-inline"></div>
           </div>
 
           <!-- View Extrato — lista completa com filtros de período -->
