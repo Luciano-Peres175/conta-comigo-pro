@@ -10921,12 +10921,22 @@ function oneFinRenderGeral() {
             var dataF = l.data ? l.data.split('-').reverse().slice(0,2).join('/') : '';
             var badgeFixa = l._fixa ? ' <span style="font-size:9px;color:#9B72B0;background:rgba(155,114,176,0.12);padding:1px 5px;border-radius:6px;font-weight:600">↻ fixa</span>' : '';
             var nomeS = (l.nome||'').replace(/</g,'&lt;');
+            var safeId = String(l.id||'').replace(/'/g,"\\'");
+            var safeKey = String(l.key||'');
+            var safeData = String(l.data||'').replace(/'/g,"\\'");
+            var actions = (safeKey && safeId)
+              ? '<div class="one-fin-grupo-item-actions" onclick="event.stopPropagation()">' +
+                  '<button class="one-fin-item-btn" onclick="oneFinEditar(\'' + safeKey + '\',\'' + safeId + '\',\'' + safeData + '\')" title="Editar">✏️</button>' +
+                  '<button class="one-fin-item-btn del" onclick="oneFinExcluir(\'' + safeKey + '\',\'' + safeId + '\',\'' + safeData + '\')" title="Excluir">🗑️</button>' +
+                '</div>'
+              : '';
             return '<div class="one-fin-grupo-item">' +
                      '<div class="one-fin-grupo-item-info">' +
                        '<div class="one-fin-grupo-item-nome">' + nomeS + badgeFixa + '</div>' +
                        '<div class="one-fin-grupo-item-meta">' + dataF + '</div>' +
                      '</div>' +
                      '<div class="one-fin-grupo-item-val" style="color:' + corVal + '">' + sinal + _brlFin(l.valor).replace('R$ ','R$') + '</div>' +
+                     actions +
                    '</div>';
           }).join('') + '</div>';
         }

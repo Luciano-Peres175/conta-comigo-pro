@@ -6728,7 +6728,7 @@ button.one-fin-card:hover {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  max-height: 60vh;
+  max-height: 480px;
 }
 .one-fin-geral-head {
   display: flex;
@@ -6865,6 +6865,16 @@ button.one-fin-card:hover {
   font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
+}
+.one-fin-grupo-item-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+.one-fin-grupo-item-actions .one-fin-item-btn {
+  padding: 2px 5px;
+  font-size: 12px;
 }
 
 /* ── View Extrato — tabs de período MINI + filtros ativos ── */
