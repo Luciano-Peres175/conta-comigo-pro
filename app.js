@@ -8901,17 +8901,68 @@ function oneFinCalcularFatura(dataLancamento, diaFechamento) {
 }
 window.oneFinCalcularFatura = oneFinCalcularFatura;
 
-/* Saldo simples de banco: receitas recebidas - despesas pagas da conta */
+/* Saldo do banco — soma saldoInicial + entradas confirmadas - saídas confirmadas.
+   "Confirmado" significa: lançamento real com status='pago' OU mês está em conta.mesesFechados
+   (caso o Mentor tenha marcado a conta como fechada via Resumo). Fixas em mês fechado também
+   contam, mesmo sem materializar. Despesas que vão pra fatura de cartão NÃO entram aqui
+   (são abatidas só quando a fatura é paga). */
 function oneFinSaldoBanco(contaId) {
+  var conta = (typeof oneFinGetConta === 'function') ? oneFinGetConta(contaId) : null;
+  if (!conta || conta.tipo !== 'banco') return 0;
+  var saldo = Number(conta.saldoInicial) || 0;
+  var mesesFechados = Array.isArray(conta.mesesFechados) ? conta.mesesFechados : [];
+  var inFechado = function(mesAno){ return mesAno && mesesFechados.indexOf(mesAno) >= 0; };
+
+  /* Entradas — receitas reais */
   var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
+  receitas.forEach(function(r){
+    if (String(r.contaId) !== String(contaId)) return;
+    var mesAno = r.data ? String(r.data).slice(0,7) : '';
+    if (r.status === 'pago' || inFechado(mesAno)) {
+      saldo += Number(r.valor) || 0;
+    }
+  });
+
+  /* Entradas — receitas fixas (mesesPagos individuais OU em mês fechado e ativa nele) */
+  var receitasFixas = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]');
+  receitasFixas.forEach(function(rf){
+    if (String(rf.contaId) !== String(contaId)) return;
+    var pagos = Array.isArray(rf.mesesPagos) ? rf.mesesPagos.slice() : [];
+    var mesesQueContam = pagos.slice();
+    mesesFechados.forEach(function(m){
+      if (mesesQueContam.indexOf(m) >= 0) return;
+      var p = m.split('-'); var a = parseInt(p[0],10); var mm = parseInt(p[1],10) - 1;
+      if (typeof oneFinFixaAtivaNoMes === 'function' && oneFinFixaAtivaNoMes(rf, mm, a)) {
+        mesesQueContam.push(m);
+      }
+    });
+    saldo += mesesQueContam.length * (Number(rf.valor) || 0);
+  });
+
+  /* Saídas — despesas reais (sem faturaMesAno = não vai pra cartão) */
   var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
-  var entrou = receitas.filter(function(r){
-    return String(r.contaId) === String(contaId) && r.status === 'pago';
-  }).reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
-  var saiu = despesas.filter(function(d){
-    return String(d.contaId) === String(contaId) && d.status === 'pago';
-  }).reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
-  return entrou - saiu;
+  despesas.forEach(function(d){
+    if (String(d.contaId) !== String(contaId)) return;
+    if (d.faturaMesAno) return;
+    var mesAno = d.data ? String(d.data).slice(0,7) : '';
+    if (d.status === 'pago' || inFechado(mesAno)) {
+      saldo -= Number(d.valor) || 0;
+    }
+  });
+
+  /* Saídas — despesas fixas em meses fechados (instâncias virtuais ainda não materializadas) */
+  var despesasFixas = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
+  despesasFixas.forEach(function(df){
+    if (String(df.contaId) !== String(contaId)) return;
+    mesesFechados.forEach(function(m){
+      var p = m.split('-'); var a = parseInt(p[0],10); var mm = parseInt(p[1],10) - 1;
+      if (typeof oneFinFixaAtivaNoMes === 'function' && oneFinFixaAtivaNoMes(df, mm, a)) {
+        saldo -= Number(df.valor) || 0;
+      }
+    });
+  });
+
+  return saldo;
 }
 window.oneFinSaldoBanco = oneFinSaldoBanco;
 
@@ -9428,6 +9479,8 @@ function oneFinContaModalAbrir() {
   document.getElementById('one-fin-conta-modal-vencimento').value = '10';
   var saldoInp = document.getElementById('one-fin-conta-modal-saldo');
   if (saldoInp) saldoInp.value = '';
+  var saldoIniInp = document.getElementById('one-fin-conta-modal-saldo-inicial');
+  if (saldoIniInp) saldoIniInp.value = '';
   document.getElementById('one-fin-conta-modal-btn-excluir').style.display = 'none';
 
   window.oneFinContaModalIcone = null;
@@ -9456,6 +9509,8 @@ function oneFinContaModalEditar(id) {
   document.getElementById('one-fin-conta-modal-vencimento').value = String(conta.diaVencimento || 10);
   var saldoInp = document.getElementById('one-fin-conta-modal-saldo');
   if (saldoInp) saldoInp.value = (conta.tipo === 'investimento' && conta.saldo != null) ? String(conta.saldo) : '';
+  var saldoIniInp = document.getElementById('one-fin-conta-modal-saldo-inicial');
+  if (saldoIniInp) saldoIniInp.value = (conta.tipo === 'banco' && conta.saldoInicial != null) ? String(conta.saldoInicial) : '';
   document.getElementById('one-fin-conta-modal-btn-excluir').style.display = '';
 
   oneFinContaModalSetTipo(conta.tipo || 'banco');
@@ -9481,8 +9536,10 @@ function oneFinContaModalSetTipo(tipo) {
   if (tabBanco)        tabBanco.classList.toggle('active',        tipo === 'banco');
   if (tabCartao)       tabCartao.classList.toggle('active',       tipo === 'cartao');
   if (tabInvestimento) tabInvestimento.classList.toggle('active', tipo === 'investimento');
+  var blocoBanco         = document.getElementById('one-fin-conta-modal-bloco-banco');
   var blocoCartao        = document.getElementById('one-fin-conta-modal-bloco-cartao');
   var blocoInvestimento  = document.getElementById('one-fin-conta-modal-bloco-investimento');
+  if (blocoBanco)        blocoBanco.style.display        = (tipo === 'banco') ? '' : 'none';
   if (blocoCartao)       blocoCartao.style.display       = (tipo === 'cartao') ? '' : 'none';
   if (blocoInvestimento) blocoInvestimento.style.display = (tipo === 'investimento') ? '' : 'none';
   if (!window.oneFinContaModalIcone) {
@@ -9524,6 +9581,18 @@ function oneFinContaModalSalvar() {
   }
 
   var obj = { nome: nome, tipo: tipo, icone: icone, cor: cor };
+  if (tipo === 'banco') {
+    var saldoIniInp = document.getElementById('one-fin-conta-modal-saldo-inicial');
+    var rawSaldoIni = saldoIniInp ? String(saldoIniInp.value).trim() : '';
+    if (rawSaldoIni === '' && id) {
+      /* Preserva valor anterior se o campo foi deixado vazio na edição */
+      var contaAtual = (typeof oneFinGetConta === 'function') ? oneFinGetConta(id) : null;
+      obj.saldoInicial = (contaAtual && contaAtual.saldoInicial != null) ? Number(contaAtual.saldoInicial) : 0;
+    } else {
+      var saldoIni = parseFloat(rawSaldoIni);
+      obj.saldoInicial = isNaN(saldoIni) ? 0 : saldoIni;
+    }
+  }
   if (tipo === 'cartao') {
     obj.diaFechamento = dFech;
     obj.diaVencimento = dVenc;
