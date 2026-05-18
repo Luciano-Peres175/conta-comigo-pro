@@ -3931,7 +3931,7 @@ function _supaMapFromRow(localKey, row) {
 var SUPA_CAMPOS_LOCAIS = {
   receitas:       ['contaId', 'status'],
   despesas:       ['contaId', 'faturaMesAno', 'loteId', 'parcelaAtual', 'parcelasTotal', 'recorrencia', 'status'],
-  despesas_fixas: ['nome', 'diaDoMes', 'inicio', 'contaId'],
+  despesas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId'],
   compromissos:   [],
   tarefas:        [],
   notas_cerebro:  []
@@ -5409,6 +5409,7 @@ function renderOneFinanceiroPainel() {
       var sinal = l.tipo === 'in' ? '+' : '-';
       var safeId = (l.id||'').replace(/'/g,"\\'");
       var safeKey = l.key;
+      var safeData = (l.data || '').replace(/'/g,"\\'");
       var nome = l.nome.replace(/</g,'&lt;');
       var catLabel = l.categoria ? l.categoria.replace(/</g,'&lt;') : (l.tipo==='in'?'Receita':'Despesa');
       var pendBadge = l.status === 'pendente' ? ' · <span style="color:#D4A655;font-weight:600">pendente</span>' : '';
@@ -5420,8 +5421,8 @@ function renderOneFinanceiroPainel() {
                 '</div>' +
                 '<div class="one-fin-item-valor ' + (l.tipo==='in'?'in':'out') + '">' + sinal + brl(l.valor).replace('R$ ','R$') + '</div>' +
                 '<div class="one-fin-item-actions">' +
-                  '<button class="one-fin-item-btn" onclick="oneFinEditar(\'' + safeKey + '\',\'' + safeId + '\')" title="Editar">✏️</button>' +
-                  '<button class="one-fin-item-btn del" onclick="oneFinExcluir(\'' + safeKey + '\',\'' + safeId + '\')" title="Excluir">🗑️</button>' +
+                  '<button class="one-fin-item-btn" onclick="oneFinEditar(\'' + safeKey + '\',\'' + safeId + '\',\'' + safeData + '\')" title="Editar">✏️</button>' +
+                  '<button class="one-fin-item-btn del" onclick="oneFinExcluir(\'' + safeKey + '\',\'' + safeId + '\',\'' + safeData + '\')" title="Excluir">🗑️</button>' +
                 '</div>' +
               '</div>';
     });
@@ -5488,19 +5489,390 @@ function oneFinToggleGrupo(chave) {
 window.oneFinToggleGrupo = oneFinToggleGrupo;
 window.zerarFinanceiro = zerarFinanceiro;
 
-function oneFinExcluir(key, id) {
-  if (!confirm('Excluir este lançamento?')) return;
-  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key))||'[]'); } catch(e){}
-  lista = lista.filter(function(i){ return i.id !== id; });
+/* ════════════════════════════════════════════════════════════════
+   DIÁLOGO DE ESCOPO (Fase 3) — 3 opções pra editar/excluir
+   Aparece quando o user clica ✏️/🗑️ em instância virtual de fixa
+   OU em parcela de lote. Opções: só esta · esta e as próximas · todas.
+   Renderiza inline no body (sem alterar index.html). callback(escopo)
+   recebe 'esta' | 'proximas' | 'todas' | null (cancelar).
+   ════════════════════════════════════════════════════════════════ */
+function oneFinDialogoEscopo(opts, callback) {
+  opts = opts || {};
+  var acao    = opts.acao    || 'editar';     // 'editar' | 'excluir'
+  var contexto = opts.contexto || 'fixa';     // 'fixa' | 'lote'
+  var dataLbl  = opts.dataLbl  || '';
+  var nomeLbl  = opts.nomeLbl  || '';
+
+  var verbo = (acao === 'excluir') ? 'Excluir' : 'Editar';
+  var ehLote = (contexto === 'lote');
+  var tituloRef = ehLote ? 'parcela' : 'lançamento';
+  var sub = nomeLbl ? ('<div class="one-fin-dlg-sub">' + nomeLbl.replace(/</g,'&lt;') + (dataLbl ? (' · ' + dataLbl) : '') + '</div>') : '';
+
+  /* Remove diálogo anterior se ainda estiver no DOM */
+  var prev = document.getElementById('one-fin-dlg-escopo');
+  if (prev && prev.parentNode) prev.parentNode.removeChild(prev);
+
+  var dlg = document.createElement('div');
+  dlg.id = 'one-fin-dlg-escopo';
+  dlg.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(20,20,30,0.45);';
+
+  var labelEsta     = ehLote ? 'Só esta parcela' : 'Só este mês';
+  var subEsta       = ehLote ? 'Mexe apenas nesta parcela' : 'Vira lançamento avulso só no mês escolhido';
+  var labelProximas = ehLote ? 'Esta e as próximas' : 'Este e os próximos meses';
+  var subProximas   = ehLote ? 'Aplica a partir desta parcela em diante' : 'A fixa segue vivendo, mas com os novos dados a partir daqui';
+  var labelTodas    = ehLote ? 'Todas as parcelas' : 'Todos os meses (template)';
+  var subTodas      = ehLote ? 'Aplica a todas as parcelas do lote' : 'Altera a fixa inteira, vale pra todos os meses';
+
+  dlg.innerHTML =
+    '<div class="one-fin-dlg-card" style="background:#F4F1EA;border-radius:18px;padding:22px 22px 18px;max-width:440px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.25);font-family:Inter,system-ui,sans-serif">' +
+      '<div class="one-fin-dlg-title" style="font-weight:700;color:#2C2A26;font-size:17px;margin-bottom:4px">' + verbo + ' ' + tituloRef + '</div>' +
+      sub +
+      '<div class="one-fin-dlg-question" style="color:#6B6660;font-size:14px;margin:10px 0 14px">Em qual escopo?</div>' +
+      '<button data-escopo="esta"     class="one-fin-dlg-btn" style="display:block;width:100%;text-align:left;background:#FFF;border:1px solid rgba(155,114,176,0.25);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer">' +
+        '<div style="font-weight:600;color:#2C2A26">' + labelEsta + '</div>' +
+        '<div style="color:#6B6660;font-size:12px;margin-top:2px">' + subEsta + '</div>' +
+      '</button>' +
+      '<button data-escopo="proximas" class="one-fin-dlg-btn" style="display:block;width:100%;text-align:left;background:#FFF;border:1px solid rgba(155,114,176,0.25);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer">' +
+        '<div style="font-weight:600;color:#2C2A26">' + labelProximas + '</div>' +
+        '<div style="color:#6B6660;font-size:12px;margin-top:2px">' + subProximas + '</div>' +
+      '</button>' +
+      '<button data-escopo="todas"    class="one-fin-dlg-btn" style="display:block;width:100%;text-align:left;background:#FFF;border:1px solid rgba(155,114,176,0.25);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer">' +
+        '<div style="font-weight:600;color:#2C2A26">' + labelTodas + '</div>' +
+        '<div style="color:#6B6660;font-size:12px;margin-top:2px">' + subTodas + '</div>' +
+      '</button>' +
+      '<button data-escopo="cancel"   style="display:block;width:100%;text-align:center;background:transparent;border:none;color:#6B6660;font-size:13px;padding:10px 0;cursor:pointer;margin-top:4px">Cancelar</button>' +
+    '</div>';
+
+  function fechar(escolha){
+    if (dlg.parentNode) dlg.parentNode.removeChild(dlg);
+    if (typeof callback === 'function') callback(escolha);
+  }
+  dlg.addEventListener('click', function(ev){
+    var t = ev.target;
+    while (t && t !== dlg && !t.dataset.escopo) t = t.parentNode;
+    if (t === dlg) { fechar(null); return; }   /* clicou fora do card */
+    if (t && t.dataset.escopo) {
+      var e = t.dataset.escopo;
+      fechar(e === 'cancel' ? null : e);
+    }
+  });
+
+  document.body.appendChild(dlg);
+}
+window.oneFinDialogoEscopo = oneFinDialogoEscopo;
+
+/* ── Helpers de instância virtual de fixa ───────────────────────── */
+function _oneFinExtrairMesAno(dataStr) {
+  /* '2026-06-05' → '2026-06'. Retorna '' se inválido. */
+  if (!dataStr || typeof dataStr !== 'string') return '';
+  var m = dataStr.match(/^(\d{4})-(\d{2})/);
+  return m ? (m[1] + '-' + m[2]) : '';
+}
+
+function _oneFinMesAnoAnterior(mesAno) {
+  /* '2026-06' → '2026-05'. */
+  var p = String(mesAno).split('-');
+  var a = parseInt(p[0], 10), m = parseInt(p[1], 10);
+  if (!a || !m) return '';
+  m -= 1; if (m < 1) { m = 12; a -= 1; }
+  return a + '-' + String(m).padStart(2,'0');
+}
+
+/* Marca um mês como pulado no template da fixa. Idempotente. */
+function oneFinFixaPularMes(key, fixaId, mesAno) {
+  if (!key || !fixaId || !mesAno) return false;
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+  var idx = lista.findIndex(function(x){ return String(x.id) === String(fixaId); });
+  if (idx < 0) return false;
+  var fix = lista[idx];
+  var pulados = Array.isArray(fix.mesesPulados) ? fix.mesesPulados.slice() : [];
+  if (pulados.indexOf(mesAno) < 0) pulados.push(mesAno);
+  fix.mesesPulados = pulados;
+  lista[idx] = fix;
   localStorage.setItem(oneU(key), JSON.stringify(lista));
+  if (typeof supaUpsert === 'function') supaUpsert(key, fix);
+  return true;
+}
+window.oneFinFixaPularMes = oneFinFixaPularMes;
+
+/* Define o fim do template (último mês ativo). Usado pra "esta e as próximas"
+   no excluir (encerra a fixa a partir do mês escolhido — inclusive). */
+function oneFinFixaEncerrarEm(key, fixaId, ultimoMesAnoAtivo) {
+  if (!key || !fixaId || !ultimoMesAnoAtivo) return false;
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+  var idx = lista.findIndex(function(x){ return String(x.id) === String(fixaId); });
+  if (idx < 0) return false;
+  lista[idx].fim = ultimoMesAnoAtivo;
+  localStorage.setItem(oneU(key), JSON.stringify(lista));
+  if (typeof supaUpsert === 'function') supaUpsert(key, lista[idx]);
+  return true;
+}
+window.oneFinFixaEncerrarEm = oneFinFixaEncerrarEm;
+
+/* Materializa UMA instância: cria despesa/receita real com os dados do template
+   (mais data específica do mês escolhido) e marca o mês como pulado no template.
+   Retorna o id da despesa/receita criada (pra modal abrir nela). */
+function oneFinFixaMaterializarMes(keyFixa, fixaId, dataInstancia) {
+  if (!keyFixa || !fixaId || !dataInstancia) return null;
+  var listaFix = []; try { listaFix = JSON.parse(localStorage.getItem(oneU(keyFixa)) || '[]'); } catch(e){}
+  var fix = listaFix.find(function(x){ return String(x.id) === String(fixaId); });
+  if (!fix) return null;
+  var ehReceita = (keyFixa === 'receitasFixas');
+  var keyReal = ehReceita ? 'receitas' : 'despesas';
+  var mesAno = _oneFinExtrairMesAno(dataInstancia);
+
+  var uid = function() { return (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2,8); };
+
+  /* Calcula faturaMesAno se a conta for cartão (mesma lógica do modal salvar) */
+  var conta = (fix.contaId && typeof oneFinGetConta === 'function') ? oneFinGetConta(fix.contaId) : null;
+  var faturaTag = null;
+  if (conta && conta.tipo === 'cartao' && typeof oneFinCalcularFatura === 'function') {
+    faturaTag = oneFinCalcularFatura(dataInstancia, conta.diaFechamento);
+  }
+
+  var novo = {
+    id: uid(),
+    nome: fix.nome || fix.descricao || (ehReceita ? 'Receita' : 'Despesa'),
+    descricao: fix.descricao || fix.nome || (ehReceita ? 'Receita' : 'Despesa'),
+    valor: Number(fix.valor) || 0,
+    data: dataInstancia,
+    categoria: fix.categoria || '',
+    tipo: ehReceita ? 'receita' : 'despesa',
+    recorrencia: 'esporadica',
+    status: 'pendente',
+    contaId: fix.contaId || '',
+    faturaMesAno: faturaTag,
+    origemFixaId: fix.id,           /* rastreabilidade — opcional, ajuda em debug */
+    criado: new Date().toISOString()
+  };
+  var listaReal = []; try { listaReal = JSON.parse(localStorage.getItem(oneU(keyReal)) || '[]'); } catch(e){}
+  listaReal.push(novo);
+  localStorage.setItem(oneU(keyReal), JSON.stringify(listaReal));
+  if (typeof supaUpsert === 'function') supaUpsert(keyReal, novo);
+
+  /* Marca mês como pulado no template */
+  oneFinFixaPularMes(keyFixa, fixaId, mesAno);
+
+  return { key: keyReal, id: novo.id };
+}
+window.oneFinFixaMaterializarMes = oneFinFixaMaterializarMes;
+
+/* ── Helpers de lote (parcelas vinculadas por loteId) ────────────── */
+function _oneFinLoteItens(key, loteId) {
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+  return lista.filter(function(x){ return x.loteId && String(x.loteId) === String(loteId); });
+}
+
+function oneFinLoteExcluirTodos(key, loteId) {
+  if (!key || !loteId) return 0;
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+  var alvo = lista.filter(function(x){ return String(x.loteId) === String(loteId); });
+  var restante = lista.filter(function(x){ return String(x.loteId) !== String(loteId); });
+  localStorage.setItem(oneU(key), JSON.stringify(restante));
+  alvo.forEach(function(it){ if (typeof supaDelete === 'function') supaDelete(key, it.id); });
+  return alvo.length;
+}
+window.oneFinLoteExcluirTodos = oneFinLoteExcluirTodos;
+
+function oneFinLoteExcluirApartir(key, parcelaId) {
+  if (!key || !parcelaId) return 0;
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+  var ref = lista.find(function(x){ return String(x.id) === String(parcelaId); });
+  if (!ref || !ref.loteId) return 0;
+  var alvo = lista.filter(function(x){
+    return String(x.loteId) === String(ref.loteId) && (x.data || '') >= (ref.data || '');
+  });
+  var ids = {};
+  alvo.forEach(function(a){ ids[a.id] = true; });
+  var restante = lista.filter(function(x){ return !ids[x.id]; });
+  localStorage.setItem(oneU(key), JSON.stringify(restante));
+  alvo.forEach(function(a){ if (typeof supaDelete === 'function') supaDelete(key, a.id); });
+  return alvo.length;
+}
+window.oneFinLoteExcluirApartir = oneFinLoteExcluirApartir;
+
+function oneFinExcluir(key, id, dataInstancia) {
+  /* Despacha: instância virtual de fixa → diálogo de escopo;
+              parcela de lote → diálogo de escopo;
+              demais casos → confirm simples + exclusão direta. */
+  var ehFixaKey = (key === 'despesasFixas' || key === 'receitasFixas');
+  if (ehFixaKey && dataInstancia) {
+    /* É instância virtual de fixa */
+    var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+    var fix = lista.find(function(x){ return String(x.id) === String(id); });
+    if (!fix) {
+      if (typeof oneToast === 'function') oneToast('Fixa não encontrada.', 'error');
+      return;
+    }
+    var mesAno = _oneFinExtrairMesAno(dataInstancia);
+    oneFinDialogoEscopo({
+      acao: 'excluir', contexto: 'fixa',
+      nomeLbl: fix.nome || fix.descricao || 'Fixa',
+      dataLbl: mesAno
+    }, function(escopo){
+      if (!escopo) return;
+      if (escopo === 'esta') {
+        oneFinFixaPularMes(key, id, mesAno);
+        if (typeof oneToast === 'function') oneToast('✓ Mês de ' + mesAno + ' pulado.');
+      } else if (escopo === 'proximas') {
+        var anterior = _oneFinMesAnoAnterior(mesAno);
+        oneFinFixaEncerrarEm(key, id, anterior);
+        if (typeof oneToast === 'function') oneToast('✓ Fixa encerrada (último mês: ' + anterior + ').');
+      } else if (escopo === 'todas') {
+        var listaB = []; try { listaB = JSON.parse(localStorage.getItem(oneU(key))||'[]'); } catch(e){}
+        listaB = listaB.filter(function(i){ return String(i.id) !== String(id); });
+        localStorage.setItem(oneU(key), JSON.stringify(listaB));
+        if (typeof supaDelete === 'function') supaDelete(key, id);
+        if (typeof oneToast === 'function') oneToast('✓ Fixa excluída por completo.');
+      }
+      if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
+      if (typeof oneFinRenderFixas==='function') oneFinRenderFixas();
+      if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
+    });
+    return;
+  }
+
+  /* Parcela de lote? */
+  var keyEsporadica = (key === 'receitas' || key === 'despesas');
+  if (keyEsporadica && dataInstancia) {
+    var lst = []; try { lst = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+    var it  = lst.find(function(x){ return String(x.id) === String(id); });
+    if (it && it.loteId) {
+      var labelData = (it.data || '').split('-').reverse().slice(0,2).join('/');
+      oneFinDialogoEscopo({
+        acao: 'excluir', contexto: 'lote',
+        nomeLbl: it.nome || it.descricao || 'Parcela',
+        dataLbl: labelData
+      }, function(escopo){
+        if (!escopo) return;
+        if (escopo === 'esta') {
+          var lst2 = []; try { lst2 = JSON.parse(localStorage.getItem(oneU(key))||'[]'); } catch(e){}
+          lst2 = lst2.filter(function(i){ return String(i.id) !== String(id); });
+          localStorage.setItem(oneU(key), JSON.stringify(lst2));
+          if (typeof supaDelete === 'function') supaDelete(key, id);
+          if (typeof oneToast === 'function') oneToast('✓ Parcela excluída.');
+        } else if (escopo === 'proximas') {
+          var n = oneFinLoteExcluirApartir(key, id);
+          if (typeof oneToast === 'function') oneToast('✓ ' + n + ' parcelas excluídas (esta + próximas).');
+        } else if (escopo === 'todas') {
+          var n2 = oneFinLoteExcluirTodos(key, it.loteId);
+          if (typeof oneToast === 'function') oneToast('✓ ' + n2 + ' parcelas excluídas (lote inteiro).');
+        }
+        if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
+        if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
+      });
+      return;
+    }
+  }
+
+  /* Caso padrão: confirm simples + delete direto */
+  if (!confirm('Excluir este lançamento?')) return;
+  var lista0 = []; try { lista0 = JSON.parse(localStorage.getItem(oneU(key))||'[]'); } catch(e){}
+  lista0 = lista0.filter(function(i){ return i.id !== id; });
+  localStorage.setItem(oneU(key), JSON.stringify(lista0));
   supaDelete(key, id);
   if (typeof oneToast==='function') oneToast('✓ Lançamento excluído.');
   if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
   if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
 }
 
-/* Agora abre o modal de lançamento (em vez do form inline removido) */
-function oneFinEditar(key, id) {
+/* Agora abre o modal de lançamento (em vez do form inline removido).
+   3º parâmetro opcional dataInstancia (YYYY-MM-DD): quando vier preenchido
+   e o item for instância virtual de fixa OU parcela de lote, abrimos o
+   diálogo de escopo antes do modal. */
+function oneFinEditar(key, id, dataInstancia) {
+  var ehFixaKey = (key === 'despesasFixas' || key === 'receitasFixas');
+  if (ehFixaKey && dataInstancia) {
+    var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+    var fix = lista.find(function(x){ return String(x.id) === String(id); });
+    if (!fix) {
+      if (typeof oneToast === 'function') oneToast('Fixa não encontrada.', 'error');
+      return;
+    }
+    var mesAno = _oneFinExtrairMesAno(dataInstancia);
+    oneFinDialogoEscopo({
+      acao: 'editar', contexto: 'fixa',
+      nomeLbl: fix.nome || fix.descricao || 'Fixa',
+      dataLbl: mesAno
+    }, function(escopo){
+      if (!escopo) return;
+      if (escopo === 'esta') {
+        var mat = oneFinFixaMaterializarMes(key, id, dataInstancia);
+        if (mat && typeof oneFinModalEditar === 'function') {
+          if (typeof oneToast === 'function') oneToast('✓ Mês destacado. Edite o lançamento.');
+          oneFinModalEditar(mat.key, mat.id);
+        }
+        if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
+        if (typeof oneFinRenderFixas==='function') oneFinRenderFixas();
+      } else if (escopo === 'proximas') {
+        /* Encerra o template no mês anterior e abre modal NOVO já como fixa,
+           pré-preenchido com os dados atuais, pra Mentor ajustar a partir do
+           mês escolhido. Se ele salvar sem mudar nada, gera fixa idêntica. */
+        var anterior = _oneFinMesAnoAnterior(mesAno);
+        oneFinFixaEncerrarEm(key, id, anterior);
+        if (typeof oneToast === 'function') oneToast('✓ Fixa antiga encerrada em ' + anterior + '. Crie a nova versão.');
+        if (typeof oneFinModalAbrir === 'function') {
+          var tipoLanc = (key === 'receitasFixas') ? 'receita' : 'despesa';
+          oneFinModalAbrir(tipoLanc);
+          /* Pré-preenche modal com dados da fixa, marcando recorrência fixa
+             e início = mês escolhido. Pequeno delay pra modal abrir antes. */
+          setTimeout(function(){
+            try {
+              document.getElementById('one-fin-modal-title').textContent = 'Nova fixa (a partir de ' + mesAno + ')';
+              document.getElementById('one-fin-modal-nome').value  = fix.nome || fix.descricao || '';
+              document.getElementById('one-fin-modal-valor').value = fix.valor || '';
+              document.getElementById('one-fin-modal-dia').value   = String(fix.diaDoMes || 5);
+              document.getElementById('one-fin-modal-inicio').value = mesAno;
+              if (typeof oneFinModalSetRecorrencia === 'function') oneFinModalSetRecorrencia('fixa');
+              var contaSel = document.getElementById('one-fin-modal-conta');
+              if (contaSel && fix.contaId) {
+                Array.prototype.some.call(contaSel.options, function(op){
+                  if (op.value === String(fix.contaId)) { contaSel.value = op.value; return true; }
+                  return false;
+                });
+              }
+              var catSel = document.getElementById('one-fin-modal-cat');
+              if (catSel && fix.categoria) {
+                if (!catSel.querySelector('option[value="' + fix.categoria.replace(/"/g,'\\"') + '"]') && typeof oneFinAddCategoria==='function') {
+                  oneFinAddCategoria(tipoLanc, fix.categoria);
+                  if (typeof oneFinModalRefreshCategorias==='function') oneFinModalRefreshCategorias();
+                }
+                catSel.value = fix.categoria;
+              }
+            } catch(e) { console.warn('[oneFinEditar próximas] preenchimento parcial:', e); }
+          }, 120);
+        }
+      } else if (escopo === 'todas') {
+        if (typeof oneFinModalEditar === 'function') oneFinModalEditar(key, id);
+      }
+    });
+    return;
+  }
+
+  /* Parcela de lote? */
+  var keyEsporadica = (key === 'receitas' || key === 'despesas');
+  if (keyEsporadica && dataInstancia) {
+    var lst = []; try { lst = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+    var it  = lst.find(function(x){ return String(x.id) === String(id); });
+    if (it && it.loteId) {
+      var labelData = (it.data || '').split('-').reverse().slice(0,2).join('/');
+      oneFinDialogoEscopo({
+        acao: 'editar', contexto: 'lote',
+        nomeLbl: it.nome || it.descricao || 'Parcela',
+        dataLbl: labelData
+      }, function(escopo){
+        if (!escopo) return;
+        /* Pra lote, "esta" abre modal só da parcela; "proximas"/"todas" também
+           abrem o modal (Mentor edita os campos), e na hora de salvar a gente
+           aplica o delta às outras parcelas via gancho temporário. */
+        window.__oneFinLoteEscopo = (escopo === 'esta') ? null : { escopo: escopo, loteId: it.loteId, dataRef: it.data, key: key };
+        if (typeof oneFinModalEditar === 'function') oneFinModalEditar(key, id);
+      });
+      return;
+    }
+  }
+
+  /* Caso padrão: modal direto */
   if (typeof oneFinModalEditar === 'function') {
     oneFinModalEditar(key, id);
   } else if (typeof oneToast === 'function') {
@@ -8672,10 +9044,11 @@ function _oneFinItemDetHtml(l) {
      do Extrato (renderOneFinanceiroPainel). */
   var safeId = String(l.id||'').replace(/'/g,"\\'");
   var safeKey = String(l.key||'');
+  var safeData = String(l.data||'').replace(/'/g,"\\'");
   var actions = (safeKey && safeId)
     ? '<div class="one-fin-conta-det-item-actions">' +
-        '<button class="one-fin-item-btn" onclick="oneFinEditar(\'' + safeKey + '\',\'' + safeId + '\')" title="Editar">✏️</button>' +
-        '<button class="one-fin-item-btn del" onclick="oneFinExcluir(\'' + safeKey + '\',\'' + safeId + '\')" title="Excluir">🗑️</button>' +
+        '<button class="one-fin-item-btn" onclick="oneFinEditar(\'' + safeKey + '\',\'' + safeId + '\',\'' + safeData + '\')" title="Editar">✏️</button>' +
+        '<button class="one-fin-item-btn del" onclick="oneFinExcluir(\'' + safeKey + '\',\'' + safeId + '\',\'' + safeData + '\')" title="Excluir">🗑️</button>' +
       '</div>'
     : '';
   return '<div class="one-fin-conta-det-item">' +
@@ -8787,6 +9160,20 @@ window.oneFinRenderContaDetalhe = oneFinRenderContaDetalhe;
    Instâncias virtuais têm flag _fixa=true e _fixaId=id-do-template.
    ════════════════════════════════════════════════════════════════ */
 function oneFinFixaAtivaNoMes(fixa, mes, ano) {
+  /* Checa início (template ativo só a partir de inicio), fim (encerrada após fim)
+     e mesesPulados (lista de YYYY-MM que NÃO geram instância — usado pelo
+     diálogo de escopo "só esta" quando user edita/exclui um mês específico). */
+  var mesAnoAlvo = ano + '-' + String(mes + 1).padStart(2, '0');
+  if (Array.isArray(fixa.mesesPulados) && fixa.mesesPulados.indexOf(mesAnoAlvo) >= 0) return false;
+  if (fixa.fim) {
+    var pf = String(fixa.fim).split('-');
+    var fAno = parseInt(pf[0], 10);
+    var fMes = parseInt(pf[1], 10);
+    if (fAno && fMes) {
+      /* fim é inclusivo: gera instância no mês de fim, não gera depois. */
+      if (ano > fAno || (ano === fAno && mes > (fMes - 1))) return false;
+    }
+  }
   if (!fixa.inicio) return true;
   var partes = String(fixa.inicio).split('-');
   var iAno = parseInt(partes[0], 10);
@@ -9563,6 +9950,41 @@ function oneFinModalSalvar() {
         });
         localStorage.setItem(oneU(keyE), JSON.stringify(listaE));
         if (typeof supaUpsert === 'function') supaUpsert(keyE, objE);
+
+        /* Propagação de lote (escopo "proximas" ou "todas") — set pelo
+           oneFinEditar antes de abrir o modal. Aplica os mesmos campos
+           (exceto data e o sufixo N/M do nome) nas outras parcelas do lote. */
+        var escopoLote = window.__oneFinLoteEscopo;
+        window.__oneFinLoteEscopo = null;
+        if (escopoLote && escopoLote.loteId && (escopoLote.escopo === 'proximas' || escopoLote.escopo === 'todas')) {
+          var nomeBase = String(nome).replace(/\s+\d+\s*\/\s*\d+\s*$/, '');
+          var dataRef = escopoLote.dataRef || '';
+          var n = 0;
+          listaE.forEach(function(it, idx){
+            if (!it || String(it.loteId) !== String(escopoLote.loteId)) return;
+            if (String(it.id) === String(id)) return;            /* o item editado já foi */
+            if (escopoLote.escopo === 'proximas' && (it.data || '') < dataRef) return;
+            /* Reconstroi nome com sufixo N/M se a parcela tem essa info */
+            var nomeNovo = (it.parcelaAtual && it.parcelasTotal)
+              ? (nomeBase + ' ' + it.parcelaAtual + '/' + it.parcelasTotal)
+              : nomeBase;
+            var atualizado = Object.assign(it, {
+              nome: nomeNovo, descricao: nomeNovo,
+              valor: valor, categoria: cat,
+              tipo: tipo,
+              status: it.status,                                  /* status fica individual */
+              contaId: contaId,
+              faturaMesAno: faturaPara(it.data)
+            });
+            listaE[idx] = atualizado;
+            if (typeof supaUpsert === 'function') supaUpsert(keyE, atualizado);
+            n++;
+          });
+          if (n > 0) {
+            localStorage.setItem(oneU(keyE), JSON.stringify(listaE));
+            if (typeof oneToast === 'function') oneToast('✓ ' + (n+1) + ' parcelas atualizadas.');
+          }
+        }
       }
     } else if (parcelar && parcTotal >= 2) {
       /* Gera N parcelas vinculadas por loteId */
@@ -9689,6 +10111,7 @@ function _oneFinFixaLinhaHtml(item) {
   }
   var safeId = String(item.id||'').replace(/'/g,"\\'");
   var safeKey = String(item.key||'');
+  var safeData = String(item.dataInstancia || '').replace(/'/g,"\\'");
   return '<div class="one-fin-fixa-item" onclick="oneFinFixaAbrir(\'' + safeKey + '\',\'' + safeId + '\')">' +
            '<div class="one-fin-fixa-ico" style="background:' + cat.bg + ';color:' + cat.cor + '">' + cat.emoji + '</div>' +
            '<div class="one-fin-fixa-body">' +
@@ -9698,8 +10121,8 @@ function _oneFinFixaLinhaHtml(item) {
            '<div class="one-fin-fixa-val ' + (item.tipo==='in'?'in':'out') + '">' + sinal + _oneFinBrlDet(item.valor) + '</div>' +
            statusBadge +
            '<div class="one-fin-fixa-actions" onclick="event.stopPropagation()">' +
-             '<button class="one-fin-item-btn" onclick="oneFinEditar(\'' + safeKey + '\',\'' + safeId + '\')" title="Editar">✏️</button>' +
-             '<button class="one-fin-item-btn del" onclick="oneFinExcluir(\'' + safeKey + '\',\'' + safeId + '\')" title="Excluir">🗑️</button>' +
+             '<button class="one-fin-item-btn" onclick="oneFinEditar(\'' + safeKey + '\',\'' + safeId + '\',\'' + safeData + '\')" title="Editar">✏️</button>' +
+             '<button class="one-fin-item-btn del" onclick="oneFinExcluir(\'' + safeKey + '\',\'' + safeId + '\',\'' + safeData + '\')" title="Excluir">🗑️</button>' +
            '</div>' +
          '</div>';
 }
@@ -9730,13 +10153,13 @@ function oneFinRenderFixas() {
     return { tipo:'out', key:'despesasFixas', id:d._fixaId, nome:d.nome,
              valor:Number(d.valor)||0, dia:d.diaDoMes || (d.data ? parseInt(d.data.split('-')[2],10) : null),
              contaId:d.contaId, categoria:d.categoria||'',
-             status:d.status || 'pendente' };
+             status:d.status || 'pendente', dataInstancia: d.data || '' };
   });
   var receitas = (inst.receitas || []).map(function(r){
     return { tipo:'in', key:'receitasFixas', id:r._fixaId, nome:r.nome,
              valor:Number(r.valor)||0, dia:r.diaDoMes || (r.data ? parseInt(r.data.split('-')[2],10) : null),
              contaId:r.contaId, categoria:r.categoria||'',
-             status:r.status || 'pendente' };
+             status:r.status || 'pendente', dataInstancia: r.data || '' };
   });
 
   var totalEnt = receitas.reduce(function(s,i){ return s+i.valor; }, 0);
