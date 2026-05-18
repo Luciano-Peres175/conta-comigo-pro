@@ -2152,7 +2152,11 @@
         <div class="one-modal-row">
           <div class="one-modal-field">
             <label class="one-modal-label">Parcelas</label>
-            <input id="one-fin-modal-parc-total" class="one-modal-input" type="number" min="2" max="60" value="12">
+            <input id="one-fin-modal-parc-total" class="one-modal-input" type="number" min="2" max="60" value="2" oninput="oneFinModalParcRecalcular('numero')">
+          </div>
+          <div class="one-modal-field">
+            <label class="one-modal-label">Valor da parcela (R$)</label>
+            <input id="one-fin-modal-parc-valor" class="one-modal-input" type="number" step="0.01" min="0" placeholder="0,00" oninput="oneFinModalParcRecalcular('parcela')">
           </div>
           <div class="one-modal-field">
             <label class="one-modal-label">Intervalo</label>
@@ -2164,7 +2168,7 @@
           </div>
         </div>
         <div style="font-size:11px; color:rgba(0,0,0,0.55); margin-top:6px; line-height:1.4">
-          Vira N lançamentos vinculados (ex: "Celular 1/12", "2/12"…). O valor é dividido pelas parcelas.
+          Preencha 2 dos 3 campos (Valor da compra, Parcelas, Valor da parcela) — o terceiro completa sozinho.
         </div>
       </div>
     </div>

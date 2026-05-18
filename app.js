@@ -9807,8 +9807,41 @@ function oneFinModalToggleParcelas() {
   var check = document.getElementById('one-fin-modal-parcelar');
   var bloco = document.getElementById('one-fin-modal-parc-bloco');
   if (bloco) bloco.style.display = (check && check.checked) ? '' : 'none';
+  if (check && check.checked) {
+    /* Quando liga o parcelamento, garante o cálculo inicial baseado no que já tem digitado */
+    oneFinModalParcRecalcular('numero');
+    /* E vincula listener no campo "Valor da compra" se ainda não estiver vinculado */
+    var valorInp = document.getElementById('one-fin-modal-valor');
+    if (valorInp && !valorInp.dataset.parcBind) {
+      valorInp.addEventListener('input', function(){ oneFinModalParcRecalcular('total'); });
+      valorInp.dataset.parcBind = '1';
+    }
+  }
 }
 window.oneFinModalToggleParcelas = oneFinModalToggleParcelas;
+
+/* Parcelamento — 3 campos vinculados: nº × valor parcela = valor compra.
+   fonte = 'numero' | 'total' | 'parcela' indica qual campo o user mexeu.
+   Os outros dois recalculam se possível. */
+function oneFinModalParcRecalcular(fonte) {
+  var check = document.getElementById('one-fin-modal-parcelar');
+  if (!check || !check.checked) return;
+  var nInp = document.getElementById('one-fin-modal-parc-total');
+  var pInp = document.getElementById('one-fin-modal-parc-valor');
+  var tInp = document.getElementById('one-fin-modal-valor');
+  if (!nInp || !pInp || !tInp) return;
+  var n  = parseInt(nInp.value, 10);
+  var pv = parseFloat(String(pInp.value).replace(',', '.'));
+  var tv = parseFloat(String(tInp.value).replace(',', '.'));
+  if (fonte === 'parcela' && n > 0 && !isNaN(pv) && pv > 0) {
+    /* Veio valor da parcela → recalcula valor da compra */
+    tInp.value = (n * pv).toFixed(2);
+  } else if ((fonte === 'numero' || fonte === 'total') && n > 0 && !isNaN(tv) && tv > 0) {
+    /* Veio nº ou total → recalcula valor da parcela */
+    pInp.value = (tv / n).toFixed(2);
+  }
+}
+window.oneFinModalParcRecalcular = oneFinModalParcRecalcular;
 
 function oneFinModalSetRecorrencia(rec) {
   window.oneFinModalRecorrencia = rec;
@@ -9845,7 +9878,9 @@ function oneFinModalAbrir(tipoInicial) {
   document.getElementById('one-fin-modal-dia').value        = '5';
   document.getElementById('one-fin-modal-status').value     = 'pendente';
   document.getElementById('one-fin-modal-parcelar').checked = false;
-  document.getElementById('one-fin-modal-parc-total').value = '12';
+  document.getElementById('one-fin-modal-parc-total').value = '2';
+  var parcVal = document.getElementById('one-fin-modal-parc-valor');
+  if (parcVal) parcVal.value = '';
   document.getElementById('one-fin-modal-parc-intervalo').value = 'mensal';
 
   oneFinModalSetTipo(tipoInicial || 'receita');
