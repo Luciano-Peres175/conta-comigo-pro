@@ -6274,12 +6274,12 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  max-height: 75vh;
+  max-height: 520px;
   overflow-y: auto;
 }
 @media (max-width: 1000px) {
   .one-fin-resumo-bloco-obrigacoes {
-    max-height: 60vh;
+    max-height: 400px;
   }
 }
 .one-fin-resumo-obr-head, .one-fin-resumo-obr-row {

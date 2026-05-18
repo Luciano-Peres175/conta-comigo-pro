@@ -2106,7 +2106,7 @@
     <div class="one-modal-row">
       <div class="one-modal-field">
         <label class="one-modal-label">Valor (R$)</label>
-        <input id="one-fin-modal-valor" class="one-modal-input" type="number" step="0.01" placeholder="0,00">
+        <input id="one-fin-modal-valor" class="one-modal-input" type="text" inputmode="decimal" placeholder="ex: 1500 ou 800+250+450" onblur="oneFinModalValorAvaliar(this)" title="Aceita expressões: 100+50, 1500-200, 80*3 etc.">
       </div>
       <div class="one-modal-field" id="one-fin-modal-data-wrap">
         <label class="one-modal-label">Data</label>
@@ -2149,17 +2149,17 @@
         <input type="checkbox" id="one-fin-modal-parcelar" onchange="oneFinModalToggleParcelas()"> Parcelar este lançamento
       </label>
       <div id="one-fin-modal-parc-bloco" style="display:none; margin-top:8px; padding:10px; background:rgba(0,0,0,0.03); border-radius:8px">
-        <div class="one-modal-row">
-          <div class="one-modal-field">
-            <label class="one-modal-label">Parcelas</label>
+        <div class="one-modal-row" style="align-items:flex-end; gap:10px">
+          <div class="one-modal-field" style="flex:0 0 80px">
+            <label class="one-modal-label" style="white-space:nowrap">Parcelas</label>
             <input id="one-fin-modal-parc-total" class="one-modal-input" type="number" min="2" max="60" value="2" oninput="oneFinModalParcRecalcular('numero')">
           </div>
-          <div class="one-modal-field">
-            <label class="one-modal-label">Valor da parcela (R$)</label>
+          <div class="one-modal-field" style="flex:1 1 0">
+            <label class="one-modal-label" style="white-space:nowrap">Valor parcela</label>
             <input id="one-fin-modal-parc-valor" class="one-modal-input" type="number" step="0.01" min="0" placeholder="0,00" oninput="oneFinModalParcRecalcular('parcela')">
           </div>
-          <div class="one-modal-field">
-            <label class="one-modal-label">Intervalo</label>
+          <div class="one-modal-field" style="flex:0 0 120px">
+            <label class="one-modal-label" style="white-space:nowrap">Intervalo</label>
             <select id="one-fin-modal-parc-intervalo" class="one-modal-select">
               <option value="mensal">Mensal</option>
               <option value="semanal">Semanal</option>
@@ -2168,7 +2168,7 @@
           </div>
         </div>
         <div style="font-size:11px; color:rgba(0,0,0,0.55); margin-top:6px; line-height:1.4">
-          Preencha 2 dos 3 campos (Valor da compra, Parcelas, Valor da parcela) — o terceiro completa sozinho.
+          Preencha 2 dos 3 (Valor da compra, Parcelas, Valor parcela) — o terceiro completa sozinho.
         </div>
       </div>
     </div>

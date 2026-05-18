@@ -9820,6 +9820,33 @@ function oneFinModalToggleParcelas() {
 }
 window.oneFinModalToggleParcelas = oneFinModalToggleParcelas;
 
+/* Calculadora simples no campo Valor: avalia expressões aritméticas como
+   "100+50+20", "1500-200", "80*3", "(40+60)*2". Aceita vírgula como decimal.
+   Bloqueia qualquer caractere que não seja número, operador básico ou parênteses
+   (não chega a executar JS arbitrário). */
+function oneFinModalValorAvaliar(inp) {
+  if (!inp) return;
+  var raw = String(inp.value || '').trim();
+  if (!raw) return;
+  raw = raw.replace(/\s/g, '').replace(/,/g, '.');
+  /* Permite apenas dígitos, ponto, +, -, *, /, parênteses */
+  if (!/^[0-9.+\-*/()]+$/.test(raw)) return;
+  /* Se é só um número, formata e sai */
+  if (/^-?\d+(\.\d+)?$/.test(raw)) {
+    inp.value = parseFloat(raw).toFixed(2);
+    if (typeof oneFinModalParcRecalcular === 'function') oneFinModalParcRecalcular('total');
+    return;
+  }
+  try {
+    var v = Function('"use strict";return (' + raw + ')')();
+    if (typeof v === 'number' && isFinite(v)) {
+      inp.value = v.toFixed(2);
+      if (typeof oneFinModalParcRecalcular === 'function') oneFinModalParcRecalcular('total');
+    }
+  } catch (e) { /* deixa como está se der erro */ }
+}
+window.oneFinModalValorAvaliar = oneFinModalValorAvaliar;
+
 /* Parcelamento — 3 campos vinculados: nº × valor parcela = valor compra.
    fonte = 'numero' | 'total' | 'parcela' indica qual campo o user mexeu.
    Os outros dois recalculam se possível. */
@@ -10005,7 +10032,8 @@ window.oneFinModalSetTipo = oneFinModalSetTipo;
 function oneFinModalSalvar() {
   var id      = document.getElementById('one-fin-modal-id').value;
   var nome    = (document.getElementById('one-fin-modal-nome').value || '').trim();
-  var valor   = parseFloat(document.getElementById('one-fin-modal-valor').value) || 0;
+  var rawValor = String(document.getElementById('one-fin-modal-valor').value || '').replace(',', '.');
+  var valor   = parseFloat(rawValor) || 0;
   var cat     = (document.getElementById('one-fin-modal-cat').value || '').trim();
   var status  = document.getElementById('one-fin-modal-status').value;
   var tipo    = window.oneFinModalTipo || 'receita';
