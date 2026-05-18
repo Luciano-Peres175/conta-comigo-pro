@@ -10397,20 +10397,36 @@ function oneFinInlineSetTipo(tipo) {
 }
 window.oneFinInlineSetTipo = oneFinInlineSetTipo;
 
-/* Render donut + lista — versão inline (mês corrente) */
+/* Render donut + lista — usa o MÊS ATIVO do app (oneFinMesAtivo/AnoAtivo) e
+   inclui instâncias virtuais de fixas, igual o resto do financeiro. */
 function oneFinRenderCategorias() {
   var tipo = window.oneFinInlineTipo || 'despesas';
   var dados = (tipo === 'receitas')
     ? JSON.parse(localStorage.getItem(oneU('receitas')) || '[]')
     : JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
 
-  var hoje = new Date();
-  var mes = hoje.getMonth(), ano = hoje.getFullYear();
+  /* Mês ativo do app (não o de hoje) */
+  var mes = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : new Date().getMonth();
+  var ano = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : new Date().getFullYear();
+
   var doMes = dados.filter(function(it){
     if (!it.data) return false;
     var d = new Date(it.data + 'T00:00:00');
     return d.getMonth() === mes && d.getFullYear() === ano;
   });
+
+  /* Inclui instâncias virtuais de fixas (despesas ou receitas) no mês ativo */
+  if (typeof oneFinInstanciasDoMes === 'function') {
+    var inst = oneFinInstanciasDoMes(mes, ano);
+    var fixasDoMes = (tipo === 'receitas') ? (inst.receitas || []) : (inst.despesas || []);
+    fixasDoMes.forEach(function(f){
+      doMes.push({
+        valor: Number(f.valor) || 0,
+        categoria: f.categoria || '',
+        tipo: f.tipo || tipo
+      });
+    });
+  }
 
   var grupos = {};
   doMes.forEach(function(it){

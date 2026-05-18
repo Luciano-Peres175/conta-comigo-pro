@@ -6194,10 +6194,10 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   box-shadow: 0 1px 3px rgba(0,0,0,.08);
 }
 
-/* Dashboard em 2 colunas: lista à esquerda, donut à direita */
+/* Dashboard em 2 colunas: lista à esquerda, donut à direita — área dividida 50/50 */
 .one-fin-dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 260px;
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
   align-items: start;
 }
@@ -6207,16 +6207,19 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   min-height: 0;
   padding-right: 6px;
 }
+/* Donut ocupa toda a coluna direita até um teto razoável, mantém quadrado */
 .one-fin-dashboard-grid .one-fin-donut-wrap {
-  width: 240px;
-  height: 240px;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 1;
+  height: auto;
   margin: 0 auto;
   position: sticky;
   top: 0;
 }
 @media (max-width: 900px) {
   .one-fin-dashboard-grid { grid-template-columns: 1fr; }
-  .one-fin-dashboard-grid .one-fin-donut-wrap { position: static; }
+  .one-fin-dashboard-grid .one-fin-donut-wrap { position: static; max-width: 260px; }
 }
 
 /* Donut inline */
