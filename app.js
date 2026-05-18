@@ -3771,6 +3771,18 @@ const SUPA_TABLES = {
   notas_cerebro:  'notas'
 };
 
+/* Aliases de localKey: o app usa camelCase no localStorage (despesasFixas,
+   receitasFixas), mas SUPA_TABLES usa snake_case (despesas_fixas). Sem essa
+   normalização, supaUpsert/supaDelete com a key camelCase nunca acham a
+   tabela e o save da fixa cai em silêncio. */
+const SUPA_ALIAS = {
+  despesasFixas: 'despesas_fixas',
+  receitasFixas: 'receitas_fixas'   // tabela ainda não criada no Supa — fica como "sem alvo"
+};
+function _supaNormalizeKey(localKey) {
+  return SUPA_ALIAS[localKey] || localKey;
+}
+
 /* Mapeia item localStorage → row Supabase */
 function _supaMapToRow(localKey, item, userId) {
   var base = { user_id: userId };
@@ -3997,10 +4009,13 @@ async function supaUpsert(localKey, item) {
     if (typeof oneToast === 'function') oneToast('⚠ Usuário não autenticado');
     return;
   }
+  /* Normaliza alias (despesasFixas → despesas_fixas, etc.) antes de buscar tabela */
+  localKey = _supaNormalizeKey(localKey);
   var tabela = SUPA_TABLES[localKey];
   if (!tabela) {
-    console.warn('[supaUpsert] tabela desconhecida para localKey:', localKey);
-    if (typeof oneToast === 'function') oneToast('⚠ Tabela desconhecida: ' + localKey);
+    /* Sem alvo no schema: aceitamos silenciosamente pra não estridentar a UX
+       (caso típico: receitas_fixas ainda não tem tabela no Supa). */
+    console.warn('[supaUpsert] sem tabela alvo para localKey:', localKey, '— salvo só local');
     return;
   }
   try {
@@ -4047,9 +4062,11 @@ async function supaDelete(localKey, id) {
     if (typeof oneToast === 'function') oneToast('⚠ Não autenticado — exclusão só local');
     return { ok: false, motivo: 'no-auth' };
   }
+  /* Normaliza alias (despesasFixas → despesas_fixas, etc.) */
+  localKey = _supaNormalizeKey(localKey);
   var tabela = SUPA_TABLES[localKey];
   if (!tabela) {
-    console.warn('[supaDelete] tabela desconhecida:', localKey);
+    console.warn('[supaDelete] sem tabela alvo para localKey:', localKey, '— exclusão só local');
     return { ok: false, motivo: 'tabela-desconhecida' };
   }
   try {
