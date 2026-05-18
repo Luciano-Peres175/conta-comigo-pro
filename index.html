@@ -587,6 +587,7 @@
             <button class="one-fin-vista-tab active" data-vista="geral"      onclick="oneFinSetVista('geral')">Visão geral</button>
             <button class="one-fin-vista-tab"        data-vista="dashboard"  onclick="oneFinSetVista('dashboard')">Dashboard</button>
             <button class="one-fin-vista-tab"        data-vista="extrato"    onclick="oneFinSetVista('extrato')">Extrato</button>
+            <button class="one-fin-vista-tab"        data-vista="fixas"      onclick="oneFinSetVista('fixas')">Fixas</button>
             <button class="one-fin-vista-tab"        data-vista="contas"     onclick="oneFinSetVista('contas')">Contas</button>
           </div>
           <div class="one-fin-header-right">
@@ -689,6 +690,18 @@
               </div>
             </div>
             <div class="one-pn-body" id="one-fin-list-big" style="flex:1;overflow-y:auto"></div>
+          </div>
+
+          <!-- View Fixas — receitas e despesas fixas, navegáveis mês a mês -->
+          <div class="one-fin-vista" data-vista="fixas" hidden>
+            <div class="one-fin-fixas-nav">
+              <button class="one-fin-mes-btn" onclick="oneFinFixasPrev()" title="Mês anterior">‹</button>
+              <span class="one-fin-fixas-lbl" id="one-fin-fixas-lbl">—</span>
+              <button class="one-fin-mes-btn" onclick="oneFinFixasProx()" title="Próximo mês">›</button>
+              <button class="one-fin-mes-btn one-fin-mes-hoje" id="one-fin-fixas-hoje" onclick="oneFinFixasHoje()" title="Voltar pro mês atual" hidden>↺</button>
+            </div>
+            <div class="one-fin-fixas-resumo" id="one-fin-fixas-resumo"></div>
+            <div class="one-fin-fixas-body" id="one-fin-fixas-body"></div>
           </div>
 
           <!-- View Contas — bancos e cartões de crédito -->

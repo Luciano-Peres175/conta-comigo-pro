@@ -9640,9 +9640,138 @@ function oneFinSetVista(vista) {
     if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
   } else if (vista === 'contas') {
     if (typeof oneFinRenderContas === 'function') oneFinRenderContas();
+  } else if (vista === 'fixas') {
+    if (typeof oneFinRenderFixas === 'function') oneFinRenderFixas();
   }
 }
 window.oneFinSetVista = oneFinSetVista;
+
+/* ════════════════════════════════════════════════════════════════
+   ABA FIXAS — visão por mês de receitas e despesas fixas
+   Navegação com setas (offset relativo ao mês ativo do app),
+   sumário (entradas / saídas / saldo fixo), despesas em cima,
+   receitas embaixo. Cada linha tem ✏️ 🗑️ + click no corpo abre
+   ficha individual (fase 2).
+   ════════════════════════════════════════════════════════════════ */
+function oneFinFixasMesAtivo() {
+  var mesBase = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : new Date().getMonth();
+  var anoBase = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : new Date().getFullYear();
+  var off = window.oneFinFixasOffset || 0;
+  var m = mesBase + off, a = anoBase;
+  while (m < 0)  { m += 12; a--; }
+  while (m > 11) { m -= 12; a++; }
+  return { mes: m, ano: a, offset: off };
+}
+
+function oneFinFixasPrev() { window.oneFinFixasOffset = (window.oneFinFixasOffset || 0) - 1; oneFinRenderFixas(); }
+function oneFinFixasProx() { window.oneFinFixasOffset = (window.oneFinFixasOffset || 0) + 1; oneFinRenderFixas(); }
+function oneFinFixasHoje() { window.oneFinFixasOffset = 0; oneFinRenderFixas(); }
+window.oneFinFixasPrev = oneFinFixasPrev;
+window.oneFinFixasProx = oneFinFixasProx;
+window.oneFinFixasHoje = oneFinFixasHoje;
+
+function _oneFinFixaLinhaHtml(item) {
+  /* item: { tipo:'in'|'out', key, id, nome, valor, dia, contaId, categoria, status, dataInstancia } */
+  var cat = (typeof oneFinCatIcon === 'function') ? oneFinCatIcon(item.categoria) : { emoji:'💸', cor:'#6B7F6F', bg:'#F2F6F1' };
+  var sinal = item.tipo === 'in' ? '+' : '-';
+  var nome = (item.nome||'').replace(/</g,'&lt;');
+  var conta = (typeof oneFinGetConta === 'function' && item.contaId) ? oneFinGetConta(item.contaId) : null;
+  var contaLabel = conta ? conta.nome : 'Sem conta';
+  var diaTxt = item.dia ? ('Dia ' + item.dia) : '';
+  var sub = [diaTxt, contaLabel].filter(Boolean).join(' · ');
+  var statusBadge = '';
+  if (item.status === 'pago') {
+    statusBadge = '<span class="one-fin-fixa-badge ok">pago</span>';
+  } else if (item.status === 'atrasado') {
+    statusBadge = '<span class="one-fin-fixa-badge late">atrasado</span>';
+  } else {
+    statusBadge = '<span class="one-fin-fixa-badge pend">pendente</span>';
+  }
+  var safeId = String(item.id||'').replace(/'/g,"\\'");
+  var safeKey = String(item.key||'');
+  return '<div class="one-fin-fixa-item" onclick="oneFinFixaAbrir(\'' + safeKey + '\',\'' + safeId + '\')">' +
+           '<div class="one-fin-fixa-ico" style="background:' + cat.bg + ';color:' + cat.cor + '">' + cat.emoji + '</div>' +
+           '<div class="one-fin-fixa-body">' +
+             '<div class="one-fin-fixa-nome">' + nome + '</div>' +
+             '<div class="one-fin-fixa-meta">' + sub + '</div>' +
+           '</div>' +
+           '<div class="one-fin-fixa-val ' + (item.tipo==='in'?'in':'out') + '">' + sinal + _oneFinBrlDet(item.valor) + '</div>' +
+           statusBadge +
+           '<div class="one-fin-fixa-actions" onclick="event.stopPropagation()">' +
+             '<button class="one-fin-item-btn" onclick="oneFinEditar(\'' + safeKey + '\',\'' + safeId + '\')" title="Editar">✏️</button>' +
+             '<button class="one-fin-item-btn del" onclick="oneFinExcluir(\'' + safeKey + '\',\'' + safeId + '\')" title="Excluir">🗑️</button>' +
+           '</div>' +
+         '</div>';
+}
+
+function oneFinFixaAbrir(key, id) {
+  /* Ficha individual da fixa — modal com timeline mês a mês.
+     Implementação na Fase 2. Por enquanto cai no modal de edição padrão. */
+  if (typeof oneFinModalEditar === 'function') oneFinModalEditar(key, id);
+}
+window.oneFinFixaAbrir = oneFinFixaAbrir;
+
+function oneFinRenderFixas() {
+  var ctx = oneFinFixasMesAtivo();
+  var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  /* Label + botão "voltar pro mês atual" */
+  var lbl = document.getElementById('one-fin-fixas-lbl');
+  if (lbl) lbl.textContent = meses[ctx.mes] + '/' + ctx.ano;
+  var btnHoje = document.getElementById('one-fin-fixas-hoje');
+  if (btnHoje) btnHoje.hidden = (ctx.offset === 0);
+
+  /* Instâncias do mês: usa o pipeline já existente (oneFinInstanciasDoMes) */
+  var inst = (typeof oneFinInstanciasDoMes === 'function')
+                ? oneFinInstanciasDoMes(ctx.mes, ctx.ano)
+                : { receitas: [], despesas: [] };
+
+  var despesas = (inst.despesas || []).map(function(d){
+    return { tipo:'out', key:'despesasFixas', id:d._fixaId, nome:d.nome,
+             valor:Number(d.valor)||0, dia:d.diaDoMes || (d.data ? parseInt(d.data.split('-')[2],10) : null),
+             contaId:d.contaId, categoria:d.categoria||'',
+             status:d.status || 'pendente' };
+  });
+  var receitas = (inst.receitas || []).map(function(r){
+    return { tipo:'in', key:'receitasFixas', id:r._fixaId, nome:r.nome,
+             valor:Number(r.valor)||0, dia:r.diaDoMes || (r.data ? parseInt(r.data.split('-')[2],10) : null),
+             contaId:r.contaId, categoria:r.categoria||'',
+             status:r.status || 'pendente' };
+  });
+
+  var totalEnt = receitas.reduce(function(s,i){ return s+i.valor; }, 0);
+  var totalSai = despesas.reduce(function(s,i){ return s+i.valor; }, 0);
+  var saldoFixo = totalEnt - totalSai;
+
+  /* Resumo do topo */
+  var resumo = document.getElementById('one-fin-fixas-resumo');
+  if (resumo) {
+    resumo.innerHTML =
+      '<div class="one-fin-fixas-card"><span class="one-fin-fixas-card-lbl">Entradas fixas</span><span class="one-fin-fixas-card-val in">+' + _oneFinBrlDet(totalEnt) + '</span></div>' +
+      '<div class="one-fin-fixas-card"><span class="one-fin-fixas-card-lbl">Saídas fixas</span><span class="one-fin-fixas-card-val out">-' + _oneFinBrlDet(totalSai) + '</span></div>' +
+      '<div class="one-fin-fixas-card"><span class="one-fin-fixas-card-lbl">Saldo fixo</span><span class="one-fin-fixas-card-val ' + (saldoFixo>=0?'in':'out') + '">' + (saldoFixo>=0?'+':'') + _oneFinBrlDet(saldoFixo) + '</span></div>';
+  }
+
+  /* Corpo: despesas em cima, receitas embaixo */
+  var body = document.getElementById('one-fin-fixas-body');
+  if (!body) return;
+
+  var html = '';
+  html += '<div class="one-fin-fixas-secao">' +
+            '<div class="one-fin-fixas-secao-titulo">Despesas fixas</div>' +
+            (despesas.length
+              ? despesas.map(_oneFinFixaLinhaHtml).join('')
+              : '<div class="one-fin-fixas-vazio">Nenhuma despesa fixa cadastrada ainda.</div>') +
+          '</div>';
+  html += '<div class="one-fin-fixas-secao">' +
+            '<div class="one-fin-fixas-secao-titulo">Receitas fixas</div>' +
+            (receitas.length
+              ? receitas.map(_oneFinFixaLinhaHtml).join('')
+              : '<div class="one-fin-fixas-vazio">Nenhuma receita fixa cadastrada ainda.</div>') +
+          '</div>';
+  body.innerHTML = html;
+}
+window.oneFinRenderFixas = oneFinRenderFixas;
 
 /* ── View "Visão geral" — lista resumida + barras balanço 6 meses ── */
 function oneFinRenderGeral() {
