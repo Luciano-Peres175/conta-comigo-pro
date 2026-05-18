@@ -6201,7 +6201,7 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   display: grid;
   grid-template-columns: 1fr 1.3fr;
   gap: 16px;
-  align-items: stretch;
+  align-items: start;
 }
 .one-fin-resumo-coluna-esq {
   display: flex;
@@ -6268,18 +6268,18 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   text-align: center;
 }
 
-/* Bloco 2 — Obrigações do mês: ocupa a coluna direita inteira como um extrato vertical */
+/* Bloco 2 — Obrigações do mês: altura FIXA com scroll interno garantido */
 .one-fin-resumo-bloco-obrigacoes {
   margin-bottom: 0;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  max-height: 70vh;
-  overflow-y: auto;
+  display: block;
+  height: 600px;
+  max-height: 75vh;
+  overflow-y: scroll;
+  align-self: start;
 }
 @media (max-width: 1000px) {
   .one-fin-resumo-bloco-obrigacoes {
-    max-height: 60vh;
+    height: 500px;
   }
 }
 .one-fin-resumo-obr-head, .one-fin-resumo-obr-row {
