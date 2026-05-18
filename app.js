@@ -9953,12 +9953,25 @@ function oneFinModalSalvar() {
 
         /* Propagação de lote (escopo "proximas" ou "todas") — set pelo
            oneFinEditar antes de abrir o modal. Aplica os mesmos campos
-           (exceto data e o sufixo N/M do nome) nas outras parcelas do lote. */
+           nas outras parcelas. Pra data, calcula o delta em dias entre
+           a data original (dataRef, guardada no escopo) e a data nova
+           (data salva agora), e aplica esse mesmo delta nas outras —
+           preservando o espaçamento original entre parcelas. */
         var escopoLote = window.__oneFinLoteEscopo;
         window.__oneFinLoteEscopo = null;
         if (escopoLote && escopoLote.loteId && (escopoLote.escopo === 'proximas' || escopoLote.escopo === 'todas')) {
           var nomeBase = String(nome).replace(/\s+\d+\s*\/\s*\d+\s*$/, '');
           var dataRef = escopoLote.dataRef || '';
+          /* Calcula deltaDias entre dataRef (original) e data (nova salva).
+             Se data não mudou, delta=0 → não mexe nas datas das outras. */
+          var deltaDias = 0;
+          if (dataRef && data && dataRef !== data) {
+            var dOrig = new Date(dataRef + 'T00:00:00');
+            var dNova = new Date(data + 'T00:00:00');
+            if (!isNaN(dOrig.getTime()) && !isNaN(dNova.getTime())) {
+              deltaDias = Math.round((dNova.getTime() - dOrig.getTime()) / 86400000);
+            }
+          }
           var n = 0;
           listaE.forEach(function(it, idx){
             if (!it || String(it.loteId) !== String(escopoLote.loteId)) return;
@@ -9968,13 +9981,23 @@ function oneFinModalSalvar() {
             var nomeNovo = (it.parcelaAtual && it.parcelasTotal)
               ? (nomeBase + ' ' + it.parcelaAtual + '/' + it.parcelasTotal)
               : nomeBase;
+            /* Calcula data nova da parcela aplicando deltaDias (se houver) */
+            var dataParcelaNova = it.data;
+            if (deltaDias !== 0 && it.data) {
+              var dIt = new Date(it.data + 'T00:00:00');
+              if (!isNaN(dIt.getTime())) {
+                dIt.setDate(dIt.getDate() + deltaDias);
+                dataParcelaNova = dIt.toISOString().slice(0,10);
+              }
+            }
             var atualizado = Object.assign(it, {
               nome: nomeNovo, descricao: nomeNovo,
               valor: valor, categoria: cat,
               tipo: tipo,
+              data: dataParcelaNova,
               status: it.status,                                  /* status fica individual */
               contaId: contaId,
-              faturaMesAno: faturaPara(it.data)
+              faturaMesAno: faturaPara(dataParcelaNova)
             });
             listaE[idx] = atualizado;
             if (typeof supaUpsert === 'function') supaUpsert(keyE, atualizado);
@@ -9982,7 +10005,10 @@ function oneFinModalSalvar() {
           });
           if (n > 0) {
             localStorage.setItem(oneU(keyE), JSON.stringify(listaE));
-            if (typeof oneToast === 'function') oneToast('✓ ' + (n+1) + ' parcelas atualizadas.');
+            if (typeof oneToast === 'function') {
+              var msgShift = (deltaDias !== 0) ? (' (datas deslocadas ' + (deltaDias > 0 ? '+' : '') + deltaDias + ' dias)') : '';
+              oneToast('✓ ' + (n+1) + ' parcelas atualizadas' + msgShift + '.');
+            }
           }
         }
       }
