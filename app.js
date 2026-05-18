@@ -8945,11 +8945,16 @@ function oneFinSaldoBanco(contaId) {
   if (!conta || conta.tipo !== 'banco') return 0;
   var saldo = Number(conta.saldoInicial) || 0;
 
-  /* Entradas — receitas reais com status=pago */
+  /* Entradas — receitas reais. Se tem valorPago, usa ele (suporta parcial).
+     Senão, soma o valor cheio quando status=pago. */
   var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
   receitas.forEach(function(r){
     if (String(r.contaId) !== String(contaId)) return;
-    if (r.status === 'pago') saldo += Number(r.valor) || 0;
+    if (typeof r.valorPago === 'number' && r.valorPago > 0) {
+      saldo += r.valorPago;
+    } else if (r.status === 'pago') {
+      saldo += Number(r.valor) || 0;
+    }
   });
 
   /* Entradas — receitas fixas com pagoPorMes */
@@ -8962,12 +8967,16 @@ function oneFinSaldoBanco(contaId) {
     }
   });
 
-  /* Saídas — despesas reais com status=pago (sem faturaMesAno) */
+  /* Saídas — despesas reais (sem fatura). Mesma lógica: valorPago tem prioridade. */
   var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
   despesas.forEach(function(d){
     if (String(d.contaId) !== String(contaId)) return;
     if (d.faturaMesAno) return;
-    if (d.status === 'pago') saldo -= Number(d.valor) || 0;
+    if (typeof d.valorPago === 'number' && d.valorPago > 0) {
+      saldo -= d.valorPago;
+    } else if (d.status === 'pago') {
+      saldo -= Number(d.valor) || 0;
+    }
   });
 
   /* Saídas — despesas fixas com pagoPorMes */
@@ -10497,11 +10506,13 @@ function oneFinCartaoMarcarFaturaPaga(contaId, mesAno, marcar) {
 }
 window.oneFinCartaoMarcarFaturaPaga = oneFinCartaoMarcarFaturaPaga;
 
-/* Toggle pago via clique na bolinha — atalho que zera o A Pagar.
+/* Toggle pago via clique na bolinha.
    refs:
-     'fixa-d:<fixaId>:<mesAno>'    → fixa despesa: paga=esperado se vazio, ou zera se já quitada
-     'fixa-r:<fixaId>:<mesAno>'    → idem pra receita fixa
-     'cartao:<contaId>:<mesAno>'   → marca/desmarca fatura inteira */
+     'fixa-d:<fixaId>:<mesAno>'  → fixa despesa: paga 100% ou desfaz (pagoPorMes)
+     'fixa-r:<fixaId>:<mesAno>'  → idem pra receita fixa
+     'cartao:<contaId>:<mesAno>' → fatura inteira (faturasPagas)
+     'desp:<despesaId>:<mesAno>' → despesa esporádica (alterna status pago/pendente)
+     'rec:<receitaId>:<mesAno>'  → receita esporádica (idem) */
 function oneFinResumoTogglePago(ref) {
   if (!ref) return;
   var p = ref.split(':');
@@ -10514,10 +10525,8 @@ function oneFinResumoTogglePago(ref) {
     var esperado = Number(fix.valor) || 0;
     var pago = oneFinFixaPagoNoMes(fix, b);
     if (pago >= esperado && esperado > 0) {
-      /* já estava quitada → desfaz (volta a A Pagar = esperado) */
       oneFinFixaSetPagoNoMes(key, a, b, 0);
     } else {
-      /* paga 100% */
       oneFinFixaSetPagoNoMes(key, a, b, esperado);
     }
   } else if (kind === 'cartao') {
@@ -10525,26 +10534,51 @@ function oneFinResumoTogglePago(ref) {
     var c = contas.find(function(x){ return String(x.id) === String(a); });
     var jaPaga = !!(c && Array.isArray(c.faturasPagas) && c.faturasPagas.indexOf(b) >= 0);
     oneFinCartaoMarcarFaturaPaga(a, b, !jaPaga);
+  } else if (kind === 'desp' || kind === 'rec') {
+    /* Alterna status de despesa/receita esporádica */
+    var keyE = (kind === 'desp') ? 'despesas' : 'receitas';
+    var listaE = []; try { listaE = JSON.parse(localStorage.getItem(oneU(keyE)) || '[]'); } catch(e){}
+    var idx = listaE.findIndex(function(x){ return String(x.id) === String(a); });
+    if (idx < 0) return;
+    listaE[idx].status = (listaE[idx].status === 'pago') ? 'pendente' : 'pago';
+    localStorage.setItem(oneU(keyE), JSON.stringify(listaE));
+    if (typeof supaUpsert === 'function') supaUpsert(keyE, listaE[idx]);
   }
   if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
 }
 window.oneFinResumoTogglePago = oneFinResumoTogglePago;
 
-/* Edita o "A Pagar" de uma fixa direto no Resumo (input inline). Recebe o valor
-   novo do A Pagar; converte pra "pago = esperado - aPagar" e grava em pagoPorMes. */
+/* Edita o "A Pagar" de uma linha direto no Resumo (input inline).
+   Pra fixa: grava em pagoPorMes do template.
+   Pra esporádica: grava valorPago direto na despesa/receita + ajusta status. */
 function oneFinResumoSetAPagar(ref, novoAPagar) {
   if (!ref) return;
   var p = ref.split(':');
   var kind = p[0], a = p[1], b = p[2];
-  if (kind !== 'fixa-d' && kind !== 'fixa-r') return;
-  var key = (kind === 'fixa-d') ? 'despesasFixas' : 'receitasFixas';
-  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
-  var fix = lista.find(function(x){ return String(x.id) === String(a); });
-  if (!fix) return;
-  var esperado = Number(fix.valor) || 0;
-  var aPagar = Math.max(Number(novoAPagar) || 0, 0);
-  var pago = Math.max(esperado - aPagar, 0);
-  oneFinFixaSetPagoNoMes(key, a, b, pago);
+  if (kind === 'fixa-d' || kind === 'fixa-r') {
+    var key = (kind === 'fixa-d') ? 'despesasFixas' : 'receitasFixas';
+    var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+    var fix = lista.find(function(x){ return String(x.id) === String(a); });
+    if (!fix) return;
+    var esperado = Number(fix.valor) || 0;
+    var aPagar = Math.max(Number(novoAPagar) || 0, 0);
+    var pago = Math.max(esperado - aPagar, 0);
+    oneFinFixaSetPagoNoMes(key, a, b, pago);
+  } else if (kind === 'desp' || kind === 'rec') {
+    var keyE = (kind === 'desp') ? 'despesas' : 'receitas';
+    var listaE = []; try { listaE = JSON.parse(localStorage.getItem(oneU(keyE)) || '[]'); } catch(e){}
+    var idx = listaE.findIndex(function(x){ return String(x.id) === String(a); });
+    if (idx < 0) return;
+    var espE = Number(listaE[idx].valor) || 0;
+    var aPagE = Math.max(Number(novoAPagar) || 0, 0);
+    var pagoE = Math.max(espE - aPagE, 0);
+    listaE[idx].valorPago = pagoE;
+    listaE[idx].status = (aPagE === 0 && espE > 0) ? 'pago' : 'pendente';
+    localStorage.setItem(oneU(keyE), JSON.stringify(listaE));
+    if (typeof supaUpsert === 'function') supaUpsert(keyE, listaE[idx]);
+  } else {
+    return;
+  }
   if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
 }
 window.oneFinResumoSetAPagar = oneFinResumoSetAPagar;
@@ -10579,26 +10613,60 @@ function oneFinFixaSetPagoNoMes(key, fixaId, mesAno, valorPago) {
 }
 window.oneFinFixaSetPagoNoMes = oneFinFixaSetPagoNoMes;
 
-/* Coleta as obrigações do mês INDIVIDUAL.
-   - 1 linha por DESPESA FIXA do mês
-   - 1 linha por FATURA de cartão > 0 no mês
-   - 1 linha por RECEITA FIXA (separadas)
-   Esperado = valor cadastrado (estimativa). A Pagar = quanto ainda falta (editável).
-   Diferença = Esperado − A Pagar (= quanto já foi pago). */
+/* Coleta TODOS os lançamentos programados do mês:
+   - Despesas reais (esporádicas) do mês sem fatura (sai direto da conta)
+   - Instâncias de despesas fixas do mês sem fatura
+   - 1 linha por FATURA de cartão > 0 no mês (agrega despesas reais + fixas em cartão)
+   - Receitas reais (esporádicas) do mês
+   - Instâncias de receitas fixas do mês
+   Esperado = valor previsto. A Pagar = quanto falta (0 se pago). Diferença = pago. */
 function _oneFinResumoColetarObrigacoes(mes, ano) {
   var mesAno = ano + '-' + String(mes + 1).padStart(2, '0');
   var out = { despesas: [], receitasFixas: [], faturas: [] };
 
   var contas = (typeof oneFinGetContas === 'function') ? oneFinGetContas() : [];
   var despesasReais = []; try { despesasReais = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){}
+  var receitasReais = []; try { receitasReais = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
   var instDoMes = (typeof oneFinInstanciasDoMes === 'function') ? oneFinInstanciasDoMes(mes, ano) : { despesas: [], receitas: [] };
 
   var listaDF = []; try { listaDF = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]'); } catch(e){}
   var listaRF = []; try { listaRF = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]'); } catch(e){}
 
-  /* Despesas fixas do mês — uma linha por fixa, exceto as que vão pra cartão (entram via fatura) */
+  var noMes = function(d){
+    if (!d) return false;
+    var p = String(d).split('-');
+    return parseInt(p[0],10) === ano && parseInt(p[1],10) === (mes + 1);
+  };
+
+  /* Despesas REAIS do mês — esporádicas (incluindo parceladas), sem cartão */
+  despesasReais.forEach(function(d){
+    if (!noMes(d.data)) return;
+    if (d.faturaMesAno) return; /* vai pra fatura do cartão */
+    var conta = d.contaId ? (typeof oneFinGetConta === 'function' && oneFinGetConta(d.contaId)) : null;
+    var esperado = Number(d.valor) || 0;
+    /* valorPago tem prioridade (suporta parcial). Senão usa status binário */
+    var pagoVal;
+    if (typeof d.valorPago === 'number') pagoVal = d.valorPago;
+    else pagoVal = (d.status === 'pago') ? esperado : 0;
+    var aPagar = Math.max(esperado - pagoVal, 0);
+    var quitada = pagoVal >= esperado && esperado > 0;
+    var diaItem = d.data ? parseInt(String(d.data).split('-')[2], 10) : '—';
+    out.despesas.push({
+      kind: 'desp',
+      dia: diaItem,
+      nome: d.descricao || d.nome || 'Despesa',
+      contaIcone: conta ? (conta.icone || '🏦') : '',
+      esperado: esperado,
+      aPagar: aPagar,
+      diferenca: pagoVal,
+      pago: quitada,
+      ref: 'desp:' + d.id + ':' + mesAno
+    });
+  });
+
+  /* Despesas fixas do mês — instâncias virtuais sem cartão */
   (instDoMes.despesas || []).forEach(function(d){
-    if (d.faturaMesAno) return; /* fixas em cartão entram via fatura, não aqui */
+    if (d.faturaMesAno) return;
     var fixaId = d._fixaId;
     var template = listaDF.find(function(x){ return String(x.id) === String(fixaId); });
     var esperado = Number(d.valor) || 0;
@@ -10652,7 +10720,29 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
     });
   });
 
-  /* Receitas fixas — uma linha por receita */
+  /* Receitas REAIS do mês — esporádicas */
+  receitasReais.forEach(function(r){
+    if (!noMes(r.data)) return;
+    var esperado = Number(r.valor) || 0;
+    var pagoR;
+    if (typeof r.valorPago === 'number') pagoR = r.valorPago;
+    else pagoR = (r.status === 'pago') ? esperado : 0;
+    var aReceberR = Math.max(esperado - pagoR, 0);
+    var recebida = pagoR >= esperado && esperado > 0;
+    var diaItem = r.data ? parseInt(String(r.data).split('-')[2], 10) : '—';
+    out.receitasFixas.push({
+      kind: 'rec',
+      dia: diaItem,
+      nome: r.nome || r.descricao || 'Receita',
+      esperado: esperado,
+      aPagar: aReceberR,
+      diferenca: pagoR,
+      pago: recebida,
+      ref: 'rec:' + r.id + ':' + mesAno
+    });
+  });
+
+  /* Receitas fixas — instâncias virtuais */
   (instDoMes.receitas || []).forEach(function(r){
     var fixaId = r._fixaId;
     var template = listaRF.find(function(x){ return String(x.id) === String(fixaId); });
