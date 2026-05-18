@@ -6207,6 +6207,28 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   min-height: 0;
   padding-right: 6px;
 }
+/* Lista compactada no Dashboard pra caber mais categorias visíveis sem rolar */
+.one-fin-dashboard-grid .one-rel-cat-row {
+  padding: 4px 4px;
+  gap: 8px;
+}
+.one-fin-dashboard-grid .one-rel-cat-dot {
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+  border-radius: 7px;
+}
+.one-fin-dashboard-grid .one-rel-cat-nome {
+  font-size: 12px;
+}
+.one-fin-dashboard-grid .one-rel-cat-val {
+  font-size: 12px;
+}
+.one-fin-dashboard-grid .one-rel-cat-pct {
+  font-size: 10px;
+  padding: 2px 6px;
+  min-width: 32px;
+}
 /* Donut ocupa toda a coluna direita até um teto razoável, mantém quadrado */
 .one-fin-dashboard-grid .one-fin-donut-wrap {
   width: 100%;
