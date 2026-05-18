@@ -8829,6 +8829,14 @@ function _oneFinNormalizaTipoConta(t) {
   if (t === 'cartao' || t === 'investimento') return t;
   return 'banco';
 }
+/* Garante que dia (fechamento ou vencimento de cartão) caia em 1-31 */
+function _oneFinClampDia(v, fallback) {
+  var n = parseInt(v, 10);
+  if (!n || isNaN(n)) return fallback || 1;
+  if (n < 1) return 1;
+  if (n > 31) return 31;
+  return n;
+}
 function _oneFinIconeDefaultPorTipo(t) {
   if (t === 'cartao') return '💳';
   if (t === 'investimento') return '📈';
@@ -8847,8 +8855,8 @@ function oneFinAddConta(obj) {
     tipo: tipo,
     icone: obj.icone || _oneFinIconeDefaultPorTipo(tipo),
     cor: obj.cor || ONE_FIN_CONTA_CORES[0],
-    diaFechamento: (tipo === 'cartao') ? (parseInt(obj.diaFechamento, 10) || 1)  : null,
-    diaVencimento: (tipo === 'cartao') ? (parseInt(obj.diaVencimento, 10) || 10) : null,
+    diaFechamento: (tipo === 'cartao') ? _oneFinClampDia(obj.diaFechamento, 1)  : null,
+    diaVencimento: (tipo === 'cartao') ? _oneFinClampDia(obj.diaVencimento, 10) : null,
     saldoInicial: (tipo === 'banco') ? (Number(obj.saldoInicial) || 0) : null,
     saldo:        (tipo === 'investimento') ? (Number(obj.saldo) || 0) : null,
     criado: new Date().toISOString()
@@ -8870,8 +8878,11 @@ function oneFinUpdateConta(id, obj) {
   if (obj.icone)         atual.icone = obj.icone;
   if (obj.cor)           atual.cor   = obj.cor;
   if (atual.tipo === 'cartao') {
-    if (obj.diaFechamento != null) atual.diaFechamento = parseInt(obj.diaFechamento, 10) || atual.diaFechamento || 1;
-    if (obj.diaVencimento != null) atual.diaVencimento = parseInt(obj.diaVencimento, 10) || atual.diaVencimento || 10;
+    if (obj.diaFechamento != null) atual.diaFechamento = _oneFinClampDia(obj.diaFechamento, atual.diaFechamento || 1);
+    if (obj.diaVencimento != null) atual.diaVencimento = _oneFinClampDia(obj.diaVencimento, atual.diaVencimento || 10);
+    /* Migração defensiva: se algum dia gravado for inválido, corrige na hora */
+    atual.diaFechamento = _oneFinClampDia(atual.diaFechamento, 1);
+    atual.diaVencimento = _oneFinClampDia(atual.diaVencimento, 10);
     atual.saldoInicial = null;
     atual.saldo = null;
   } else if (atual.tipo === 'investimento') {
@@ -10674,7 +10685,11 @@ function oneFinRenderResumo() {
                             obrig.faturas.reduce(function(s,i){ return s + i.aPagar; }, 0);
   var totalAReceber       = obrig.receitasFixas.reduce(function(s,i){ return s + i.aPagar; }, 0);
   var saldoContas         = _oneFinResumoSaldoEmContas();
-  var resultadoMes        = saldoContas - totalAPagarDespesas + totalAReceber;
+  /* Resultado considera SÓ o que já está efetivado: saldo nas contas (que já
+     soma receitas recebidas via pagoPorMes) menos as despesas pendentes do mês.
+     Receita pendente NÃO entra — só quando o Mentor marcar como recebida, ela
+     cai no saldo e o resultado aumenta automaticamente. */
+  var resultadoMes        = saldoContas - totalAPagarDespesas;
   var investimentos       = _oneFinResumoTotalInvestimentos();
   var patrimonio          = resultadoMes + investimentos;
 
@@ -10682,12 +10697,12 @@ function oneFinRenderResumo() {
   var caixa = document.getElementById('one-fin-resumo-caixa');
   if (caixa) {
     var linhas = [
-      { lbl: 'Saldo em conta(s)',      val: saldoContas,         sinal: '(+)', cor: saldoContas >= 0 ? '#27856A' : '#C0392B' },
-      { lbl: 'Pagamentos do mês',      val: totalAPagarDespesas, sinal: '(−)', cor: '#C0392B' },
-      { lbl: 'A receber este mês',     val: totalAReceber,       sinal: '(+)', cor: '#27856A', oculto: totalAReceber <= 0 },
-      { lbl: 'Resultado do mês',       val: resultadoMes,        sinal: '(=)', cor: resultadoMes >= 0 ? '#27856A' : '#C0392B', destaque: true },
-      { lbl: 'Investimentos',          val: investimentos,       sinal: '(+)', cor: '#5B7CFA' },
-      { lbl: 'Patrimônio total',       val: patrimonio,          sinal: '(=)', cor: patrimonio >= 0 ? '#27856A' : '#C0392B', destaque: true }
+      { lbl: 'Saldo em conta(s)',                 val: saldoContas,         sinal: '(+)', cor: saldoContas >= 0 ? '#27856A' : '#C0392B' },
+      { lbl: 'Pagamentos do mês',                 val: totalAPagarDespesas, sinal: '(−)', cor: '#C0392B' },
+      { lbl: 'Resultado do mês',                  val: resultadoMes,        sinal: '(=)', cor: resultadoMes >= 0 ? '#27856A' : '#C0392B', destaque: true },
+      { lbl: 'A receber este mês (não somado)',   val: totalAReceber,       sinal: '•',   cor: '#9CAB9C', oculto: totalAReceber <= 0 },
+      { lbl: 'Investimentos',                     val: investimentos,       sinal: '(+)', cor: '#5B7CFA' },
+      { lbl: 'Patrimônio total',                  val: patrimonio,          sinal: '(=)', cor: patrimonio >= 0 ? '#27856A' : '#C0392B', destaque: true }
     ];
     caixa.innerHTML =
       '<div class="one-fin-resumo-titulo">💰 Caixa do mês</div>' +
