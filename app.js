@@ -8649,6 +8649,18 @@ function _oneFinItemDetHtml(l) {
   var nome = (l.nome||'').replace(/</g,'&lt;');
   var catLabel = l.categoria ? l.categoria.replace(/</g,'&lt;') : (l.tipo==='in' ? 'Receita' : 'Despesa');
   var badgeFixa = l._fixa ? ' <span style="font-size:9px;color:#9B72B0;background:rgba(155,114,176,0.12);padding:1px 5px;border-radius:6px;font-weight:600">↻ fixa</span>' : '';
+  /* Botões editar/excluir — l.key e l.id já vêm corretos das funções que
+     montam o item (fixa: key='despesasFixas'/'receitasFixas' + id=_fixaId;
+     real: key='despesas'/'receitas' + id da própria linha). Mesmo padrão
+     do Extrato (renderOneFinanceiroPainel). */
+  var safeId = String(l.id||'').replace(/'/g,"\\'");
+  var safeKey = String(l.key||'');
+  var actions = (safeKey && safeId)
+    ? '<div class="one-fin-conta-det-item-actions">' +
+        '<button class="one-fin-item-btn" onclick="oneFinEditar(\'' + safeKey + '\',\'' + safeId + '\')" title="Editar">✏️</button>' +
+        '<button class="one-fin-item-btn del" onclick="oneFinExcluir(\'' + safeKey + '\',\'' + safeId + '\')" title="Excluir">🗑️</button>' +
+      '</div>'
+    : '';
   return '<div class="one-fin-conta-det-item">' +
            '<div class="one-fin-conta-det-item-ico" style="background:' + cat.bg + ';color:' + cat.cor + '">' + cat.emoji + '</div>' +
            '<div class="one-fin-conta-det-item-body">' +
@@ -8656,6 +8668,7 @@ function _oneFinItemDetHtml(l) {
              '<div class="one-fin-conta-det-item-meta">' + dataF + ' · ' + catLabel + '</div>' +
            '</div>' +
            '<div class="one-fin-conta-det-item-val ' + (l.tipo==='in'?'in':'out') + '">' + sinal + _oneFinBrlDet(l.valor) + '</div>' +
+           actions +
          '</div>';
 }
 
