@@ -8901,65 +8901,50 @@ function oneFinCalcularFatura(dataLancamento, diaFechamento) {
 }
 window.oneFinCalcularFatura = oneFinCalcularFatura;
 
-/* Saldo do banco — soma saldoInicial + entradas confirmadas - saídas confirmadas.
-   "Confirmado" significa: lançamento real com status='pago' OU mês está em conta.mesesFechados
-   (caso o Mentor tenha marcado a conta como fechada via Resumo). Fixas em mês fechado também
-   contam, mesmo sem materializar. Despesas que vão pra fatura de cartão NÃO entram aqui
-   (são abatidas só quando a fatura é paga). */
+/* Saldo do banco — saldoInicial + entradas confirmadas - saídas confirmadas.
+   "Confirmado":
+   - Lançamento real (receita/despesa) com status='pago'
+   - Fixa com pagoPorMes[mesAno] > 0: abate/soma o valor pago daquele mês
+   Despesas que vão pra fatura de cartão NÃO entram aqui (faturas são abatidas
+   quando o user paga a fatura inteira). */
 function oneFinSaldoBanco(contaId) {
   var conta = (typeof oneFinGetConta === 'function') ? oneFinGetConta(contaId) : null;
   if (!conta || conta.tipo !== 'banco') return 0;
   var saldo = Number(conta.saldoInicial) || 0;
-  var mesesFechados = Array.isArray(conta.mesesFechados) ? conta.mesesFechados : [];
-  var inFechado = function(mesAno){ return mesAno && mesesFechados.indexOf(mesAno) >= 0; };
 
-  /* Entradas — receitas reais */
+  /* Entradas — receitas reais com status=pago */
   var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
   receitas.forEach(function(r){
     if (String(r.contaId) !== String(contaId)) return;
-    var mesAno = r.data ? String(r.data).slice(0,7) : '';
-    if (r.status === 'pago' || inFechado(mesAno)) {
-      saldo += Number(r.valor) || 0;
-    }
+    if (r.status === 'pago') saldo += Number(r.valor) || 0;
   });
 
-  /* Entradas — receitas fixas (mesesPagos individuais OU em mês fechado e ativa nele) */
+  /* Entradas — receitas fixas com pagoPorMes */
   var receitasFixas = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]');
   receitasFixas.forEach(function(rf){
     if (String(rf.contaId) !== String(contaId)) return;
-    var pagos = Array.isArray(rf.mesesPagos) ? rf.mesesPagos.slice() : [];
-    var mesesQueContam = pagos.slice();
-    mesesFechados.forEach(function(m){
-      if (mesesQueContam.indexOf(m) >= 0) return;
-      var p = m.split('-'); var a = parseInt(p[0],10); var mm = parseInt(p[1],10) - 1;
-      if (typeof oneFinFixaAtivaNoMes === 'function' && oneFinFixaAtivaNoMes(rf, mm, a)) {
-        mesesQueContam.push(m);
-      }
-    });
-    saldo += mesesQueContam.length * (Number(rf.valor) || 0);
+    var p = rf.pagoPorMes;
+    if (p && typeof p === 'object') {
+      Object.keys(p).forEach(function(m){ saldo += Number(p[m]) || 0; });
+    }
   });
 
-  /* Saídas — despesas reais (sem faturaMesAno = não vai pra cartão) */
+  /* Saídas — despesas reais com status=pago (sem faturaMesAno) */
   var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
   despesas.forEach(function(d){
     if (String(d.contaId) !== String(contaId)) return;
     if (d.faturaMesAno) return;
-    var mesAno = d.data ? String(d.data).slice(0,7) : '';
-    if (d.status === 'pago' || inFechado(mesAno)) {
-      saldo -= Number(d.valor) || 0;
-    }
+    if (d.status === 'pago') saldo -= Number(d.valor) || 0;
   });
 
-  /* Saídas — despesas fixas em meses fechados (instâncias virtuais ainda não materializadas) */
+  /* Saídas — despesas fixas com pagoPorMes */
   var despesasFixas = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
   despesasFixas.forEach(function(df){
     if (String(df.contaId) !== String(contaId)) return;
-    mesesFechados.forEach(function(m){
-      var p = m.split('-'); var a = parseInt(p[0],10); var mm = parseInt(p[1],10) - 1;
-      if (typeof oneFinFixaAtivaNoMes === 'function' && oneFinFixaAtivaNoMes(df, mm, a)) {
-        saldo -= Number(df.valor) || 0;
-      }
-    });
+    var p = df.pagoPorMes;
+    if (p && typeof p === 'object') {
+      Object.keys(p).forEach(function(m){ saldo -= Number(p[m]) || 0; });
+    }
   });
 
   return saldo;
@@ -10412,82 +10397,129 @@ function oneFinCartaoMarcarFaturaPaga(contaId, mesAno, marcar) {
 }
 window.oneFinCartaoMarcarFaturaPaga = oneFinCartaoMarcarFaturaPaga;
 
-/* Toggle pago via clique na bolinha — chamado pelo HTML inline.
+/* Toggle pago via clique na bolinha — atalho que zera o A Pagar.
    refs:
-     'banco:<contaId>:<mesAno>'    → fecha/abre o banco no mês
-     'cartao:<contaId>:<mesAno>'   → marca/desmarca fatura como paga
-     'fixa-r:<fixaId>:<mesAno>'    → marca/desmarca receita fixa como recebida */
+     'fixa-d:<fixaId>:<mesAno>'    → fixa despesa: paga=esperado se vazio, ou zera se já quitada
+     'fixa-r:<fixaId>:<mesAno>'    → idem pra receita fixa
+     'cartao:<contaId>:<mesAno>'   → marca/desmarca fatura inteira */
 function oneFinResumoTogglePago(ref) {
   if (!ref) return;
   var p = ref.split(':');
   var kind = p[0], a = p[1], b = p[2];
-  if (kind === 'banco') {
+  if (kind === 'fixa-d' || kind === 'fixa-r') {
+    var key = (kind === 'fixa-d') ? 'despesasFixas' : 'receitasFixas';
+    var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+    var fix = lista.find(function(x){ return String(x.id) === String(a); });
+    if (!fix) return;
+    var esperado = Number(fix.valor) || 0;
+    var pago = oneFinFixaPagoNoMes(fix, b);
+    if (pago >= esperado && esperado > 0) {
+      /* já estava quitada → desfaz (volta a A Pagar = esperado) */
+      oneFinFixaSetPagoNoMes(key, a, b, 0);
+    } else {
+      /* paga 100% */
+      oneFinFixaSetPagoNoMes(key, a, b, esperado);
+    }
+  } else if (kind === 'cartao') {
     var contas = []; try { contas = JSON.parse(localStorage.getItem(oneU('contas')) || '[]'); } catch(e){}
     var c = contas.find(function(x){ return String(x.id) === String(a); });
-    var jaFechado = !!(c && Array.isArray(c.mesesFechados) && c.mesesFechados.indexOf(b) >= 0);
-    oneFinBancoFecharMes(a, b, !jaFechado);
-  } else if (kind === 'cartao') {
-    var contas2 = []; try { contas2 = JSON.parse(localStorage.getItem(oneU('contas')) || '[]'); } catch(e){}
-    var c2 = contas2.find(function(x){ return String(x.id) === String(a); });
-    var jaPago = !!(c2 && Array.isArray(c2.faturasPagas) && c2.faturasPagas.indexOf(b) >= 0);
-    oneFinCartaoMarcarFaturaPaga(a, b, !jaPago);
-  } else if (kind === 'fixa-r') {
-    var listaR = []; try { listaR = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]'); } catch(e){}
-    var fixR = listaR.find(function(x){ return String(x.id) === String(a); });
-    var jaPagoR = !!(fixR && Array.isArray(fixR.mesesPagos) && fixR.mesesPagos.indexOf(b) >= 0);
-    oneFinFixaMarcarPagaNoMes('receitasFixas', a, b, !jaPagoR);
+    var jaPaga = !!(c && Array.isArray(c.faturasPagas) && c.faturasPagas.indexOf(b) >= 0);
+    oneFinCartaoMarcarFaturaPaga(a, b, !jaPaga);
   }
   if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
 }
 window.oneFinResumoTogglePago = oneFinResumoTogglePago;
 
-/* Coleta as obrigações do mês AGRUPADAS POR CONTA.
-   - 1 linha por banco que tem despesas/fixas saindo dele no mês
-   - 1 linha por cartão que tem fatura > 0 no mês
-   - Receitas fixas vão numa seção separada (1 linha por receita).
-   Cada item: { tipo, dia, nome, icone, esperado, aPagar, diferenca, pago, ref } */
+/* Edita o "A Pagar" de uma fixa direto no Resumo (input inline). Recebe o valor
+   novo do A Pagar; converte pra "pago = esperado - aPagar" e grava em pagoPorMes. */
+function oneFinResumoSetAPagar(ref, novoAPagar) {
+  if (!ref) return;
+  var p = ref.split(':');
+  var kind = p[0], a = p[1], b = p[2];
+  if (kind !== 'fixa-d' && kind !== 'fixa-r') return;
+  var key = (kind === 'fixa-d') ? 'despesasFixas' : 'receitasFixas';
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+  var fix = lista.find(function(x){ return String(x.id) === String(a); });
+  if (!fix) return;
+  var esperado = Number(fix.valor) || 0;
+  var aPagar = Math.max(Number(novoAPagar) || 0, 0);
+  var pago = Math.max(esperado - aPagar, 0);
+  oneFinFixaSetPagoNoMes(key, a, b, pago);
+  if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
+}
+window.oneFinResumoSetAPagar = oneFinResumoSetAPagar;
+
+/* Helper: quanto JÁ foi pago de uma fixa num mês específico.
+   Retorna 0 se nada foi pago. Usa template.pagoPorMes[mesAno]. */
+function oneFinFixaPagoNoMes(template, mesAno) {
+  if (!template || !mesAno) return 0;
+  var p = template.pagoPorMes;
+  if (p && typeof p === 'object' && p[mesAno] != null) return Number(p[mesAno]) || 0;
+  return 0;
+}
+window.oneFinFixaPagoNoMes = oneFinFixaPagoNoMes;
+
+/* Helper: seta quanto foi pago de uma fixa num mês. valorPago>0 grava; valorPago=0 limpa. */
+function oneFinFixaSetPagoNoMes(key, fixaId, mesAno, valorPago) {
+  if (!key || !fixaId || !mesAno) return false;
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+  var idx = lista.findIndex(function(x){ return String(x.id) === String(fixaId); });
+  if (idx < 0) return false;
+  var fix = lista[idx];
+  if (!fix.pagoPorMes || typeof fix.pagoPorMes !== 'object') fix.pagoPorMes = {};
+  if (Number(valorPago) > 0) {
+    fix.pagoPorMes[mesAno] = Number(valorPago);
+  } else {
+    delete fix.pagoPorMes[mesAno];
+  }
+  lista[idx] = fix;
+  localStorage.setItem(oneU(key), JSON.stringify(lista));
+  if (typeof supaUpsert === 'function') supaUpsert(key, fix);
+  return true;
+}
+window.oneFinFixaSetPagoNoMes = oneFinFixaSetPagoNoMes;
+
+/* Coleta as obrigações do mês INDIVIDUAL.
+   - 1 linha por DESPESA FIXA do mês
+   - 1 linha por FATURA de cartão > 0 no mês
+   - 1 linha por RECEITA FIXA (separadas)
+   Esperado = valor cadastrado (estimativa). A Pagar = quanto ainda falta (editável).
+   Diferença = Esperado − A Pagar (= quanto já foi pago). */
 function _oneFinResumoColetarObrigacoes(mes, ano) {
   var mesAno = ano + '-' + String(mes + 1).padStart(2, '0');
-  var out = { contas: [], receitasFixas: [] };
+  var out = { despesas: [], receitasFixas: [], faturas: [] };
 
   var contas = (typeof oneFinGetContas === 'function') ? oneFinGetContas() : [];
   var despesasReais = []; try { despesasReais = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){}
   var instDoMes = (typeof oneFinInstanciasDoMes === 'function') ? oneFinInstanciasDoMes(mes, ano) : { despesas: [], receitas: [] };
 
-  /* Bancos: total do que sai dele no mês (despesas + fixas) */
-  contas.forEach(function(b){
-    if (b.tipo !== 'banco') return;
-    var totalBanco = 0;
-    despesasReais.forEach(function(d){
-      if (!d.data) return;
-      var p = String(d.data).split('-');
-      var dAno = parseInt(p[0], 10), dMes = parseInt(p[1], 10);
-      if (dAno === ano && dMes === (mes + 1) && String(d.contaId) === String(b.id) && !d.faturaMesAno) {
-        totalBanco += Number(d.valor) || 0;
-      }
-    });
-    (instDoMes.despesas || []).forEach(function(d){
-      if (String(d.contaId) === String(b.id) && !d.faturaMesAno) {
-        totalBanco += Number(d.valor) || 0;
-      }
-    });
-    if (totalBanco <= 0) return;
-    var fechado = !!(Array.isArray(b.mesesFechados) && b.mesesFechados.indexOf(mesAno) >= 0);
-    out.contas.push({
-      tipo: 'banco',
-      dia: '—',
-      nome: b.nome || 'Banco',
-      icone: b.icone || '🏦',
-      cor: b.cor || '#7FA88E',
-      esperado: totalBanco,
-      aPagar: fechado ? 0 : totalBanco,
-      diferenca: fechado ? totalBanco : 0,
-      pago: fechado,
-      ref: 'banco:' + b.id + ':' + mesAno
+  var listaDF = []; try { listaDF = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]'); } catch(e){}
+  var listaRF = []; try { listaRF = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]'); } catch(e){}
+
+  /* Despesas fixas do mês — uma linha por fixa, exceto as que vão pra cartão (entram via fatura) */
+  (instDoMes.despesas || []).forEach(function(d){
+    if (d.faturaMesAno) return; /* fixas em cartão entram via fatura, não aqui */
+    var fixaId = d._fixaId;
+    var template = listaDF.find(function(x){ return String(x.id) === String(fixaId); });
+    var esperado = Number(d.valor) || 0;
+    var pago = oneFinFixaPagoNoMes(template, mesAno);
+    var aPagar = Math.max(esperado - pago, 0);
+    var quitada = pago >= esperado && esperado > 0;
+    var conta = template && template.contaId ? (typeof oneFinGetConta === 'function' && oneFinGetConta(template.contaId)) : null;
+    out.despesas.push({
+      kind: 'fixa-d',
+      dia: d.diaDoMes || (d.data ? parseInt(d.data.split('-')[2],10) : 1),
+      nome: d.nome || d.descricao || 'Despesa fixa',
+      contaIcone: conta ? (conta.icone || '🏦') : '',
+      esperado: esperado,
+      aPagar: aPagar,
+      diferenca: pago,
+      pago: quitada,
+      ref: 'fixa-d:' + fixaId + ':' + mesAno
     });
   });
 
-  /* Cartões: 1 linha por cartão com fatura > 0 no mês */
+  /* Faturas de cartão — 1 linha por cartão com fatura > 0 no mês */
   contas.forEach(function(c){
     if (c.tipo !== 'cartao') return;
     var totalFatura = 0;
@@ -10505,34 +10537,36 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
       });
     }
     if (totalFatura <= 0) return;
-    var pagoF = !!(Array.isArray(c.faturasPagas) && c.faturasPagas.indexOf(mesAno) >= 0);
-    out.contas.push({
-      tipo: 'cartao',
+    var pagaFat = !!(Array.isArray(c.faturasPagas) && c.faturasPagas.indexOf(mesAno) >= 0);
+    out.faturas.push({
+      kind: 'fatura',
       dia: c.diaVencimento || '—',
       nome: c.nome || 'Cartão',
       icone: c.icone || '💳',
       cor: c.cor || '#9B72B0',
       esperado: totalFatura,
-      aPagar: pagoF ? 0 : totalFatura,
-      diferenca: pagoF ? totalFatura : 0,
-      pago: pagoF,
+      aPagar: pagaFat ? 0 : totalFatura,
+      diferenca: pagaFat ? totalFatura : 0,
+      pago: pagaFat,
       ref: 'cartao:' + c.id + ':' + mesAno
     });
   });
 
-  /* Receitas fixas — continuam linha-a-linha pra ele marcar individualmente */
+  /* Receitas fixas — uma linha por receita */
   (instDoMes.receitas || []).forEach(function(r){
     var fixaId = r._fixaId;
-    var listaR = []; try { listaR = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]'); } catch(e){}
-    var template = listaR.find(function(x){ return String(x.id) === String(fixaId); });
-    var recebida = !!(template && Array.isArray(template.mesesPagos) && template.mesesPagos.indexOf(mesAno) >= 0);
-    var valor = Number(r.valor) || 0;
+    var template = listaRF.find(function(x){ return String(x.id) === String(fixaId); });
+    var esperado = Number(r.valor) || 0;
+    var pago = oneFinFixaPagoNoMes(template, mesAno);
+    var aReceber = Math.max(esperado - pago, 0);
+    var recebida = pago >= esperado && esperado > 0;
     out.receitasFixas.push({
+      kind: 'fixa-r',
       dia: r.diaDoMes || (r.data ? parseInt(r.data.split('-')[2],10) : 1),
       nome: r.nome || r.descricao || 'Receita fixa',
-      esperado: valor,
-      aPagar: recebida ? 0 : valor,
-      diferenca: recebida ? valor : 0,
+      esperado: esperado,
+      aPagar: aReceber,
+      diferenca: pago,
       pago: recebida,
       ref: 'fixa-r:' + fixaId + ':' + mesAno
     });
@@ -10547,7 +10581,8 @@ function oneFinRenderResumo() {
   var ano = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : hoje.getFullYear();
 
   var obrig = _oneFinResumoColetarObrigacoes(mes, ano);
-  var totalAPagarDespesas = obrig.contas.reduce(function(s,i){ return s + i.aPagar; }, 0);
+  var totalAPagarDespesas = obrig.despesas.reduce(function(s,i){ return s + i.aPagar; }, 0) +
+                            obrig.faturas.reduce(function(s,i){ return s + i.aPagar; }, 0);
   var totalAReceber       = obrig.receitasFixas.reduce(function(s,i){ return s + i.aPagar; }, 0);
   var saldoContas         = _oneFinResumoSaldoEmContas();
   var resultadoMes        = saldoContas - totalAPagarDespesas + totalAReceber;
@@ -10576,60 +10611,66 @@ function oneFinRenderResumo() {
       }).join('');
   }
 
-  /* ── Bloco 2: Obrigações do mês (1 linha por CONTA — banco ou cartão) ── */
+  /* ── Bloco 2: Obrigações do mês (1 linha por fixa OU fatura) ── */
   var bloco2 = document.getElementById('one-fin-resumo-obrigacoes');
   if (bloco2) {
-    /* Ordena: cartões primeiro (por dia de vencimento), depois bancos */
-    var ordenados = obrig.contas.slice().sort(function(a,b){
-      if (a.tipo !== b.tipo) return a.tipo === 'cartao' ? -1 : 1;
+    /* Lista combinada: despesas fixas + faturas, ordenadas por dia */
+    var todasDespesas = obrig.despesas.concat(obrig.faturas).sort(function(a,b){
       var da = (a.dia === '—' ? 99 : a.dia);
       var db = (b.dia === '—' ? 99 : b.dia);
       return (da||0) - (db||0);
     });
 
-    var rowsDespesa = ordenados.map(function(it){
+    /* Linha de fixa de despesa: A Pagar editável; linha de fatura: A Pagar fixo (= total da fatura) */
+    var renderLinhaDespesa = function(it){
       var pagoCls = it.pago ? ' pago' : '';
-      var tipoBadge = it.tipo === 'cartao' ? 'Fatura' : 'Conta';
+      var isFatura = (it.kind === 'fatura');
+      var aPagarCell = isFatura
+        ? '<span class="one-fin-resumo-obr-apagar"' + (it.aPagar > 0 ? ' style="color:#C0392B;font-weight:600"' : ' style="color:#9CAB9C"') + '>' + _oneFinResumoBrl(it.aPagar) + '</span>'
+        : '<input class="one-fin-resumo-apagar-input" type="number" step="0.01" min="0" value="' + (it.aPagar || 0).toFixed(2) + '" data-ref="' + it.ref + '" onchange="oneFinResumoSetAPagar(this.dataset.ref, this.value)" />';
+      var icoPrefix = isFatura ? ((it.icone || '💳') + ' ') : (it.contaIcone ? (it.contaIcone + ' ') : '');
+      var tipoBadge = isFatura ? '<span style="font-size:10px;color:#9CAB9C;font-weight:500;margin-left:6px">Fatura</span>' : '';
       return '<div class="one-fin-resumo-obr-row' + pagoCls + '">' +
-               '<button class="one-fin-resumo-check" onclick="oneFinResumoTogglePago(\'' + it.ref + '\')" title="' + (it.pago ? 'Desmarcar' : (it.tipo === 'cartao' ? 'Marcar fatura como paga' : 'Fechar conta no mês')) + '">' +
+               '<button class="one-fin-resumo-check" onclick="oneFinResumoTogglePago(\'' + it.ref + '\')" title="' + (it.pago ? 'Desmarcar' : 'Marcar como pago') + '">' +
                  (it.pago ? '✓' : '○') +
                '</button>' +
                '<span class="one-fin-resumo-obr-dia">' + (it.dia || '—') + '</span>' +
-               '<span class="one-fin-resumo-obr-nome">' +
-                 (it.icone ? (it.icone + ' ') : '') + (it.nome || '').replace(/</g,'&lt;') +
-                 ' <span style="font-size:10px;color:#9CAB9C;font-weight:500;margin-left:6px">' + tipoBadge + '</span>' +
-               '</span>' +
+               '<span class="one-fin-resumo-obr-nome">' + icoPrefix + (it.nome || '').replace(/</g,'&lt;') + tipoBadge + '</span>' +
                '<span class="one-fin-resumo-obr-esperado">' + _oneFinResumoBrl(it.esperado) + '</span>' +
-               '<span class="one-fin-resumo-obr-apagar"' + (it.aPagar > 0 ? ' style="color:#C0392B;font-weight:600"' : ' style="color:#9CAB9C"') + '>' + _oneFinResumoBrl(it.aPagar) + '</span>' +
-               '<span class="one-fin-resumo-obr-dif" style="color:#9CAB9C">' + _oneFinResumoBrl(it.diferenca) + '</span>' +
+               aPagarCell +
+               '<span class="one-fin-resumo-obr-dif" style="color:#27856A">' + _oneFinResumoBrl(it.diferenca) + '</span>' +
              '</div>';
-    }).join('');
+    };
+
+    var rowsDespesa = todasDespesas.map(renderLinhaDespesa).join('');
+
+    var renderLinhaReceita = function(it){
+      var pagoCls = it.pago ? ' pago' : '';
+      return '<div class="one-fin-resumo-obr-row' + pagoCls + '">' +
+               '<button class="one-fin-resumo-check" onclick="oneFinResumoTogglePago(\'' + it.ref + '\')" title="' + (it.pago ? 'Desmarcar' : 'Marcar como recebido') + '">' +
+                 (it.pago ? '✓' : '○') +
+               '</button>' +
+               '<span class="one-fin-resumo-obr-dia">' + (it.dia || '—') + '</span>' +
+               '<span class="one-fin-resumo-obr-nome">' + (it.nome || '').replace(/</g,'&lt;') + '</span>' +
+               '<span class="one-fin-resumo-obr-esperado">' + _oneFinResumoBrl(it.esperado) + '</span>' +
+               '<input class="one-fin-resumo-apagar-input" type="number" step="0.01" min="0" value="' + (it.aPagar || 0).toFixed(2) + '" data-ref="' + it.ref + '" onchange="oneFinResumoSetAPagar(this.dataset.ref, this.value)" />' +
+               '<span class="one-fin-resumo-obr-dif" style="color:#27856A">' + _oneFinResumoBrl(it.diferenca) + '</span>' +
+             '</div>';
+    };
 
     var rowsReceita = obrig.receitasFixas.length
       ? '<div class="one-fin-resumo-subtit">Receitas fixas</div>' +
-        obrig.receitasFixas.map(function(it){
-          var pagoCls = it.pago ? ' pago' : '';
-          return '<div class="one-fin-resumo-obr-row' + pagoCls + '">' +
-                   '<button class="one-fin-resumo-check" onclick="oneFinResumoTogglePago(\'' + it.ref + '\')" title="' + (it.pago ? 'Desmarcar' : 'Marcar como recebido') + '">' +
-                     (it.pago ? '✓' : '○') +
-                   '</button>' +
-                   '<span class="one-fin-resumo-obr-dia">' + (it.dia || '—') + '</span>' +
-                   '<span class="one-fin-resumo-obr-nome">' + (it.nome || '').replace(/</g,'&lt;') + '</span>' +
-                   '<span class="one-fin-resumo-obr-esperado">' + _oneFinResumoBrl(it.esperado) + '</span>' +
-                   '<span class="one-fin-resumo-obr-apagar"' + (it.aPagar > 0 ? ' style="color:#27856A;font-weight:600"' : ' style="color:#9CAB9C"') + '>' + _oneFinResumoBrl(it.aPagar) + '</span>' +
-                   '<span class="one-fin-resumo-obr-dif" style="color:#9CAB9C">' + _oneFinResumoBrl(it.diferenca) + '</span>' +
-                 '</div>';
-        }).join('')
+        obrig.receitasFixas.map(renderLinhaReceita).join('')
       : '';
 
-    var somaEsperado = ordenados.reduce(function(s,i){ return s + i.esperado; }, 0);
-    var somaAPagar   = ordenados.reduce(function(s,i){ return s + i.aPagar;   }, 0);
-    var somaDif      = ordenados.reduce(function(s,i){ return s + i.diferenca; }, 0);
+    var somaEsperado = todasDespesas.reduce(function(s,i){ return s + i.esperado; }, 0);
+    var somaAPagar   = todasDespesas.reduce(function(s,i){ return s + i.aPagar;   }, 0);
+    var somaDif      = todasDespesas.reduce(function(s,i){ return s + i.diferenca; }, 0);
 
     bloco2.innerHTML =
       '<div class="one-fin-resumo-titulo">📋 Contas a pagar este mês</div>' +
-      (ordenados.length === 0 && obrig.receitasFixas.length === 0
-        ? '<div class="one-fin-resumo-vazio">Sem contas com despesas nem faturas neste mês.</div>'
+      (todasDespesas.length === 0 && obrig.receitasFixas.length === 0
+        ? '<div class="one-fin-resumo-vazio">Sem fixas nem faturas de cartão neste mês.</div>'
         : (
           '<div class="one-fin-resumo-obr-head">' +
             '<span></span>' +
@@ -10641,7 +10682,7 @@ function oneFinRenderResumo() {
           '</div>' +
           rowsDespesa +
           rowsReceita +
-          (ordenados.length > 0
+          (todasDespesas.length > 0
             ? '<div class="one-fin-resumo-obr-row total">' +
                 '<span></span>' +
                 '<span></span>' +

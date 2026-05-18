@@ -6334,6 +6334,38 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   white-space: nowrap;
 }
 .one-fin-resumo-obr-esperado { color: #2D3D2F; }
+
+/* Input inline de "A Pagar" — fica num grid cell, parece texto até hover/focus */
+.one-fin-resumo-apagar-input {
+  width: 100%;
+  text-align: right;
+  border: 1px solid transparent;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  color: #C0392B;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: system-ui, -apple-system, sans-serif;
+  -moz-appearance: textfield;
+}
+.one-fin-resumo-apagar-input::-webkit-outer-spin-button,
+.one-fin-resumo-apagar-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.one-fin-resumo-apagar-input:hover {
+  border-color: rgba(127,168,142,0.30);
+}
+.one-fin-resumo-apagar-input:focus {
+  outline: none;
+  border-color: #5C8870;
+  background: #fff;
+}
+.one-fin-resumo-obr-row.pago .one-fin-resumo-apagar-input {
+  color: #9CAB9C;
+  font-weight: 500;
+}
 .one-fin-resumo-check {
   width: 22px;
   height: 22px;
