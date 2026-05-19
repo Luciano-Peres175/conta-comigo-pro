@@ -6279,6 +6279,23 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   min-height: 0;
   overflow-y: scroll !important;
 }
+/* Cabeçalho da tabela (Dia, Descritivo, ...) fixo no topo e linha de SOMA fixa
+   embaixo. Só as linhas de lançamento (e os subtítulos das duas seções) rolam. */
+.one-fin-resumo-bloco-obrigacoes .one-fin-resumo-obr-head {
+  position: sticky;
+  top: 0;
+  background: #FBF8F2;
+  z-index: 2;
+  padding-top: 8px;
+}
+.one-fin-resumo-bloco-obrigacoes .one-fin-resumo-obr-row.total {
+  position: sticky;
+  bottom: 0;
+  background: #ECE7D9;
+  z-index: 2;
+  margin-top: 0;
+  border-top: 1px solid rgba(127,168,142,0.20);
+}
 .one-fin-resumo-obr-head, .one-fin-resumo-obr-row {
   display: grid;
   grid-template-columns: 28px 32px 1fr 90px 90px 90px;
