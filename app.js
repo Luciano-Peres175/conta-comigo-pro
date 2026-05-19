@@ -10729,42 +10729,20 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
     });
   });
 
-  /* Faturas de cartão — 1 linha por cartão. Mostra a fatura que VENCE no mês ativo.
-     Se cartão vence depois de fechar (mesmo mês): competência alvo = mês ativo.
-     Se vence antes de fechar (no mês seguinte da competência): competência alvo = mês ativo - 1. */
-  var competenciaQueVencEm = function(conta) {
-    var dF = conta.diaFechamento || 1;
-    var dV = conta.diaVencimento || 10;
-    if (dV >= dF) return mesAno;
-    var ya = ano, ma = mes; /* mes atual (0-based) */
-    ma--;
-    if (ma < 0) { ma = 11; ya--; }
-    return ya + '-' + String(ma + 1).padStart(2, '0');
-  };
+  /* Faturas de cartão — 1 linha por cartão, sempre mostrando a "fatura no momento"
+     (a próxima a fechar, mesmo cálculo usado pela aba Contas em oneFinFaturaAberta).
+     Conforme o Mentor cadastra despesas no cartão, o valor sobe e aparece no Resumo.
+     Bolinha permite marcar como paga; ao marcar, baixa do total a pagar. */
   contas.forEach(function(c){
     if (c.tipo !== 'cartao') return;
-    var compAlvo = competenciaQueVencEm(c);
-    var totalFatura = 0;
-    despesasReais.forEach(function(d){
-      if (String(d.contaId) === String(c.id) && d.faturaMesAno === compAlvo) {
-        totalFatura += Number(d.valor) || 0;
-      }
-    });
-    /* Pra capturar fixas em cartão, varremos os meses vizinhos (a fixa pode estar
-       no mês anterior mas com faturaMesAno = compAlvo) */
-    var pCompAlvo = compAlvo.split('-');
-    var aAlvo = parseInt(pCompAlvo[0], 10);
-    var mAlvo = parseInt(pCompAlvo[1], 10) - 1;
-    if (typeof oneFinInstanciasVizinhas === 'function') {
-      var instCar = oneFinInstanciasVizinhas(mAlvo, aAlvo);
-      (instCar.despesas || []).forEach(function(d){
-        if (String(d.contaId) === String(c.id) && d.faturaMesAno === compAlvo) {
-          totalFatura += Number(d.valor) || 0;
-        }
-      });
-    }
+    var totalFatura = (typeof oneFinFaturaAberta === 'function') ? oneFinFaturaAberta(c.id) : 0;
     if (totalFatura <= 0) return;
-    var pagaFat = !!(Array.isArray(c.faturasPagas) && c.faturasPagas.indexOf(mesAno) >= 0);
+    /* mesAno da fatura aberta = próxima a fechar (mesmo cálculo de oneFinFaturaAberta) */
+    var hoje = new Date();
+    var compAlvo = (typeof oneFinCalcularFatura === 'function')
+      ? oneFinCalcularFatura(hoje.toISOString().slice(0,10), c.diaFechamento)
+      : mesAno;
+    var pagaFat = !!(Array.isArray(c.faturasPagas) && c.faturasPagas.indexOf(compAlvo) >= 0);
     out.faturas.push({
       kind: 'fatura',
       dia: c.diaVencimento || '—',
@@ -10775,7 +10753,7 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
       aPagar: pagaFat ? 0 : totalFatura,
       diferenca: pagaFat ? totalFatura : 0,
       pago: pagaFat,
-      ref: 'cartao:' + c.id + ':' + mesAno
+      ref: 'cartao:' + c.id + ':' + compAlvo
     });
   });
 
