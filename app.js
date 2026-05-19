@@ -9031,6 +9031,23 @@ function oneFinSaldoBanco(contaId) {
     }
   });
 
+  /* Saídas — pagamentos de fatura de cartão que apontaram para este banco.
+     Quando Mentor paga fatura via modal, registra em
+     conta.faturasPagasDetalhe[mesAno] = { contaId, valor, data }.
+     Aqui descontamos do banco que pagou. */
+  var todasContas = JSON.parse(localStorage.getItem(oneU('contas')) || '[]');
+  todasContas.forEach(function(cc){
+    if (cc.tipo !== 'cartao') return;
+    var det = cc.faturasPagasDetalhe;
+    if (!det || typeof det !== 'object') return;
+    Object.keys(det).forEach(function(mesAno){
+      var d = det[mesAno];
+      if (d && String(d.contaId) === String(contaId)) {
+        saldo -= Number(d.valor) || 0;
+      }
+    });
+  });
+
   return saldo;
 }
 window.oneFinSaldoBanco = oneFinSaldoBanco;
@@ -10527,26 +10544,102 @@ function oneFinBancoFecharMes(contaId, mesAno, marcar) {
 }
 window.oneFinBancoFecharMes = oneFinBancoFecharMes;
 
-/* Marca uma fatura de cartão como paga (conta.faturasPagas) */
-function oneFinCartaoMarcarFaturaPaga(contaId, mesAno, marcar) {
+/* Marca uma fatura de cartão como paga (conta.faturasPagas) e, opcionalmente,
+   registra qual conta-banco pagou e quanto, em faturasPagasDetalhe[mesAno] =
+   { contaId, valor, data }. Esse detalhe é usado por oneFinSaldoBanco pra
+   descontar do saldo do banco que pagou. */
+function oneFinCartaoMarcarFaturaPaga(contaId, mesAno, marcar, contaOrigemId, valorPago) {
   if (!contaId || !mesAno) return false;
   var contas = []; try { contas = JSON.parse(localStorage.getItem(oneU('contas')) || '[]'); } catch(e){}
   var idx = contas.findIndex(function(c){ return String(c.id) === String(contaId); });
   if (idx < 0) return false;
   var c = contas[idx];
   var pagos = Array.isArray(c.faturasPagas) ? c.faturasPagas.slice() : [];
+  var detalhe = (c.faturasPagasDetalhe && typeof c.faturasPagasDetalhe === 'object') ? Object.assign({}, c.faturasPagasDetalhe) : {};
   if (marcar) {
     if (pagos.indexOf(mesAno) < 0) pagos.push(mesAno);
+    if (contaOrigemId) {
+      detalhe[mesAno] = {
+        contaId: contaOrigemId,
+        valor: Number(valorPago) || 0,
+        data: new Date().toISOString().slice(0,10)
+      };
+    }
   } else {
     pagos = pagos.filter(function(m){ return m !== mesAno; });
+    delete detalhe[mesAno];
   }
   c.faturasPagas = pagos;
+  c.faturasPagasDetalhe = detalhe;
   contas[idx] = c;
   localStorage.setItem(oneU('contas'), JSON.stringify(contas));
   if (typeof supaUpsert === 'function') supaUpsert('contas', c);
   return true;
 }
 window.oneFinCartaoMarcarFaturaPaga = oneFinCartaoMarcarFaturaPaga;
+
+/* ── Modal de pagamento de fatura ───────────────────────────────
+   Aberto quando o Mentor clica na bolinha de uma fatura no Resumo.
+   Pergunta de qual banco saiu o pagamento e o valor (default = total). */
+function oneFinFaturaPagarAbrir(cartaoId, mesAno) {
+  var overlay = document.getElementById('one-fin-fatura-pagar-modal');
+  if (!overlay) return;
+  var cartao = oneFinGetConta(cartaoId);
+  if (!cartao) return;
+  var totalFatura = (typeof oneFinFaturaAberta === 'function') ? oneFinFaturaAberta(cartaoId) : 0;
+  document.getElementById('one-fin-fatura-pagar-cartao-id').value = cartaoId;
+  document.getElementById('one-fin-fatura-pagar-mes-ano').value = mesAno;
+  document.getElementById('one-fin-fatura-pagar-desc').textContent = (cartao.icone || '💳') + ' ' + cartao.nome + ' — fatura ' + mesAno;
+  document.getElementById('one-fin-fatura-pagar-valor').value = totalFatura.toFixed(2);
+  /* Popula select com bancos disponíveis (ordenado por saldo desc) */
+  var sel = document.getElementById('one-fin-fatura-pagar-conta');
+  sel.innerHTML = '';
+  var bancos = oneFinGetContas().filter(function(c){ return c.tipo === 'banco'; });
+  bancos.sort(function(a,b){
+    var sa = (typeof oneFinSaldoBanco === 'function') ? oneFinSaldoBanco(a.id) : 0;
+    var sb = (typeof oneFinSaldoBanco === 'function') ? oneFinSaldoBanco(b.id) : 0;
+    return sb - sa;
+  });
+  if (bancos.length === 0) {
+    var opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = 'Nenhum banco cadastrado — cadastre em Contas';
+    sel.appendChild(opt);
+  } else {
+    bancos.forEach(function(b){
+      var saldo = (typeof oneFinSaldoBanco === 'function') ? oneFinSaldoBanco(b.id) : 0;
+      var opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = (b.icone || '🏦') + ' ' + b.nome + '  (saldo: R$ ' + saldo.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ')';
+      sel.appendChild(opt);
+    });
+  }
+  overlay.classList.add('open');
+}
+window.oneFinFaturaPagarAbrir = oneFinFaturaPagarAbrir;
+
+function oneFinFaturaPagarFechar() {
+  var overlay = document.getElementById('one-fin-fatura-pagar-modal');
+  if (overlay) overlay.classList.remove('open');
+}
+window.oneFinFaturaPagarFechar = oneFinFaturaPagarFechar;
+
+function oneFinFaturaPagarConfirmar() {
+  var cartaoId = document.getElementById('one-fin-fatura-pagar-cartao-id').value;
+  var mesAno   = document.getElementById('one-fin-fatura-pagar-mes-ano').value;
+  var contaId  = document.getElementById('one-fin-fatura-pagar-conta').value;
+  var valor    = parseFloat(document.getElementById('one-fin-fatura-pagar-valor').value) || 0;
+  if (!cartaoId || !mesAno) return;
+  if (!contaId) {
+    if (typeof oneToast === 'function') oneToast('⚠ Cadastre um banco antes de pagar a fatura');
+    return;
+  }
+  oneFinCartaoMarcarFaturaPaga(cartaoId, mesAno, true, contaId, valor);
+  oneFinFaturaPagarFechar();
+  if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
+  if (typeof oneToast === 'function') oneToast('✓ Fatura paga — abatido do saldo');
+}
+window.oneFinFaturaPagarConfirmar = oneFinFaturaPagarConfirmar;
 
 /* Toggle pago via clique na bolinha.
    refs:
@@ -10575,7 +10668,18 @@ function oneFinResumoTogglePago(ref) {
     var contas = []; try { contas = JSON.parse(localStorage.getItem(oneU('contas')) || '[]'); } catch(e){}
     var c = contas.find(function(x){ return String(x.id) === String(a); });
     var jaPaga = !!(c && Array.isArray(c.faturasPagas) && c.faturasPagas.indexOf(b) >= 0);
-    oneFinCartaoMarcarFaturaPaga(a, b, !jaPaga);
+    if (jaPaga) {
+      /* Desfaz: remove flag + detalhe → o saldo do banco volta automaticamente */
+      oneFinCartaoMarcarFaturaPaga(a, b, false);
+    } else {
+      /* Abre modal pra perguntar conta de origem + valor antes de marcar */
+      if (typeof oneFinFaturaPagarAbrir === 'function') {
+        oneFinFaturaPagarAbrir(a, b);
+        return; /* Resumo será re-renderizado depois que modal confirmar */
+      } else {
+        oneFinCartaoMarcarFaturaPaga(a, b, true);
+      }
+    }
   } else if (kind === 'desp' || kind === 'rec') {
     /* Alterna status de despesa/receita esporádica */
     var keyE = (kind === 'desp') ? 'despesas' : 'receitas';

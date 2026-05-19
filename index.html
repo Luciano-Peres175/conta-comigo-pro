@@ -2362,6 +2362,36 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
+     MODAL — Pagar fatura de cartão (Resumo do Financeiro)
+═══════════════════════════════════════════════════════════════ -->
+<div id="one-fin-fatura-pagar-modal" class="one-modal-overlay">
+  <div class="one-modal-box">
+    <div class="one-modal-title">
+      <span>Pagar fatura</span>
+      <button class="one-modal-close" onclick="oneFinFaturaPagarFechar()">✕</button>
+    </div>
+    <input type="hidden" id="one-fin-fatura-pagar-cartao-id">
+    <input type="hidden" id="one-fin-fatura-pagar-mes-ano">
+    <div class="one-modal-field">
+      <label class="one-modal-label">Cartão</label>
+      <div id="one-fin-fatura-pagar-desc" style="font-size:14px;color:#2D3D2F;font-weight:600"></div>
+    </div>
+    <div class="one-modal-field">
+      <label class="one-modal-label">De qual conta sai o pagamento?</label>
+      <select id="one-fin-fatura-pagar-conta" class="one-modal-select"></select>
+    </div>
+    <div class="one-modal-field">
+      <label class="one-modal-label">Valor pago</label>
+      <input id="one-fin-fatura-pagar-valor" class="one-modal-input" type="number" step="0.01" min="0">
+    </div>
+    <div class="one-modal-footer">
+      <button class="one-modal-btn-cancel" onclick="oneFinFaturaPagarFechar()">Cancelar</button>
+      <button class="one-modal-btn-save"   onclick="oneFinFaturaPagarConfirmar()">Confirmar pagamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
      MODAL — Novo / Editar Compromisso
 ═══════════════════════════════════════════════════════════════ -->
 <div id="one-ag-modal" class="one-modal-overlay">
