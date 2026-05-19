@@ -28,15 +28,108 @@
     window.SUPABASE_URL = 'https://wpymqverwnuinlypwouw.supabase.co';
     window.SUPABASE_KEY = 'sb_publishable_VpiFsrp91kQxgF_IFlZlgQ_dMs1y5yf';
     window.supa = null;
+
+    /* ═══════════════════════════════════════════════════════════════
+       Estado de conexão Supabase + banner (Fase 1 — roteiro DNS Opus)
+       Mostra banner persistente quando o app não consegue falar com
+       o backend. Mitiga sintoma "salvei mas não salvou" da Le e afins.
+    ═══════════════════════════════════════════════════════════════ */
+    window.__pinahConnectionState = 'unknown'; // 'ok' | 'offline' | 'dns-fail' | 'unknown'
+
+    window.pinahMarkConnectionFail = function(type, errorMsg) {
+      var prev = window.__pinahConnectionState;
+      window.__pinahConnectionState = (type === 'offline') ? 'offline' : 'dns-fail';
+      // Telemetria mínima — console estruturado
+      console.error('[pinah-conn] FALHA', {
+        type: window.__pinahConnectionState,
+        hostname: window.SUPABASE_URL,
+        error: (errorMsg && errorMsg.message) ? errorMsg.message : String(errorMsg || ''),
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      });
+      if (prev !== window.__pinahConnectionState) {
+        pinahRenderBanner();
+      }
+    };
+
+    window.pinahMarkConnectionOk = function() {
+      var prev = window.__pinahConnectionState;
+      window.__pinahConnectionState = 'ok';
+      if (prev !== 'ok') {
+        console.log('[pinah-conn] OK — conexão restabelecida');
+        pinahRenderBanner();
+      }
+    };
+
+    function pinahRenderBanner() {
+      var el = document.getElementById('pinah-conn-banner');
+      if (!el) return;
+      var st = window.__pinahConnectionState;
+      if (st === 'ok' || st === 'unknown') {
+        el.style.display = 'none';
+        return;
+      }
+      var msg = (st === 'offline')
+        ? '⚠ Sem internet. Suas alterações ficam salvas localmente até a conexão voltar.'
+        : '⚠ Sem acesso ao servidor. Verifique sua conexão (Wi-Fi/4G). Se persistir, avise o time.';
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    // Detecção de online/offline nativo do browser
+    window.addEventListener('online',  function() { pinahMarkConnectionOk(); });
+    window.addEventListener('offline', function() { pinahMarkConnectionFail('offline', 'navigator offline'); });
+
     document.addEventListener('DOMContentLoaded', function() {
       if (window.supabase && window.supabase.createClient) {
         window.supa = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
       }
+      pinahRenderBanner();
+
+      // Bootstrap check não-bloqueante — ping leve com timeout de 4s.
+      // Roda em background; banner aparece só se falhar.
+      setTimeout(function() {
+        if (!window.supa) return;
+        var t0 = Date.now();
+        var timeoutId = setTimeout(function() {
+          pinahMarkConnectionFail('dns-fail', 'bootstrap timeout (4s)');
+        }, 4000);
+        // Usa rota /auth/v1/settings — não exige sessão, retorna 200 rápido
+        fetch(window.SUPABASE_URL + '/auth/v1/settings', {
+          headers: { 'apikey': window.SUPABASE_KEY }
+        }).then(function(r) {
+          clearTimeout(timeoutId);
+          if (r.ok) {
+            pinahMarkConnectionOk();
+          } else {
+            // Servidor respondeu, mas com erro — não é DNS, deixa quieto
+            console.warn('[pinah-conn] bootstrap respondeu', r.status, 'em', (Date.now()-t0)+'ms');
+          }
+        }).catch(function(err) {
+          clearTimeout(timeoutId);
+          pinahMarkConnectionFail('dns-fail', err);
+        });
+      }, 500);
     });
   </script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<!-- Banner persistente de falha de conexão (Fase 1 — roteiro DNS Opus).
+     Renderizado por pinahRenderBanner() — controlado por window.__pinahConnectionState. -->
+<div id="pinah-conn-banner" role="alert" style="
+  display:none;
+  position:fixed;top:0;left:0;right:0;z-index:10001;
+  padding:10px 16px;
+  background:#F4F1EA;
+  color:#5A3D72;
+  border-bottom:1px solid #E0D6E8;
+  box-shadow:0 4px 16px rgba(155,114,176,.25);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:13.5px;font-weight:500;
+  text-align:center;
+"></div>
 
 <!-- ═══════════════════════════════════════════════════════════════
      TELA DE LOGIN / CADASTRO (aparece se nao logado)

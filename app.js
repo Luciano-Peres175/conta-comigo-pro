@@ -4030,10 +4030,30 @@ async function supaUpsert(localKey, item) {
     }
   } catch(e) {
     console.error('[supaUpsert] Exceção:', e);
-    if (typeof oneToast === 'function') oneToast('⚠ Exceção sync: ' + e.message);
+    if (_pinahIsNetworkError(e)) {
+      if (typeof window.pinahMarkConnectionFail === 'function') {
+        window.pinahMarkConnectionFail(navigator.onLine ? 'dns-fail' : 'offline', e);
+      }
+      if (typeof oneToast === 'function') oneToast('⚠ Sem acesso ao servidor — alteração só local');
+    } else {
+      if (typeof oneToast === 'function') oneToast('⚠ Exceção sync: ' + e.message);
+    }
   }
 }
 window.supaUpsert = supaUpsert;
+
+/* Helper: detecta erro de rede (DNS, offline, fetch falhou) vs erro de servidor.
+   Usado por supaUpsert/supaDelete pra disparar banner persistente quando a falha
+   é de conectividade (DNS bloqueado, Wi-Fi caído), não erro de aplicação. */
+function _pinahIsNetworkError(e) {
+  if (!e) return false;
+  if (e instanceof TypeError) return true; // "Failed to fetch" é TypeError no browser
+  var msg = String(e.message || e || '').toLowerCase();
+  return msg.indexOf('failed to fetch') >= 0
+      || msg.indexOf('networkerror') >= 0
+      || msg.indexOf('network request failed') >= 0
+      || msg.indexOf('load failed') >= 0; // Safari
+}
 
 async function supaResync() {
   if (typeof supaSync !== 'function') return;
@@ -4093,7 +4113,14 @@ async function supaDelete(localKey, id) {
     return { ok: true, afetadas: afetadas };
   } catch(e) {
     console.error('[supaDelete] Exceção:', e);
-    if (typeof oneToast === 'function') oneToast('⚠ Exceção ao apagar: ' + e.message);
+    if (typeof _pinahIsNetworkError === 'function' && _pinahIsNetworkError(e)) {
+      if (typeof window.pinahMarkConnectionFail === 'function') {
+        window.pinahMarkConnectionFail(navigator.onLine ? 'dns-fail' : 'offline', e);
+      }
+      if (typeof oneToast === 'function') oneToast('⚠ Sem acesso ao servidor — exclusão só local');
+    } else {
+      if (typeof oneToast === 'function') oneToast('⚠ Exceção ao apagar: ' + e.message);
+    }
     return { ok: false, motivo: 'excecao', error: e };
   }
 }
@@ -4363,7 +4390,16 @@ async function pinahEnviar(texto, arquivo) {
               else if (window.toast) window.toast('⚠️ ' + ev.error, 'error');
             }
             /* ev.done é tratado depois do loop, pra saber se há multi-turn */
-          } catch (e) { /* linha mal formada — ignora */ }
+          } catch (e) {
+            /* linha mal formada de SSE — antes era engolida em silêncio. Agora loga.
+               Se for erro de rede (stream cortou no meio), marca estado de conexão. */
+            console.warn('[pinah-sse] linha mal formada ou erro de parse', { snippet: line.slice(0, 120), error: e && e.message });
+            if (typeof _pinahIsNetworkError === 'function' && _pinahIsNetworkError(e)) {
+              if (typeof window.pinahMarkConnectionFail === 'function') {
+                window.pinahMarkConnectionFail(navigator.onLine ? 'dns-fail' : 'offline', e);
+              }
+            }
+          }
         }
       }
 
@@ -4425,6 +4461,12 @@ async function pinahEnviar(texto, arquivo) {
       if (window.toast) window.toast('⚠️ Erro ao conectar com a Pinah.', 'error');
     }
     console.error('[pinahEnviar]', err);
+    /* Erro de rede vira sinal global — banner aparece pro usuário entender que é conectividade. */
+    if (typeof _pinahIsNetworkError === 'function' && _pinahIsNetworkError(err)) {
+      if (typeof window.pinahMarkConnectionFail === 'function') {
+        window.pinahMarkConnectionFail(navigator.onLine ? 'dns-fail' : 'offline', err);
+      }
+    }
   }
 }
 
