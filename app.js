@@ -10784,11 +10784,16 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
     return parseInt(p[0],10) === ano && parseInt(p[1],10) === (mes + 1);
   };
 
-  /* Despesas REAIS do mês — esporádicas (incluindo parceladas), sem cartão */
+  /* Despesas REAIS do mês — esporádicas (incluindo parceladas), sem cartão.
+     Filtro de cartão: se a contaId aponta pra um cartão, vai pra fatura agregada
+     (independente de faturaMesAno estar preenchido). Cobre o caso de despesas
+     órfãs criadas por importador CSV, parcelas antigas ou modal antigo, que
+     têm contaId mas não têm faturaMesAno — antes vazavam pra lista individual. */
   despesasReais.forEach(function(d){
     if (!noMes(d.data)) return;
-    if (d.faturaMesAno) return; /* vai pra fatura do cartão */
     var conta = d.contaId ? (typeof oneFinGetConta === 'function' && oneFinGetConta(d.contaId)) : null;
+    if (conta && conta.tipo === 'cartao') return; /* vai pra fatura do cartão */
+    if (d.faturaMesAno) return; /* legado: despesa de cartão sem contaId — vai pra fatura */
     var esperado = Number(d.valor) || 0;
     /* valorPago tem prioridade (suporta parcial). Senão usa status binário */
     var pagoVal;
@@ -10810,16 +10815,19 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
     });
   });
 
-  /* Despesas fixas do mês — instâncias virtuais sem cartão */
+  /* Despesas fixas do mês — instâncias virtuais sem cartão.
+     Mesmo filtro de cartão das reais: se o template tem contaId de cartão,
+     a instância vai pra fatura, não pra lista individual. */
   (instDoMes.despesas || []).forEach(function(d){
-    if (d.faturaMesAno) return;
     var fixaId = d._fixaId;
     var template = listaDF.find(function(x){ return String(x.id) === String(fixaId); });
+    var conta = template && template.contaId ? (typeof oneFinGetConta === 'function' && oneFinGetConta(template.contaId)) : null;
+    if (conta && conta.tipo === 'cartao') return; /* vai pra fatura do cartão */
+    if (d.faturaMesAno) return; /* legado: fixa de cartão sem contaId — vai pra fatura */
     var esperado = Number(d.valor) || 0;
     var pago = oneFinFixaPagoNoMes(template, mesAno);
     var aPagar = Math.max(esperado - pago, 0);
     var quitada = pago >= esperado && esperado > 0;
-    var conta = template && template.contaId ? (typeof oneFinGetConta === 'function' && oneFinGetConta(template.contaId)) : null;
     out.despesas.push({
       kind: 'fixa-d',
       dia: d.diaDoMes || (d.data ? parseInt(d.data.split('-')[2],10) : 1),
