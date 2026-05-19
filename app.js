@@ -10926,31 +10926,39 @@ function oneFinRenderResumo() {
     var somaAPagar   = todasDespesas.reduce(function(s,i){ return s + i.aPagar;   }, 0);
     var somaDif      = todasDespesas.reduce(function(s,i){ return s + i.diferenca; }, 0);
 
+    /* Estrutura flex: cabeçalho fixo em cima, corpo scrollável no meio, total fixo embaixo. */
     bloco2.innerHTML =
-      '<div class="one-fin-resumo-titulo">📋 Acompanhamento do mês</div>' +
       (todasDespesas.length === 0 && todasReceitas.length === 0
-        ? '<div class="one-fin-resumo-vazio">Sem fixas nem faturas de cartão neste mês.</div>'
+        ? '<div class="one-fin-resumo-titulo">📋 Acompanhamento do mês</div>' +
+          '<div class="one-fin-resumo-vazio">Sem fixas nem faturas de cartão neste mês.</div>'
         : (
-          '<div class="one-fin-resumo-obr-head">' +
-            '<span></span>' +
-            '<span>Dia</span>' +
-            '<span>Descritivo</span>' +
-            '<span class="num">Esperado</span>' +
-            '<span class="num">A Pagar</span>' +
-            '<span class="num">Diferença</span>' +
+          '<div class="one-fin-resumo-obrig-cabecalho">' +
+            '<div class="one-fin-resumo-titulo">📋 Acompanhamento do mês</div>' +
+            '<div class="one-fin-resumo-obr-head">' +
+              '<span></span>' +
+              '<span>Dia</span>' +
+              '<span>Descritivo</span>' +
+              '<span class="num">Esperado</span>' +
+              '<span class="num">A Pagar</span>' +
+              '<span class="num">Diferença</span>' +
+            '</div>' +
           '</div>' +
-          rowsReceita +
+          '<div class="one-fin-resumo-obrig-corpo">' +
+            rowsReceita +
+            (todasDespesas.length > 0
+              ? '<div class="one-fin-resumo-subtit">↓ A pagar este mês</div>' + rowsDespesa
+              : '') +
+          '</div>' +
           (todasDespesas.length > 0
-            ? '<div class="one-fin-resumo-subtit">↓ A pagar este mês</div>' + rowsDespesa
-            : '') +
-          (todasDespesas.length > 0
-            ? '<div class="one-fin-resumo-obr-row total">' +
-                '<span></span>' +
-                '<span></span>' +
-                '<span class="one-fin-resumo-obr-nome" style="font-weight:700">SOMA →</span>' +
-                '<span class="one-fin-resumo-obr-esperado" style="font-weight:700">' + _oneFinResumoBrl(somaEsperado) + '</span>' +
-                '<span class="one-fin-resumo-obr-apagar" style="font-weight:700;color:#C0392B">' + _oneFinResumoBrl(somaAPagar) + '</span>' +
-                '<span class="one-fin-resumo-obr-dif" style="font-weight:700;color:#27856A">' + _oneFinResumoBrl(somaDif) + '</span>' +
+            ? '<div class="one-fin-resumo-obrig-rodape">' +
+                '<div class="one-fin-resumo-obr-row total">' +
+                  '<span></span>' +
+                  '<span></span>' +
+                  '<span class="one-fin-resumo-obr-nome" style="font-weight:700">SOMA →</span>' +
+                  '<span class="one-fin-resumo-obr-esperado" style="font-weight:700">' + _oneFinResumoBrl(somaEsperado) + '</span>' +
+                  '<span class="one-fin-resumo-obr-apagar" style="font-weight:700;color:#C0392B">' + _oneFinResumoBrl(somaAPagar) + '</span>' +
+                  '<span class="one-fin-resumo-obr-dif" style="font-weight:700;color:#27856A">' + _oneFinResumoBrl(somaDif) + '</span>' +
+                '</div>' +
               '</div>'
             : '')
         )
