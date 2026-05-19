@@ -6200,8 +6200,11 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 .one-fin-resumo-layout {
   display: grid;
   grid-template-columns: 1fr 1.3fr;
+  grid-template-rows: 100%;
   gap: 16px;
   height: 620px;
+  min-height: 0;
+  overflow: hidden;
 }
 .one-fin-resumo-coluna-esq {
   display: flex;
