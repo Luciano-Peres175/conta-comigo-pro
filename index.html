@@ -25,7 +25,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // Cliente Supabase — Conta Comigo Pro (Programa Beta Proximos)
-    window.SUPABASE_URL = 'https://wpymqverwnuinlypwouw.supabase.co';
+    // URL passa pelo rewrite da Vercel (/sb/:path* → projeto Supabase) pra
+    // contornar bloqueio de DNS de subdominio Supabase em algumas redes Wi-Fi.
+    // Regra do rewrite vive em vercel.json. Origin dinamico funciona em
+    // preview e producao sem variavel de ambiente. D061.
+    window.SUPABASE_PROJECT_URL = 'https://wpymqverwnuinlypwouw.supabase.co'; // referencia para painel/troubleshooting
+    window.SUPABASE_URL = window.location.origin + '/sb';
     window.SUPABASE_KEY = 'sb_publishable_VpiFsrp91kQxgF_IFlZlgQ_dMs1y5yf';
     window.supa = null;
 
