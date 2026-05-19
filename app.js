@@ -10864,15 +10864,21 @@ function oneFinRenderResumo() {
       }).join('');
   }
 
-  /* ── Bloco 2: Obrigações do mês (1 linha por fixa OU fatura) ── */
+  /* ── Bloco 2: Obrigações do mês (1 linha por fixa OU fatura) ──
+     Ordem: receitas primeiro (a confirmar, com bolinha pra marcar como recebida),
+     depois despesas (incluindo faturas de cartão). Ambos grupos ordenados por dia
+     de vencimento DECRESCENTE (dia maior primeiro). */
   var bloco2 = document.getElementById('one-fin-resumo-obrigacoes');
   if (bloco2) {
-    /* Lista combinada: despesas fixas + faturas, ordenadas por dia */
-    var todasDespesas = obrig.despesas.concat(obrig.faturas).sort(function(a,b){
-      var da = (a.dia === '—' ? 99 : a.dia);
-      var db = (b.dia === '—' ? 99 : b.dia);
-      return (da||0) - (db||0);
-    });
+    var ordDesc = function(a,b){
+      var da = (a.dia === '—' ? 0 : a.dia);
+      var db = (b.dia === '—' ? 0 : b.dia);
+      return (db||0) - (da||0);
+    };
+    /* Lista de despesas: fixas + reais + faturas, decrescente por dia */
+    var todasDespesas = obrig.despesas.concat(obrig.faturas).sort(ordDesc);
+    /* Lista de receitas: fixas + reais, decrescente por dia */
+    var todasReceitas = obrig.receitasFixas.slice().sort(ordDesc);
 
     /* Linha de fixa de despesa: A Pagar editável; linha de fatura: A Pagar fixo (= total da fatura) */
     var renderLinhaDespesa = function(it){
@@ -10911,9 +10917,9 @@ function oneFinRenderResumo() {
              '</div>';
     };
 
-    var rowsReceita = obrig.receitasFixas.length
-      ? '<div class="one-fin-resumo-subtit">Receitas fixas</div>' +
-        obrig.receitasFixas.map(renderLinhaReceita).join('')
+    var rowsReceita = todasReceitas.length
+      ? '<div class="one-fin-resumo-subtit">↑ A receber este mês</div>' +
+        todasReceitas.map(renderLinhaReceita).join('')
       : '';
 
     var somaEsperado = todasDespesas.reduce(function(s,i){ return s + i.esperado; }, 0);
@@ -10921,8 +10927,8 @@ function oneFinRenderResumo() {
     var somaDif      = todasDespesas.reduce(function(s,i){ return s + i.diferenca; }, 0);
 
     bloco2.innerHTML =
-      '<div class="one-fin-resumo-titulo">📋 Contas a pagar este mês</div>' +
-      (todasDespesas.length === 0 && obrig.receitasFixas.length === 0
+      '<div class="one-fin-resumo-titulo">📋 Acompanhamento do mês</div>' +
+      (todasDespesas.length === 0 && todasReceitas.length === 0
         ? '<div class="one-fin-resumo-vazio">Sem fixas nem faturas de cartão neste mês.</div>'
         : (
           '<div class="one-fin-resumo-obr-head">' +
@@ -10933,8 +10939,10 @@ function oneFinRenderResumo() {
             '<span class="num">A Pagar</span>' +
             '<span class="num">Diferença</span>' +
           '</div>' +
-          rowsDespesa +
           rowsReceita +
+          (todasDespesas.length > 0
+            ? '<div class="one-fin-resumo-subtit">↓ A pagar este mês</div>' + rowsDespesa
+            : '') +
           (todasDespesas.length > 0
             ? '<div class="one-fin-resumo-obr-row total">' +
                 '<span></span>' +
