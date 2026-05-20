@@ -131,10 +131,10 @@
     .nav-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 11px 20px;
+      gap: 14px;
+      padding: 8px 16px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13.5px;
       color: var(--texto-muted);
       transition: background .15s, color .15s;
       border: none;
@@ -157,7 +157,7 @@
       background: var(--lilas);
       border-radius: 0 2px 2px 0;
     }
-    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+    .nav-icon { font-size: 16px; width: 40px; text-align: center; flex-shrink: 0; }
 
     .nav-separator {
       height: 1px;
@@ -2706,19 +2706,21 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
     overflow-y: auto !important;
     overflow-x: hidden !important;
   }
-  /* Ícones menores dentro dos botões do menu desktop */
+  /* Ícones grandes dentro dos botões do menu desktop (sidebar moderno) */
   body:has(#screen-one.active) .nav-icon img {
-    width: 16px !important;
-    height: 16px !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
   }
   body:has(#screen-one.active) .nav-item {
     border-radius: 12px !important;
-    padding: 6px 10px !important;
+    padding: 8px 12px !important;
     margin: 0 !important;
     background: #fff !important;
     color: #6E4F87 !important;
-    font-size: 12px !important;
+    font-size: 13.5px !important;
     font-weight: 500 !important;
+    gap: 14px !important;
     border-top: 1.5px solid rgba(255,255,255,0.92) !important;
     border-left: 1.5px solid rgba(255,255,255,0.85) !important;
     border-right: 1.5px solid rgba(110,79,135,0.22) !important;
@@ -7259,12 +7261,12 @@ button.one-fin-card:hover {
   /* Esconde o header full-width antigo no desktop (substituído pelos 3 cards alinhados) */
   body:has(#screen-one.active) .one-desktop-header-row { display: none !important; }
 
-  /* Sidebar esquerda mais compacta — 140px (era ~220px) */
+  /* Sidebar esquerda — 200px (largura pra caber ícone grande 40x40 + texto fininho) */
   body:has(#screen-one.active) #sidebar {
-    width: 140px !important;
+    width: 200px !important;
   }
   body:has(#screen-one.active) #main {
-    margin-left: 140px !important;
+    margin-left: 200px !important;
   }
   body:has(#screen-one.active) #screen-one.active {
     left: 140px !important;
@@ -7406,12 +7408,14 @@ button.one-fin-card:hover {
     font-size: 9.5px !important;
   }
   body:has(#screen-one.active) .nav-item {
-    font-size: 11px !important;
-    padding: 5px 8px !important;
+    font-size: 13.5px !important;
+    padding: 8px 12px !important;
+    gap: 14px !important;
   }
   body:has(#screen-one.active) .nav-icon img {
-    width: 14px !important;
-    height: 14px !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
   }
 }
 
