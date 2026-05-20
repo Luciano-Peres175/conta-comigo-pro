@@ -7420,13 +7420,6 @@ button.one-fin-card:hover {
     height: 48px !important;
     border-radius: 12px !important;
   }
-  /* Card "Letícia Kurtz Fonoaudióloga" — compacto */
-  body:has(#screen-one.active) .sidebar-profile {
-    padding: 6px 10px !important;
-    min-height: 44px !important;
-    height: auto !important;
-    gap: 8px !important;
-  }
 }
 
 /* ════════════════════════════════════════════════════════════════
