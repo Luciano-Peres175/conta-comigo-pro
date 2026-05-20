@@ -1040,37 +1040,27 @@
 
     <div class="sidebar-mesa-aux">
       <nav class="sidebar-nav">
-        <button class="nav-item active" id="nav-home" onclick="go('home')">
-          <span class="nav-icon"><img src="assets/icons/inicio.png" alt="Início" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Início
+        <button class="nav-item" id="nav-pinah" onclick="go('pinah')">
+          <span class="nav-icon"><img src="assets/icons/pinah-mascote.png" alt="Pinah" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Pinah
         </button>
-        <button class="nav-item" id="nav-agenda" onclick="go('agenda')">
+        <button class="nav-item" id="nav-agenda" onclick="goOnePanel('agenda')">
           <span class="nav-icon"><img src="assets/icons/agenda.png" alt="Agenda" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Agenda
         </button>
-        <button class="nav-item" id="nav-receitas" onclick="go('receitas')">
-          <span class="nav-icon"><img src="assets/icons/receita.png" alt="Receitas" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Receitas
+        <button class="nav-item" id="nav-tarefas" onclick="goOnePanel('tarefas')">
+          <span class="nav-icon"><img src="assets/icons/btn-atendimento-verde.png" alt="Tarefas" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Tarefas
         </button>
-        <button class="nav-item" id="nav-despesas" onclick="go('despesas')">
-          <span class="nav-icon"><img src="assets/icons/despesa.png" alt="Despesas" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Despesas
-        </button>
-        <button class="nav-item" id="nav-historico" onclick="go('historico')">
-          <span class="nav-icon"><img src="assets/icons/historico.png" alt="Histórico" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Histórico
+        <button class="nav-item" id="nav-financeiro" onclick="goOnePanel('financeiro')">
+          <span class="nav-icon"><img src="assets/icons/receita.png" alt="Financeiro" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Financeiro
         </button>
 
         <div class="nav-separator"></div>
-        <div class="nav-label">Ferramentas</div>
+        <div class="nav-label">Acervo e saída</div>
 
         <button class="nav-item" id="nav-cerebro" onclick="go('cerebro')">
           <span class="nav-icon"><img src="assets/icons/cerebro-ia.png" alt="Biblioteca da Pinah" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Biblioteca da Pinah
         </button>
-        <button class="nav-item" onclick="go('historico')" title="Histórico + Relatório PDF para o contador">
-          <span class="nav-icon"><img src="assets/icons/certificado.png" alt="Rel. Contador" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Rel. Contador
-        </button>
-
-        <div class="nav-separator"></div>
-        <div class="nav-label">Em Breve</div>
-
-        <button class="nav-item" onclick="abrirModalEmBreve('WhatsApp')">
-          <span class="nav-icon"><img src="assets/icons/whatsapp.png" alt="WhatsApp" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> WhatsApp
+        <button class="nav-item" id="nav-fiscal" onclick="go('historico')" title="Relatório fiscal pro contador">
+          <span class="nav-icon"><img src="assets/icons/certificado.png" alt="Fiscal" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Fiscal
         </button>
       </nav>
 

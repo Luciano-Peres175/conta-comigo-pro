@@ -4869,6 +4869,17 @@ function oneNovaTarefa() {
   setTimeout(function(){ var el = document.getElementById('one-tar-nome'); if(el) el.focus(); }, 200);
 }
 
+/* Helper do menu lateral novo: entra na tela do app unificado (screen-one) e
+   já posiciona o painel central no alvo (agenda/tarefas/financeiro). Usado
+   pelos itens "Agenda", "Tarefas" e "Financeiro" do menu reestruturado. */
+function goOnePanel(target) {
+  if (typeof go === 'function') go('one');
+  setTimeout(function() {
+    if (typeof swapToCenter === 'function') swapToCenter(target);
+  }, 50);
+}
+window.goOnePanel = goOnePanel;
+
 /* Hint do prompt global — clica numa sugestão e preenche o input */
 function oneHintClick(el) {
   if (!el) return;
