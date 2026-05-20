@@ -2607,11 +2607,11 @@
 /* A sidebar só vira drawer no mobile (regra de @media max-width:767px já existe).
    No desktop ela aparece sempre — incluindo dentro do screen-one — pra dar acesso
    a Configurações / Sair / Nossa história. */
-body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #bottom-nav   { display:none !important; }
-body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #main         { margin-left:0 !important; background:#F4F1EA; }
+body:has(#screen-one.active) #bottom-nav   { display:none !important; }
+body:has(#screen-one.active) #main         { margin-left:0 !important; background:#F4F1EA; }
 /* Fix: drawer abre sobre screen-one (z-index 9999) no mobile */
-body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #sidebar.drawer-open { z-index:10001 !important; transform:translateX(0) !important; }
-body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #drawer-overlay       { z-index:10000 !important; }
+body:has(#screen-one.active) #sidebar.drawer-open { z-index:10001 !important; transform:translateX(0) !important; }
+body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 
 #screen-one.active {
   display: flex;
@@ -2632,7 +2632,7 @@ body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen
   /* No desktop, elementos mobile não aparecem */
   .one-prompt-global-wrap { display:none !important; }
   .one-mob-popup          { display:none !important; }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #main    { margin-left:var(--sidebar-w) !important; padding:0 !important; }
+  body:has(#screen-one.active) #main    { margin-left:var(--sidebar-w) !important; padding:0 !important; }
   #screen-one.active {
     left: var(--sidebar-w);
     right: 0;
@@ -2642,17 +2642,17 @@ body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen
     overflow: hidden;
     background: #EDF4ED;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-topbar       { display:none !important; }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-greeting     { display:none !important; }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-screens-wrap { display:none !important; }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-dots         { display:none !important; }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desktop-header-row { display:flex !important; }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desktop-layout { display:flex !important; }
+  body:has(#screen-one.active) .one-topbar       { display:none !important; }
+  body:has(#screen-one.active) .one-greeting     { display:none !important; }
+  body:has(#screen-one.active) .one-screens-wrap { display:none !important; }
+  body:has(#screen-one.active) .one-dots         { display:none !important; }
+  body:has(#screen-one.active) .one-desktop-header-row { display:flex !important; }
+  body:has(#screen-one.active) .one-desktop-layout { display:flex !important; }
 
   /* ── Sidebar redesign: dois cards (avatar + mesa auxiliar) ──── */
 
   /* Container: transparente, ritmo espelha header-row + layout */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #sidebar {
+  body:has(#screen-one.active) #sidebar {
     display: flex !important;
     background: #EDF4ED !important;
     border: none !important;
@@ -2664,8 +2664,8 @@ body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen
   }
 
   /* Card do avatar: só contorno, alinha com o header */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .sidebar-logo    { display: none !important; }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .sidebar-profile {
+  body:has(#screen-one.active) .sidebar-logo    { display: none !important; }
+  body:has(#screen-one.active) .sidebar-profile {
     flex-shrink: 0 !important;
     min-height: 100px !important;
     height: 100px !important;
@@ -2680,7 +2680,7 @@ body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen
   }
 
   /* Mesa auxiliar: contorno, alinha com a mesa principal */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .sidebar-mesa-aux {
+  body:has(#screen-one.active) .sidebar-mesa-aux {
     flex: 1 !important;
     min-height: 0 !important;
     border-radius: 20px !important;
@@ -2692,7 +2692,7 @@ body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen
   }
 
   /* Nav dentro da mesa aux: botões com mesmo estilo dos cards laterais */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .sidebar-nav {
+  body:has(#screen-one.active) .sidebar-nav {
     flex: 1 !important;
     padding: 10px 16px 6px !important;
     display: flex !important;
@@ -2702,12 +2702,12 @@ body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen
     overflow-x: hidden !important;
   }
   /* Estilo dock — ícone em cima, legenda pequena embaixo, itens espaçados */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .nav-icon img {
+  body:has(#screen-one.active) .nav-icon img {
     width: 48px !important;
     height: 48px !important;
     border-radius: 12px !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .nav-item {
+  body:has(#screen-one.active) .nav-item {
     border-radius: 12px !important;
     padding: 8px 6px !important;
     margin: 0 !important;
@@ -2735,7 +2735,7 @@ body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen
       inset 1px 0 0 rgba(255,255,255,.75),
       inset -1px 0 0 rgba(92,136,112,0.08) !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .nav-item:hover {
+  body:has(#screen-one.active) .nav-item:hover {
     color: #5C8870 !important;
     transform: translateY(-1px) !important;
     box-shadow:
@@ -2748,23 +2748,23 @@ body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen
       inset 1px 0 0 rgba(255,255,255,.75),
       inset -1px 0 0 rgba(92,136,112,0.10) !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .nav-item.active {
+  body:has(#screen-one.active) .nav-item.active {
     color: #5C8870 !important;
     font-weight: 600 !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .nav-item.active::before { display: none !important; }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .nav-separator {
+  body:has(#screen-one.active) .nav-item.active::before { display: none !important; }
+  body:has(#screen-one.active) .nav-separator {
     background: rgba(92,136,112,0.14) !important;
     margin: 4px 6px !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .nav-label {
+  body:has(#screen-one.active) .nav-label {
     padding: 4px 8px 2px !important;
     font-size: 9px !important;
     color: rgba(92,136,112,0.55) !important;
   }
 
   /* Footer da mesa aux: configs separados por linha fina */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .sidebar-footer {
+  body:has(#screen-one.active) .sidebar-footer {
     flex-shrink: 0 !important;
     padding: 5px 8px 6px !important;
     border-top: 1px solid rgba(92,136,112,0.15) !important;
@@ -2774,8 +2774,8 @@ body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen
     gap: 1px !important;
     text-align: left !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .sidebar-footer > span { display: none !important; }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .sidebar-micro-btn {
+  body:has(#screen-one.active) .sidebar-footer > span { display: none !important; }
+  body:has(#screen-one.active) .sidebar-micro-btn {
     border-radius: 8px !important;
     background: rgba(255,255,255,0.45) !important;
     padding: 4px 10px !important;
@@ -2784,13 +2784,13 @@ body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen
     width: 100% !important;
     border: none !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .sidebar-micro-btn:hover {
+  body:has(#screen-one.active) .sidebar-micro-btn:hover {
     background: rgba(255,255,255,0.85) !important;
     color: #5C8870 !important;
   }
 
   /* ── Header: contorno apenas (igual à mesa) ─────────────────── */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desktop-header {
+  body:has(#screen-one.active) .one-desktop-header {
     box-shadow: 0 0 0 2px rgba(92,136,112,0.90) !important;
   }
 }
@@ -7258,21 +7258,21 @@ button.one-fin-card:hover {
 @media (min-width: 900px) {
 
   /* Esconde o header full-width antigo no desktop (substituído pelos 3 cards alinhados) */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desktop-header-row { display: none !important; }
+  body:has(#screen-one.active) .one-desktop-header-row { display: none !important; }
 
   /* Sidebar esquerda — 200px (largura original), estilo dock por dentro */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #sidebar {
+  body:has(#screen-one.active) #sidebar {
     width: 200px !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #main {
+  body:has(#screen-one.active) #main {
     margin-left: 200px !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #screen-one.active {
+  body:has(#screen-one.active) #screen-one.active {
     left: 140px !important;
   }
 
   /* Sidebar direita (cards) mais compacta — 180px (era ~260-380px) */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desktop-sidebar {
+  body:has(#screen-one.active) .one-desktop-sidebar {
     min-width: 180px !important;
     max-width: 200px !important;
     gap: 8px !important;
@@ -7369,44 +7369,44 @@ button.one-fin-card:hover {
   .one-desk-card-conta-btn-sair:hover { background: rgba(192,57,43,0.10); }
 
   /* Card identidade Letícia (sidebar esquerda) precisa ter mesma altura pra alinhar */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .sidebar-profile {
+  body:has(#screen-one.active) .sidebar-profile {
     height: 56px !important;
     min-height: 56px !important;
     padding: 6px 9px !important;
   }
 
   /* Layout: reduz padding-top do main pra cards se alinharem */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desktop-layout {
+  body:has(#screen-one.active) .one-desktop-layout {
     padding-top: 8px !important;
   }
 
   /* Cards laterais menores (compactos pra liberar espaço pro main) */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desk-card {
+  body:has(#screen-one.active) .one-desk-card {
     padding: 12px 14px 10px !important;
     border-radius: 18px !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desk-card-header {
+  body:has(#screen-one.active) .one-desk-card-header {
     margin-bottom: 6px !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desk-card-title {
+  body:has(#screen-one.active) .one-desk-card-title {
     font-size: 11px !important;
   }
 
   /* Sidebar esquerda — ajustes pra a versão compacta de 140px */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .sidebar-profile .avatar {
+  body:has(#screen-one.active) .sidebar-profile .avatar {
     width: 28px !important;
     height: 28px !important;
     font-size: 11px !important;
     flex-shrink: 0 !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .sidebar-profile .profile-info strong {
+  body:has(#screen-one.active) .sidebar-profile .profile-info strong {
     font-size: 11px !important;
     line-height: 1.1 !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .sidebar-profile .profile-info small {
+  body:has(#screen-one.active) .sidebar-profile .profile-info small {
     font-size: 9.5px !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .nav-item {
+  body:has(#screen-one.active) .nav-item {
     font-size: 10.5px !important;
     padding: 8px 6px !important;
     gap: 4px !important;
@@ -7415,7 +7415,7 @@ button.one-fin-card:hover {
     text-align: center !important;
     line-height: 1.15 !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .nav-icon img {
+  body:has(#screen-one.active) .nav-icon img {
     width: 48px !important;
     height: 48px !important;
     border-radius: 12px !important;
@@ -7428,12 +7428,12 @@ button.one-fin-card:hover {
 @media (min-width: 900px) {
 
   /* Gap entre card identidade Letícia e o menu — pequeno (subir o menu) */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #sidebar {
+  body:has(#screen-one.active) #sidebar {
     gap: 8px !important;
   }
 
   /* Gap entre card Conta Comigo e o primeiro card lateral — mesmo gap pra alinhar */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desktop-sidebar {
+  body:has(#screen-one.active) .one-desktop-sidebar {
     gap: 8px !important;
   }
 
@@ -7578,10 +7578,10 @@ button.one-fin-card:hover {
 
   /* Gaps verticais uniformes nas 3 colunas pra alinhar horizontalmente
      o topo dos elementos da segunda linha (menu, área de trabalho, 1º card lateral) */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #sidebar {
+  body:has(#screen-one.active) #sidebar {
     gap: 14px !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desktop-sidebar {
+  body:has(#screen-one.active) .one-desktop-sidebar {
     gap: 14px !important; /* gap entre Conta Comigo e primeiro card + gap entre cards laterais */
   }
   .one-desk-frase-card {
@@ -7590,11 +7590,11 @@ button.one-fin-card:hover {
 
   /* Cards laterais ainda mais compactos pra evitar mescla de sombras
      e dar destaque ao conteúdo */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desk-card {
+  body:has(#screen-one.active) .one-desk-card {
     padding: 10px 12px 8px !important;
     border-radius: 16px !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desk-card-header {
+  body:has(#screen-one.active) .one-desk-card-header {
     margin-bottom: 6px !important;
     padding-bottom: 0 !important;
   }
@@ -7719,19 +7719,19 @@ button.one-fin-card:hover {
   }
 
   /* Garantir que parents não cortem as sombras dos cards de cima */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desktop-layout {
+  body:has(#screen-one.active) .one-desktop-layout {
     overflow: visible !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desktop-main,
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desktop-sidebar {
+  body:has(#screen-one.active) .one-desktop-main,
+  body:has(#screen-one.active) .one-desktop-sidebar {
     overflow: visible !important;
   }
 
   /* Aumentar gap entre cards laterais pra sombras respirarem */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desktop-sidebar {
+  body:has(#screen-one.active) .one-desktop-sidebar {
     gap: 22px !important;
   }
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #sidebar {
+  body:has(#screen-one.active) #sidebar {
     gap: 22px !important;
   }
   .one-desk-frase-card {
@@ -7739,8 +7739,8 @@ button.one-fin-card:hover {
   }
 
   /* Wrappers dos cards Agenda e Tarefas: flex column pra empilhar grid + mini resumos */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #one-desk-ag-week,
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) #one-desk-tarefas-list {
+  body:has(#screen-one.active) #one-desk-ag-week,
+  body:has(#screen-one.active) #one-desk-tarefas-list {
     display: flex !important;
     flex-direction: column !important;
     overflow: visible !important;
@@ -7778,22 +7778,22 @@ button.one-fin-card:hover {
 @media (min-width: 900px) {
 
   /* Cards de cima (frase central + Conta Comigo) — SO contorno simples */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desk-frase-card,
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desk-card-conta {
+  body:has(#screen-one.active) .one-desk-frase-card,
+  body:has(#screen-one.active) .one-desk-card-conta {
     box-shadow: 0 0 0 2px rgba(92,136,112,0.92) !important;
     filter: none !important;
     border: none !important;
   }
 
   /* Cards laterais (Agenda/Tarefas/Financeiro) — SO contorno simples */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desk-card {
+  body:has(#screen-one.active) .one-desk-card {
     box-shadow: 0 0 0 2px rgba(92,136,112,0.92) !important;
     filter: none !important;
     border: none !important;
   }
 
   /* Hover dos cards laterais — elevacao + sombra de botao (preservado) */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desk-card:hover {
+  body:has(#screen-one.active) .one-desk-card:hover {
     transform: translateY(-3px);
     box-shadow:
       0 0 0 2px rgba(92,136,112,1.0),
@@ -7802,7 +7802,7 @@ button.one-fin-card:hover {
   }
 
   /* Active dos cards laterais — clique pressionando */
-  body:has(#screen-one.active), body:has(#screen-cerebro.active), body:has(#screen-historico.active) .one-desk-card:active {
+  body:has(#screen-one.active) .one-desk-card:active {
     transform: translateY(1px);
     box-shadow:
       0 0 0 2px rgba(92,136,112,0.85),
