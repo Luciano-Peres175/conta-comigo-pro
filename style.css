@@ -7427,7 +7427,7 @@ button.one-fin-card:hover {
   }
 
   /* Card de perfil na tela base: 186x56, vazio, visual igual ao card
-     "Conta Comigo" (fundo pérola, raio 14, contorno duplo verde). Só screen-one. */
+     "Conta Comigo" (fundo pérola, raio 14, linha verde simples). Só screen-one. */
   body:has(#screen-one.active) .sidebar-profile {
     width: 186px !important;
     min-width: 186px !important;
@@ -7435,10 +7435,7 @@ button.one-fin-card:hover {
     align-self: flex-start !important;
     background: #FBF8F2 !important;
     border-radius: 14px !important;
-    box-shadow:
-      0 0 0 2px rgba(92,136,112,0.55),
-      0 0 0 6px rgba(92,136,112,0.15),
-      0 4px 12px rgba(0,0,0,.05) !important;
+    box-shadow: 0 0 0 2px rgba(92,136,112,0.92) !important;
   }
   body:has(#screen-one.active) .sidebar-profile .avatar,
   body:has(#screen-one.active) .sidebar-profile .profile-info {
