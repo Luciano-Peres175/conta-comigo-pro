@@ -2694,32 +2694,32 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   /* Nav dentro da mesa aux: botões com mesmo estilo dos cards laterais */
   body:has(#screen-one.active) .sidebar-nav {
     flex: 1 !important;
-    padding: 6px 8px 4px !important;
+    padding: 10px 16px 6px !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 4px !important;
+    gap: 10px !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
   }
-  /* Estilo dock compacto — ícone em cima, legenda micro embaixo */
+  /* Estilo dock — ícone em cima, legenda pequena embaixo, itens espaçados */
   body:has(#screen-one.active) .nav-icon img {
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 10px !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 12px !important;
   }
   body:has(#screen-one.active) .nav-item {
-    border-radius: 10px !important;
-    padding: 4px 2px !important;
+    border-radius: 12px !important;
+    padding: 8px 6px !important;
     margin: 0 !important;
     background: #fff !important;
     color: #6E4F87 !important;
-    font-size: 9.5px !important;
-    line-height: 1.1 !important;
+    font-size: 10.5px !important;
+    line-height: 1.15 !important;
     font-weight: 500 !important;
     flex-direction: column !important;
     align-items: center !important;
     text-align: center !important;
-    gap: 2px !important;
+    gap: 4px !important;
     border-top: 1.5px solid rgba(255,255,255,0.92) !important;
     border-left: 1.5px solid rgba(255,255,255,0.85) !important;
     border-right: 1.5px solid rgba(110,79,135,0.22) !important;
@@ -7260,12 +7260,12 @@ button.one-fin-card:hover {
   /* Esconde o header full-width antigo no desktop (substituído pelos 3 cards alinhados) */
   body:has(#screen-one.active) .one-desktop-header-row { display: none !important; }
 
-  /* Sidebar esquerda — 100px (estilo dock, ícone em cima + legenda pequena embaixo) */
+  /* Sidebar esquerda — 200px (largura original), estilo dock por dentro */
   body:has(#screen-one.active) #sidebar {
-    width: 100px !important;
+    width: 200px !important;
   }
   body:has(#screen-one.active) #main {
-    margin-left: 100px !important;
+    margin-left: 200px !important;
   }
   body:has(#screen-one.active) #screen-one.active {
     left: 140px !important;
@@ -7407,25 +7407,25 @@ button.one-fin-card:hover {
     font-size: 9.5px !important;
   }
   body:has(#screen-one.active) .nav-item {
-    font-size: 9.5px !important;
-    padding: 4px 2px !important;
-    gap: 2px !important;
+    font-size: 10.5px !important;
+    padding: 8px 6px !important;
+    gap: 4px !important;
     flex-direction: column !important;
     align-items: center !important;
     text-align: center !important;
-    line-height: 1.1 !important;
+    line-height: 1.15 !important;
   }
   body:has(#screen-one.active) .nav-icon img {
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 10px !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 12px !important;
   }
-  /* Card "Letícia Kurtz Fonoaudióloga" — encolhe pra deixar mais espaço pros itens */
+  /* Card "Letícia Kurtz Fonoaudióloga" — compacto */
   body:has(#screen-one.active) .sidebar-profile {
-    padding: 4px 6px !important;
-    min-height: 40px !important;
+    padding: 6px 10px !important;
+    min-height: 44px !important;
     height: auto !important;
-    gap: 6px !important;
+    gap: 8px !important;
   }
 }
 
