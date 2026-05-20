@@ -7426,13 +7426,12 @@ button.one-fin-card:hover {
     box-sizing: border-box !important;
   }
 
-  /* Card de perfil na tela base: 186x56, vazio, visual igual ao card
-     "Conta Comigo" (fundo pérola, raio 14, linha verde simples). Só screen-one. */
+  /* Card de perfil na tela base: preenche a largura útil do menu (206),
+     altura 56, vazio, visual igual ao card "Conta Comigo"
+     (fundo pérola, raio 14, linha verde simples). Só screen-one. */
   body:has(#screen-one.active) .sidebar-profile {
-    width: 186px !important;
-    min-width: 186px !important;
-    max-width: 186px !important;
-    align-self: flex-start !important;
+    width: auto !important;
+    align-self: stretch !important;
     background: #FBF8F2 !important;
     border-radius: 14px !important;
     box-shadow: 0 0 0 2px rgba(92,136,112,0.92) !important;
