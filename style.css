@@ -2711,7 +2711,7 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
     overflow-y: auto !important;
     overflow-x: hidden !important;
   }
-  /* WIP: esconde cards do menu mantendo a mesa aux com altura e footer no rodape */
+  /* WIP: esconde cards do menu mantendo a mesa aux com altura e contornos visiveis */
   body:has(#screen-one.active) .sidebar-nav .nav-item,
   body:has(#screen-cerebro.active) .sidebar-nav .nav-item,
   body:has(#screen-historico.active) .sidebar-nav .nav-item,
@@ -2721,7 +2721,7 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   body:has(#screen-one.active) .sidebar-nav .nav-label,
   body:has(#screen-cerebro.active) .sidebar-nav .nav-label,
   body:has(#screen-historico.active) .sidebar-nav .nav-label {
-    display: none !important;
+    visibility: hidden !important;
   }
   /* Estilo dock — ícone em cima, legenda pequena embaixo, itens espaçados */
   body:has(#screen-one.active) .nav-icon img,
