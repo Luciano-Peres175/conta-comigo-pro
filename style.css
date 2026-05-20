@@ -7303,12 +7303,12 @@ button.one-fin-card:hover {
   /* Esconde o header full-width antigo no desktop (substituído pelos 3 cards alinhados) */
   body:has(#screen-one.active) .one-desktop-header-row { display: none !important; }
 
-  /* Sidebar esquerda — 75px */
+  /* Sidebar esquerda — 125px */
   body:has(#screen-one.active) #sidebar {
-    width: 75px !important;
+    width: 125px !important;
   }
   body:has(#screen-one.active) #main {
-    margin-left: 75px !important;
+    margin-left: 125px !important;
   }
   body:has(#screen-one.active) #screen-one.active {
     left: 140px !important;
