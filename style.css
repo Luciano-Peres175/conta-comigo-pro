@@ -2678,11 +2678,7 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
     border-radius: 20px !important;
     border: none !important;
     background: #F4F1EA !important;
-    box-shadow:
-      0 0 0 2px rgba(92,136,112,0.92),
-      0 0 0 8px rgba(92,136,112,0.22) !important;
-    filter: none !important;
-    overflow: visible !important;
+    box-shadow: 0 0 0 2px rgba(92,136,112,0.92) !important;
     padding: 16px 20px !important;
     gap: 12px !important;
     align-items: center !important;
