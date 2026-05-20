@@ -3527,7 +3527,10 @@ function pinahGetContext() {
         categoria: n.categoria,
         tags:      n.tags,
         criadoEm:  n.criadoEm,
-        preview:   String(n.conteudo || '').slice(0, 200)
+        /* Preview expandido pra 600 chars: dá mais base pra Pinah decidir se
+           precisa abrir a nota inteira via ler_nota. 200 era curto demais
+           pra PDFs longos e a Pinah respondia vago. */
+        preview:   String(n.conteudo || '').slice(0, 600)
       };
     })
   };
