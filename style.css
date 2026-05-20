@@ -7412,13 +7412,19 @@ button.one-fin-card:hover {
   .one-desk-card-conta-btn-sair { color: #C0392B; }
   .one-desk-card-conta-btn-sair:hover { background: rgba(192,57,43,0.10); }
 
-  /* Card identidade Letícia (sidebar esquerda) precisa ter mesma altura pra alinhar */
+  /* Card identidade Letícia (sidebar esquerda) — 186x56 igual ao card menu/frase, contorno linha simples */
   body:has(#screen-one.active) .sidebar-profile,
   body:has(#screen-cerebro.active) .sidebar-profile,
   body:has(#screen-historico.active) .sidebar-profile {
+    width: 186px !important;
+    min-width: 186px !important;
+    max-width: 186px !important;
     height: 56px !important;
     min-height: 56px !important;
+    max-height: 56px !important;
     padding: 6px 9px !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
   }
 
   /* Layout: reduz padding-top do main pra cards se alinharem */
