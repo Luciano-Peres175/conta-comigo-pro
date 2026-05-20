@@ -4574,7 +4574,7 @@ function _chatOnFileSelect(input) {
   if (files.length === 0) return;
   input.value = ''; // permite re-selecionar os mesmos arquivos
 
-  var extOk = ['pdf','docx','jpg','jpeg','png','webp'];
+  var extOk = ['pdf','docx','txt','md','jpg','jpeg','png','webp'];
 
   /* Valida cada arquivo antes de começar a processar */
   var validos = [];
@@ -4608,6 +4608,18 @@ function _chatOnFileSelect(input) {
       } else {
         _chatLerDOCX(item.file);
       }
+    } else if (item.ext === 'txt' || item.ext === 'md') {
+      /* Texto puro — lê direto como string UTF-8 e registra como 'texto'. */
+      var rTxt = new FileReader();
+      rTxt.onload = function(e) {
+        _chatRegistrarArquivo({
+          nome: item.file.name,
+          tipo: 'texto',
+          textoExtraido: String(e.target.result || '')
+        });
+      };
+      rTxt.onerror = function() { toast('Erro ao ler ' + item.file.name, 'error'); };
+      rTxt.readAsText(item.file, 'utf-8');
     } else {
       /* PDF ou imagem — lê como base64 */
       var reader = new FileReader();
