@@ -1,4 +1,4 @@
-// Vercel Serverless — Extração de conteúdo de URL para o Segundo Cérebro
+// Vercel Serverless — Extração de conteúdo de URL para o Biblioteca da Pinah
 // POST /api/extrair-url
 // Body: { url: string }
 // Return: { titulo, conteudo }
@@ -78,7 +78,7 @@ module.exports = async (req, res) => {
         max_tokens: 1200,
         messages: [{
           role: 'user',
-          content: `Você extrai conteúdo de artigos para um Segundo Cérebro profissional (área de saúde/negócios).
+          content: `Você extrai conteúdo de artigos para um Biblioteca da Pinah profissional (área de saúde/negócios).
 
 URL: ${url}
 Título da página: ${paginaTitulo}

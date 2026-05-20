@@ -1060,7 +1060,7 @@
         <div class="nav-label">Ferramentas</div>
 
         <button class="nav-item" id="nav-cerebro" onclick="go('cerebro')">
-          <span class="nav-icon"><img src="assets/icons/cerebro-ia.png" alt="Segundo Cérebro" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Segundo Cérebro
+          <span class="nav-icon"><img src="assets/icons/cerebro-ia.png" alt="Biblioteca da Pinah" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Biblioteca da Pinah
         </button>
         <button class="nav-item" onclick="go('historico')" title="Histórico + Relatório PDF para o contador">
           <span class="nav-icon"><img src="assets/icons/certificado.png" alt="Rel. Contador" style="width:28px;height:28px;border-radius:6px;object-fit:contain;display:block"></span> Rel. Contador
@@ -1430,7 +1430,7 @@
         </div>
       </button>
       <div class="screen-header">
-        <h2>Segundo Cérebro <i data-lucide="brain"></i></h2>
+        <h2>Biblioteca da Pinah <i data-lucide="brain"></i></h2>
         <p>Sua enciclopédia profissional pessoal</p>
       </div>
 
@@ -1623,13 +1623,13 @@
 </div>
 
 <!-- MODAL EM BREVE -->
-<!-- MODAL — Perguntar a IA (Segundo Cerebro com Claude Haiku 4.5) -->
+<!-- MODAL — Perguntar a IA (Biblioteca da Pinah com Claude Haiku 4.5) -->
 <div id="modal-ia" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.45);z-index:500;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:18px;padding:24px 24px 20px;max-width:580px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(107,63,138,.22);position:relative">
     <button onclick="fecharModalIA()" style="position:absolute;top:14px;right:16px;border:none;background:none;cursor:pointer;color:#888;display:flex;align-items:center;justify-content:center;width:28px;height:28px"><i data-lucide="x"></i></button>
 
     <h3 style="font-family:var(--font-title);font-size:20px;font-weight:600;color:var(--lilas);margin-bottom:6px;display:flex;align-items:center;gap:8px"><i data-lucide="sparkles"></i>Perguntar à IA</h3>
-    <p style="font-size:12px;color:var(--texto-muted);margin-bottom:14px">A IA lê <strong>apenas suas notas</strong> do Segundo Cérebro e responde com base nelas. <span id="ia-restantes" style="color:var(--lilas);font-weight:600"></span></p>
+    <p style="font-size:12px;color:var(--texto-muted);margin-bottom:14px">A IA lê <strong>apenas suas notas</strong> do Biblioteca da Pinah e responde com base nelas. <span id="ia-restantes" style="color:var(--lilas);font-weight:600"></span></p>
 
     <div id="ia-pergunta-area">
       <!-- Atalhos avancados (botoes coloridos com acoes especificas) -->
@@ -1701,7 +1701,7 @@
   </div>
 </div>
 
-<!-- MODAL — Nova/Editar Nota do Segundo Cerebro -->
+<!-- MODAL — Nova/Editar Nota do Biblioteca da Pinah -->
 <div id="modal-nota" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.45);z-index:500;align-items:center;justify-content:center;padding:20px">
   <div style="background:#fff;border-radius:18px;padding:26px 26px 22px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(107,63,138,.22);position:relative">
     <button onclick="fecharModalNota()" style="position:absolute;top:14px;right:16px;border:none;background:none;cursor:pointer;color:#888;display:flex;align-items:center;justify-content:center;width:28px;height:28px"><i data-lucide="x"></i></button>
@@ -1758,13 +1758,13 @@
   </div>
 </div>
 
-<!-- MODAL — Importar para o Segundo Cérebro (URL / Arquivo / Imagem / CSV) -->
+<!-- MODAL — Importar para o Biblioteca da Pinah (URL / Arquivo / Imagem / CSV) -->
 <div id="modal-importar" style="display:none;position:fixed;inset:0;background:rgba(45,45,45,.5);z-index:600;align-items:center;justify-content:center;padding:16px">
   <div class="importar-box">
 
     <!-- Header -->
     <div class="importar-header">
-      <span class="importar-title">📥 Adicionar ao Segundo Cérebro</span>
+      <span class="importar-title">📥 Adicionar ao Biblioteca da Pinah</span>
       <button onclick="importarFechar()" class="importar-close">✕</button>
     </div>
 
@@ -1837,7 +1837,7 @@
       <textarea id="imp-preview-conteudo" class="imp-preview-conteudo" rows="9" placeholder="Conteúdo extraído…"></textarea>
       <div class="imp-step2-actions">
         <button class="btn-secondary" onclick="importarVoltarStep1()">← Voltar</button>
-        <button class="btn-primary"   onclick="importarUsarConteudo()">Adicionar ao Segundo Cérebro</button>
+        <button class="btn-primary"   onclick="importarUsarConteudo()">Adicionar ao Biblioteca da Pinah</button>
       </div>
     </div>
 
@@ -1952,7 +1952,7 @@
       <p>Médicos, psicólogos, nutricionistas, dentistas, fisioterapeutas, veterinários — mais de um milhão de profissionais no Brasil que constroem carreiras brilhantes e ainda assim chegam ao final do mês sem saber exatamente quanto ganharam, quanto devem de imposto, ou quanto sobrou para investir na própria vida.</p>
       <p>Quem não estiver organizado vai pagar mais, errar mais e descobrir mais tarde.</p>
       <p class="story-destaque">O Conta Comigo AI Pro é a resposta para isso.</p>
-      <p>Financeiro claro. Agenda integrada. Relatório para o contador sem enrolação. WhatsApp automatizado para não perder paciente. E um Segundo Cérebro para guardar o conhecimento que você acumula ao longo dos anos — e transformar em palestras, artigos, protocolos.</p>
+      <p>Financeiro claro. Agenda integrada. Relatório para o contador sem enrolação. WhatsApp automatizado para não perder paciente. E um Biblioteca da Pinah para guardar o conhecimento que você acumula ao longo dos anos — e transformar em palestras, artigos, protocolos.</p>
       <p>Tudo num lugar só. Simples de usar. Feito para quem cuida de pessoas, não de planilhas.</p>
       <p class="story-destaque">Começou como um presente para a Lê.</p>
       <p>Hoje é para qualquer profissional que, como ela, é extraordinário no que faz — e merece ter a retaguarda à altura do seu talento.</p>
@@ -2103,12 +2103,12 @@
         <div class="pinah-onb-tour-card">
           <div class="pinah-onb-tour-emoji">📎</div>
           <div class="pinah-onb-tour-h">Me mande arquivos</div>
-          <div class="pinah-onb-tour-p">PDF, DOCX, imagem ou um link de site. Eu leio, organizo e salvo como nota no seu Segundo Cérebro — sem você precisar fazer nada.</div>
+          <div class="pinah-onb-tour-p">PDF, DOCX, imagem ou um link de site. Eu leio, organizo e salvo como nota no seu Biblioteca da Pinah — sem você precisar fazer nada.</div>
         </div>
         <div class="pinah-onb-tour-card">
           <div class="pinah-onb-tour-emoji">📅</div>
           <div class="pinah-onb-tour-h">Tudo num lugar só</div>
-          <div class="pinah-onb-tour-p">Agenda, Tarefas, Financeiro e Segundo Cérebro. Cards laterais alternam com a tela central — clique pra trocar o foco.</div>
+          <div class="pinah-onb-tour-p">Agenda, Tarefas, Financeiro e Biblioteca da Pinah. Cards laterais alternam com a tela central — clique pra trocar o foco.</div>
         </div>
         <div class="pinah-onb-tour-card">
           <div class="pinah-onb-tour-emoji">🔒</div>

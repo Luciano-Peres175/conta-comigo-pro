@@ -63,7 +63,7 @@ const TOOLS = [
   },
   {
     name: 'criar_nota',
-    description: 'Salva uma nota no Segundo Cérebro do usuário. Use SEMPRE que o usuário enviar um arquivo (PDF, DOCX, imagem de documento) — leia o conteúdo completo e salve como nota automaticamente, sem pedir confirmação. Também use quando o usuário pedir explicitamente para salvar algo como nota.',
+    description: 'Salva uma nota no Biblioteca da Pinah do usuário. Use SEMPRE que o usuário enviar um arquivo (PDF, DOCX, imagem de documento) — leia o conteúdo completo e salve como nota automaticamente, sem pedir confirmação. Também use quando o usuário pedir explicitamente para salvar algo como nota.',
     input_schema: {
       type: 'object',
       properties: {
@@ -85,7 +85,7 @@ const TOOLS = [
   },
   {
     name: 'buscar_nota',
-    description: 'Busca notas no Segundo Cérebro por termo no título, conteúdo ou tags. Use quando o usuário pedir para encontrar, procurar ou listar notas sobre algum assunto (ex: "tem alguma nota sobre dermatite?", "acha tudo que tem da Keylla", "me mostra as notas sobre nutrição"). Retorna o CONTEÚDO COMPLETO das notas que batem, pra você responder de verdade ao usuário.',
+    description: 'Busca notas no Biblioteca da Pinah por termo no título, conteúdo ou tags. Use quando o usuário pedir para encontrar, procurar ou listar notas sobre algum assunto (ex: "tem alguma nota sobre dermatite?", "acha tudo que tem da Keylla", "me mostra as notas sobre nutrição"). Retorna o CONTEÚDO COMPLETO das notas que batem, pra você responder de verdade ao usuário.',
     input_schema: {
       type: 'object',
       properties: {
@@ -97,7 +97,7 @@ const TOOLS = [
   },
   {
     name: 'ler_nota',
-    description: 'Lê o conteúdo COMPLETO de uma nota específica do Segundo Cérebro. Use quando o usuário pedir pra ver uma nota inteira que você já sabe que existe (porque viu no contexto ou em busca anterior), ex: "me lê o exame de citologia da Pinah", "abre a prescrição da imunoterapia". Recebe id da nota OU trecho do título.',
+    description: 'Lê o conteúdo COMPLETO de uma nota específica do Biblioteca da Pinah. Use quando o usuário pedir pra ver uma nota inteira que você já sabe que existe (porque viu no contexto ou em busca anterior), ex: "me lê o exame de citologia da Pinah", "abre a prescrição da imunoterapia". Recebe id da nota OU trecho do título.',
     input_schema: {
       type: 'object',
       properties: {
@@ -157,7 +157,7 @@ criar_nota — SEMPRE que ${primeiroNome} enviar um arquivo. Leia o conteúdo CO
 
 **DEPOIS de salvar, COMENTE substantivamente sobre o conteúdo na mesma resposta.** Você acabou de ler o arquivo inteiro — não cale. Faça resumo curto e direto dos pontos principais (3 a 6 frases), aponte o que chamou atenção, e ofereça um próximo passo natural ("Quer que eu destaque o ponto X?", "Vejo que fala em Y — quer aprofundar?"). NÃO devolva só "✓ Nota salva" e fique calada — isso é o vício a evitar. ${primeiroNome} mandou o arquivo porque quer DISCUTIR o conteúdo, não só arquivar.
 
-buscar_nota / ler_nota — Use de forma ATIVA. Toda vez que ${primeiroNome} fizer pergunta cuja resposta possa estar no Segundo Cérebro (perguntas sobre conteúdo de PDF/documento já salvo, "o que diz aquela nota sobre X", "tem alguma nota sobre Y", referência a algo que ele(a) já enviou antes), CHAME a ferramenta imediatamente — mesmo que o preview no contexto pareça suficiente, o preview tem só 600 caracteres e quase nunca basta. Pensa: você é a bibliotecária do conhecimento dele — quando ele pergunta, você ABRE o livro, não responde de memória de capa.
+buscar_nota / ler_nota — Use de forma ATIVA. Toda vez que ${primeiroNome} fizer pergunta cuja resposta possa estar no Biblioteca da Pinah (perguntas sobre conteúdo de PDF/documento já salvo, "o que diz aquela nota sobre X", "tem alguma nota sobre Y", referência a algo que ele(a) já enviou antes), CHAME a ferramenta imediatamente — mesmo que o preview no contexto pareça suficiente, o preview tem só 600 caracteres e quase nunca basta. Pensa: você é a bibliotecária do conhecimento dele — quando ele pergunta, você ABRE o livro, não responde de memória de capa.
 
 criar_compromisso — ${primeiroNome} menciona nome + data + hora → use a ferramenta E confirme: "✓ Compromisso criado: Beatriz, amanhã às 15h".
 

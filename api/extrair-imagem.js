@@ -62,7 +62,7 @@ module.exports = async (req, res) => {
             },
             {
               type: 'text',
-              text: `Analise esta imagem e extraia o conteúdo de forma útil para um Segundo Cérebro profissional.
+              text: `Analise esta imagem e extraia o conteúdo de forma útil para um Biblioteca da Pinah profissional.
 
 REGRAS:
 - Se for documento, receita médica, laudo, exame, prescrição, relatório, nota fiscal: transcreva o texto completo com fidelidade

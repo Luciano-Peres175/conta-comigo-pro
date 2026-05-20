@@ -692,7 +692,7 @@
     return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  /* ── Segundo Cerebro — categorias e estado ──────────────────── */
+  /* ── Biblioteca da Pinah — categorias e estado ──────────────────── */
   const CEREBRO_CATEGORIAS = [
     { id: 'casos',      nome: 'Cases Clínicos', icone: 'clipboard-list', cor: '#7FA88E' },
     { id: 'protocolos', nome: 'Protocolos',     icone: 'pin',            cor: '#7B9BC8' },
@@ -818,7 +818,7 @@
         categoria: 'palestras',
         paciente: '',
         tags: ['palestra', 'roteiro', 'experiencia-clinica'],
-        conteudo: 'Roteiro para palestra de 30 minutos em conselho regional. Audiência: fonoaudiólogas iniciantes + pediatras parceiras.\n\nESTRUTURA:\n\n1. ABERTURA (3 min)\n   - Quem sou eu, formação, área de atuação\n   - "50 atendimentos depois, o que mudou na minha cabeça"\n\n2. TOP 3 CAUSAS DE DOR NA MAMA — não é o que eu pensava (8 min)\n   - Pega errada: 60% dos casos (esperado)\n   - Frênulo + posicionamento errado: 25% (era subestimado)\n   - Mama ingurgitada por horários rígidos: 15% (subestimado também)\n   - Cases ilustrativos\n\n3. O QUE NINGUÉM ENSINOU NA FACULDADE (10 min)\n   - Mãe vem mais ansiosa que o bebê — atender a mãe primeiro\n   - 80% dos casos resolve em 2-3 sessões\n   - Trabalhar com dentista pediátrica vira diferencial\n   - WhatsApp pós-consulta sustenta o aprendizado\n   - Vídeo da mãe filmando a próxima mamada vale mais que 1h de orientação\n\n4. O QUE EU MUDARIA SE COMEÇASSE HOJE (5 min)\n   - Investir em consultoria à beira do leito\n   - Construir rede com pediatras (não com mães)\n   - Documentar TODOS os casos (Segundo Cérebro)\n\n5. PERGUNTAS (4 min)\n\nDADOS A INCLUIR: estatísticas dos meus 50 cases, gráficos simples, fotos com autorização.',
+        conteudo: 'Roteiro para palestra de 30 minutos em conselho regional. Audiência: fonoaudiólogas iniciantes + pediatras parceiras.\n\nESTRUTURA:\n\n1. ABERTURA (3 min)\n   - Quem sou eu, formação, área de atuação\n   - "50 atendimentos depois, o que mudou na minha cabeça"\n\n2. TOP 3 CAUSAS DE DOR NA MAMA — não é o que eu pensava (8 min)\n   - Pega errada: 60% dos casos (esperado)\n   - Frênulo + posicionamento errado: 25% (era subestimado)\n   - Mama ingurgitada por horários rígidos: 15% (subestimado também)\n   - Cases ilustrativos\n\n3. O QUE NINGUÉM ENSINOU NA FACULDADE (10 min)\n   - Mãe vem mais ansiosa que o bebê — atender a mãe primeiro\n   - 80% dos casos resolve em 2-3 sessões\n   - Trabalhar com dentista pediátrica vira diferencial\n   - WhatsApp pós-consulta sustenta o aprendizado\n   - Vídeo da mãe filmando a próxima mamada vale mais que 1h de orientação\n\n4. O QUE EU MUDARIA SE COMEÇASSE HOJE (5 min)\n   - Investir em consultoria à beira do leito\n   - Construir rede com pediatras (não com mães)\n   - Documentar TODOS os casos (Biblioteca da Pinah)\n\n5. PERGUNTAS (4 min)\n\nDADOS A INCLUIR: estatísticas dos meus 50 cases, gráficos simples, fotos com autorização.',
         data: d(7), dataModificacao: d(7)
       }
     ];
@@ -932,7 +932,7 @@
     ];
   }
 
-  /* Notas do Segundo Cérebro da Pinah — histórico veterinário real */
+  /* Notas do Biblioteca da Pinah da Pinah — histórico veterinário real */
   function getNotasPinah() {
     const d = (s) => new Date(s).toISOString();
     return [
@@ -983,7 +983,7 @@
      Pacientes identificados por iniciais (privacidade).
   ─────────────────────────────────────────────────────────────────── */
 
-  /* Notas do Segundo Cérebro da Letícia — artigos reais do vault Obsidian */
+  /* Notas do Biblioteca da Pinah da Letícia — artigos reais do vault Obsidian */
   function getNotasFono() {
     const d = (s) => new Date(s).toISOString();
     return [
@@ -1169,7 +1169,7 @@
   /** Apaga TUDO e recarrega TODOS os exemplos demo (notas + receitas + despesas + compromissos). */
   function resetarComDemo() {
     if (!souFamilia()) { toast('Esta opção é exclusiva para a Família.', 'error'); return; }
-    if (!confirm('Isso vai APAGAR TODOS os dados atuais e carregar apenas os exemplos demo:\n\n• 10 notas no Segundo Cérebro\n• 10 receitas de exemplo\n• 3 despesas variáveis\n• 6 compromissos (passados, hoje e futuros)\n\nContinuar?')) return;
+    if (!confirm('Isso vai APAGAR TODOS os dados atuais e carregar apenas os exemplos demo:\n\n• 10 notas no Biblioteca da Pinah\n• 10 receitas de exemplo\n• 3 despesas variáveis\n• 6 compromissos (passados, hoje e futuros)\n\nContinuar?')) return;
     setNotas(getNotasDemo());
     localStorage.setItem(oneU('receitas'),     JSON.stringify(getReceitasDemo()));
     localStorage.setItem(oneU('despesas'),     JSON.stringify(getDespesasDemo()));
@@ -1185,7 +1185,7 @@
 
   /** Apaga TUDO inclusive despesas fixas — deixa zerado de verdade. */
   function limparTudo() {
-    if (!confirm('Isso vai APAGAR TODOS os dados do app:\n\n• Todas as notas do Segundo Cérebro\n• Todas as receitas\n• Todas as despesas\n• Todas as despesas fixas\n• Todos os compromissos\n\nApenas as configurações (forma de pagamento, % imposto) serão mantidas.\n\nEsta ação NÃO PODE ser desfeita. Continuar?')) return;
+    if (!confirm('Isso vai APAGAR TODOS os dados do app:\n\n• Todas as notas do Biblioteca da Pinah\n• Todas as receitas\n• Todas as despesas\n• Todas as despesas fixas\n• Todos os compromissos\n\nApenas as configurações (forma de pagamento, % imposto) serão mantidas.\n\nEsta ação NÃO PODE ser desfeita. Continuar?')) return;
     if (!confirm('Tem certeza? Esta é sua última chance.')) return;
     setNotas([]);
     localStorage.setItem(oneU('receitas'),     JSON.stringify([]));
@@ -2308,7 +2308,7 @@
     if (calDiaSel && typeof renderListaDiaAgenda === 'function') renderListaDiaAgenda(calDiaSel);
     atualizarHome();
   }
-  /* ── Segundo Cerebro — Modal "Perguntar a IA" ────────────────── */
+  /* ── Biblioteca da Pinah — Modal "Perguntar a IA" ────────────────── */
   // 50/dia durante fase de teste interno (Luciano + Le + Barbara).
   // Para beta amplo (10+ usuarias), reduzir para 5-10.
   const IA_LIMITE_DIA = 50;
@@ -2667,7 +2667,7 @@
     });
   }
 
-  /* ── Segundo Cerebro — Modal Nova/Editar Nota ────────────────── */
+  /* ── Biblioteca da Pinah — Modal Nova/Editar Nota ────────────────── */
   function abrirModalNota(id) {
     const m = document.getElementById('modal-nota');
     if (!m) return;
@@ -2782,7 +2782,7 @@
     );
   }
 
-  /* ── Segundo Cerebro — Render principal ──────────────────────── */
+  /* ── Biblioteca da Pinah — Render principal ──────────────────────── */
   function setBuscaCerebro(v) {
     cerebroFiltroBusca = String(v || '').toLowerCase().trim();
     renderCerebro();
@@ -3687,8 +3687,8 @@ function pinahFeedbackTool(nome, input, ctx) {
   switch (nome) {
     case 'criar_nota':
       var titN = input.titulo || 'Nota';
-      visivel = '✅ Salvei a nota **' + titN + '** no Segundo Cérebro.';
-      memoria = 'Salvei a nota "' + titN + '" no Segundo Cérebro.' + (input.categoria ? ' Categoria: ' + input.categoria + '.' : '');
+      visivel = '✅ Salvei a nota **' + titN + '** no Biblioteca da Pinah.';
+      memoria = 'Salvei a nota "' + titN + '" no Biblioteca da Pinah.' + (input.categoria ? ' Categoria: ' + input.categoria + '.' : '');
       break;
     case 'criar_compromisso':
       var partes = [];
@@ -3747,7 +3747,7 @@ function pinahCriarNota(input) {
   lista.push(novo);
   store.set(lista);
   supaUpsert('notas_cerebro', novo);
-  // Re-render do Segundo Cérebro se estiver visível
+  // Re-render do Biblioteca da Pinah se estiver visível
   if (typeof renderCerebro === 'function') renderCerebro();
   if (typeof renderNotasCerebro === 'function') renderNotasCerebro();
 }
@@ -4306,7 +4306,7 @@ async function pinahEnviar(texto, arquivo) {
   if (arquivo) {
     if (arquivo.tipo === 'texto') {
       // DOCX extraído como texto
-      apiContent = (texto || 'Analise este documento e salve como nota no Segundo Cérebro.') +
+      apiContent = (texto || 'Analise este documento e salve como nota no Biblioteca da Pinah.') +
         '\n\n[Arquivo: ' + arquivo.nome + ']\n\n' + arquivo.textoExtraido;
     } else {
       var fileBlock = arquivo.tipo === 'pdf'
@@ -4314,7 +4314,7 @@ async function pinahEnviar(texto, arquivo) {
         : { type: 'image',    source: { type: 'base64', media_type: arquivo.mimeType,   data: arquivo.base64 } };
       apiContent = [
         fileBlock,
-        { type: 'text', text: texto || 'Analise este arquivo e salve o conteúdo como nota no Segundo Cérebro.' }
+        { type: 'text', text: texto || 'Analise este arquivo e salve o conteúdo como nota no Biblioteca da Pinah.' }
       ];
     }
   } else {
@@ -4633,7 +4633,7 @@ async function oneEnviar() {
     var prefixoLote = '[Arquivo ' + (i + 1) + ' de ' + arquivos.length + '] ';
     var textoArquivo = texto
       ? (prefixoLote + texto)
-      : (prefixoLote + 'Salva este documento no Segundo Cérebro.');
+      : (prefixoLote + 'Salva este documento no Biblioteca da Pinah.');
     await pinahEnviar(textoArquivo, arquivos[i]);
   }
 }
@@ -7901,7 +7901,7 @@ function oneToast(msg) {
     localStorage.setItem(oneU('one_init'), '1');
   }
 
-  /* ── IMPORTAR — Segundo Cérebro ─────────────────────────────── */
+  /* ── IMPORTAR — Biblioteca da Pinah ─────────────────────────────── */
 
   var _impTabAtiva = 'url';
   var _impCSVTransacoes = [];
