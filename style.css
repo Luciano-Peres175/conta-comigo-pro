@@ -7424,27 +7424,9 @@ button.one-fin-card:hover {
     box-sizing: border-box !important;
   }
 
-  /* Card de perfil na tela base: bloco único consolidado.
-     186x56, vazio, fundo pérola, raio 14, linha verde simples
-     idêntica ao card "Conta Comigo". */
+  /* Card de perfil na tela base: oculto. */
   body:has(#screen-one.active) .sidebar-profile {
-    display: block !important;
-    flex: 0 0 56px !important;
-    width: 186px !important;
-    min-width: 186px !important;
-    max-width: 186px !important;
-    height: 56px !important;
-    min-height: 56px !important;
-    max-height: 56px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-    align-self: flex-start !important;
-    border: none !important;
-    border-radius: 14px !important;
-    background: #FBF8F2 !important;
-    box-shadow: 0 0 0 2px rgba(92,136,112,0.92) !important;
-    overflow: hidden !important;
+    display: none !important;
   }
   body:has(#screen-one.active) .sidebar-profile .avatar,
   body:has(#screen-one.active) .sidebar-profile .profile-info {
