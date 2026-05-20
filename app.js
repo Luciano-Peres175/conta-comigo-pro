@@ -4851,7 +4851,9 @@ function swapToCenter(target) {
       if (typeof oneAgRenderTopCards === 'function') oneAgRenderTopCards();
     },
     tarefas:    function() { if (typeof renderOneTarefasPainel   === 'function') renderOneTarefasPainel(); },
-    financeiro: function() { if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel(); }
+    financeiro: function() { if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel(); },
+    biblioteca: function() { if (typeof renderCerebro === 'function') renderCerebro(); },
+    fiscal:     function() { if (typeof renderHistorico === 'function') renderHistorico(); }
   };
 
   var renderFn = renderers[target];

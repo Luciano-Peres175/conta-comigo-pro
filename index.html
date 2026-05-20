@@ -910,6 +910,62 @@
 
       </div>
 
+      <!-- Variante Biblioteca da Pinah — aparece via swapToCenter('biblioteca') -->
+      <div class="one-desktop-biblioteca" data-panel="biblioteca" hidden>
+        <div class="screen-header">
+          <h2>Biblioteca da Pinah <i data-lucide="brain"></i></h2>
+          <p>Sua enciclopédia profissional pessoal</p>
+        </div>
+        <div class="cerebro-search">
+          <input type="text" id="cerebro-busca" class="field-input" placeholder="Buscar em suas anotações..." style="flex:1" oninput="setBuscaCerebro(this.value)">
+          <button class="btn-ia" id="btn-ia-sc" style="white-space:nowrap" onclick="abrirModalIA()">
+            <i data-lucide="sparkles"></i>
+            <span>Perguntar à IA</span>
+            <span class="btn-ia-contador" id="btn-ia-contador">50/50</span>
+          </button>
+          <button class="btn-secondary" style="white-space:nowrap;display:flex;align-items:center;gap:6px" onclick="importarAbrir()">📥 Importar</button>
+          <button class="btn-primary"   style="white-space:nowrap" onclick="abrirModalNota()">+ Nova Nota</button>
+        </div>
+        <div class="cerebro-categorias" id="cerebro-categorias-grid"></div>
+        <div id="cerebro-filtros-ativos" style="display:none;margin:10px 0;font-size:12px;color:var(--texto-muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap"></div>
+        <div id="cerebro-conteudo"></div>
+      </div>
+
+      <!-- Variante Fiscal — aparece via swapToCenter('fiscal') -->
+      <div class="one-desktop-fiscal" data-panel="fiscal" hidden>
+        <div class="screen-header">
+          <h2>Histórico</h2>
+          <p>Todos os seus lançamentos</p>
+        </div>
+        <div class="filtros-bar">
+          <button class="filtro-btn ativo" id="filt-todos"     onclick="filtrarHist('todos')">Todos</button>
+          <button class="filtro-btn"       id="filt-receitas"  onclick="filtrarHist('receitas')">Receitas</button>
+          <button class="filtro-btn"       id="filt-despesas"  onclick="filtrarHist('despesas')">Despesas</button>
+          <select class="filtro-mes" id="hist-mes-sel" onchange="renderHistorico()"></select>
+          <button class="btn-pdf-relatorio" onclick="gerarRelatorioPDF()" title="Gerar relatório em PDF para enviar ao contador">
+            <i data-lucide="file-down"></i>
+            <span>Relatório PDF</span>
+          </button>
+        </div>
+        <div class="list-card" style="flex:1">
+          <div id="lista-historico"></div>
+          <div class="hist-totais">
+            <div class="hist-total-item">
+              <div class="hist-total-label">Receitas</div>
+              <div class="hist-total-val val-receita" id="hist-total-rec">R$ 0,00</div>
+            </div>
+            <div class="hist-total-item">
+              <div class="hist-total-label">Despesas</div>
+              <div class="hist-total-val val-despesa" id="hist-total-desp">R$ 0,00</div>
+            </div>
+            <div class="hist-total-item">
+              <div class="hist-total-label">Saldo</div>
+              <div class="hist-total-val" id="hist-total-saldo">R$ 0,00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       </div><!-- /one-desktop-main -->
 
       <!-- Coluna direita: cards flutuantes -->
@@ -1063,10 +1119,10 @@
         <div class="nav-separator"></div>
         <div class="nav-label">Acervo e saída</div>
 
-        <button class="nav-item" id="nav-cerebro" onclick="go('cerebro')">
+        <button class="nav-item" id="nav-cerebro" onclick="goOnePanel('biblioteca')">
           <span class="nav-icon"><img src="assets/icons/icon-biblioteca.png" alt="Biblioteca da Pinah" style="width:48px;height:48px;border-radius:12px;object-fit:contain;display:block"></span> Biblioteca da Pinah
         </button>
-        <button class="nav-item" id="nav-fiscal" onclick="go('historico')" title="Relatório fiscal pro contador">
+        <button class="nav-item" id="nav-fiscal" onclick="goOnePanel('fiscal')" title="Relatório fiscal pro contador">
           <span class="nav-icon"><img src="assets/icons/icon-fiscal.png" alt="Fiscal" style="width:48px;height:48px;border-radius:12px;object-fit:contain;display:block"></span> Fiscal
         </button>
       </nav>
@@ -1358,100 +1414,11 @@
     </section>
 
     <!-- HISTÓRICO -->
-    <section class="screen" id="screen-historico">
-      <button class="btn-inicio" onclick="go('home')">
-        <div class="btn-inicio-icon">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <path d="M4 14L14 5L24 14V25H18V18H10V25H4V14Z" stroke="#7E57C2" stroke-width="2" stroke-linejoin="round" fill="rgba(126,87,194,0.12)"/>
-          </svg>
-        </div>
-        <div class="btn-inicio-texto">
-          <span class="btn-inicio-titulo">Início</span>
-          <span class="btn-inicio-sub">Ir para a tela inicial</span>
-        </div>
-        <div class="btn-inicio-arrow">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M6.5 4.5L12 9L6.5 13.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-      </button>
-      <div class="screen-header">
-        <h2>Histórico</h2>
-        <p>Todos os seus lançamentos</p>
-      </div>
-      <div class="filtros-bar">
-        <button class="filtro-btn ativo" id="filt-todos"     onclick="filtrarHist('todos')">Todos</button>
-        <button class="filtro-btn"       id="filt-receitas"  onclick="filtrarHist('receitas')">Receitas</button>
-        <button class="filtro-btn"       id="filt-despesas"  onclick="filtrarHist('despesas')">Despesas</button>
-        <select class="filtro-mes" id="hist-mes-sel" onchange="renderHistorico()"></select>
-        <button class="btn-pdf-relatorio" onclick="gerarRelatorioPDF()" title="Gerar relatório em PDF para enviar ao contador">
-          <i data-lucide="file-down"></i>
-          <span>Relatório PDF</span>
-        </button>
-      </div>
-      <div class="list-card" style="flex:1">
-        <div id="lista-historico"></div>
-        <div class="hist-totais">
-          <div class="hist-total-item">
-            <div class="hist-total-label">Receitas</div>
-            <div class="hist-total-val val-receita" id="hist-total-rec">R$ 0,00</div>
-          </div>
-          <div class="hist-total-item">
-            <div class="hist-total-label">Despesas</div>
-            <div class="hist-total-val val-despesa" id="hist-total-desp">R$ 0,00</div>
-          </div>
-          <div class="hist-total-item">
-            <div class="hist-total-label">Saldo</div>
-            <div class="hist-total-val" id="hist-total-saldo">R$ 0,00</div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <!-- screen-historico esvaziado em 20/05/2026 — conteúdo virou painel data-panel="fiscal" dentro de screen-one. Section mantida pra compatibilidade caso JS antigo referencie. -->
+    <section class="screen" id="screen-historico"></section>
 
-    <!-- SEGUNDO CÉREBRO -->
-    <section class="screen" id="screen-cerebro">
-      <button class="btn-inicio" onclick="go('home')">
-        <div class="btn-inicio-icon">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <path d="M4 14L14 5L24 14V25H18V18H10V25H4V14Z" stroke="#7E57C2" stroke-width="2" stroke-linejoin="round" fill="rgba(126,87,194,0.12)"/>
-          </svg>
-        </div>
-        <div class="btn-inicio-texto">
-          <span class="btn-inicio-titulo">Início</span>
-          <span class="btn-inicio-sub">Ir para a tela inicial</span>
-        </div>
-        <div class="btn-inicio-arrow">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M6.5 4.5L12 9L6.5 13.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-      </button>
-      <div class="screen-header">
-        <h2>Biblioteca da Pinah <i data-lucide="brain"></i></h2>
-        <p>Sua enciclopédia profissional pessoal</p>
-      </div>
-
-      <!-- Busca + acoes -->
-      <div class="cerebro-search">
-        <input type="text" id="cerebro-busca" class="field-input" placeholder="Buscar em suas anotações..." style="flex:1" oninput="setBuscaCerebro(this.value)">
-        <button class="btn-ia" id="btn-ia-sc" style="white-space:nowrap" onclick="abrirModalIA()">
-          <i data-lucide="sparkles"></i>
-          <span>Perguntar à IA</span>
-          <span class="btn-ia-contador" id="btn-ia-contador">50/50</span>
-        </button>
-        <button class="btn-secondary" style="white-space:nowrap;display:flex;align-items:center;gap:6px" onclick="importarAbrir()">📥 Importar</button>
-        <button class="btn-primary"   style="white-space:nowrap" onclick="abrirModalNota()">+ Nova Nota</button>
-      </div>
-
-      <!-- Categorias (clicaveis, com contagem dinamica) -->
-      <div class="cerebro-categorias" id="cerebro-categorias-grid"></div>
-
-      <!-- Filtro ativo (aparece quando ha filtro de categoria ou busca) -->
-      <div id="cerebro-filtros-ativos" style="display:none;margin:10px 0;font-size:12px;color:var(--texto-muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap"></div>
-
-      <!-- Lista de notas (dinamica — substitui empty state quando ha notas) -->
-      <div id="cerebro-conteudo"></div>
-    </section>
+    <!-- screen-cerebro esvaziado em 20/05/2026 — conteúdo virou painel data-panel="biblioteca" dentro de screen-one. Section mantida pra compatibilidade caso JS antigo referencie. -->
+    <section class="screen" id="screen-cerebro"></section>
 
     <!-- ══ TELA PINAH ══════════════════════════════════════════════ -->
     <section class="screen" id="screen-pinah">
