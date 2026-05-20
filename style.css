@@ -7426,6 +7426,17 @@ button.one-fin-card:hover {
     box-sizing: border-box !important;
   }
 
+  /* Card de perfil na tela base: visual idêntico ao card "Conta Comigo"
+     (fundo pérola, raio 14, contorno duplo verde). Só screen-one. */
+  body:has(#screen-one.active) .sidebar-profile {
+    background: #FBF8F2 !important;
+    border-radius: 14px !important;
+    box-shadow:
+      0 0 0 2px rgba(92,136,112,0.55),
+      0 0 0 6px rgba(92,136,112,0.15),
+      0 4px 12px rgba(0,0,0,.05) !important;
+  }
+
   /* Layout: reduz padding-top do main pra cards se alinharem */
   body:has(#screen-one.active) .one-desktop-layout {
     padding-top: 8px !important;
