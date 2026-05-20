@@ -238,6 +238,13 @@
       try { await supaSync(); } catch(e) { console.warn('[esconderTelaAuth] supaSync falhou:', e); }
     }
 
+    /* Migração 1x: sobe contas locais órfãs pro Supabase (a tabela contas
+       acabou de existir no servidor). Sem isso, contas criadas antes desta
+       versão ficariam só no localStorage e nunca apareceriam em outros devices. */
+    if (typeof _oneFinMigrarContasParaSupa === 'function') {
+      try { await _oneFinMigrarContasParaSupa(); } catch(e) { console.warn('[esconderTelaAuth] migração contas falhou:', e); }
+    }
+
     /* Multi-tenant: agora que sabemos quem é o user, inicializa demo (se primeira vez)
        e re-renderiza tudo lendo das chaves prefixadas. */
     if (typeof maybeInit === 'function') maybeInit();
@@ -3771,7 +3778,8 @@ const SUPA_TABLES = {
   despesas_fixas: 'despesas_fixas',
   compromissos:   'compromissos',
   tarefas:        'tarefas',
-  notas_cerebro:  'notas'
+  notas_cerebro:  'notas',
+  contas:         'contas'
 };
 
 /* Aliases de localKey: o app usa camelCase no localStorage (despesasFixas,
@@ -3849,6 +3857,21 @@ function _supaMapToRow(localKey, item, userId) {
         categoria: item.categoria || 'Outros',
         valor:     Number(item.valor) || 0
       });
+    case 'contas':
+      return Object.assign(base, {
+        id:                     item.id,
+        nome:                   item.nome || '',
+        tipo:                   item.tipo || 'banco',
+        icone:                  item.icone || '',
+        cor:                    item.cor || '',
+        saldo_inicial:          Number(item.saldoInicial) || 0,
+        dia_fechamento:         item.diaFechamento || null,
+        dia_vencimento:         item.diaVencimento || null,
+        saldo:                  Number(item.saldo) || 0,
+        faturas_pagas:          Array.isArray(item.faturasPagas) ? item.faturasPagas : [],
+        faturas_pagas_detalhe: (item.faturasPagasDetalhe && typeof item.faturasPagasDetalhe === 'object') ? item.faturasPagasDetalhe : {},
+        meses_fechados:         Array.isArray(item.mesesFechados) ? item.mesesFechados : []
+      });
     default:
       return Object.assign(base, item);
   }
@@ -3920,6 +3943,22 @@ function _supaMapFromRow(localKey, row) {
         data:            row.created_at || '',
         criadoEm:        row.created_at || '',
         dataModificacao: row.updated_at || ''
+      };
+    case 'contas':
+      return {
+        id:                 row.id,
+        nome:               row.nome || '',
+        tipo:               row.tipo || 'banco',
+        icone:              row.icone || '',
+        cor:                row.cor || '',
+        saldoInicial:       Number(row.saldo_inicial) || 0,
+        diaFechamento:      row.dia_fechamento || null,
+        diaVencimento:      row.dia_vencimento || null,
+        saldo:              Number(row.saldo) || 0,
+        faturasPagas:       Array.isArray(row.faturas_pagas) ? row.faturas_pagas : [],
+        faturasPagasDetalhe: (row.faturas_pagas_detalhe && typeof row.faturas_pagas_detalhe === 'object') ? row.faturas_pagas_detalhe : {},
+        mesesFechados:      Array.isArray(row.meses_fechados) ? row.meses_fechados : [],
+        criadoEm:           row.created_at || ''
       };
     default:
       return row;
@@ -4044,6 +4083,45 @@ async function supaUpsert(localKey, item) {
   }
 }
 window.supaUpsert = supaUpsert;
+
+/* Migração 1x das contas locais órfãs pro Supabase.
+   A tabela `contas` só passou a existir no servidor em 20/05/2026. Antes disso,
+   `supaUpsert('contas')` caía no branch silencioso "sem tabela alvo" — contas
+   ficavam só no localStorage da máquina onde foram cadastradas, sem cross-device.
+   Esta função roda 1x por user (gravada flag no localStorage). Lê todas as
+   contas locais e faz upsert no servidor. Itens duplicados (mesma id) são
+   normalizados via upsert onConflict='id'. */
+async function _oneFinMigrarContasParaSupa() {
+  if (!window.supa || !window.authUser) return;
+  var uid = window.authUser.id;
+  var flagKey = 'u_' + uid + '_contas_migrated_v1';
+  if (localStorage.getItem(flagKey) === '1') return; /* já rodou */
+  var contas = [];
+  try { contas = JSON.parse(localStorage.getItem('u_' + uid + '_contas') || '[]'); } catch(e) {}
+  if (!contas.length) {
+    localStorage.setItem(flagKey, '1'); /* sem contas locais, nada a migrar — marca como feito */
+    return;
+  }
+  console.log('[migracao-contas] Subindo', contas.length, 'contas locais pro Supabase…');
+  var ok = 0, falhas = 0;
+  for (var i = 0; i < contas.length; i++) {
+    try {
+      await supaUpsert('contas', contas[i]);
+      ok++;
+    } catch (e) {
+      console.error('[migracao-contas] Falha em', contas[i].nome, e);
+      falhas++;
+    }
+  }
+  console.log('[migracao-contas] OK:', ok, '· Falhas:', falhas);
+  if (falhas === 0) {
+    localStorage.setItem(flagKey, '1');
+    if (typeof oneToast === 'function') oneToast('✓ ' + ok + ' conta(s) sincronizada(s) no servidor');
+  } else {
+    if (typeof oneToast === 'function') oneToast('⚠ Migração de contas: ' + ok + ' OK, ' + falhas + ' falharam');
+  }
+}
+window._oneFinMigrarContasParaSupa = _oneFinMigrarContasParaSupa;
 
 /* Helper: detecta erro de rede (DNS, offline, fetch falhou) vs erro de servidor.
    Usado por supaUpsert/supaDelete pra disparar banner persistente quando a falha
