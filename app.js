@@ -11881,14 +11881,15 @@ window.oneAgRenderResumoMes = oneAgRenderResumoMes;
    LAYOUT v3 — atualiza data/hora no card "Conta Comigo" do header
    ════════════════════════════════════════════════════════════════ */
 function oneDeskAtualizarMeta() {
-  var el = document.getElementById('one-desk-card-conta-meta');
-  if (!el) return;
+  var els = document.querySelectorAll('.one-desk-card-conta-meta');
+  if (!els.length) return;
   var agora = new Date();
   var dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   var dia = dias[agora.getDay()];
   var dataF = String(agora.getDate()).padStart(2,'0') + '/' + String(agora.getMonth()+1).padStart(2,'0');
   var hora = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
-  el.textContent = dia + ' ' + dataF + ' · ' + hora;
+  var txt = dia + ' ' + dataF + ' · ' + hora;
+  els.forEach(function(el){ el.textContent = txt; });
 }
 window.oneDeskAtualizarMeta = oneDeskAtualizarMeta;
 // Roda a cada minuto pra manter a hora atualizada

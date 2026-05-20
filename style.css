@@ -7424,22 +7424,9 @@ button.one-fin-card:hover {
     box-sizing: border-box !important;
   }
 
-  /* Card de perfil na tela base: invisível, mas preservando o espaço
-     pra não subir o menu. */
+  /* Card de perfil na tela base: removido (substituído por clone do Conta Comigo). */
   body:has(#screen-one.active) .sidebar-profile {
-    visibility: hidden !important;
-    flex: 0 0 56px !important;
-    width: 186px !important;
-    min-width: 186px !important;
-    max-width: 186px !important;
-    height: 56px !important;
-    min-height: 56px !important;
-    max-height: 56px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
+    display: none !important;
   }
   body:has(#screen-one.active) .sidebar-profile .avatar,
   body:has(#screen-one.active) .sidebar-profile .profile-info {
