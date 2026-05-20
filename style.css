@@ -2705,7 +2705,7 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   body:has(#screen-historico.active) .sidebar-nav {
     flex: 1 !important;
     padding: 10px 16px 6px !important;
-    display: flex !important;
+    display: none !important;
     flex-direction: column !important;
     gap: 10px !important;
     overflow-y: auto !important;
@@ -2715,9 +2715,9 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   body:has(#screen-one.active) .nav-icon img,
   body:has(#screen-cerebro.active) .nav-icon img,
   body:has(#screen-historico.active) .nav-icon img {
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 9px !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 12px !important;
   }
   body:has(#screen-one.active) .nav-item,
   body:has(#screen-cerebro.active) .nav-item,
@@ -7460,9 +7460,9 @@ button.one-fin-card:hover {
   body:has(#screen-one.active) .nav-icon img,
   body:has(#screen-cerebro.active) .nav-icon img,
   body:has(#screen-historico.active) .nav-icon img {
-    width: 32px !important;
-    height: 32px !important;
-    border-radius: 9px !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 12px !important;
   }
 }
 
