@@ -2669,7 +2669,6 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   body:has(#screen-one.active) .sidebar-logo,
   body:has(#screen-cerebro.active) .sidebar-logo,
   body:has(#screen-historico.active) .sidebar-logo { display: none !important; }
-  body:has(#screen-one.active) .sidebar-profile,
   body:has(#screen-cerebro.active) .sidebar-profile,
   body:has(#screen-historico.active) .sidebar-profile {
     flex-shrink: 0 !important;
@@ -7413,7 +7412,6 @@ button.one-fin-card:hover {
   .one-desk-card-conta-btn-sair:hover { background: rgba(192,57,43,0.10); }
 
   /* Card identidade Letícia (sidebar esquerda) — altura travada em 56px, largura preenche a sidebar, contorno visivel inteiro */
-  body:has(#screen-one.active) .sidebar-profile,
   body:has(#screen-cerebro.active) .sidebar-profile,
   body:has(#screen-historico.active) .sidebar-profile {
     width: auto !important;
@@ -7426,15 +7424,27 @@ button.one-fin-card:hover {
     box-sizing: border-box !important;
   }
 
-  /* Card de perfil na tela base: preenche a largura útil do menu (206),
-     altura 56, vazio, visual igual ao card "Conta Comigo"
-     (fundo pérola, raio 14, linha verde simples). Só screen-one. */
+  /* Card de perfil na tela base: bloco único consolidado.
+     186x56, vazio, fundo pérola, raio 14, linha verde simples
+     idêntica ao card "Conta Comigo". */
   body:has(#screen-one.active) .sidebar-profile {
-    width: auto !important;
-    align-self: stretch !important;
-    background: #FBF8F2 !important;
+    display: block !important;
+    flex: 0 0 56px !important;
+    width: 186px !important;
+    min-width: 186px !important;
+    max-width: 186px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    align-self: flex-start !important;
+    border: none !important;
     border-radius: 14px !important;
+    background: #FBF8F2 !important;
     box-shadow: 0 0 0 2px rgba(92,136,112,0.92) !important;
+    overflow: hidden !important;
   }
   body:has(#screen-one.active) .sidebar-profile .avatar,
   body:has(#screen-one.active) .sidebar-profile .profile-info {
