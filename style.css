@@ -8610,3 +8610,21 @@ button.one-fin-card:hover {
     display: none !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   FIXES v3.6: mesa do menu (sidebar esquerda) com altura cravada
+   em 286px — mesma altura da área de trabalho (.one-desktop-chat).
+   Topo já está alinhado com topo da chat (via card Conta Comigo +
+   gap 22). Base passa a coincidir com a base da chat.
+   Conteúdo interno cortado por overflow hidden, será reajustado.
+   Aprovado pelo Mentor em 21/05/2026.
+   ════════════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+  body:has(#screen-one.active) .sidebar-mesa-aux {
+    flex: 0 0 286px !important;
+    height: 286px !important;
+    min-height: 286px !important;
+    max-height: 286px !important;
+    overflow: hidden !important;
+  }
+}
