@@ -8626,13 +8626,11 @@ button.one-fin-card:hover {
     padding-top: 8px !important;
   }
   body:has(#screen-one.active) .sidebar-mesa-aux {
-    flex: 0 0 286px !important;
-    height: 286px !important;
-    min-height: 286px !important;
-    max-height: 286px !important;
+    /* Altura controlada dinamicamente via JS (syncMesaHeight no index.html) —
+       sincroniza com altura real do .one-desktop-chat em cada resize.
+       O flex: 0 0 auto força a mesa a respeitar a altura inline setada pelo JS. */
+    flex: 0 0 auto !important;
     overflow: hidden !important;
-    /* DEBUG temporário — fundo vermelho transparente pra visualizar onde a mesa está */
-    background: rgba(255,0,0,0.3) !important;
   }
   /* Nav dentro da mesa: sem scroll auto, conteúdo do topo pra baixo, excedente cortado */
   body:has(#screen-one.active) .sidebar-nav {

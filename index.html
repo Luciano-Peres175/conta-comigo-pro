@@ -2410,5 +2410,28 @@
     </div>
   </div>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SYNC: altura da mesa do menu (sidebar esquerda) = altura da
+     área de trabalho central (.one-desktop-chat). Roda no carregamento,
+     em cada resize e em cada troca de painel. Aprovado em 21/05/2026.
+═══════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+  function syncMesaHeight(){
+    if (window.innerWidth < 900) return;
+    var chat = document.querySelector('.one-desktop-chat');
+    var mesa = document.querySelector('.sidebar-mesa-aux');
+    if (!chat || !mesa) return;
+    var h = chat.getBoundingClientRect().height;
+    if (h > 0) mesa.style.height = Math.round(h) + 'px';
+  }
+  window.addEventListener('load', syncMesaHeight);
+  window.addEventListener('resize', syncMesaHeight);
+  // Roda de novo após pequeno delay pra pegar layouts assíncronos
+  setTimeout(syncMesaHeight, 200);
+  setTimeout(syncMesaHeight, 800);
+})();
+</script>
 </body>
 </html>
