@@ -8604,6 +8604,11 @@ button.one-fin-card:hover {
   body:has(#screen-one.active) .one-desktop-sidebar {
     gap: 10px !important;
   }
+  /* Margin extra na Agenda pra topo dela alinhar com topo da chat —
+     compensa a diferença entre o gap da sidebar (10px) e o margin-bottom da frase (22px). */
+  body:has(#screen-one.active) .one-desk-card-agenda {
+    margin-top: 12px !important;
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════
