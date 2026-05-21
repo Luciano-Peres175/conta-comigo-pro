@@ -8631,6 +8631,8 @@ button.one-fin-card:hover {
     min-height: 286px !important;
     max-height: 286px !important;
     overflow: hidden !important;
+    /* DEBUG temporário — fundo vermelho transparente pra visualizar onde a mesa está */
+    background: rgba(255,0,0,0.3) !important;
   }
   /* Nav dentro da mesa: sem scroll auto, conteúdo do topo pra baixo, excedente cortado */
   body:has(#screen-one.active) .sidebar-nav {
