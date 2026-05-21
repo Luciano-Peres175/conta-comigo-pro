@@ -8575,17 +8575,20 @@ button.one-fin-card:hover {
 }
 
 /* ════════════════════════════════════════════════════════════════
-   FIXES v3.4: cards laterais (Agenda/Tarefas/Financeiro) — alturas
-   iguais, divididas dentro do vertical disponível abaixo do Conta
-   Comigo. Base do Financeiro alinha com base da área de trabalho.
+   FIXES v3.4: coluna direita vira CSS Grid pra dividir os 3 cards
+   (Agenda/Tarefas/Financeiro) em altura idêntica dentro do vertical
+   disponível. Base do Financeiro alinha com base da área de trabalho.
+   Conta Comigo no topo mantém altura natural (56px).
    Aprovado pelo Mentor em 21/05/2026.
    ════════════════════════════════════════════════════════════════ */
 @media (min-width: 900px) {
+  body:has(#screen-one.active) .one-desktop-sidebar {
+    display: grid !important;
+    grid-template-rows: auto 1fr 1fr 1fr !important;
+  }
   body:has(#screen-one.active) .one-desk-card-agenda,
   body:has(#screen-one.active) .one-desk-card-tarefas,
   body:has(#screen-one.active) .one-desk-card-financeiro {
-    flex: 1 1 0 !important;
-    height: 0 !important;
     min-height: 0 !important;
     overflow: hidden !important;
   }
