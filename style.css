@@ -8591,8 +8591,11 @@ button.one-fin-card:hover {
     max-height: 80px !important;
     overflow: hidden !important;
   }
-  /* Empurra o Financeiro pra base da coluna direita — alinha com base da área de trabalho */
+  /* Empurra o Financeiro pra base da área de trabalho (não da sidebar inteira).
+     margin-top: auto consome sobrante / margin-bottom: 115px compensa a diferença
+     entre base da sidebar e base da área de trabalho (.one-desktop-chat). */
   body:has(#screen-one.active) .one-desk-card-financeiro {
     margin-top: auto !important;
+    margin-bottom: 115px !important;
   }
 }
