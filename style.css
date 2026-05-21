@@ -8599,3 +8599,14 @@ button.one-fin-card:hover {
     margin-bottom: 115px !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   FIXES v3.5: esconder o footer da mesa do menu (Configurações,
+   Nossa história, Resetar demo, Sair) na tela base. Vão virar um
+   card novo separado no futuro. Aprovado pelo Mentor em 21/05/2026.
+   ════════════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+  body:has(#screen-one.active) .sidebar-footer {
+    display: none !important;
+  }
+}
