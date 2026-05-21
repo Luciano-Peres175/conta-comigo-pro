@@ -8782,3 +8782,23 @@ button.one-fin-card:hover {
   display: block;
 }
 
+/* Botão de envio: sem fundo verde, sem sombra, sem glow.
+   O ícone claymorphism do "deslumbrado" tem peso visual próprio
+   e fica limpo sobre o card branco, igual aos botões anexar/microfone.
+   Aprovado em 21/05/2026. */
+.one-send-btn {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.one-send-btn:active {
+  box-shadow: none !important;
+  transform: translateY(1px);
+}
+.one-send-glow {
+  display: none !important;
+}
+.one-desktop-chat .one-send-btn {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
