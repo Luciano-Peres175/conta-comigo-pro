@@ -8585,6 +8585,7 @@ button.one-fin-card:hover {
   body:has(#screen-one.active) .one-desk-card-tarefas,
   body:has(#screen-one.active) .one-desk-card-financeiro {
     flex: 1 1 0 !important;
+    height: 0 !important;
     min-height: 0 !important;
     overflow: hidden !important;
   }
