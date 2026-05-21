@@ -8632,4 +8632,9 @@ button.one-fin-card:hover {
     max-height: 286px !important;
     overflow: hidden !important;
   }
+  /* Nav dentro da mesa: sem scroll auto, conteúdo do topo pra baixo, excedente cortado */
+  body:has(#screen-one.active) .sidebar-nav {
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
+  }
 }
