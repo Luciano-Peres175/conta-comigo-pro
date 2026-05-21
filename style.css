@@ -8609,6 +8609,24 @@ button.one-fin-card:hover {
   body:has(#screen-one.active) .one-desk-card-agenda {
     margin-top: 12px !important;
   }
+
+  /* Header dos cards laterais — ícone do "deslumbrado" + legenda ao lado.
+     Aplicado em 21/05/2026 (conteúdo interno apagado momentaneamente). */
+  body:has(#screen-one.active) .one-desk-card-agenda .one-desk-card-header,
+  body:has(#screen-one.active) .one-desk-card-tarefas .one-desk-card-header,
+  body:has(#screen-one.active) .one-desk-card-financeiro .one-desk-card-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 0 !important;
+  }
+  body:has(#screen-one.active) .one-desk-card-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    object-fit: contain !important;
+    flex-shrink: 0;
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════
