@@ -8638,3 +8638,64 @@ button.one-fin-card:hover {
     overflow-x: hidden !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   Card Configurações — abaixo da mesa do menu, alinhado horizontal
+   com o avatar Pinah da .one-prompt-row-global (86px de altura).
+   Largura 140px (igual à mesa), empurrado pra base via margin-top: auto.
+   margin-bottom: 14px bate com o padding-bottom da .one-prompt-row-global.
+   Aprovado pelo Mentor em 21/05/2026.
+   ════════════════════════════════════════════════════════════════ */
+.sidebar-config-card { display: none; }
+
+@media (min-width: 900px) {
+  body:has(#screen-one.active) .sidebar-config-card {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    width: 140px;
+    height: 86px;
+    box-sizing: border-box;
+    margin: auto auto 14px auto;
+    padding: 10px 14px;
+    background: #FBF8F2;
+    border-radius: 14px;
+    box-shadow:
+      0 0 0 2px rgba(92,136,112,0.55),
+      0 0 0 6px rgba(92,136,112,0.15),
+      0 4px 12px rgba(0,0,0,.05);
+    flex-shrink: 0;
+  }
+  body:has(#screen-one.active) .sidebar-config-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #5C8870;
+    cursor: pointer;
+    transition: background .14s ease, color .14s ease;
+    text-align: left;
+  }
+  body:has(#screen-one.active) .sidebar-config-btn:hover {
+    background: rgba(92,136,112,0.10);
+  }
+  body:has(#screen-one.active) .sidebar-config-btn svg,
+  body:has(#screen-one.active) .sidebar-config-btn i {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+  body:has(#screen-one.active) .sidebar-config-btn-sair {
+    color: #A82424;
+  }
+  body:has(#screen-one.active) .sidebar-config-btn-sair:hover {
+    background: rgba(168,36,36,0.08);
+  }
+}
