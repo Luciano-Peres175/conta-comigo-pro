@@ -7304,14 +7304,17 @@ button.one-fin-card:hover {
     left: 140px !important;
   }
 
-  /* Sidebar direita travada em 140px — simétrica com a esquerda (aprovado 21/05/2026) */
+  /* Sidebar direita travada em 140px — simétrica com a esquerda (aprovado 21/05/2026).
+     padding-bottom 115px compensa o espaço do .one-area-divider + .one-prompt-row-global
+     que ficam DENTRO do main, abaixo da chat — assim a base dos cards alinha com a base
+     da área de trabalho central, não com a base do prompt. */
   body:has(#screen-one.active) .one-desktop-sidebar {
     width: 140px !important;
     min-width: 140px !important;
     max-width: 140px !important;
     flex: 0 0 140px !important;
     gap: 8px !important;
-    padding: 0 12px 0 4px !important;
+    padding: 0 12px 115px 4px !important;
   }
 
   /* Frase central — card estreito alinhado horizontalmente com card identidade + card Conta Comigo */
