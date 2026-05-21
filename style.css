@@ -2712,18 +2712,20 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   }
   /* (Botões do menu voltaram a aparecer — bloco visibility:hidden removido na baseline visual de 20/05/2026.) */
   /* Estilo dock — ícone em cima, legenda pequena embaixo, itens espaçados */
+  /* Imagem dos ícones aumentada de 48 → 56 pra ganhar destaque visual (21/05/2026) */
   body:has(#screen-one.active) .nav-icon img,
   body:has(#screen-cerebro.active) .nav-icon img,
   body:has(#screen-historico.active) .nav-icon img {
-    width: 48px !important;
-    height: 48px !important;
+    width: 56px !important;
+    height: 56px !important;
     border-radius: 12px !important;
   }
+  /* Botões do menu: padding reduzido, sombreado 3D removido, só contorno verde */
   body:has(#screen-one.active) .nav-item,
   body:has(#screen-cerebro.active) .nav-item,
   body:has(#screen-historico.active) .nav-item {
     border-radius: 12px !important;
-    padding: 8px 6px !important;
+    padding: 4px 4px !important;
     margin: 0 !important;
     background: #fff !important;
     color: #6E4F87 !important;
@@ -2733,36 +2735,17 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
     flex-direction: column !important;
     align-items: center !important;
     text-align: center !important;
-    gap: 4px !important;
-    border-top: 1.5px solid rgba(255,255,255,0.92) !important;
-    border-left: 1.5px solid rgba(255,255,255,0.85) !important;
-    border-right: 1.5px solid rgba(110,79,135,0.22) !important;
-    border-bottom: 1.5px solid rgba(110,79,135,0.28) !important;
+    gap: 3px !important;
+    border: none !important;
     transition: transform .15s ease, box-shadow .15s ease !important;
-    box-shadow:
-      0 0 0 1.5px rgba(92,136,112,0.80),
-      0 0 0 4px rgba(92,136,112,0.14),
-      0 4px 12px rgba(0,0,0,.07),
-      0 1px 4px rgba(0,0,0,.05),
-      inset 0 2px 0 rgba(255,255,255,1),
-      inset 0 -2px 0 rgba(0,0,0,.06),
-      inset 1px 0 0 rgba(255,255,255,.75),
-      inset -1px 0 0 rgba(92,136,112,0.08) !important;
+    box-shadow: 0 0 0 1.5px rgba(92,136,112,0.80) !important;
   }
   body:has(#screen-one.active) .nav-item:hover,
   body:has(#screen-cerebro.active) .nav-item:hover,
   body:has(#screen-historico.active) .nav-item:hover {
     color: #5C8870 !important;
     transform: translateY(-1px) !important;
-    box-shadow:
-      0 0 0 1.5px rgba(92,136,112,0.85),
-      0 0 0 5px rgba(92,136,112,0.18),
-      0 6px 16px rgba(0,0,0,.09),
-      0 2px 6px rgba(0,0,0,.06),
-      inset 0 2px 0 rgba(255,255,255,1),
-      inset 0 -2px 0 rgba(0,0,0,.06),
-      inset 1px 0 0 rgba(255,255,255,.75),
-      inset -1px 0 0 rgba(92,136,112,0.10) !important;
+    box-shadow: 0 0 0 1.5px rgba(92,136,112,1.00) !important;
   }
   body:has(#screen-one.active) .nav-item.active,
   body:has(#screen-cerebro.active) .nav-item.active,
