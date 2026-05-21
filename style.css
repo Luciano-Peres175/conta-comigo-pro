@@ -8614,12 +8614,17 @@ button.one-fin-card:hover {
 /* ════════════════════════════════════════════════════════════════
    FIXES v3.6: mesa do menu (sidebar esquerda) com altura cravada
    em 286px — mesma altura da área de trabalho (.one-desktop-chat).
-   Topo já está alinhado com topo da chat (via card Conta Comigo +
-   gap 22). Base passa a coincidir com a base da chat.
+   Padding-top do #sidebar reduzido de 12 pra 8 pra alinhar topo da
+   sidebar esquerda com topo do layout central (que tem padding-top 8).
+   Resultado: card Conta Comigo esquerdo alinha com a frase central
+   e com o card Conta Comigo direito; mesa do menu alinha com a chat.
    Conteúdo interno cortado por overflow hidden, será reajustado.
    Aprovado pelo Mentor em 21/05/2026.
    ════════════════════════════════════════════════════════════════ */
 @media (min-width: 900px) {
+  body:has(#screen-one.active) #sidebar {
+    padding-top: 8px !important;
+  }
   body:has(#screen-one.active) .sidebar-mesa-aux {
     flex: 0 0 286px !important;
     height: 286px !important;
