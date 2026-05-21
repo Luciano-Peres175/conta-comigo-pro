@@ -8732,6 +8732,16 @@ button.one-fin-card:hover {
     height: 14px;
     flex-shrink: 0;
   }
+  /* Imagens claymorphism dos botões Configurações e Sair — maiores que os
+     ícones flat antigos pra ganhar destaque (24px). Aprovado em 21/05/2026.
+     Regra simplificada (sem body:has) pra ser robusta em qualquer screen ativa. */
+  .sidebar-config-btn img.sidebar-config-btn-icon {
+    width: 24px !important;
+    height: 24px !important;
+    object-fit: contain !important;
+    flex-shrink: 0 !important;
+    display: block !important;
+  }
   body:has(#screen-one.active) .sidebar-config-btn-sair,
   body:has(#screen-cerebro.active) .sidebar-config-btn-sair,
   body:has(#screen-historico.active) .sidebar-config-btn-sair {
