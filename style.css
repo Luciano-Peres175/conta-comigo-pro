@@ -8762,19 +8762,20 @@ button.one-fin-card:hover {
    Ícones claymorphism dos botões do prompt da Pinah
    (anexar, microfone, enviar) — substituem os SVGs flat antigos.
    Mesma família visual dos ícones do menu lateral (do "deslumbrado").
-   Aprovado em 21/05/2026.
+   !important pra sobrescrever regra antiga `.one-prompt-btn img`
+   (linha 2367) que travava em 22px. Aprovado em 21/05/2026.
    ════════════════════════════════════════════════════════════════ */
-.one-prompt-btn-icon {
-  width: 28px;
-  height: 28px;
+.one-prompt-btn img.one-prompt-btn-icon {
+  width: 28px !important;
+  height: 28px !important;
   object-fit: contain;
   position: relative;
   z-index: 1;
   display: block;
 }
-.one-send-btn-icon {
-  width: 32px;
-  height: 32px;
+.one-send-btn img.one-send-btn-icon {
+  width: 32px !important;
+  height: 32px !important;
   object-fit: contain;
   position: relative;
   z-index: 1;
