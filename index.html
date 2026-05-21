@@ -2434,6 +2434,18 @@
   // Roda de novo após pequeno delay pra pegar layouts assíncronos
   setTimeout(syncMesaHeight, 200);
   setTimeout(syncMesaHeight, 800);
+
+  // ResizeObserver — sincroniza em qualquer mudança de tamanho da chat
+  // (cobre swap entre painéis, fontes carregando atrasadas, reflow tardio, etc.)
+  if (typeof ResizeObserver !== 'undefined') {
+    function attachObserver(){
+      var chat = document.querySelector('.one-desktop-chat');
+      if (!chat) { setTimeout(attachObserver, 200); return; }
+      var ro = new ResizeObserver(syncMesaHeight);
+      ro.observe(chat);
+    }
+    attachObserver();
+  }
 })();
 </script>
 </body>
