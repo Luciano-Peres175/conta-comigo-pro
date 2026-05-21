@@ -8583,21 +8583,23 @@ button.one-fin-card:hover {
    Aprovado pelo Mentor em 21/05/2026.
    ════════════════════════════════════════════════════════════════ */
 @media (min-width: 900px) {
+  /* Cards laterais (Agenda/Tarefas/Financeiro) redistribuídos proporcionalmente
+     na coluna direita — flex: 1 faz os 3 dividirem igualmente o espaço disponível.
+     Conteúdo interno será reajustado quando esses cards virarem botões com novo
+     conteúdo (Mentor decide o conteúdo em sessão futura).
+     Aprovado pelo Mentor em 21/05/2026. */
   body:has(#screen-one.active) .one-desk-card-agenda,
   body:has(#screen-one.active) .one-desk-card-tarefas,
   body:has(#screen-one.active) .one-desk-card-financeiro {
-    flex: 0 0 80px !important;
-    height: 80px !important;
-    min-height: 80px !important;
-    max-height: 80px !important;
+    flex: 1 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     overflow: hidden !important;
   }
-  /* Empurra o Financeiro pra base da área de trabalho (não da sidebar inteira).
-     margin-top: auto consome sobrante / margin-bottom: 115px compensa a diferença
-     entre base da sidebar e base da área de trabalho (.one-desktop-chat). */
-  body:has(#screen-one.active) .one-desk-card-financeiro {
-    margin-top: auto !important;
-    margin-bottom: 115px !important;
+  /* Gap pequeno entre os cards da coluna direita — mesmo ritmo dos ícones do menu (10px) */
+  body:has(#screen-one.active) .one-desktop-sidebar {
+    gap: 10px !important;
   }
 }
 
