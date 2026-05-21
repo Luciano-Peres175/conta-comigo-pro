@@ -2720,7 +2720,8 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
     height: 56px !important;
     border-radius: 12px !important;
   }
-  /* Botões do menu: padding reduzido, sombreado 3D removido, só contorno verde */
+  /* Botões do menu: padding reduzido, 3D interno preservado (relevo claymorphism),
+     SEM o halo verde difuso externo (que o Mentor chama de "sombreado"). */
   body:has(#screen-one.active) .nav-item,
   body:has(#screen-cerebro.active) .nav-item,
   body:has(#screen-historico.active) .nav-item {
@@ -2736,16 +2737,33 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
     align-items: center !important;
     text-align: center !important;
     gap: 3px !important;
-    border: none !important;
+    border-top: 1.5px solid rgba(255,255,255,0.92) !important;
+    border-left: 1.5px solid rgba(255,255,255,0.85) !important;
+    border-right: 1.5px solid rgba(110,79,135,0.22) !important;
+    border-bottom: 1.5px solid rgba(110,79,135,0.28) !important;
     transition: transform .15s ease, box-shadow .15s ease !important;
-    box-shadow: 0 0 0 1.5px rgba(92,136,112,0.80) !important;
+    box-shadow:
+      0 0 0 1.5px rgba(92,136,112,0.80),
+      0 4px 12px rgba(0,0,0,.07),
+      0 1px 4px rgba(0,0,0,.05),
+      inset 0 2px 0 rgba(255,255,255,1),
+      inset 0 -2px 0 rgba(0,0,0,.06),
+      inset 1px 0 0 rgba(255,255,255,.75),
+      inset -1px 0 0 rgba(92,136,112,0.08) !important;
   }
   body:has(#screen-one.active) .nav-item:hover,
   body:has(#screen-cerebro.active) .nav-item:hover,
   body:has(#screen-historico.active) .nav-item:hover {
     color: #5C8870 !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 0 0 1.5px rgba(92,136,112,1.00) !important;
+    box-shadow:
+      0 0 0 1.5px rgba(92,136,112,0.85),
+      0 6px 16px rgba(0,0,0,.09),
+      0 2px 6px rgba(0,0,0,.06),
+      inset 0 2px 0 rgba(255,255,255,1),
+      inset 0 -2px 0 rgba(0,0,0,.06),
+      inset 1px 0 0 rgba(255,255,255,.75),
+      inset -1px 0 0 rgba(92,136,112,0.10) !important;
   }
   body:has(#screen-one.active) .nav-item.active,
   body:has(#screen-cerebro.active) .nav-item.active,
@@ -8693,11 +8711,17 @@ button.one-fin-card:hover {
     background: rgba(168,36,36,0.08);
   }
 
-  /* Prompt global (input "Fale com a Pinah") sem sombreado 3D — só contorno linha verde.
-     Mesma estética dos ícones do menu e do card Configurações. Aprovado em 21/05/2026. */
+  /* Prompt global (input "Fale com a Pinah"): mantém o 3D interno (relevo claymorphism),
+     remove só o halo verde difuso externo (o "sombreado" no vocabulário do Mentor).
+     Aprovado em 21/05/2026. */
   body:has(#screen-one.active) .one-prompt-card,
   body:has(#screen-cerebro.active) .one-prompt-card,
   body:has(#screen-historico.active) .one-prompt-card {
-    box-shadow: 0 0 0 1.5px rgba(92,136,112,0.80) !important;
+    box-shadow:
+      0 0 0 2px rgba(92,136,112,0.90),
+      0 10px 28px rgba(0,0,0,.09),
+      0 3px 8px rgba(0,0,0,.05),
+      inset 0 1.5px 0 rgba(255,255,255,.98),
+      inset 0 -1px 0 rgba(0,0,0,.03) !important;
   }
 }
