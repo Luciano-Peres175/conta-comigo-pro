@@ -8591,4 +8591,8 @@ button.one-fin-card:hover {
     max-height: 80px !important;
     overflow: hidden !important;
   }
+  /* Empurra o Financeiro pra base da coluna direita — alinha com base da área de trabalho */
+  body:has(#screen-one.active) .one-desk-card-financeiro {
+    margin-top: auto !important;
+  }
 }
