@@ -7303,10 +7303,12 @@ button.one-fin-card:hover {
     left: 140px !important;
   }
 
-  /* Sidebar direita (cards) mais compacta — 180px (era ~260-380px) */
+  /* Sidebar direita travada em 140px — simétrica com a esquerda (aprovado 21/05/2026) */
   body:has(#screen-one.active) .one-desktop-sidebar {
-    min-width: 180px !important;
-    max-width: 200px !important;
+    width: 140px !important;
+    min-width: 140px !important;
+    max-width: 140px !important;
+    flex: 0 0 140px !important;
     gap: 8px !important;
     padding: 0 12px 0 4px !important;
   }
