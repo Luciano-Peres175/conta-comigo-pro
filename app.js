@@ -533,11 +533,43 @@
   function hojeISO() {
     return toDateStr(new Date());
   }
+  /* Resumo do card Agenda (sidebar direita do desktop) — conta compromissos
+     de hoje e dos próximos 7 dias e atualiza os 2 spans. Adicionado em 22/05/2026. */
+  function renderResumoAgendaCard() {
+    try {
+      var elH = document.getElementById('one-desk-agenda-hoje');
+      var elS = document.getElementById('one-desk-agenda-semana');
+      if (!elH && !elS) return; // card nem está no DOM, pula
+      var compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
+      var hoje = new Date(); hoje.setHours(0,0,0,0);
+      var fim = new Date(hoje); fim.setDate(hoje.getDate() + 6); fim.setHours(23,59,59,999);
+      var hojeMs = hoje.getTime();
+      var fimMs = fim.getTime();
+      var cH = 0, cS = 0;
+      compromissos.forEach(function(c) {
+        if (!c || !c.data) return;
+        var p = String(c.data).split('-');
+        if (p.length !== 3) return;
+        var d = new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+        d.setHours(0,0,0,0);
+        var ms = d.getTime();
+        if (ms === hojeMs) cH++;
+        if (ms >= hojeMs && ms <= fimMs) cS++;
+      });
+      if (elH) elH.textContent = cH;
+      if (elS) elS.textContent = cS;
+    } catch(e) {
+      console.error('renderResumoAgendaCard erro:', e);
+    }
+  }
+  window.renderResumoAgendaCard = renderResumoAgendaCard;
+
   function atualizarHome() {
     renderCardFinanceiro();
     renderCardAgenda();
     renderLancamentos();
     renderAgendaHome();
+    renderResumoAgendaCard();
     renderIcons();
   }
 

@@ -7438,6 +7438,42 @@ button.one-fin-card:hover {
     font-size: 11px !important;
   }
 
+  /* Card Agenda — sub-cards de resumo (hoje / próximos 7 dias). Conteúdo interno
+     do card Agenda, adicionado em 22/05/2026. */
+  body:has(#screen-one.active) .one-desk-card-resumo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-height: 0;
+  }
+  body:has(#screen-one.active) .one-desk-card-resumo-item {
+    background: #FBF8F2;
+    border-radius: 10px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 0 0 1px rgba(92,136,112,0.30);
+    flex: 1;
+    min-height: 0;
+  }
+  body:has(#screen-one.active) .one-desk-card-resumo-num {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #5C8870;
+    line-height: 1;
+    min-width: 22px;
+    text-align: center;
+  }
+  body:has(#screen-one.active) .one-desk-card-resumo-label {
+    font-size: 10px;
+    color: #6B7F6F;
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.2;
+  }
+
   /* Sidebar esquerda — ajustes pra a versão compacta de 140px */
   body:has(#screen-one.active) .sidebar-profile .avatar,
   body:has(#screen-cerebro.active) .sidebar-profile .avatar,
