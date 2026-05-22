@@ -4780,14 +4780,10 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 .one-prompt-avatar {
   width: 86px;
   height: 86px;
-  border-radius: 18px;
   position: relative;
   z-index: 1;
-  object-fit: cover;
-  box-shadow:
-    0 0 0 1.5px rgba(92,136,112,0.55),
-    0 0 0 4px rgba(92,136,112,0.18),
-    0 8px 18px rgba(92,136,112,0.30);
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(92,136,112,0.30));
 }
 
 /* Sugestões / orientações à direita do prompt */
