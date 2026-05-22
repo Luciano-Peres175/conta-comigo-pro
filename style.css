@@ -8671,7 +8671,7 @@ button.one-fin-card:hover {
    margin-bottom: 14px bate com o padding-bottom da .one-prompt-row-global.
    Aprovado pelo Mentor em 21/05/2026.
    ════════════════════════════════════════════════════════════════ */
-.sidebar-config-card, .sidebar-history-card { display: none; }
+.sidebar-config-card { display: none; }
 
 @media (min-width: 900px) {
   body:has(#screen-one.active) .sidebar-config-card,
@@ -8743,70 +8743,6 @@ button.one-fin-card:hover {
   body:has(#screen-cerebro.active) .sidebar-config-btn-sair:hover,
   body:has(#screen-historico.active) .sidebar-config-btn-sair:hover {
     background: rgba(168,36,36,0.08);
-  }
-
-  /* Card "Minha História" — espelha o Configurações na sidebar direita.
-     Fica como irmão do wrapper .one-desktop-sidebar-cards (que agrupa Agenda/Tarefas/Financeiro
-     com flex:1). Assim o Minha História não compete com o flex dos cards laterais — eles continuam
-     ancorados normalmente, e o Minha História ocupa só 86px de altura fixa no rodapé.
-     Aprovado pelo Mentor em 22/05/2026. */
-  body:has(#screen-one.active) .sidebar-history-card,
-  body:has(#screen-cerebro.active) .sidebar-history-card,
-  body:has(#screen-historico.active) .sidebar-history-card {
-    display: flex !important;
-    flex-direction: column;
-    justify-content: center;
-    align-self: stretch;
-    height: 86px;
-    box-sizing: border-box;
-    margin-bottom: 14px;
-    padding: 10px 14px;
-    background: #FBF8F2;
-    border-radius: 14px;
-    box-shadow: 0 0 0 1.5px rgba(92,136,112,0.80);
-    flex-shrink: 0;
-  }
-  /* Wrapper que agrupa Agenda/Tarefas/Financeiro com flex:1 do conjunto, preservando
-     a ancoragem do Financeiro. O Minha História fica como irmão deste wrapper, sem
-     interferir no flex dos cards laterais. */
-  body:has(#screen-one.active) .one-desktop-sidebar-cards,
-  body:has(#screen-cerebro.active) .one-desktop-sidebar-cards,
-  body:has(#screen-historico.active) .one-desktop-sidebar-cards {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: inherit;
-  }
-  body:has(#screen-one.active) .sidebar-history-btn,
-  body:has(#screen-cerebro.active) .sidebar-history-btn,
-  body:has(#screen-historico.active) .sidebar-history-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 6px;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    font-family: system-ui, -apple-system, sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    color: #5C8870;
-    cursor: pointer;
-    transition: background .14s ease, color .14s ease;
-    text-align: left;
-  }
-  body:has(#screen-one.active) .sidebar-history-btn:hover,
-  body:has(#screen-cerebro.active) .sidebar-history-btn:hover,
-  body:has(#screen-historico.active) .sidebar-history-btn:hover {
-    background: rgba(92,136,112,0.10);
-  }
-  .sidebar-history-btn img.sidebar-history-btn-icon {
-    width: 24px !important;
-    height: 24px !important;
-    object-fit: contain !important;
-    flex-shrink: 0 !important;
-    display: block !important;
   }
 
   /* Prompt global (input "Fale com a Pinah"): mantém o 3D interno (relevo claymorphism),

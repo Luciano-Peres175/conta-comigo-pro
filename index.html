@@ -965,60 +965,46 @@
           </div>
         </div>
 
-        <!-- Wrapper dos cards laterais com flex:1 — isolando-os do flex container pai
-             pra não competir com elementos de altura fixa (Conta Comigo no topo, Minha História no rodapé) -->
-        <div class="one-desktop-sidebar-cards">
-
-          <!-- Card Pinah compacto (escondido por default — aparece quando Chat sai do centro) -->
-          <div class="one-desk-card one-desk-card-chat" data-panel="chat" onclick="swapToCenter('chat')" hidden title="Voltar pra Pinah">
-            <div class="one-desk-card-header">
-              <span class="one-desk-card-title">🐾 Chat</span>
-              <span class="one-desk-card-btn">↺ voltar</span>
-            </div>
-            <div class="one-desk-card-chat-body">
-              <div class="one-desk-card-chat-glow"></div>
-              <img src="assets/icons/pinah-mascote.png" alt="Pinah">
-            </div>
+        <!-- Card Pinah compacto (escondido por default — aparece quando Chat sai do centro) -->
+        <div class="one-desk-card one-desk-card-chat" data-panel="chat" onclick="swapToCenter('chat')" hidden title="Voltar pra Pinah">
+          <div class="one-desk-card-header">
+            <span class="one-desk-card-title">🐾 Chat</span>
+            <span class="one-desk-card-btn">↺ voltar</span>
           </div>
-
-          <!-- Card Agenda — momentaneamente só com ícone + legenda no topo (conteúdo será definido pelo Mentor em sessão futura) -->
-          <div class="one-desk-card one-desk-card-agenda" data-panel="agenda" onclick="swapToCenter('agenda')" title="Abrir Agenda no centro">
-            <div class="one-desk-card-header">
-              <img src="assets/icons/icon-agenda.png" alt="Agenda" class="one-desk-card-icon">
-              <span class="one-desk-card-title">Agenda</span>
-            </div>
-            <!-- Conteúdo interno antigo (mini preview da semana) removido em 21/05/2026.
-                 O Mentor vai definir o novo conteúdo em sessão futura. -->
+          <div class="one-desk-card-chat-body">
+            <div class="one-desk-card-chat-glow"></div>
+            <img src="assets/icons/pinah-mascote.png" alt="Pinah">
           </div>
+        </div>
 
-          <!-- Card Tarefas — momentaneamente só com ícone + legenda no topo -->
-          <div class="one-desk-card one-desk-card-tarefas" data-panel="tarefas" onclick="swapToCenter('tarefas')" title="Abrir Tarefas no centro">
-            <div class="one-desk-card-header">
-              <img src="assets/icons/icon-tarefas.png" alt="Tarefas" class="one-desk-card-icon">
-              <span class="one-desk-card-title">Tarefas</span>
-            </div>
-            <!-- Conteúdo interno antigo (mini kanban) removido em 21/05/2026.
-                 O Mentor vai definir o novo conteúdo em sessão futura. -->
+        <!-- Card Agenda — momentaneamente só com ícone + legenda no topo (conteúdo será definido pelo Mentor em sessão futura) -->
+        <div class="one-desk-card one-desk-card-agenda" data-panel="agenda" onclick="swapToCenter('agenda')" title="Abrir Agenda no centro">
+          <div class="one-desk-card-header">
+            <img src="assets/icons/icon-agenda.png" alt="Agenda" class="one-desk-card-icon">
+            <span class="one-desk-card-title">Agenda</span>
           </div>
+          <!-- Conteúdo interno antigo (mini preview da semana) removido em 21/05/2026.
+               O Mentor vai definir o novo conteúdo em sessão futura. -->
+        </div>
 
-          <!-- Card Financeiro — momentaneamente só com ícone + legenda no topo -->
-          <div class="one-desk-card one-desk-card-financeiro" data-panel="financeiro" onclick="swapToCenter('financeiro')" title="Abrir Financeiro no centro">
-            <div class="one-desk-card-header">
-              <img src="assets/icons/icon-financeiro.png" alt="Financeiro" class="one-desk-card-icon">
-              <span class="one-desk-card-title">Financeiro</span>
-            </div>
-            <!-- Conteúdo interno antigo (saldo + mini resumos) removido em 21/05/2026.
-                 O Mentor vai definir o novo conteúdo em sessão futura. -->
+        <!-- Card Tarefas — momentaneamente só com ícone + legenda no topo -->
+        <div class="one-desk-card one-desk-card-tarefas" data-panel="tarefas" onclick="swapToCenter('tarefas')" title="Abrir Tarefas no centro">
+          <div class="one-desk-card-header">
+            <img src="assets/icons/icon-tarefas.png" alt="Tarefas" class="one-desk-card-icon">
+            <span class="one-desk-card-title">Tarefas</span>
           </div>
+          <!-- Conteúdo interno antigo (mini kanban) removido em 21/05/2026.
+               O Mentor vai definir o novo conteúdo em sessão futura. -->
+        </div>
 
-        </div><!-- /one-desktop-sidebar-cards -->
-
-        <!-- Card Minha História — espelha o Configurações na sidebar esquerda, alinhado horizontalmente -->
-        <div class="sidebar-history-card">
-          <button class="sidebar-history-btn" onclick="abrirStory()">
-            <img src="assets/icons/icon-avatarfam10-pinah.png" alt="Minha História" class="sidebar-history-btn-icon">
-            <span>Minha História</span>
-          </button>
+        <!-- Card Financeiro — momentaneamente só com ícone + legenda no topo -->
+        <div class="one-desk-card one-desk-card-financeiro" data-panel="financeiro" onclick="swapToCenter('financeiro')" title="Abrir Financeiro no centro">
+          <div class="one-desk-card-header">
+            <img src="assets/icons/icon-financeiro.png" alt="Financeiro" class="one-desk-card-icon">
+            <span class="one-desk-card-title">Financeiro</span>
+          </div>
+          <!-- Conteúdo interno antigo (saldo + mini resumos) removido em 21/05/2026.
+               O Mentor vai definir o novo conteúdo em sessão futura. -->
         </div>
 
       </div><!-- /one-desktop-sidebar -->
