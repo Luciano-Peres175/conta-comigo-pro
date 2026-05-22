@@ -2717,9 +2717,9 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   body:has(#screen-one.active) .nav-icon img,
   body:has(#screen-cerebro.active) .nav-icon img,
   body:has(#screen-historico.active) .nav-icon img {
-    width: 56px !important;
-    height: 56px !important;
-    border-radius: 12px !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
   }
   /* Botões do menu: padding reduzido, 3D interno preservado (relevo claymorphism),
      SEM o halo verde difuso externo (que o Mentor chama de "sombreado"). */
@@ -7469,13 +7469,7 @@ button.one-fin-card:hover {
     text-align: center !important;
     line-height: 1.15 !important;
   }
-  body:has(#screen-one.active) .nav-icon img,
-  body:has(#screen-cerebro.active) .nav-icon img,
-  body:has(#screen-historico.active) .nav-icon img {
-    width: 48px !important;
-    height: 48px !important;
-    border-radius: 12px !important;
-  }
+  /* (Regra dos ícones do menu unificada na do bloco anterior — 36px desde 22/05/2026 - 12:00.) */
 }
 
 /* ════════════════════════════════════════════════════════════════
