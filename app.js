@@ -533,6 +533,47 @@
   function hojeISO() {
     return toDateStr(new Date());
   }
+  /* Resumo do card Financeiro (sidebar direita do desktop) — saldo do mês (receitas pagas - despesas pagas),
+     despesas pendentes do mês e receitas pendentes do mês. Adicionado em 22/05/2026. */
+  function renderResumoFinanceiroCard() {
+    try {
+      var elS = document.getElementById('one-desk-fin-saldo');
+      var elD = document.getElementById('one-desk-fin-despesas');
+      var elR = document.getElementById('one-desk-fin-receitas');
+      if (!elS && !elD && !elR) return;
+      var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
+      var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
+      var now = new Date();
+      var ano = now.getFullYear();
+      var mes = now.getMonth();
+      function noMes(item) {
+        if (!item || !item.data) return false;
+        var p = String(item.data).split('-');
+        if (p.length !== 3) return false;
+        return parseInt(p[0]) === ano && (parseInt(p[1]) - 1) === mes;
+      }
+      function soma(arr) {
+        return arr.reduce(function(s, x){ return s + (Number(x.valor) || 0); }, 0);
+      }
+      var recPagas = receitas.filter(function(r){ return noMes(r) && r.status === 'Pago'; });
+      var despPagas = despesas.filter(function(d){ return noMes(d) && d.status === 'Pago'; });
+      var saldo = soma(recPagas) - soma(despPagas);
+      var despPend = despesas.filter(function(d){ return noMes(d) && d.status === 'Pendente'; });
+      var recPend = receitas.filter(function(r){ return noMes(r) && r.status === 'Pendente'; });
+      var totalDespPend = soma(despPend);
+      var totalRecPend = soma(recPend);
+      if (elS) {
+        elS.textContent = (typeof brl === 'function') ? brl(saldo) : ('R$ ' + saldo.toFixed(2).replace('.', ','));
+        elS.classList.toggle('negativo', saldo < 0);
+      }
+      if (elD) elD.textContent = (typeof brl === 'function') ? brl(totalDespPend) : ('R$ ' + totalDespPend.toFixed(2).replace('.', ','));
+      if (elR) elR.textContent = (typeof brl === 'function') ? brl(totalRecPend) : ('R$ ' + totalRecPend.toFixed(2).replace('.', ','));
+    } catch(e) {
+      console.error('renderResumoFinanceiroCard erro:', e);
+    }
+  }
+  window.renderResumoFinanceiroCard = renderResumoFinanceiroCard;
+
   /* Resumo do card Tarefas (sidebar direita do desktop) — conta tarefas abertas
      por prioridade (alta/normal/baixa) e atualiza os 3 spans. Adicionado em 22/05/2026. */
   function renderResumoTarefasCard() {
@@ -601,6 +642,7 @@
     renderAgendaHome();
     renderResumoAgendaCard();
     renderResumoTarefasCard();
+    renderResumoFinanceiroCard();
     renderIcons();
   }
 

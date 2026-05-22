@@ -1017,14 +1017,26 @@
           </div>
         </div>
 
-        <!-- Card Financeiro — momentaneamente só com ícone + legenda no topo -->
+        <!-- Card Financeiro — header (ícone + legenda) + 3 sub-cards de resumo (saldo do mês / a pagar / a receber) -->
         <div class="one-desk-card one-desk-card-financeiro" data-panel="financeiro" onclick="swapToCenter('financeiro')" title="Abrir Financeiro no centro">
           <div class="one-desk-card-header">
             <img src="assets/icons/icon-financeiro.png" alt="Financeiro" class="one-desk-card-icon">
             <span class="one-desk-card-title">Financeiro</span>
           </div>
-          <!-- Conteúdo interno antigo (saldo + mini resumos) removido em 21/05/2026.
-               O Mentor vai definir o novo conteúdo em sessão futura. -->
+          <div class="one-desk-card-resumo">
+            <div class="one-desk-card-resumo-item">
+              <span class="one-desk-card-resumo-num one-desk-card-resumo-num-fin" id="one-desk-fin-saldo">—</span>
+              <span class="one-desk-card-resumo-label">saldo do mês</span>
+            </div>
+            <div class="one-desk-card-resumo-item">
+              <span class="one-desk-card-resumo-num one-desk-card-resumo-num-fin" id="one-desk-fin-despesas">—</span>
+              <span class="one-desk-card-resumo-label">a pagar</span>
+            </div>
+            <div class="one-desk-card-resumo-item">
+              <span class="one-desk-card-resumo-num one-desk-card-resumo-num-fin" id="one-desk-fin-receitas">—</span>
+              <span class="one-desk-card-resumo-label">a receber</span>
+            </div>
+          </div>
         </div>
 
       </div><!-- /one-desktop-sidebar -->

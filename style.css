@@ -7473,6 +7473,17 @@ button.one-fin-card:hover {
     font-family: system-ui, -apple-system, sans-serif;
     line-height: 1.2;
   }
+  /* Variante pros valores monetários do card Financeiro — font menor pra caber "R$ 12.450,00" */
+  body:has(#screen-one.active) .one-desk-card-resumo-num-fin {
+    font-size: 13px;
+    min-width: 0;
+    text-align: left;
+    letter-spacing: -0.2px;
+    flex: 1;
+  }
+  body:has(#screen-one.active) .one-desk-card-resumo-num-fin.negativo {
+    color: #C0392B;
+  }
 
   /* Sidebar esquerda — ajustes pra a versão compacta de 140px */
   body:has(#screen-one.active) .sidebar-profile .avatar,
