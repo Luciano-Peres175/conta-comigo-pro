@@ -3090,7 +3090,6 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   overflow: visible;
   padding: 0 20px 0 4px;
   gap: 32px; /* mais espaco para comparar os dois estilos de neon */
-  position: relative; /* ancora pro card Minha História posicionado absolute no rodapé */
 }
 
 /* Card botão gigante — relevo 3D + neon em anéis concentrados */
@@ -8747,9 +8746,9 @@ button.one-fin-card:hover {
   }
 
   /* Card "Minha História" — espelha o Configurações na sidebar direita.
-     Position: absolute pra NÃO competir com o flex:1 dos cards Agenda/Tarefas/Financeiro
-     (eles continuam dividindo o espaço acima como antes). A sidebar reserva 100px de
-     padding-bottom (via regra abaixo) pra esse card flutuar no rodapé sem sobrepor o último card.
+     Fica como irmão do wrapper .one-desktop-sidebar-cards (que agrupa Agenda/Tarefas/Financeiro
+     com flex:1). Assim o Minha História não compete com o flex dos cards laterais — eles continuam
+     ancorados normalmente, e o Minha História ocupa só 86px de altura fixa no rodapé.
      Aprovado pelo Mentor em 22/05/2026. */
   body:has(#screen-one.active) .sidebar-history-card,
   body:has(#screen-cerebro.active) .sidebar-history-card,
@@ -8757,22 +8756,27 @@ button.one-fin-card:hover {
     display: flex !important;
     flex-direction: column;
     justify-content: center;
-    position: absolute;
-    bottom: 14px;
-    left: 4px;
-    right: 20px;
+    align-self: stretch;
     height: 86px;
     box-sizing: border-box;
+    margin-bottom: 14px;
     padding: 10px 14px;
     background: #FBF8F2;
     border-radius: 14px;
     box-shadow: 0 0 0 1.5px rgba(92,136,112,0.80);
+    flex-shrink: 0;
   }
-  /* Reserva espaço no rodapé da sidebar direita pro card Minha História não sobrepor o Financeiro */
-  body:has(#screen-one.active) .one-desktop-sidebar,
-  body:has(#screen-cerebro.active) .one-desktop-sidebar,
-  body:has(#screen-historico.active) .one-desktop-sidebar {
-    padding-bottom: 100px !important;
+  /* Wrapper que agrupa Agenda/Tarefas/Financeiro com flex:1 do conjunto, preservando
+     a ancoragem do Financeiro. O Minha História fica como irmão deste wrapper, sem
+     interferir no flex dos cards laterais. */
+  body:has(#screen-one.active) .one-desktop-sidebar-cards,
+  body:has(#screen-cerebro.active) .one-desktop-sidebar-cards,
+  body:has(#screen-historico.active) .one-desktop-sidebar-cards {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: inherit;
   }
   body:has(#screen-one.active) .sidebar-history-btn,
   body:has(#screen-cerebro.active) .sidebar-history-btn,
