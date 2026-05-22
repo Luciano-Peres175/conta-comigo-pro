@@ -995,14 +995,26 @@
           </div>
         </div>
 
-        <!-- Card Tarefas — momentaneamente só com ícone + legenda no topo -->
+        <!-- Card Tarefas — header (ícone + legenda) + 3 sub-cards de resumo (prioridades alta/normal/baixa, só tarefas abertas) -->
         <div class="one-desk-card one-desk-card-tarefas" data-panel="tarefas" onclick="swapToCenter('tarefas')" title="Abrir Tarefas no centro">
           <div class="one-desk-card-header">
             <img src="assets/icons/icon-tarefas.png" alt="Tarefas" class="one-desk-card-icon">
             <span class="one-desk-card-title">Tarefas</span>
           </div>
-          <!-- Conteúdo interno antigo (mini kanban) removido em 21/05/2026.
-               O Mentor vai definir o novo conteúdo em sessão futura. -->
+          <div class="one-desk-card-resumo">
+            <div class="one-desk-card-resumo-item">
+              <span class="one-desk-card-resumo-num" id="one-desk-tarefas-alta">—</span>
+              <span class="one-desk-card-resumo-label">prioridade alta</span>
+            </div>
+            <div class="one-desk-card-resumo-item">
+              <span class="one-desk-card-resumo-num" id="one-desk-tarefas-normal">—</span>
+              <span class="one-desk-card-resumo-label">prioridade normal</span>
+            </div>
+            <div class="one-desk-card-resumo-item">
+              <span class="one-desk-card-resumo-num" id="one-desk-tarefas-baixa">—</span>
+              <span class="one-desk-card-resumo-label">prioridade baixa</span>
+            </div>
+          </div>
         </div>
 
         <!-- Card Financeiro — momentaneamente só com ícone + legenda no topo -->

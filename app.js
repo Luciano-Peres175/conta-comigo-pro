@@ -533,6 +533,36 @@
   function hojeISO() {
     return toDateStr(new Date());
   }
+  /* Resumo do card Tarefas (sidebar direita do desktop) — conta tarefas abertas
+     por prioridade (alta/normal/baixa) e atualiza os 3 spans. Adicionado em 22/05/2026. */
+  function renderResumoTarefasCard() {
+    try {
+      var elA = document.getElementById('one-desk-tarefas-alta');
+      var elN = document.getElementById('one-desk-tarefas-normal');
+      var elB = document.getElementById('one-desk-tarefas-baixa');
+      if (!elA && !elN && !elB) return;
+      var tarefas = JSON.parse(localStorage.getItem(oneU('tarefas')) || '[]');
+      var cA = 0, cN = 0, cB = 0;
+      tarefas.forEach(function(t) {
+        if (!t) return;
+        // Considera "aberta" se não tem flag concluida e o status não é 'concluida' (compatibilidade entre dois schemas)
+        if (t.concluida === true) return;
+        var status = String(t.status || '').toLowerCase();
+        if (status === 'concluida' || status === 'concluído') return;
+        var p = String(t.prioridade || 'normal').toLowerCase();
+        if (p === 'alta') cA++;
+        else if (p === 'baixa') cB++;
+        else cN++; // normal (default)
+      });
+      if (elA) elA.textContent = cA;
+      if (elN) elN.textContent = cN;
+      if (elB) elB.textContent = cB;
+    } catch(e) {
+      console.error('renderResumoTarefasCard erro:', e);
+    }
+  }
+  window.renderResumoTarefasCard = renderResumoTarefasCard;
+
   /* Resumo do card Agenda (sidebar direita do desktop) — conta compromissos
      de hoje e dos próximos 7 dias e atualiza os 2 spans. Adicionado em 22/05/2026. */
   function renderResumoAgendaCard() {
@@ -570,6 +600,7 @@
     renderLancamentos();
     renderAgendaHome();
     renderResumoAgendaCard();
+    renderResumoTarefasCard();
     renderIcons();
   }
 
@@ -5215,6 +5246,8 @@ function renderOneTarefasPainel() {
       }
     });
   }
+  // Atualiza o card-resumo da sidebar direita após qualquer render do painel de tarefas
+  if (typeof window.renderResumoTarefasCard === 'function') window.renderResumoTarefasCard();
 }
 
 /* ── Financeiro inline ──────────────────────────────── */
