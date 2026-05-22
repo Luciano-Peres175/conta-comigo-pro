@@ -7448,7 +7448,7 @@ button.one-fin-card:hover {
     min-height: 0;
   }
   body:has(#screen-one.active) .one-desk-card-resumo-item {
-    background: #FBF8F2;
+    background: #fff;
     border-radius: 10px;
     padding: 6px 10px;
     display: flex;
@@ -7457,6 +7457,22 @@ button.one-fin-card:hover {
     box-shadow: 0 0 0 1px rgba(92,136,112,0.30);
     flex: 1;
     min-height: 0;
+  }
+  /* Inverter fundos: cards de funcionalidade da sidebar direita ficam na cor da área de trabalho
+     (#F4F1EA), sub-cards brancos por cima. Aprovado pelo Mentor em 22/05/2026. */
+  body:has(#screen-one.active) .one-desk-card-agenda,
+  body:has(#screen-cerebro.active) .one-desk-card-agenda,
+  body:has(#screen-historico.active) .one-desk-card-agenda,
+  body:has(#screen-one.active) .one-desk-card-tarefas,
+  body:has(#screen-cerebro.active) .one-desk-card-tarefas,
+  body:has(#screen-historico.active) .one-desk-card-tarefas,
+  body:has(#screen-one.active) .one-desk-card-financeiro,
+  body:has(#screen-cerebro.active) .one-desk-card-financeiro,
+  body:has(#screen-historico.active) .one-desk-card-financeiro,
+  body:has(#screen-one.active) .one-desk-card-chat,
+  body:has(#screen-cerebro.active) .one-desk-card-chat,
+  body:has(#screen-historico.active) .one-desk-card-chat {
+    background: #F4F1EA !important;
   }
   body:has(#screen-one.active) .one-desk-card-resumo-num {
     font-family: 'Playfair Display', Georgia, serif;
