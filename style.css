@@ -4875,9 +4875,9 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 /* ════════════════════════════════════════════════════════════
    AVATAR PINAH COMO BOTÃO + POPUP DE SUGESTÕES
 ════════════════════════════════════════════════════════════ */
-/* Override do grid: 2 colunas agora (avatar | prompt) */
+/* Override do grid: 3 colunas (avatar Pinah | prompt | avatar Help) */
 .one-prompt-row-global {
-  grid-template-columns: 86px 1fr !important;
+  grid-template-columns: 86px 1fr 86px !important;
 }
 /* Avatar botão (substitui o wrap) */
 .one-prompt-avatar-btn {
@@ -4975,16 +4975,15 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 /* Esconde a antiga coluna direita de hints (se ainda existir em algum lugar) */
 .one-prompt-row-global .one-prompt-hints { display: none !important; }
 
-/* Respiro lateral na linha do prompt global — encolhe o prompt e dá ar nas pontas */
+/* Respiro lateral na linha do prompt global — simétrico, alinhado com a área do chat */
 .one-prompt-row-global {
   padding-left: 24px !important;
-  padding-right: 32px !important;
+  padding-right: 24px !important;
   gap: 22px !important;
   align-items: center !important;
 }
 .one-prompt-row-global .one-prompt-outer.one-prompt-global {
-  max-width: 720px;
-  margin-right: auto;
+  max-width: 100%;
 }
 
 /* Centralizar verticalmente o avatar Pinah Neon dentro da célula da grid */
