@@ -582,7 +582,7 @@
         <!-- Header padrão TaskAreas: logo + pills + ações -->
         <div class="one-tar-header">
           <div class="one-tar-header-left">
-            <span class="one-tar-logo">📅 Agenda</span>
+            <span class="one-tar-logo"><img src="assets/icons/icon-agenda.png" class="one-tar-logo-icon" alt="">Agenda</span>
             <span class="one-tar-pill" id="one-ag-pill-hoje">0 hoje</span>
             <span class="one-tar-pill em-and" id="one-ag-pill-semana">0 semana</span>
             <span class="one-tar-pill conc" id="one-ag-pill-mes">0 mês</span>
@@ -593,12 +593,12 @@
           </div>
         </div>
 
-        <!-- Filtros: setas de navegação + tabs Hoje/Semana/Mês -->
+        <!-- Filtros: setas de navegação + tabs Hoje/Semana/Mês. Padrão Financeiro: período entre as setas. -->
         <div class="one-tar-bar">
           <div class="one-tar-filters" id="one-ag-filters">
             <button class="one-ag-nav-btn-pill" onclick="oneAgNavegar(-1)" title="Anterior">‹</button>
-            <button class="one-ag-nav-btn-pill" onclick="oneAgNavegar(1)" title="Próximo">›</button>
             <span class="one-ag-periodo-label-inline" id="one-ag-periodo-label">—</span>
+            <button class="one-ag-nav-btn-pill" onclick="oneAgNavegar(1)" title="Próximo">›</button>
             <div class="one-tar-sep"></div>
             <button class="one-tar-filter"        data-view="hoje"   onclick="oneAgSetView('hoje')">Hoje</button>
             <button class="one-tar-filter active" data-view="semana" onclick="oneAgSetView('semana')">Semana</button>
@@ -633,7 +633,7 @@
         <!-- Header estilo TaskAreas: logo + contadores + ações -->
         <div class="one-tar-header">
           <div class="one-tar-header-left">
-            <span class="one-tar-logo">📋 TaskAreas</span>
+            <span class="one-tar-logo"><img src="assets/icons/icon-tarefas.png" class="one-tar-logo-icon" alt="">TaskAreas</span>
             <span class="one-tar-pill" id="one-tar-total">0 tarefas</span>
             <span class="one-tar-pill em-and" id="one-tar-em-and">0 em andamento</span>
             <span class="one-tar-pill conc" id="one-tar-concluidas">0 concluídas</span>
@@ -669,7 +669,7 @@
       <div class="one-desktop-financeiro" data-panel="financeiro" hidden>
         <div class="one-ag-header one-fin-header" style="flex-shrink:0">
           <div class="one-fin-header-left">
-            <span class="one-ag-mes-label">💰 Financeiro</span>
+            <span class="one-ag-mes-label"><img src="assets/icons/icon-financeiro.png" class="one-tar-logo-icon" alt="">Financeiro</span>
             <span class="one-fin-mes-nav">
               <button class="one-fin-mes-btn" type="button" onclick="oneFinMesPrev()" title="Mês anterior">‹</button>
               <span class="one-pn-sub" id="one-fin-periodo">—</span>
@@ -840,7 +840,7 @@
         <!-- Header padrão: logo + pills + ações -->
         <div class="one-tar-header">
           <div class="one-tar-header-left">
-            <span class="one-tar-logo">📚 Biblioteca</span>
+            <span class="one-tar-logo"><img src="assets/icons/icon-avatarfam1-pinah.png" class="one-tar-logo-icon" alt="">Biblioteca</span>
             <span class="one-tar-pill" id="one-cer-pill-total">0 notas</span>
             <span class="one-tar-pill em-and" id="one-cer-pill-ia">50/50 IA</span>
           </div>

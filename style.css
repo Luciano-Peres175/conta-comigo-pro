@@ -3430,6 +3430,9 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   font-weight: 500;
   color: #2D2D2D;
   text-transform: capitalize;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 .one-ag-nav-btn {
   width: 32px; height: 32px;
@@ -4815,6 +4818,17 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   font-weight: 600;
   color: #2D2D2D;
   letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.one-tar-logo-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
 }
 .one-tar-pill {
   font-size: 11px;
