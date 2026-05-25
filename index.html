@@ -890,25 +890,21 @@
 
       </div>
 
-      <!-- Variante Biblioteca da Pinah — aparece via swapToCenter('biblioteca') -->
+      <!-- Variante Biblioteca da Pinah — aparece via swapToCenter('biblioteca'). Header escondido (25/05/2026) — ícone na sidebar esquerda já marca o modo. -->
       <div class="one-desktop-biblioteca" data-panel="biblioteca" hidden>
-        <div class="screen-header">
-          <h2>Biblioteca da Pinah <i data-lucide="brain"></i></h2>
-          <p>Sua enciclopédia profissional pessoal</p>
-        </div>
-        <div class="cerebro-search">
-          <input type="text" id="cerebro-busca" class="field-input" placeholder="Buscar em suas anotações..." style="flex:1" oninput="setBuscaCerebro(this.value)">
-          <button class="btn-ia" id="btn-ia-sc" style="white-space:nowrap" onclick="abrirModalIA()">
+        <div class="cerebro-toolbar">
+          <input type="text" id="cerebro-busca" class="field-input cerebro-busca-input" placeholder="Buscar em suas anotações..." oninput="setBuscaCerebro(this.value)">
+          <button class="btn-ia" id="btn-ia-sc" onclick="abrirModalIA()">
             <i data-lucide="sparkles"></i>
             <span>Perguntar à IA</span>
             <span class="btn-ia-contador" id="btn-ia-contador">50/50</span>
           </button>
-          <button class="btn-secondary" style="white-space:nowrap;display:flex;align-items:center;gap:6px" onclick="importarAbrir()">📥 Importar</button>
-          <button class="btn-primary"   style="white-space:nowrap" onclick="abrirModalNota()">+ Nova Nota</button>
+          <button class="btn-secondary cerebro-toolbar-btn" onclick="importarAbrir()"><i data-lucide="download"></i><span>Importar</span></button>
+          <button class="btn-primary cerebro-toolbar-btn" onclick="abrirModalNota()"><i data-lucide="plus"></i><span>Nova Nota</span></button>
         </div>
-        <div class="cerebro-categorias" id="cerebro-categorias-grid"></div>
-        <div id="cerebro-filtros-ativos" style="display:none;margin:10px 0;font-size:12px;color:var(--texto-muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap"></div>
-        <div id="cerebro-conteudo"></div>
+        <div class="cerebro-chips" id="cerebro-categorias-grid"></div>
+        <div id="cerebro-filtros-ativos" class="cerebro-filtros-ativos" hidden></div>
+        <div class="cerebro-scroll" id="cerebro-conteudo"></div>
       </div>
 
       <!-- Variante Fiscal — aparece via swapToCenter('fiscal') -->

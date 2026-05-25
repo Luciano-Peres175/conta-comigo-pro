@@ -2922,10 +2922,11 @@
       grid.innerHTML = CEREBRO_CATEGORIAS.map(cat => {
         const count = notas.filter(n => n.categoria === cat.id).length;
         const ativa = cerebroFiltroCategoria === cat.id;
-        return `<div class="cerebro-cat${ativa ? ' cerebro-cat-ativa' : ''}" onclick="setCategoriaFiltro('${cat.id}')" style="cursor:pointer;${ativa ? 'border:2px solid '+cat.cor+';' : ''}">
-          <div class="cerebro-cat-icon" style="color:${cat.cor}"><i data-lucide="${cat.icone}"></i></div>
-          <div class="cerebro-cat-nome">${cat.nome}</div>
-          <div class="cerebro-cat-count">${count} ${count === 1 ? 'nota' : 'notas'}</div>
+        const styleAtiva = ativa ? 'border-color:'+cat.cor+';background:'+cat.cor+'1A;' : '';
+        return `<div class="cerebro-cat${ativa ? ' cerebro-cat-ativa' : ''}" onclick="setCategoriaFiltro('${cat.id}')" style="${styleAtiva}">
+          <span class="cerebro-cat-icon" style="color:${cat.cor}"><i data-lucide="${cat.icone}"></i></span>
+          <span class="cerebro-cat-nome">${cat.nome}</span>
+          <span class="cerebro-cat-count">${count}</span>
         </div>`;
       }).join('');
     }
@@ -2942,11 +2943,11 @@
         chips.push(`<span style="background:#eee;color:#555;padding:4px 10px;border-radius:12px;font-weight:600">Busca: "${escHtml(cerebroFiltroBusca)}"</span>`);
       }
       if (chips.length) {
-        filtrosEl.style.display = 'flex';
+        filtrosEl.hidden = false;
         filtrosEl.innerHTML = chips.join('') +
           '<button onclick="limparFiltros()" style="background:none;border:none;color:#7FA88E;font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;margin-left:6px">Limpar</button>';
       } else {
-        filtrosEl.style.display = 'none';
+        filtrosEl.hidden = true;
         filtrosEl.innerHTML = '';
       }
     }
@@ -2987,20 +2988,21 @@
   function renderNotaCard(n) {
     const cat = getCategoria(n.categoria);
     const dataStr = (n.dataModificacao || n.data || '').slice(0, 10).split('-').reverse().join('/');
-    const snippet = String(n.conteudo || '').replace(/\s+/g, ' ').slice(0, 160);
+    const snippet = String(n.conteudo || '').replace(/\s+/g, ' ').slice(0, 220);
     const tagsHtml = (Array.isArray(n.tags) && n.tags.length)
-      ? '<div class="nota-tags">' + n.tags.map(t => '<span class="nota-tag">#' + escHtml(t) + '</span>').join('') + '</div>'
+      ? '<div class="nota-card-tags">' + n.tags.slice(0, 4).map(t => '<span class="nota-tag">#' + escHtml(t) + '</span>').join('') + '</div>'
       : '';
     const pacHtml = n.paciente ? ' · ' + escHtml(n.paciente) : '';
     return `<div class="nota-card" onclick="abrirModalNota('${n.id}')">
-      <div class="nota-card-header">
+      <div class="nota-card-stripe" style="background:${cat.cor}"></div>
+      <div class="nota-card-body">
         <div class="nota-card-titulo">${escHtml(n.titulo || '(sem título)')}</div>
-        <span class="nota-card-cat" style="background:${cat.cor}22;color:${cat.cor}">${cat.nome}</span>
-      </div>
-      ${snippet ? '<div class="nota-card-snippet">' + escHtml(snippet) + (n.conteudo && n.conteudo.length > 160 ? '...' : '') + '</div>' : ''}
-      <div class="nota-card-footer">
-        <span>${dataStr}${pacHtml}</span>
+        ${snippet ? '<div class="nota-card-snippet">' + escHtml(snippet) + (n.conteudo && n.conteudo.length > 220 ? '...' : '') + '</div>' : ''}
         ${tagsHtml}
+        <div class="nota-card-meta">
+          <span>${dataStr}${pacHtml}</span>
+          <span class="nota-card-meta-cat">· ${escHtml(cat.nome)}</span>
+        </div>
       </div>
     </div>`;
   }
