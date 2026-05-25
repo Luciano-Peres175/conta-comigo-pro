@@ -1776,77 +1776,60 @@
       box-shadow: 0 4px 14px rgba(127,168,142,.18);
     }
 
-    /* ══ Biblioteca da Pinah — desktop, estilo segundo cérebro ══════════ */
-    /* Toolbar superior: busca larga + ações (IA / Importar / Nova). Flex-shrink 0 — não scrolla. */
-    .cerebro-toolbar {
-      display: flex;
+    /* ══ Biblioteca da Pinah — desktop, padrão TaskAreas ══════════ */
+
+    /* Override do one-tar-bar pra acomodar filters + separador + busca */
+    .one-desktop-biblioteca .one-tar-bar {
+      justify-content: flex-start;
       gap: 10px;
-      align-items: center;
-      flex-shrink: 0;
-      margin-bottom: 4px;
     }
-    .cerebro-toolbar .cerebro-busca-input { flex: 1; min-width: 0; }
-    .cerebro-toolbar .btn-ia,
-    .cerebro-toolbar .cerebro-toolbar-btn {
-      white-space: nowrap;
-      display: inline-flex;
+    .one-desktop-biblioteca .one-tar-filters { flex: 0 1 auto; min-width: 0; }
+
+    /* Tabs de categoria — pill com pontinho colorido + contador */
+    .cerebro-cat-tab {
+      display: inline-flex !important;
       align-items: center;
       gap: 6px;
-      flex: 0 0 auto;
     }
-    .cerebro-toolbar .cerebro-toolbar-btn [data-lucide] {
-      width: 14px;
-      height: 14px;
-    }
-
-    /* Chips de categoria — pílulas horizontais com contagem. Flex-shrink 0. */
-    .cerebro-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+    .cerebro-cat-tab-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
       flex-shrink: 0;
     }
-    .cerebro-chips .cerebro-cat {
-      background: #fff;
-      border-radius: 999px;
-      box-shadow: 0 1px 3px rgba(46,38,60,.06);
-      border: 1.5px solid transparent;
-      padding: 6px 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: transform .12s, border-color .12s, box-shadow .12s;
+    .cerebro-cat-tab.active .cerebro-cat-tab-dot {
+      background: #fff !important;
     }
-    .cerebro-chips .cerebro-cat:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(46,38,60,.10);
-    }
-    .cerebro-chips .cerebro-cat .cerebro-cat-icon {
-      width: 14px;
-      height: 14px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .cerebro-chips .cerebro-cat .cerebro-cat-icon [data-lucide] {
-      width: 14px;
-      height: 14px;
-      stroke-width: 2;
-    }
-    .cerebro-chips .cerebro-cat-nome {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--texto);
-    }
-    .cerebro-chips .cerebro-cat-count {
-      font-size: 11px;
-      color: var(--texto-muted);
-      background: #F4F1EA;
+    .cerebro-cat-tab-count {
+      font-size: 10px;
       padding: 1px 7px;
-      border-radius: 10px;
+      border-radius: 9px;
+      background: rgba(92,136,112,0.10);
+      color: inherit;
       font-weight: 600;
+      line-height: 1.4;
     }
+    .cerebro-cat-tab.active .cerebro-cat-tab-count {
+      background: rgba(255,255,255,0.25);
+    }
+
+    /* Input de busca dentro do one-tar-bar */
+    .cerebro-busca-input {
+      flex: 1;
+      min-width: 160px;
+      padding: 5px 12px;
+      border: 1.5px solid rgba(92,136,112,0.25);
+      border-radius: 10px;
+      background: #fff;
+      font-size: 12px;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: var(--texto);
+      outline: none;
+      transition: border-color .15s;
+    }
+    .cerebro-busca-input:focus { border-color: rgba(92,136,112,0.55); }
+    .cerebro-busca-input::placeholder { color: #B0AEA8; }
 
     /* Filtros ativos (chips de busca/categoria com botão limpar) */
     .cerebro-filtros-ativos {

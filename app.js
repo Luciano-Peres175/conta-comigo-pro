@@ -2525,6 +2525,10 @@
       else if (restantes <= 10) btn.classList.add('contador-aviso');
     }
 
+    // Pill no header da Biblioteca (padrão TaskAreas)
+    const pillIA = document.getElementById('one-cer-pill-ia');
+    if (pillIA) pillIA.textContent = restantes + '/' + IA_LIMITE_DIA + ' IA';
+
     return restantes;
   }
 
@@ -2915,20 +2919,26 @@
   }
 
   function renderCerebro() {
-    // 1) Categorias (com contagem)
+    const notas = getNotas();
+
+    // 0) Pill total no header
+    const pillTotal = document.getElementById('one-cer-pill-total');
+    if (pillTotal) pillTotal.textContent = notas.length + ' ' + (notas.length === 1 ? 'nota' : 'notas');
+
+    // 1) Tabs de categorias (padrão TaskAreas): "Todas" + 5 categorias com contagem
     const grid = document.getElementById('cerebro-categorias-grid');
     if (grid) {
-      const notas = getNotas();
-      grid.innerHTML = CEREBRO_CATEGORIAS.map(cat => {
+      const totalAtiva = cerebroFiltroCategoria === null;
+      let html = `<button class="one-tar-filter cerebro-cat-tab${totalAtiva ? ' active' : ''}" onclick="setCategoriaFiltro(null)">Todas <span class="cerebro-cat-tab-count">${notas.length}</span></button>`;
+      html += CEREBRO_CATEGORIAS.map(cat => {
         const count = notas.filter(n => n.categoria === cat.id).length;
         const ativa = cerebroFiltroCategoria === cat.id;
-        const styleAtiva = ativa ? 'border-color:'+cat.cor+';background:'+cat.cor+'1A;' : '';
-        return `<div class="cerebro-cat${ativa ? ' cerebro-cat-ativa' : ''}" onclick="setCategoriaFiltro('${cat.id}')" style="${styleAtiva}">
-          <span class="cerebro-cat-icon" style="color:${cat.cor}"><i data-lucide="${cat.icone}"></i></span>
-          <span class="cerebro-cat-nome">${cat.nome}</span>
-          <span class="cerebro-cat-count">${count}</span>
-        </div>`;
+        const styleAtiva = ativa ? 'background:'+cat.cor+';border-color:'+cat.cor+';color:#fff;' : '';
+        return `<button class="one-tar-filter cerebro-cat-tab${ativa ? ' active' : ''}" onclick="setCategoriaFiltro('${cat.id}')" style="${styleAtiva}">
+          <span class="cerebro-cat-tab-dot" style="background:${cat.cor}"></span>${escHtml(cat.nome)} <span class="cerebro-cat-tab-count">${count}</span>
+        </button>`;
       }).join('');
+      grid.innerHTML = html;
     }
 
     // 2) Filtros ativos (chips)

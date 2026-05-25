@@ -834,6 +834,76 @@
         </div>
       </div>
 
+      <!-- Variante Biblioteca da Pinah — aparece via swapToCenter('biblioteca'). Header no padrão TaskAreas (Agenda/Tarefas). Posicionada antes do divisor+prompt pra prompt sempre ficar embaixo. -->
+      <div class="one-desktop-biblioteca" data-panel="biblioteca" hidden>
+
+        <!-- Header padrão: logo + pills + ações -->
+        <div class="one-tar-header">
+          <div class="one-tar-header-left">
+            <span class="one-tar-logo">📚 Biblioteca</span>
+            <span class="one-tar-pill" id="one-cer-pill-total">0 notas</span>
+            <span class="one-tar-pill em-and" id="one-cer-pill-ia">50/50 IA</span>
+          </div>
+          <div class="one-tar-header-right">
+            <button class="one-tar-btn-area" id="btn-ia-sc" onclick="abrirModalIA()" title="Perguntar à IA sobre suas notas">
+              <i data-lucide="sparkles"></i> Perguntar à IA
+            </button>
+            <button class="one-tar-btn-area" onclick="importarAbrir()" title="Importar arquivo (.md, .txt, .pdf)">
+              <i data-lucide="download"></i> Importar
+            </button>
+            <button class="one-tar-btn-nova" onclick="abrirModalNota()">+ Nova nota</button>
+          </div>
+        </div>
+
+        <!-- Filtros: tabs de categorias + busca -->
+        <div class="one-tar-bar">
+          <div class="one-tar-filters" id="cerebro-categorias-grid"></div>
+          <div class="one-tar-sep"></div>
+          <input type="text" id="cerebro-busca" class="cerebro-busca-input" placeholder="Buscar em suas anotações..." oninput="setBuscaCerebro(this.value)">
+        </div>
+
+        <!-- Filtros ativos (chip de busca/categoria selecionada) -->
+        <div id="cerebro-filtros-ativos" class="cerebro-filtros-ativos" hidden></div>
+
+        <!-- Grid de cards estilo segundo cérebro -->
+        <div class="cerebro-scroll" id="cerebro-conteudo"></div>
+      </div>
+
+      <!-- Variante Fiscal — aparece via swapToCenter('fiscal'). Posicionada antes do divisor+prompt. -->
+      <div class="one-desktop-fiscal" data-panel="fiscal" hidden>
+        <div class="screen-header">
+          <h2>Histórico</h2>
+          <p>Todos os seus lançamentos</p>
+        </div>
+        <div class="filtros-bar">
+          <button class="filtro-btn ativo" id="filt-todos"     onclick="filtrarHist('todos')">Todos</button>
+          <button class="filtro-btn"       id="filt-receitas"  onclick="filtrarHist('receitas')">Receitas</button>
+          <button class="filtro-btn"       id="filt-despesas"  onclick="filtrarHist('despesas')">Despesas</button>
+          <select class="filtro-mes" id="hist-mes-sel" onchange="renderHistorico()"></select>
+          <button class="btn-pdf-relatorio" onclick="gerarRelatorioPDF()" title="Gerar relatório em PDF para enviar ao contador">
+            <i data-lucide="file-down"></i>
+            <span>Relatório PDF</span>
+          </button>
+        </div>
+        <div class="list-card" style="flex:1">
+          <div id="lista-historico"></div>
+          <div class="hist-totais">
+            <div class="hist-total-item">
+              <div class="hist-total-label">Receitas</div>
+              <div class="hist-total-val val-receita" id="hist-total-rec">R$ 0,00</div>
+            </div>
+            <div class="hist-total-item">
+              <div class="hist-total-label">Despesas</div>
+              <div class="hist-total-val val-despesa" id="hist-total-desp">R$ 0,00</div>
+            </div>
+            <div class="hist-total-item">
+              <div class="hist-total-label">Saldo</div>
+              <div class="hist-total-val" id="hist-total-saldo">R$ 0,00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Traço fino delimitando a área de trabalho -->
       <div class="one-area-divider"></div>
 
@@ -888,58 +958,6 @@
           </div>
         </div>
 
-      </div>
-
-      <!-- Variante Biblioteca da Pinah — aparece via swapToCenter('biblioteca'). Header escondido (25/05/2026) — ícone na sidebar esquerda já marca o modo. -->
-      <div class="one-desktop-biblioteca" data-panel="biblioteca" hidden>
-        <div class="cerebro-toolbar">
-          <input type="text" id="cerebro-busca" class="field-input cerebro-busca-input" placeholder="Buscar em suas anotações..." oninput="setBuscaCerebro(this.value)">
-          <button class="btn-ia" id="btn-ia-sc" onclick="abrirModalIA()">
-            <i data-lucide="sparkles"></i>
-            <span>Perguntar à IA</span>
-            <span class="btn-ia-contador" id="btn-ia-contador">50/50</span>
-          </button>
-          <button class="btn-secondary cerebro-toolbar-btn" onclick="importarAbrir()"><i data-lucide="download"></i><span>Importar</span></button>
-          <button class="btn-primary cerebro-toolbar-btn" onclick="abrirModalNota()"><i data-lucide="plus"></i><span>Nova Nota</span></button>
-        </div>
-        <div class="cerebro-chips" id="cerebro-categorias-grid"></div>
-        <div id="cerebro-filtros-ativos" class="cerebro-filtros-ativos" hidden></div>
-        <div class="cerebro-scroll" id="cerebro-conteudo"></div>
-      </div>
-
-      <!-- Variante Fiscal — aparece via swapToCenter('fiscal') -->
-      <div class="one-desktop-fiscal" data-panel="fiscal" hidden>
-        <div class="screen-header">
-          <h2>Histórico</h2>
-          <p>Todos os seus lançamentos</p>
-        </div>
-        <div class="filtros-bar">
-          <button class="filtro-btn ativo" id="filt-todos"     onclick="filtrarHist('todos')">Todos</button>
-          <button class="filtro-btn"       id="filt-receitas"  onclick="filtrarHist('receitas')">Receitas</button>
-          <button class="filtro-btn"       id="filt-despesas"  onclick="filtrarHist('despesas')">Despesas</button>
-          <select class="filtro-mes" id="hist-mes-sel" onchange="renderHistorico()"></select>
-          <button class="btn-pdf-relatorio" onclick="gerarRelatorioPDF()" title="Gerar relatório em PDF para enviar ao contador">
-            <i data-lucide="file-down"></i>
-            <span>Relatório PDF</span>
-          </button>
-        </div>
-        <div class="list-card" style="flex:1">
-          <div id="lista-historico"></div>
-          <div class="hist-totais">
-            <div class="hist-total-item">
-              <div class="hist-total-label">Receitas</div>
-              <div class="hist-total-val val-receita" id="hist-total-rec">R$ 0,00</div>
-            </div>
-            <div class="hist-total-item">
-              <div class="hist-total-label">Despesas</div>
-              <div class="hist-total-val val-despesa" id="hist-total-desp">R$ 0,00</div>
-            </div>
-            <div class="hist-total-item">
-              <div class="hist-total-label">Saldo</div>
-              <div class="hist-total-val" id="hist-total-saldo">R$ 0,00</div>
-            </div>
-          </div>
-        </div>
       </div>
 
       </div><!-- /one-desktop-main -->
