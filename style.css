@@ -7724,6 +7724,38 @@ button.one-fin-card:hover {
     justify-content: center !important;
     align-items: flex-start !important;
   }
+  /* Card Conta Comigo da sidebar esquerda (com avatar do usuário) — layout em linha:
+     avatar | nome (em cima) + profissão (embaixo). */
+  .one-desk-card-conta.one-desk-card-conta-left {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+  }
+  .one-desk-card-conta.one-desk-card-conta-left .one-desk-card-conta-info {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+  }
+  .one-desk-card-conta-nome {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #2D3D2F;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .one-desk-card-conta-tag {
+    font-size: 9.5px;
+    color: #6B7F6F;
+    margin-top: 2px;
+    font-family: system-ui, -apple-system, sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .one-desk-card-conta-info {
     width: 100%;
   }

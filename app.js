@@ -289,9 +289,13 @@
     nomeEl.textContent = nomeCompleto;
     tagEl.textContent  = tag;
 
-    // Avatar dentro do card Conta Comigo da sidebar esquerda (tela base)
+    // Card de identidade na sidebar esquerda (tela base): avatar + nome + profissão
     const contaAvatar = document.getElementById('one-desk-conta-avatar');
+    const contaNome   = document.getElementById('one-desk-conta-nome');
+    const contaTag    = document.getElementById('one-desk-conta-tag');
     if (contaAvatar) contaAvatar.textContent = iniciais;
+    if (contaNome)   contaNome.textContent   = nomeCompleto;
+    if (contaTag)    contaTag.textContent    = tag;
 
     // Esconde funcoes de demo da Le pra quem nao e Familia
     aplicarVisibilidadePorGrupo(grupo);
