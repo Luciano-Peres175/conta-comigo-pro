@@ -7454,10 +7454,27 @@ button.one-fin-card:hover {
     flex-shrink: 0;
     display: flex;
     align-items: center;
+    gap: 8px;
     box-shadow:
       0 0 0 2px rgba(92,136,112,0.55),
       0 0 0 6px rgba(92,136,112,0.15),
       0 4px 12px rgba(0,0,0,.05);
+  }
+  .one-desk-card-conta-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #9B72B0 0%, #7E579F 100%);
+    color: #fff;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 6px rgba(126,87,159,0.30);
   }
   .one-desk-card-conta-row {
     display: flex;

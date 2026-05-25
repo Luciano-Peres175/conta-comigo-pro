@@ -273,18 +273,25 @@
     const grupo = window.authProfile.grupo;
     const nome  = window.authProfile.nome || '';
 
+    let iniciais, nomeCompleto, tag;
     if (grupo === 'familia') {
       // Familia: card fixo Leticia Kurtz / Fonoaudiologa (e o Luciano/Catia/Le sabem que e o app dela)
-      avatar.textContent = 'LK';
-      nomeEl.textContent = 'Letícia Kurtz';
-      tagEl.textContent  = 'Fonoaudióloga';
+      iniciais = 'LK';
+      nomeCompleto = 'Letícia Kurtz';
+      tag = 'Fonoaudióloga';
     } else {
       // Amigas: nome da pessoa + tag "Beta Próxima"
-      const iniciais = nome.split(' ').filter(Boolean).slice(0,2).map(s => s[0]).join('').toUpperCase() || '??';
-      avatar.textContent = iniciais;
-      nomeEl.textContent = nome || 'Beta';
-      tagEl.textContent  = 'Beta Próxima';
+      iniciais = nome.split(' ').filter(Boolean).slice(0,2).map(s => s[0]).join('').toUpperCase() || '??';
+      nomeCompleto = nome || 'Beta';
+      tag = 'Beta Próxima';
     }
+    avatar.textContent = iniciais;
+    nomeEl.textContent = nomeCompleto;
+    tagEl.textContent  = tag;
+
+    // Avatar dentro do card Conta Comigo da sidebar esquerda (tela base)
+    const contaAvatar = document.getElementById('one-desk-conta-avatar');
+    if (contaAvatar) contaAvatar.textContent = iniciais;
 
     // Esconde funcoes de demo da Le pra quem nao e Familia
     aplicarVisibilidadePorGrupo(grupo);
