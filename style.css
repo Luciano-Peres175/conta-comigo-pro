@@ -4875,9 +4875,9 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 /* ════════════════════════════════════════════════════════════
    AVATAR PINAH COMO BOTÃO + POPUP DE SUGESTÕES
 ════════════════════════════════════════════════════════════ */
-/* Override do grid: 3 colunas (avatar Pinah | prompt | avatar Help) */
+/* Override do grid: 2 colunas (avatar Pinah | prompt). Card Help removido em 25/05/2026 — voltará em layout futuro junto com Minha História. */
 .one-prompt-row-global {
-  grid-template-columns: 86px 1fr 86px !important;
+  grid-template-columns: 86px 1fr !important;
 }
 /* Avatar botão (substitui o wrap) */
 .one-prompt-avatar-btn {

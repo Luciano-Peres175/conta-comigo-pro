@@ -5020,12 +5020,6 @@ function oneHintsPopupToggle(ev) {
   }
 }
 
-// Placeholder do botão Ajuda (fam11) — função real será definida em sessão futura
-function oneHelpToggle(ev) {
-  if (ev) ev.stopPropagation();
-  alert('Ajuda — em breve');
-}
-
 /* ── Estado dos filtros de Tarefas ── */
 var oneTarFilterStatus = 'todos';
 var oneTarFilterPrio   = 'qualquer';
