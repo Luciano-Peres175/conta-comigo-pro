@@ -686,6 +686,16 @@
     if (migrou > 0) console.log('[multi-tenant] migrou ' + migrou + ' chaves legadas pra user ' + window.authUser.id);
   }
 
+  // Extrai áreas únicas de uma lista de tarefas — usado no seed inicial
+  // pra que a lista de áreas case com as tarefas demo desde a abertura 1.
+  function _areasDeTarefas(lista) {
+    var out = [];
+    (lista || []).forEach(function(t){
+      if (t && t.area && out.indexOf(t.area) === -1) out.push(t.area);
+    });
+    return out;
+  }
+
   function maybeInit() {
     // Multi-tenant: só inicializa demo quando o user real estiver logado
     // (evita criar dados na chave "u_anon_*" enquanto o auth não termina)
@@ -714,7 +724,10 @@
         localStorage.setItem(oneU('receitas'),      JSON.stringify([]));
         localStorage.setItem(oneU('despesas'),      JSON.stringify([]));
         localStorage.setItem(oneU('compromissos'),  JSON.stringify(getCompromissosPinah()));
-        localStorage.setItem(oneU('tarefas'),       JSON.stringify(getTarefasPinah()));
+        var tarefasFam = getTarefasPinah();
+        localStorage.setItem(oneU('tarefas'),       JSON.stringify(tarefasFam));
+        // Áreas únicas das tarefas demo — sem isso o seed não renderiza.
+        localStorage.setItem(oneU('tarefas_areas'), JSON.stringify(_areasDeTarefas(tarefasFam)));
         localStorage.setItem(oneU('notas_cerebro'), JSON.stringify(getNotasPinah()));
 
       } else if (grupo === 'fono') {
@@ -722,7 +735,9 @@
         localStorage.setItem(oneU('receitas'),      JSON.stringify([]));
         localStorage.setItem(oneU('despesas'),      JSON.stringify([]));
         localStorage.setItem(oneU('compromissos'),  JSON.stringify(getCompromissosFono()));
-        localStorage.setItem(oneU('tarefas'),       JSON.stringify(getTarefasFono()));
+        var tarefasFono = getTarefasFono();
+        localStorage.setItem(oneU('tarefas'),       JSON.stringify(tarefasFono));
+        localStorage.setItem(oneU('tarefas_areas'), JSON.stringify(_areasDeTarefas(tarefasFono)));
         localStorage.setItem(oneU('notas_cerebro'), JSON.stringify(getNotasFono()));
 
       } else {
@@ -4000,7 +4015,7 @@ function _supaMapToRow(localKey, item, userId) {
       return Object.assign(base, {
         id:         item.id,
         titulo:     item.titulo || item.nome || '',
-        area:       item.area || 'Geral',
+        area:       item.area || null,
         prioridade: (item.prioridade || 'normal').toLowerCase(),
         prazo:      item.prazo || item.data || null,
         status:     item.concluida ? 'concluida' : (item.status || 'aberta')
@@ -4090,7 +4105,7 @@ function _supaMapFromRow(localKey, row) {
         id:         row.id,
         titulo:     row.titulo || '',
         nome:       row.titulo || '',
-        area:       row.area || 'Geral',
+        area:       row.area || null,
         prioridade: row.prioridade || 'normal',
         prazo:      row.prazo || null,
         data:       row.prazo || null,
@@ -4397,13 +4412,17 @@ function pinahCriarCompromisso(input) {
 }
 
 function pinahCriarTarefa(input) {
+  if (!input || !input.area) {
+    console.warn('[pinahCriarTarefa] tarefa precisa de área — descartando:', input);
+    return;
+  }
   var store = _pinahGetSet('tarefas');
   var lista = store.get();
   var novo = {
     id:         (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
     titulo:     input.titulo     || '',
     nome:       input.titulo     || '',
-    area:       input.area       || 'Geral',
+    area:       input.area,
     prioridade: input.prioridade || 'normal',
     prazo:      input.prazo      || null,
     status:     'aberta',
@@ -5100,12 +5119,15 @@ function oneTarSetPrio(btn) {
 function oneTarGetAreas() {
   try {
     var stored = JSON.parse(localStorage.getItem(oneU('tarefas_areas')) || 'null');
-    if (stored && Array.isArray(stored) && stored.length) return stored;
+    if (stored && Array.isArray(stored)) {
+      // Limpa "Geral" retroativamente: ela deixou de ser área do sistema.
+      var limpa = stored.filter(function(a){ return a !== 'Geral'; });
+      if (limpa.length !== stored.length) oneTarSaveAreas(limpa);
+      return limpa;
+    }
   } catch(e) {}
-  // Áreas padrão estilo TaskAreas
-  var defaults = ['Pinah','Enroscos','Ideias PA','Casa','Baú do Milhão'];
-  oneTarSaveAreas(defaults);
-  return defaults;
+  // Sem áreas persistidas — retorna vazio. App não cria nada automaticamente.
+  return [];
 }
 function oneTarSaveAreas(a) { localStorage.setItem(oneU('tarefas_areas'), JSON.stringify(a)); }
 
@@ -5141,9 +5163,14 @@ function oneTarInlineSave(el) {
   var wrap = el.closest ? el.closest('.one-tar-inline-wrap') : el.parentElement.parentElement;
   var input = wrap.querySelector('.one-tar-inline-input');
   var col = wrap.closest('.one-tar-col');
-  var area = col ? col.dataset.area : 'Geral';
+  var area = col ? col.dataset.area : '';
   var nome = input ? input.value.trim() : '';
   if (!nome) { oneTarHideInline(el); return; }
+  if (!area) {
+    if (typeof oneToast==='function') oneToast('Tarefa precisa de uma área. Crie uma área primeiro.','error');
+    oneTarHideInline(el);
+    return;
+  }
   var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   lista.push({ id: crypto.randomUUID(), nome: nome, area: area, prioridade: 'Normal', concluida: false, criado: new Date().toISOString() });
   localStorage.setItem(oneU('tarefas'), JSON.stringify(lista));
@@ -5176,7 +5203,7 @@ function oneTarAreaEditar(area, btn) {
     // Atualiza tarefas que usam essa área
     var tarefas = [];
     try { tarefas = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
-    tarefas.forEach(function(t){ if ((t.area||'Geral') === area) t.area = novo; });
+    tarefas.forEach(function(t){ if (t.area === area) t.area = novo; });
     localStorage.setItem(oneU('tarefas'), JSON.stringify(tarefas));
     // Atualiza lista de áreas
     var areas = oneTarGetAreas();
@@ -5195,16 +5222,20 @@ function oneTarAreaEditar(area, btn) {
 function oneTarAreaDeletar(area) {
   var tarefas = [];
   try { tarefas = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
-  var comTarefas = tarefas.filter(function(t){ return (t.area||'Geral') === area; }).length;
-  if (comTarefas > 0) {
-    if (!confirm('A área "' + area + '" tem ' + comTarefas + ' tarefa(s). Excluir mesmo assim? As tarefas irão para "Geral".')) return;
-    tarefas.forEach(function(t){ if ((t.area||'Geral') === area) t.area = 'Geral'; });
+  var dessaArea = tarefas.filter(function(t){ return t.area === area; });
+  if (dessaArea.length > 0) {
+    if (!confirm('A área "' + area + '" tem ' + dessaArea.length + ' tarefa(s). Deletar a área apaga essas tarefas junto. Confirmar?')) return;
+    // Remove as tarefas dessa área do localStorage e do cloud.
+    dessaArea.forEach(function(t){ if (typeof supaDelete === 'function') supaDelete('tarefas', t.id); });
+    tarefas = tarefas.filter(function(t){ return t.area !== area; });
     localStorage.setItem(oneU('tarefas'), JSON.stringify(tarefas));
+  } else {
+    if (!confirm('Excluir a área "' + area + '"?')) return;
   }
   var areas = oneTarGetAreas().filter(function(a){ return a !== area; });
-  if (areas.indexOf('Geral') === -1) areas.unshift('Geral');
   oneTarSaveAreas(areas);
   renderOneTarefasPainel();
+  if (typeof renderOneTarefasMobile === 'function') renderOneTarefasMobile();
 }
 
 function oneTarAreaToggle(area, btn) {
@@ -5257,13 +5288,9 @@ function renderOneTarefasPainel() {
                            {cor:'#5A6A8A', bg:'#EEF1F7'};
   }
 
-  // Áreas persistidas
+  // Áreas persistidas. Tarefa cuja área não está na lista não renderiza —
+  // tarefa só existe dentro de uma área válida.
   var areaNames = oneTarGetAreas();
-  // Garantir que áreas de tarefas existentes também aparecem
-  todasTarefas.forEach(function(t){
-    var a = t.area || 'Geral';
-    if (areaNames.indexOf(a) === -1) { areaNames.push(a); oneTarSaveAreas(areaNames); }
-  });
 
   // Filtrar tarefas
   var tarefas = todasTarefas.filter(function(t){
@@ -5275,8 +5302,8 @@ function renderOneTarefasPainel() {
 
   var html = '<div class="one-tar-kanban">';
   areaNames.forEach(function(area) {
-    var tasks = tarefas.filter(function(t){ return (t.area||'Geral') === area; });
-    var total = todasTarefas.filter(function(t){ return (t.area||'Geral') === area; });
+    var tasks = tarefas.filter(function(t){ return t.area === area; });
+    var total = todasTarefas.filter(function(t){ return t.area === area; });
     var conclN = total.filter(function(t){ return !!t.concluida; }).length;
     var cor = corArea(area);
     var emoji = emojiArea(area);
@@ -5407,7 +5434,8 @@ function oneTarLimpar() {
 function oneTarSalvar() {
   var nome = (document.getElementById('one-tar-nome')||{}).value || '';
   if (!nome) { if (typeof oneToast==='function') oneToast('Nome da tarefa é obrigatório.','error'); return; }
-  var area = (document.getElementById('one-tar-area')||{}).value || 'Geral';
+  var area = (document.getElementById('one-tar-area')||{}).value || '';
+  if (!area) { if (typeof oneToast==='function') oneToast('Selecione uma área pra tarefa.','error'); return; }
   var prio = (document.getElementById('one-tar-prio')||{}).value || 'Normal';
   var data = (document.getElementById('one-tar-data')||{}).value || '';
   var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
@@ -5448,6 +5476,12 @@ function oneTarExcluir(id) {
 }
 
 function oneTarModalAbrir(area) {
+  var areas = oneTarGetAreas();
+  if (!areas.length) {
+    if (typeof oneToast==='function') oneToast('Crie uma área primeiro pra abrigar a tarefa.','error');
+    if (typeof oneTarNovaArea === 'function') oneTarNovaArea();
+    return;
+  }
   var modal = document.getElementById('one-tar-modal');
   if (!modal) return;
   document.getElementById('one-tar-modal-title').textContent = 'Nova tarefa';
@@ -5457,10 +5491,10 @@ function oneTarModalAbrir(area) {
   document.getElementById('one-tar-modal-prio').value = 'Normal';
   document.getElementById('one-tar-modal-status').value = 'pendente';
   document.getElementById('one-tar-modal-data').value = '';
-  // Preencher áreas no select
+  // Preencher áreas no select. Default = área passada (se válida) ou primeira existente.
   var sel = document.getElementById('one-tar-modal-area');
-  var areas = oneTarGetAreas();
-  sel.innerHTML = areas.map(function(a){ return '<option value="' + a.replace(/"/g,'&quot;') + '"' + (a===(area||'Geral')?' selected':'') + '>' + a + '</option>'; }).join('');
+  var areaDefault = (area && areas.indexOf(area) !== -1) ? area : areas[0];
+  sel.innerHTML = areas.map(function(a){ return '<option value="' + a.replace(/"/g,'&quot;') + '"' + (a===areaDefault?' selected':'') + '>' + a + '</option>'; }).join('');
   modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-tar-modal-nome').focus(); }, 100);
 }
@@ -5495,7 +5529,8 @@ function oneTarModalSalvar() {
   if (!nome) { if (typeof oneToast==='function') oneToast('Título é obrigatório.','error'); return; }
   var id     = document.getElementById('one-tar-modal-id').value;
   var desc   = document.getElementById('one-tar-modal-desc').value || '';
-  var area   = document.getElementById('one-tar-modal-area').value || 'Geral';
+  var area   = document.getElementById('one-tar-modal-area').value || '';
+  if (!area) { if (typeof oneToast==='function') oneToast('Selecione uma área pra tarefa.','error'); return; }
   var prio   = document.getElementById('one-tar-modal-prio').value || 'Normal';
   var status = document.getElementById('one-tar-modal-status').value;
   var data   = document.getElementById('one-tar-modal-data').value || '';
@@ -7121,12 +7156,9 @@ function renderOneTarefasMobile() {
   }
   var prioBadge = { 'Alta':'alta', 'Normal':'normal', 'Baixa':'baixa' };
 
-  /* Áreas persistidas (mesma fonte do desktop) */
+  /* Áreas persistidas (mesma fonte do desktop). Tarefa cuja área não está
+     na lista não renderiza — tarefa só existe dentro de uma área válida. */
   var areaNames = oneTarGetAreas();
-  todasTarefas.forEach(function(t){
-    var a = t.area || 'Geral';
-    if (areaNames.indexOf(a) === -1) { areaNames.push(a); oneTarSaveAreas(areaNames); }
-  });
 
   /* Aplicar filtros mobile */
   var tarefasFiltradas = todasTarefas.filter(function(t){
@@ -7139,8 +7171,8 @@ function renderOneTarefasMobile() {
   /* Render colunas */
   var html = '';
   areaNames.forEach(function(area) {
-    var tasks = tarefasFiltradas.filter(function(t){ return (t.area||'Geral') === area; });
-    var total = todasTarefas.filter(function(t){ return (t.area||'Geral') === area; });
+    var tasks = tarefasFiltradas.filter(function(t){ return t.area === area; });
+    var total = todasTarefas.filter(function(t){ return t.area === area; });
     var conclN = total.filter(function(t){ return !!t.concluida; }).length;
     var cor   = corArea(area);
     var emoji = emojiArea(area);
