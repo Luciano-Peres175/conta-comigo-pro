@@ -5288,9 +5288,17 @@ function renderOneTarefasPainel() {
                            {cor:'#5A6A8A', bg:'#EEF1F7'};
   }
 
-  // Áreas persistidas. Tarefa cuja área não está na lista não renderiza —
-  // tarefa só existe dentro de uma área válida.
+  // Áreas persistidas. Reconcilia com áreas presentes nas tarefas (vindas
+  // do cloud, do seed ou de outro device) — sem isso, sync cloud sumia
+  // tarefas. "Geral" fica de fora de propósito: não é mais área do sistema.
   var areaNames = oneTarGetAreas();
+  var areasDirty = false;
+  todasTarefas.forEach(function(t){
+    var a = t.area;
+    if (!a || a === 'Geral') return;
+    if (areaNames.indexOf(a) === -1) { areaNames.push(a); areasDirty = true; }
+  });
+  if (areasDirty) oneTarSaveAreas(areaNames);
 
   // Filtrar tarefas
   var tarefas = todasTarefas.filter(function(t){
@@ -5314,7 +5322,7 @@ function renderOneTarefasPainel() {
       return '<div class="one-tar-card' + (conc ? ' concluida' : '') + '" style="border-left-color:' + (conc ? '#4CAF50' : cor) + '">' +
         '<div class="one-tar-check" data-tid="' + t.id + '" onclick="oneTarToggle(this.dataset.tid)" style="background:' + (conc?'#4CAF50':'transparent') + ';border-color:' + (conc?'#4CAF50':'#C0BAD0') + '">' + (conc?'✓':'') + '</div>' +
         '<div class="one-tar-card-body">' +
-          '<div class="one-tar-card-nome">' + (t.nome||'Sem nome').replace(/</g,'&lt;') + '</div>' +
+          '<div class="one-tar-card-nome">' + ((t.nome||t.titulo||'Sem nome')+'').replace(/</g,'&lt;') + '</div>' +
           '<span class="one-tar-prio-badge" style="background:' + cp.bg + ';color:' + cp.cor + '">' + (t.prioridade||'Normal') + '</span>' +
           (t.data ? '<div class="one-tar-card-data">' + t.data.split('-').reverse().join('/') + '</div>' : '') +
         '</div>' +
@@ -7156,9 +7164,16 @@ function renderOneTarefasMobile() {
   }
   var prioBadge = { 'Alta':'alta', 'Normal':'normal', 'Baixa':'baixa' };
 
-  /* Áreas persistidas (mesma fonte do desktop). Tarefa cuja área não está
-     na lista não renderiza — tarefa só existe dentro de uma área válida. */
+  /* Áreas persistidas (mesma fonte do desktop). Reconcilia com áreas
+     presentes nas tarefas, ignorando "Geral". */
   var areaNames = oneTarGetAreas();
+  var areasDirtyMob = false;
+  todasTarefas.forEach(function(t){
+    var a = t.area;
+    if (!a || a === 'Geral') return;
+    if (areaNames.indexOf(a) === -1) { areaNames.push(a); areasDirtyMob = true; }
+  });
+  if (areasDirtyMob) oneTarSaveAreas(areaNames);
 
   /* Aplicar filtros mobile */
   var tarefasFiltradas = todasTarefas.filter(function(t){
