@@ -485,11 +485,49 @@
         </div>
       </div>
 
+      <!-- BIBLIOTECA DA PINAH (5º slide mobile) — segundo cerebro portado do desktop -->
+      <div class="one-screen one-biblioteca-mob" style="padding:0;">
+        <div class="one-cer-mob-wrap">
+
+          <!-- Header padrao: logo + pills + acoes -->
+          <div class="one-tar-header one-tar-header-mob">
+            <div class="one-tar-header-left">
+              <span class="one-tar-logo"><img src="assets/icons/icon-avatarfam1-pinah.png" class="one-tar-logo-icon" alt="">Biblioteca</span>
+              <span class="one-tar-pill" id="one-cer-pill-total-mob">0 notas</span>
+              <span class="one-tar-pill em-and" id="one-cer-pill-ia-mob">50/50 IA</span>
+            </div>
+            <div class="one-tar-header-right one-cer-actions-mob">
+              <button class="one-tar-mob-iconbtn" onclick="abrirModalIA()" title="Perguntar à IA" aria-label="Perguntar à IA"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/></svg></button>
+              <button class="one-tar-mob-iconbtn" onclick="importarAbrir()" title="Importar arquivo" aria-label="Importar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+              <button class="one-tar-mob-iconbtn primary" onclick="abrirModalNota()" title="Nova nota" aria-label="Nova nota">＋</button>
+            </div>
+          </div>
+
+          <!-- Tabs de categorias (scroll horizontal) -->
+          <div class="one-tar-bar one-tar-bar-mob one-cer-tabs-bar-mob">
+            <div class="one-tar-filters one-cer-cat-tabs-mob" id="cerebro-categorias-grid-mob"></div>
+          </div>
+
+          <!-- Busca (linha propria mobile) -->
+          <div class="one-cer-busca-wrap-mob">
+            <input type="text" id="cerebro-busca-mob" class="cerebro-busca-input one-cer-busca-mob" placeholder="Buscar nas suas anotações..." oninput="setBuscaCerebro(this.value)">
+          </div>
+
+          <!-- Filtros ativos (chips) -->
+          <div id="cerebro-filtros-ativos-mob" class="cerebro-filtros-ativos one-cer-filtros-ativos-mob" hidden></div>
+
+          <!-- Grid de cards (1 coluna mobile) -->
+          <div class="cerebro-scroll one-cer-conteudo-mob" id="cerebro-conteudo-mob"></div>
+
+        </div>
+      </div>
+
     </div><!-- /one-screens-wrap -->
 
     <!-- Dots de navegação -->
     <div class="one-dots" id="one-dots">
       <div class="one-dot active"></div>
+      <div class="one-dot"></div>
       <div class="one-dot"></div>
       <div class="one-dot"></div>
       <div class="one-dot"></div>

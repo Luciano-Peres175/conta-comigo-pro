@@ -2921,6 +2921,8 @@
     cerebroFiltroBusca = '';
     const buscaEl = document.getElementById('cerebro-busca');
     if (buscaEl) buscaEl.value = '';
+    const buscaMobEl = document.getElementById('cerebro-busca-mob');
+    if (buscaMobEl) buscaMobEl.value = '';
     renderCerebro();
   }
 
@@ -3007,7 +3009,39 @@
     // Atualiza contador inline no botao "Perguntar a IA"
     atualizarRestantesIA();
 
+    // Espelha tudo pro slide Biblioteca mobile (5o slide do carrossel)
+    _espelhoCerebroMobile();
+
     renderIcons();
+  }
+
+  /**
+   * Espelha pro slide Biblioteca mobile (5o slide do carrossel) o que
+   * renderCerebro acabou de pintar no desktop. Estrategia low-touch:
+   * a logica desktop continua intocada; aqui so copiamos innerHTML e
+   * textContent pros containers gemeos com sufixo "-mob".
+   */
+  function _espelhoCerebroMobile() {
+    const pares = [
+      ['one-cer-pill-total',       'one-cer-pill-total-mob',       'text'],
+      ['one-cer-pill-ia',          'one-cer-pill-ia-mob',          'text'],
+      ['cerebro-categorias-grid',  'cerebro-categorias-grid-mob',  'html'],
+      ['cerebro-conteudo',         'cerebro-conteudo-mob',         'html']
+    ];
+    pares.forEach(function(p) {
+      const src = document.getElementById(p[0]);
+      const dst = document.getElementById(p[1]);
+      if (!src || !dst) return;
+      if (p[2] === 'text') dst.textContent = src.textContent;
+      else dst.innerHTML = src.innerHTML;
+    });
+    // Filtros ativos: espelha innerHTML E estado hidden
+    const filtSrc = document.getElementById('cerebro-filtros-ativos');
+    const filtDst = document.getElementById('cerebro-filtros-ativos-mob');
+    if (filtSrc && filtDst) {
+      filtDst.innerHTML = filtSrc.innerHTML;
+      filtDst.hidden = filtSrc.hidden;
+    }
   }
 
   function renderNotaCard(n) {
@@ -7306,6 +7340,7 @@ function oneTarMobToggle(id, btn) {
         }
       }
       if (idx === 3) renderOneTarefasMobile();
+      if (idx === 4) { if (typeof renderCerebro === 'function') renderCerebro(); }
     }, { passive: true });
   }
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', setup) : setup();
