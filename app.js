@@ -297,6 +297,10 @@
     if (contaNome)   contaNome.textContent   = nomeCompleto;
     if (contaTag)    contaTag.textContent    = tag;
 
+    // Badge das iniciais sobre o avatar central da Pinah no topbar mobile (tela base)
+    const mobBadge = document.getElementById('one-mob-pinah-badge');
+    if (mobBadge) mobBadge.textContent = iniciais;
+
     // Esconde funcoes de demo da Le pra quem nao e Familia
     aplicarVisibilidadePorGrupo(grupo);
   }

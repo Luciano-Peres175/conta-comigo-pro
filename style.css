@@ -9053,3 +9053,37 @@ button.one-fin-card:hover {
   box-shadow: none !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE — Tela base reformada (26/05/2026)
+   Bottom nav antiga removida: todos os atalhos passam pelo drawer
+   (hamburguer no topbar). Avatar central do topbar ganha badge
+   das iniciais do dono do app (LK pra familia, iniciais do nome
+   pra Amigas), populado em customizarCardSidebar() no app.js.
+═══════════════════════════════════════════════════════════════ */
+
+/* Bottom nav antiga sai do app — atalhos agora moram so no drawer */
+#bottom-nav { display: none !important; }
+
+/* Badge das iniciais do dono sobre o avatar central da Pinah */
+.one-btn-pinah-badge {
+  position: absolute;
+  bottom: -3px;
+  right: -4px;
+  z-index: 2;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 11px;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(92,136,112,0.80);
+  color: #3A2150;
+  font-family: -apple-system, system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 19px;
+  text-align: center;
+  letter-spacing: 0.2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+  pointer-events: none;
+}
+
