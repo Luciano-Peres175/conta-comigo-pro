@@ -296,7 +296,7 @@
         <!-- Header TaskAreas compacto -->
         <div class="one-tar-header one-tar-header-mob">
           <div class="one-tar-header-left">
-            <span class="one-tar-logo">📅 Agenda</span>
+            <span class="one-tar-logo"><img src="assets/icons/icon-agenda.png" class="one-tar-logo-icon" alt="">Agenda</span>
             <span class="one-tar-pill" id="one-ag-pill-hoje-mob">0 hoje</span>
             <span class="one-tar-pill em-and" id="one-ag-pill-semana-mob">0 sem</span>
             <span class="one-tar-pill conc" id="one-ag-pill-mes-mob">0 mês</span>
@@ -342,7 +342,7 @@
           <!-- Header com mês + botão "+" -->
           <div class="one-fin-mob-header">
             <div class="one-fin-mob-titulo">
-              <span class="one-fin-mob-logo">💰 Financeiro</span>
+              <span class="one-fin-mob-logo"><img src="assets/icons/icon-financeiro.png" class="one-tar-logo-icon" alt="">Financeiro</span>
               <span class="one-fin-mob-mes" id="one-fin-mob-mes">—</span>
             </div>
             <button class="one-fin-mob-btn-novo" onclick="oneFinModalAbrir()" aria-label="Novo lançamento">＋</button>
@@ -433,13 +433,16 @@
         <div class="one-tar-mob-wrap">
           <!-- Header: pills + ações (filtro / +Área / +Tarefa) -->
           <div class="one-tar-mob-header">
-            <div class="one-tar-mob-pills">
-              <span class="one-tar-mob-pill" id="one-tar-mob-total">0 tarefas</span>
-              <span class="one-tar-mob-pill em-and" id="one-tar-mob-em-and">0 em and.</span>
+            <div class="one-tar-header-left">
+              <span class="one-tar-logo"><img src="assets/icons/icon-tarefas.png" class="one-tar-logo-icon" alt="">Tarefas</span>
+              <div class="one-tar-mob-pills">
+                <span class="one-tar-mob-pill" id="one-tar-mob-total">0 tarefas</span>
+                <span class="one-tar-mob-pill em-and" id="one-tar-mob-em-and">0 em and.</span>
+              </div>
             </div>
             <div class="one-tar-mob-actions">
-              <button class="one-tar-mob-iconbtn" id="one-tar-mob-btn-filtros" onclick="oneTarMobAbrirFiltros()" title="Filtros" aria-label="Filtros">🔍</button>
-              <button class="one-tar-mob-iconbtn" onclick="oneTarMobNovaArea()" title="Nova área" aria-label="Nova área">＋📂</button>
+              <button class="one-tar-mob-iconbtn" id="one-tar-mob-btn-filtros" onclick="oneTarMobAbrirFiltros()" title="Filtros" aria-label="Filtros"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+              <button class="one-tar-mob-iconbtn" onclick="oneTarMobNovaArea()" title="Nova área" aria-label="Nova área"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg></button>
               <button class="one-tar-mob-iconbtn primary" onclick="oneTarModalAbrir()" title="Nova tarefa" aria-label="Nova tarefa">＋</button>
             </div>
           </div>

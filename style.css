@@ -9064,6 +9064,36 @@ button.one-fin-card:hover {
 /* Bottom nav antiga sai do app — atalhos agora moram so no drawer */
 #bottom-nav { display: none !important; }
 
+/* Ícones reais (PNG) dos cabeçalhos mobile — Agenda, Tarefas, Financeiro.
+   Reduz pra 18px (proporcional à fonte 13px do logo mobile vs 15px no desktop) */
+.one-tar-header-mob .one-tar-logo-icon,
+.one-tar-mob-header .one-tar-logo-icon,
+.one-fin-mob-header .one-tar-logo-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+}
+/* Logo do Financeiro mobile precisa virar inline-flex pra alinhar com a img */
+.one-fin-mob-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+/* Wrapper esquerdo do header Tarefas mobile (logo + pills) */
+.one-tar-mob-header .one-tar-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+/* Logo do Tarefas mobile herda fonte do .one-tar-logo (Playfair 15px) — encolhe pra 13px proporcional */
+.one-tar-mob-header .one-tar-logo {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* Badge das iniciais do dono sobre o avatar central da Pinah */
 .one-btn-pinah-badge {
   position: absolute;
