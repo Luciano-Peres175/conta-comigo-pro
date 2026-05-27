@@ -11877,17 +11877,19 @@ function oneAgSetView(view) {
   });
   // Atualiza label do período no header
   oneAgAtualizarLabelPeriodo();
-  // Render apropriado
+  // Render apropriado. Mantém oneAgView em sync pra que renderOneAgendaPainel
+  // (chamado tanto aqui quanto por outros pontos) saiba qual vista renderizar.
+  oneAgView = view;
   if (view === 'hoje') {
-    oneAgRenderHoje();
+    if (typeof oneAgRenderHoje === 'function') oneAgRenderHoje();
   } else if (view === 'semana') {
     if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
-    oneAgRenderResumoSemana();
+    if (typeof oneAgRenderResumoSemana === 'function') oneAgRenderResumoSemana();
   } else if (view === 'mes') {
-    oneAgRenderMes();
+    if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
   }
   // Sempre atualiza os 3 cards (baseado na view)
-  oneAgRenderTopCards();
+  if (typeof oneAgRenderTopCards === 'function') oneAgRenderTopCards();
 }
 window.oneAgSetView = oneAgSetView;
 
