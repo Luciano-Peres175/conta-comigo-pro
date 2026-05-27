@@ -6269,16 +6269,14 @@ function oneAgNavegar(delta) {
   var curView = (window.oneAgViewAtiva || oneAgView || 'semana');
   if (curView === 'semana') {
     oneAgWeekOffset += delta;
-    renderOneAgendaPainel();
   } else if (curView === 'mes') {
     oneAgMonthOffset += delta;
-    if (typeof oneAgRenderMes === 'function') oneAgRenderMes();
   } else if (curView === 'hoje') {
     var d = new Date(((window.oneAgHojeSelecionado || new Date().toISOString().slice(0,10))) + 'T00:00:00');
     d.setDate(d.getDate() + delta);
     window.oneAgHojeSelecionado = d.toISOString().slice(0,10);
-    if (typeof oneAgRenderHoje === 'function') oneAgRenderHoje();
   }
+  renderOneAgendaPainel();
 }
 
 /* Paleta de categorias da Agenda — cor (borda + hora + dot) e bg (card)
@@ -6628,7 +6626,8 @@ function renderOneAgDia() {
 /* ── Visão MÊS: panorâmica de mini-semanas ──────────────────────── */
 function renderOneAgMes() {
   var el    = document.getElementById('one-ag-mes');
-  var label = document.getElementById('one-ag-mes-label');
+  // Label do período: prefere o novo ID padrão TaskAreas, com fallback pro antigo
+  var label = document.getElementById('one-ag-periodo-label') || document.getElementById('one-ag-mes-label');
   if (!el) return;
 
   var compromissos = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]');
