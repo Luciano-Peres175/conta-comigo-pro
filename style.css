@@ -9503,7 +9503,7 @@ button.one-fin-card:hover {
    a linha de filtros. Aprovado 27/05/2026. */
 .one-ag-mini-mes-tar {
   position: absolute;
-  top: 18px;         /* = padding-top do .one-desktop-tarefas */
+  top: 10px;         /* sobe um pouco do padding pra centralizar entre topo da area e topo das colunas */
   right: 24px;       /* = padding-right do .one-desktop-tarefas */
   width: 160px;
   height: 95px;
@@ -9536,7 +9536,7 @@ button.one-fin-card:hover {
 /* Setas + nome do mês externos — alinhados com a linha de filtros */
 .one-tar-mini-mes-setas {
   position: absolute;
-  top: 62px;         /* aproximadamente a linha dos filtros */
+  top: 54px;         /* sobe junto com o card pra manter o conjunto coeso */
   right: 190px;      /* 24 (padding) + 160 (mini width) + 6 (gap) */
   display: flex;
   align-items: center;
