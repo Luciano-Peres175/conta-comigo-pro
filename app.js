@@ -3835,6 +3835,47 @@ function pinahLerNotaLocal(identificador) {
    "✓ Nota salva: [título]"). Esta função injeta uma bolha visível de confirmação
    no chat (Fix A) e registra uma memória implícita no pinahHistory (Fix B) pra
    que a Pinah lembre nas próximas mensagens o que ela já salvou. */
+/* Detecta o contexto de tela ativa. Retorna 'agenda', 'tarefas', etc., ou
+   null se o chat está visível (ou nenhum painel detectado).
+   Usado pra: (a) filtrar tools no backend; (b) decidir entre balão fugaz
+   e fallback pro chat principal. */
+function pinahDetectarContexto() {
+  var chatPanel = document.querySelector('.one-desktop-main > [data-panel="chat"]:not([hidden])');
+  if (chatPanel) return null;
+  var paineis = ['agenda', 'tarefas', 'financeiro', 'biblioteca', 'fiscal'];
+  for (var i = 0; i < paineis.length; i++) {
+    if (document.querySelector('.one-desktop-main > [data-panel="' + paineis[i] + '"]:not([hidden])')) {
+      return paineis[i];
+    }
+  }
+  return null;
+}
+
+/* Mostra um balão fugaz à direita do prompt com texto curto. Some em 4s.
+   Usado pra confirmar ações executadas pela Pinah dentro de uma
+   funcionalidade (em vez de mostrar a resposta no chat). */
+function pinahMostrarBalao(html) {
+  var balao = document.getElementById('one-pinah-balao');
+  var span = document.getElementById('one-pinah-balao-texto');
+  if (!balao || !span) return;
+  span.innerHTML = html;
+  balao.hidden = false;
+  balao.classList.remove('saindo');
+  // Reinicia animação de entrada
+  balao.style.animation = 'none';
+  // eslint-disable-next-line no-unused-expressions
+  balao.offsetHeight;
+  balao.style.animation = '';
+  if (balao._timer) clearTimeout(balao._timer);
+  balao._timer = setTimeout(function() {
+    balao.classList.add('saindo');
+    setTimeout(function() {
+      balao.hidden = true;
+      balao.classList.remove('saindo');
+    }, 350);
+  }, 4000);
+}
+
 function pinahFeedbackTool(nome, input, ctx) {
   ctx = ctx || {};
 
@@ -3902,8 +3943,12 @@ function pinahFeedbackTool(nome, input, ctx) {
     b.innerHTML = pinahRenderText(visivel);
     ctx.msgsMob.appendChild(b);
     ctx.msgsMob.scrollTop = ctx.msgsMob.scrollHeight;
+  } else if (pinahDetectarContexto()) {
+    /* Dentro de uma funcionalidade (Agenda/Tarefas/etc): balão fugaz
+       à direita do prompt em vez do toast genérico. */
+    pinahMostrarBalao(pinahRenderText(visivel));
   } else if (typeof window.toast === 'function') {
-    /* Fora do chat: feedback como toast */
+    /* Fallback (sem contexto identificado): toast tradicional */
     window.toast(visivel.replace(/\*\*/g, ''), null, { duration: 5000 });
   }
 
@@ -4562,6 +4607,11 @@ async function pinahEnviar(texto, arquivo) {
     var textoTodosOsTurnos = '';    // soma de tudo que a Pinah disse no turno multi-step (vai pro pinahHistory no fim)
     var bubble   = emChat ? pinahAddBubble('pinah', '') : null;
     var mobBubble = null;
+    /* Pra suportar a Pinah operando dentro de funcionalidades:
+       contextoTela é enviado pro backend pra filtrar tools, e
+       algumaToolExecutada decide entre balão fugaz e fallback pro chat. */
+    var contextoTela = pinahDetectarContexto();
+    var algumaToolExecutada = false;
 
     /* Mobile: substitui bolha de typing pela bolha de resposta */
     if (isMobile && msgsMob) {
@@ -4578,6 +4628,7 @@ async function pinahEnviar(texto, arquivo) {
         body: JSON.stringify({
           messages: currentMessages,
           context: pinahGetContext(),
+          contextoTela: contextoTela,
           profile: window.authProfile ? {
             nome:      window.authProfile.nome      || null,
             bio_pinah: window.authProfile.bio_pinah || null
@@ -4638,6 +4689,7 @@ async function pinahEnviar(texto, arquivo) {
                   isMobile: isMobile,
                   msgsMob:  msgsMob
                 });
+                algumaToolExecutada = true;
               }
             }
             if (ev.text) {
@@ -4712,9 +4764,31 @@ async function pinahEnviar(texto, arquivo) {
       var textoFinal = textoTodosOsTurnos || fullText;
       pinahHistory.push({ role: 'assistant', content: textoFinal });
       if (!emChat && textoFinal.trim()) {
-        var resumo = textoFinal.trim().replace(/\n/g, ' ');
-        if (resumo.length > 120) resumo = resumo.slice(0, 117) + '…';
-        if (window.toast) window.toast('Pinah: ' + resumo, null, { duration: 6000 });
+        if (algumaToolExecutada) {
+          /* Tool já gerou balão. Não duplicar com toast extra. */
+        } else if (contextoTela) {
+          /* Dentro de uma funcionalidade e Pinah respondeu só texto (não
+             entendeu como ação, ou foi conversa pura): fallback abre o
+             chat principal com a mensagem original. */
+          var textoOriginal = displayText;
+          var textoResposta = textoFinal;
+          if (typeof swapToCenter === 'function') swapToCenter('chat');
+          setTimeout(function() {
+            var welcomeBack = document.getElementById('pinah-welcome');
+            var msgsBack    = document.getElementById('pinah-msgs');
+            var clearRowBack = document.getElementById('pinah-clear-row');
+            if (welcomeBack) welcomeBack.hidden = true;
+            if (msgsBack) msgsBack.hidden = false;
+            if (clearRowBack) clearRowBack.hidden = false;
+            pinahAddBubble('user', textoOriginal);
+            pinahAddBubble('pinah', textoResposta);
+          }, 60);
+        } else {
+          /* Fora de qualquer painel reconhecido: toast tradicional. */
+          var resumo = textoFinal.trim().replace(/\n/g, ' ');
+          if (resumo.length > 120) resumo = resumo.slice(0, 117) + '…';
+          if (window.toast) window.toast('Pinah: ' + resumo, null, { duration: 6000 });
+        }
       }
       break;
     }

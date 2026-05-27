@@ -108,6 +108,34 @@ const TOOLS = [
   }
 ];
 
+/* ─── Filtro de tools por contexto de tela ─────────────────────────
+   Quando o usuário fala com a Pinah de dentro de uma funcionalidade
+   (ex: Agenda), só a tool relevante daquela tela fica disponível.
+   Se a Pinah não conseguir executar (não bate com a tool), ela vai
+   responder em texto e o front faz fallback pro chat principal. */
+const TOOLS_POR_CONTEXTO = {
+  agenda:      ['criar_compromisso'],
+  tarefas:     ['criar_tarefa'],
+  financeiro:  ['registrar_transacao'],
+  biblioteca:  ['criar_nota', 'buscar_nota', 'ler_nota']
+};
+function filtrarToolsPorContexto(contextoTela) {
+  if (!contextoTela || !TOOLS_POR_CONTEXTO[contextoTela]) return TOOLS;
+  const permitidas = TOOLS_POR_CONTEXTO[contextoTela];
+  return TOOLS.filter(t => permitidas.indexOf(t.name) !== -1);
+}
+function instrucaoExtraPorContexto(contextoTela) {
+  if (!contextoTela) return '';
+  const mapa = {
+    agenda:     'AGENDA do app. Você opera SÓ pra criar/listar compromissos.',
+    tarefas:    'TAREFAS do app. Você opera SÓ pra criar tarefas.',
+    financeiro: 'FINANCEIRO do app. Você opera SÓ pra registrar receitas/despesas.',
+    biblioteca: 'BIBLIOTECA da Pinah. Você opera SÓ pra criar/buscar/ler notas.'
+  };
+  const foco = mapa[contextoTela] || '';
+  return `\n\nCONTEXTO ATUAL: o usuário está na tela ${foco} Se a mensagem dele bate com a ferramenta dessa tela, USE-A DIRETO sem prosa extra — o usuário vê um balão curto confirmando a ação. Se a mensagem for fora desse escopo (pergunta geral, conversa, outra tela), responda em texto curto — o app abre o chat com sua resposta automaticamente. NÃO peça confirmação antes de usar a ferramenta; execute direto.`;
+}
+
 /* ─── System Prompt (dinâmico, recebe nome e bio do usuário) ───────── */
 function montarSystemPrompt(profile) {
   const nome = (profile && profile.nome) ? profile.nome : 'o usuário';
@@ -266,15 +294,21 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const { messages, context, profile } = body || {};
+  const { messages, context, profile, contextoTela } = body || {};
 
   if (!Array.isArray(messages) || messages.length === 0) {
     res.status(400).json({ error: 'messages vazio.' });
     return;
   }
 
+  // Filtra tools pela tela ativa (Agenda só cria compromisso, Tarefas só tarefa, etc.)
+  // Se a Pinah for chamada do chat principal, contextoTela vem null e ela tem todas.
+  const toolsAtivas = filtrarToolsPorContexto(contextoTela);
+
   // System prompt dinâmico: pega nome + bio_pinah do user logado (enviado pelo frontend)
-  const systemPrompt = montarSystemPrompt(profile);
+  // Quando há contextoTela, adiciona instrução pra Pinah agir como agente da tela.
+  const systemPrompt = montarSystemPrompt(profile)
+    + instrucaoExtraPorContexto(contextoTela);
 
   // Limita histórico pra não estourar contexto
   const messagesLimitados = messages.slice(-MAX_MESSAGES_HISTORY);
@@ -313,7 +347,7 @@ module.exports = async (req, res) => {
         max_tokens: MAX_OUTPUT_TOKENS,
         stream: true,
         system: systemPrompt,
-        tools: TOOLS,
+        tools: toolsAtivas,
         messages: messagesComCtx
       })
     });

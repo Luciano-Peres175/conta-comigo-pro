@@ -9423,6 +9423,59 @@ button.one-fin-card:hover {
   background: #6A9078;
 }
 
+/* ════════════════════════════════════════════════════════════════
+   Balão fugaz da Pinah — feedback de ação executada dentro de uma
+   funcionalidade. Aparece à direita do prompt, fade-in/out em 4s.
+   ════════════════════════════════════════════════════════════════ */
+.one-pinah-balao {
+  position: absolute;
+  bottom: 100%;
+  right: 24px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 8px;
+  background: #FBF8F2;
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1.5px rgba(92,136,112,0.45),
+    0 4px 14px rgba(0,0,0,.08);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 12.5px;
+  color: #2D3D2F;
+  max-width: 360px;
+  z-index: 50;
+  animation: pinahBalaoIn .25s ease-out;
+  pointer-events: none;
+}
+.one-pinah-balao[hidden] { display: none !important; }
+.one-pinah-balao.saindo { animation: pinahBalaoOut .35s ease-in forwards; }
+.one-pinah-balao-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.one-pinah-balao-texto {
+  line-height: 1.3;
+  word-break: break-word;
+}
+.one-pinah-balao-texto strong {
+  color: #5C8870;
+  font-weight: 600;
+}
+@keyframes pinahBalaoIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pinahBalaoOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-4px); }
+}
+.one-prompt-row-global { position: relative; }
+
 /* ── Mini-mês na Tarefas (variante reduzida + position absolute) ─────
    Encaixa nas 2 linhas (header + filtros) à direita, sem mexer na
    altura delas. Setas ficam fora do card, à esquerda, alinhadas com
