@@ -614,15 +614,32 @@
       <!-- Variante Agenda (escondida por default — aparece via swapToCenter('agenda')) -->
       <div class="one-desktop-agenda" data-panel="agenda" hidden>
 
-        <!-- Header: logo + pills à esquerda, mini-calendário do mês à direita.
-             Mini-mês navega independente da vista principal; clicar num dia
-             centraliza a vista. -->
-        <div class="one-tar-header one-ag-header-with-mini">
-          <div class="one-tar-header-left">
-            <span class="one-tar-logo"><img src="assets/icons/icon-agenda.png" class="one-tar-logo-icon" alt="">Agenda</span>
-            <span class="one-tar-pill" id="one-ag-pill-hoje">0 hoje</span>
-            <span class="one-tar-pill em-and" id="one-ag-pill-semana">0 semana</span>
-            <span class="one-tar-pill conc" id="one-ag-pill-mes">0 mês</span>
+        <!-- Cabeçalho da Agenda: bloco vertical à esquerda (pills no topo,
+             filtros + botões na base) com o mini-mês à direita ocupando a
+             mesma altura. Alinha visualmente topo/base com o card do mês. -->
+        <div class="one-ag-cabecalho-area">
+          <div class="one-ag-cabecalho-left">
+            <div class="one-tar-header-left">
+              <span class="one-tar-logo"><img src="assets/icons/icon-agenda.png" class="one-tar-logo-icon" alt="">Agenda</span>
+              <span class="one-tar-pill" id="one-ag-pill-hoje">0 hoje</span>
+              <span class="one-tar-pill em-and" id="one-ag-pill-semana">0 semana</span>
+              <span class="one-tar-pill conc" id="one-ag-pill-mes">0 mês</span>
+            </div>
+            <div class="one-ag-cabecalho-row-bottom">
+              <div class="one-tar-filters" id="one-ag-filters">
+                <button class="one-ag-nav-btn-pill" onclick="oneAgNavegar(-1)" title="Anterior">‹</button>
+                <span class="one-ag-periodo-label-inline" id="one-ag-periodo-label">—</span>
+                <button class="one-ag-nav-btn-pill" onclick="oneAgNavegar(1)" title="Próximo">›</button>
+                <div class="one-tar-sep"></div>
+                <button class="one-tar-filter"        data-view="hoje"   onclick="oneAgSetView('hoje')">Hoje</button>
+                <button class="one-tar-filter active" data-view="semana" onclick="oneAgSetView('semana')">Semana</button>
+                <button class="one-tar-filter"        data-view="mes"    onclick="oneAgSetView('mes')">Mês</button>
+              </div>
+              <div class="one-ag-bar-actions">
+                <button class="one-tar-btn-area" onclick="oneAgNovaCategoria()">+ Nova categoria</button>
+                <button class="one-tar-btn-nova" onclick="oneAgModalAbrir()">+ Compromisso</button>
+              </div>
+            </div>
           </div>
           <div class="one-ag-mini-mes" id="one-ag-mini-mes" aria-label="Calendário do mês">
             <div class="one-ag-mini-mes-top">
@@ -634,24 +651,6 @@
               <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
             </div>
             <div class="one-ag-mini-mes-grid" id="one-ag-mini-mes-grid"></div>
-          </div>
-        </div>
-
-        <!-- Filtros + ações na mesma linha: setas/Hoje/Semana/Mês à esquerda,
-             botões Nova categoria + Compromisso à direita. -->
-        <div class="one-tar-bar one-ag-bar-with-actions">
-          <div class="one-tar-filters" id="one-ag-filters">
-            <button class="one-ag-nav-btn-pill" onclick="oneAgNavegar(-1)" title="Anterior">‹</button>
-            <span class="one-ag-periodo-label-inline" id="one-ag-periodo-label">—</span>
-            <button class="one-ag-nav-btn-pill" onclick="oneAgNavegar(1)" title="Próximo">›</button>
-            <div class="one-tar-sep"></div>
-            <button class="one-tar-filter"        data-view="hoje"   onclick="oneAgSetView('hoje')">Hoje</button>
-            <button class="one-tar-filter active" data-view="semana" onclick="oneAgSetView('semana')">Semana</button>
-            <button class="one-tar-filter"        data-view="mes"    onclick="oneAgSetView('mes')">Mês</button>
-          </div>
-          <div class="one-ag-bar-actions">
-            <button class="one-tar-btn-area" onclick="oneAgNovaCategoria()">+ Nova categoria</button>
-            <button class="one-tar-btn-nova" onclick="oneAgModalAbrir()">+ Compromisso</button>
           </div>
         </div>
 
