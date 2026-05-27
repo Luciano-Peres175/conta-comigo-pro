@@ -9223,11 +9223,69 @@ button.one-fin-card:hover {
     transform: translateX(0) !important;
   }
 
-  /* Saem do drawer mobile: título do app, card Conta Comigo, profile antigo */
+  /* Saem do drawer mobile: título do app e profile antigo (mantém o
+     card de identidade .one-desk-card-conta no alto). */
   #sidebar .sidebar-logo,
-  #sidebar .one-desk-card-conta,
   #sidebar .sidebar-profile {
     display: none !important;
+  }
+
+  /* Card de identidade (avatar + nome + profissão) no alto do drawer.
+     Regras de desktop ficam isoladas em @media (min-width:900px),
+     então pra mobile precisa de regras próprias adaptadas ao drawer estreito. */
+  #sidebar .one-desk-card-conta {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    margin: 0 0 14px 0;
+    background: #FBF8F2;
+    border-radius: 14px;
+    box-sizing: border-box;
+    box-shadow:
+      0 0 0 2px rgba(92,136,112,0.55),
+      0 0 0 6px rgba(92,136,112,0.15),
+      0 4px 12px rgba(0,0,0,.05);
+    flex-shrink: 0;
+  }
+  #sidebar .one-desk-card-conta-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #9B72B0 0%, #7E579F 100%);
+    color: #fff;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 6px rgba(126,87,159,0.30);
+  }
+  #sidebar .one-desk-card-conta-info {
+    flex: 1;
+    min-width: 0;
+  }
+  #sidebar .one-desk-card-conta-nome {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #2D3D2F;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #sidebar .one-desk-card-conta-tag {
+    font-size: 9px;
+    color: #6B7F6F;
+    margin-top: 2px;
+    font-family: system-ui, -apple-system, sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Mesa do menu: largura toda do drawer, sem fundo decorativo */
@@ -9256,8 +9314,8 @@ button.one-fin-card:hover {
     padding: 8px !important;
   }
   #sidebar .nav-item .nav-icon img {
-    width: 44px !important;
-    height: 44px !important;
+    width: 48px !important;
+    height: 48px !important;
   }
   #sidebar .nav-label,
   #sidebar .sidebar-footer {
