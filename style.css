@@ -9497,54 +9497,6 @@ button.one-fin-card:hover {
   background: #6A9078;
 }
 
-/* Variante compacta do mini-mês — usada no header da Tarefas, onde o
-   espaço é menor que na Agenda. Dimensões ~170x90px. */
-.one-ag-mini-mes-compact {
-  flex: 0 0 170px;
-  width: 170px;
-  padding: 5px 7px 6px;
-  border-radius: 10px;
-  gap: 1px;
-}
-.one-ag-mini-mes-compact .one-ag-mini-mes-top { height: 16px; gap: 0; }
-.one-ag-mini-mes-compact .one-ag-mini-mes-titulo { font-size: 10px; }
-.one-ag-mini-mes-compact .one-ag-mini-mes-nav {
-  width: 16px;
-  height: 16px;
-  font-size: 12px;
-  border-radius: 4px;
-}
-.one-ag-mini-mes-compact .one-ag-mini-mes-dow {
-  font-size: 7px;
-  padding: 0;
-  margin-bottom: 0;
-  letter-spacing: 0;
-}
-.one-ag-mini-mes-compact .one-ag-mini-mes-grid {
-  grid-auto-rows: 10px;
-  gap: 0;
-}
-.one-ag-mini-mes-compact .one-ag-mini-mes-dia {
-  font-size: 8.5px;
-  width: 14px;
-  height: 10px;
-}
-.one-ag-mini-mes-compact .one-ag-mini-mes-dia.hoje {
-  width: 10px;
-  height: 10px;
-}
-
-/* Header da Tarefas vira flex justify-content: space-between pra acomodar
-   o mini-mês compacto à direita. Cresce o suficiente pra caber (~95px). */
-.one-desktop-tarefas .one-tar-header {
-  justify-content: space-between;
-  align-items: center;
-  min-height: 95px;
-}
-.one-desktop-tarefas .one-tar-header > .one-ag-mini-mes-compact {
-  flex-shrink: 0;
-}
-
 /* Barra de filtros com botões à direita (Nova categoria + Compromisso) */
 .one-ag-bar-with-actions {
   display: flex;

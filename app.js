@@ -5247,9 +5247,6 @@ function renderOneTarefasPainel() {
   var el = document.getElementById('one-tarefas-list');
   var count = document.getElementById('one-tarefas-count');
   if (!el) return;
-  // Mini-mês do header (compartilhado com Agenda) — roda sempre que a tela
-  // de Tarefas é renderizada pra garantir que apareça preenchido.
-  if (typeof oneAgMiniMesRender === 'function') oneAgMiniMesRender();
   var todasTarefas = []; try { todasTarefas = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   var pendentes = todasTarefas.filter(function(t){ return !t.concluida; });
   if (count) count.textContent = pendentes.length + ' pendente' + (pendentes.length === 1 ? '' : 's');
