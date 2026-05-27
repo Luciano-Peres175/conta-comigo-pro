@@ -4433,15 +4433,17 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 
 /* Body row: ruler + colunas (sem headers). Cada coluna rola por dentro
    independente; a régua à esquerda sincroniza com a coluna ativa via JS
-   (último scroll ou último mouseenter). Por isso .one-ag-week-main NÃO
-   tem mais overflow-y — quem tem é cada .one-ag-kday-col. */
+   (último scroll ou último mouseenter). overflow-y: hidden trava o scroll
+   vertical aqui (cada coluna controla o seu); overflow-x: visible deixa
+   o scroll horizontal do wrapper externo cuidar de colunas largas. */
 .one-ag-week-main {
   display: flex;
   flex-direction: row;
   padding: 0 8px 8px 0;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: hidden;
+  overflow-x: visible;
 }
 
 /* Régua das horas — sticky à esquerda. Como cada coluna rola por dentro
@@ -4492,7 +4494,9 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   transform: translateY(calc(-100% - 2px));
 }
 
-/* Faixa das 7 colunas — gap igual ao kanban do Tarefas pra dar respiro entre dias */
+/* Faixa das 7 colunas — gap igual ao kanban do Tarefas pra dar respiro entre dias.
+   height: 100% garante que as colunas-filhas tenham um "pai com altura" pra
+   o max-height: 100% delas funcionar e o scroll interno acontecer. */
 .one-ag-tl-cols {
   display: flex;
   gap: 10px;
@@ -4500,6 +4504,7 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   position: relative;
   flex: 1;
   min-width: 0;
+  height: 100%;
 }
 .one-ag-week-cols {
   align-items: flex-start;
