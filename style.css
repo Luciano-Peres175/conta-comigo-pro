@@ -4387,7 +4387,9 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 #one-ag-kanban[hidden] { display: none !important; }
 #one-ag-mes[hidden]    { display: none !important; }
 
-/* ── Kanban semanal: 7 colunas lado a lado (igual ao Tarefas) ── */
+/* ── Kanban semanal: 7 colunas lado a lado (igual ao Tarefas) ──
+   Scroll vertical fica DENTRO da .one-ag-week-main (a área da régua + colunas).
+   Os headers em .one-ag-week-top ficam naturalmente fixos em cima, sem sticky. */
 .one-ag-tl-wrapper {
   flex: 1;
   display: flex;
@@ -4395,16 +4397,15 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   gap: 0;
   padding: 0; /* padding movido para .one-ag-week-top e .one-ag-week-main */
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: hidden;
   min-height: 0;
 }
 .one-ag-tl-wrapper::-webkit-scrollbar { height: 4px; }
 .one-ag-tl-wrapper::-webkit-scrollbar-thumb { background: rgba(92,136,112,0.25); border-radius: 2px; }
 
-/* Linha sticky: cap do ruler + 7 headers das colunas */
+/* Linha de headers — fica em cima da área de baixo, sem sticky.
+   Como .one-ag-week-main ganha o scroll Y, os headers já ficam fixos naturalmente. */
 .one-ag-week-top {
-  position: sticky;
-  top: 0;
   z-index: 10;
   background: #FBF8F2;
   display: flex;
@@ -4425,17 +4426,25 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 .one-ag-week-header-cols {
   display: flex;
   flex: 1;
-  gap: 6px;
+  gap: 10px;
   padding: 0 6px;
   min-width: 0;
 }
 
-/* Body row: ruler + colunas (sem headers) — altura natural para o wrapper rolar */
+/* Body row: ruler + colunas (sem headers). Scroll Y vive AQUI dentro,
+   não no wrapper externo — headers de cima ficam fixos sem sticky. */
 .one-ag-week-main {
   display: flex;
   flex-direction: row;
   padding: 0 8px 8px 0;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(92,136,112,0.25) transparent;
 }
+.one-ag-week-main::-webkit-scrollbar { width: 4px; }
+.one-ag-week-main::-webkit-scrollbar-thumb { background: rgba(92,136,112,0.25); border-radius: 2px; }
 
 /* Régua das horas — sticky à esquerda (dentro do .one-ag-week-main) */
 .one-ag-tl-ruler {
@@ -4464,11 +4473,19 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   letter-spacing: .3px;
   transform: translateY(-50%);
 }
+/* Primeira hora (00:00) fica logo abaixo da linha do topo pra não cortar. */
+.one-ag-tl-ruler .one-ag-tl-hour:first-child {
+  transform: translateY(2px);
+}
+/* Última hora (24:00) fica acima da linha do final pra não cortar. */
+.one-ag-tl-ruler .one-ag-tl-hour:last-child {
+  transform: translateY(calc(-100% - 2px));
+}
 
-/* Faixa das 7 colunas */
+/* Faixa das 7 colunas — gap igual ao kanban do Tarefas pra dar respiro entre dias */
 .one-ag-tl-cols {
   display: flex;
-  gap: 6px;
+  gap: 10px;
   padding: 0 6px;
   position: relative;
   flex: 1;
