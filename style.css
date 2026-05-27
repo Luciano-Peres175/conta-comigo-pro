@@ -9355,54 +9355,13 @@ button.one-fin-card:hover {
 }
 
 /* ════════════════════════════════════════════════════════════════
-   Cabeçalho da Agenda — mini-calendário do mês à direita; à esquerda,
-   bloco vertical com pills no TOPO (alinhado com topo do mini) e
-   filtros + botões na BASE (alinhado com base do mini). Altura total
-   = altura do mini (~110px). Aprovado 27/05/2026.
+   Mini-calendário do mês — base. Usado em Agenda e Tarefas com a
+   mesma estrutura (header das duas telas é idêntico desde 27/05/2026).
+   Dimensões + position absolute vêm da variante .one-ag-mini-mes-tar.
    ════════════════════════════════════════════════════════════════ */
-.one-ag-cabecalho-area {
-  flex-shrink: 0;
-  display: flex;
-  align-items: stretch;
-  gap: 14px;
-  padding: 8px 14px;
-}
-.one-ag-cabecalho-left {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 6px;
-}
-.one-ag-cabecalho-left .one-tar-header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-.one-ag-cabecalho-row-bottom {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.one-ag-cabecalho-row-bottom .one-tar-filters {
-  flex-shrink: 0;
-}
-.one-ag-cabecalho-row-bottom .one-ag-bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  flex-shrink: 0;
-}
 .one-ag-mini-mes {
-  flex: 0 0 190px;
-  width: 190px;
   background: #FBF8F2;
   border-radius: 12px;
-  padding: 6px 8px 8px;
   box-shadow:
     0 0 0 1.5px rgba(92,136,112,0.45),
     0 0 0 4px rgba(92,136,112,0.10),
@@ -9412,39 +9371,6 @@ button.one-fin-card:hover {
   gap: 2px;
   font-family: system-ui, -apple-system, sans-serif;
 }
-.one-ag-mini-mes-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2px;
-  height: 18px;
-}
-.one-ag-mini-mes-titulo {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #2D3D2F;
-  text-transform: capitalize;
-  flex: 1;
-  text-align: center;
-}
-.one-ag-mini-mes-nav {
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  border: none;
-  background: transparent;
-  color: #5C8870;
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition: background .15s ease;
-}
-.one-ag-mini-mes-nav:hover { background: rgba(92,136,112,0.12); }
 .one-ag-mini-mes-dow {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
