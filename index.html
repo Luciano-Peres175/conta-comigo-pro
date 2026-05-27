@@ -614,17 +614,30 @@
       <!-- Variante Agenda (escondida por default — aparece via swapToCenter('agenda')) -->
       <div class="one-desktop-agenda" data-panel="agenda" hidden>
 
-        <!-- Header padrão TaskAreas: logo + pills + ações -->
-        <div class="one-tar-header">
+        <!-- Header padrão TaskAreas + mini-calendário do mês à direita.
+             Mini-mês navega independente da vista principal (igual ao Google);
+             clicar num dia centraliza a vista principal nesse dia. -->
+        <div class="one-tar-header one-ag-header-with-mini">
           <div class="one-tar-header-left">
             <span class="one-tar-logo"><img src="assets/icons/icon-agenda.png" class="one-tar-logo-icon" alt="">Agenda</span>
             <span class="one-tar-pill" id="one-ag-pill-hoje">0 hoje</span>
             <span class="one-tar-pill em-and" id="one-ag-pill-semana">0 semana</span>
             <span class="one-tar-pill conc" id="one-ag-pill-mes">0 mês</span>
           </div>
-          <div class="one-tar-header-right">
+          <div class="one-ag-header-mid">
             <button class="one-tar-btn-area" onclick="oneAgNovaCategoria()">+ Nova categoria</button>
             <button class="one-tar-btn-nova" onclick="oneAgModalAbrir()">+ Compromisso</button>
+          </div>
+          <div class="one-ag-mini-mes" id="one-ag-mini-mes" aria-label="Calendário do mês">
+            <div class="one-ag-mini-mes-top">
+              <button class="one-ag-mini-mes-nav" onclick="oneAgMiniMesNav(-1)" aria-label="Mês anterior">‹</button>
+              <span class="one-ag-mini-mes-titulo" id="one-ag-mini-mes-titulo">—</span>
+              <button class="one-ag-mini-mes-nav" onclick="oneAgMiniMesNav(1)" aria-label="Próximo mês">›</button>
+            </div>
+            <div class="one-ag-mini-mes-dow">
+              <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+            </div>
+            <div class="one-ag-mini-mes-grid" id="one-ag-mini-mes-grid"></div>
           </div>
         </div>
 

@@ -6298,6 +6298,8 @@ function oneAgCorCategoria(tipo) {
 }
 
 function renderOneAgendaPainel() {
+  // Mini-mês do header roda em qualquer vista (semana / hoje / mês)
+  oneAgMiniMesRender();
   if (oneAgView === 'dia') { renderOneAgDia(); return; }
   if (oneAgView === 'mes') { renderOneAgMes(); return; }
 
@@ -6444,6 +6446,83 @@ function renderOneAgendaPainel() {
 
   oneInitAgendaSortable();
   oneAgSyncScrollSetup(kanban);
+}
+
+/* Mini-calendário do mês no header da Agenda — referência do Google
+   Calendar. Navega independente da vista principal (setas próprias).
+   Clicar num dia move a vista principal pra centralizar nesse dia. */
+var oneAgMiniMesData = null; // Date apontando pro primeiro dia do mês visível
+
+function oneAgMiniMesRender() {
+  var titulo = document.getElementById('one-ag-mini-mes-titulo');
+  var grid = document.getElementById('one-ag-mini-mes-grid');
+  if (!titulo || !grid) return;
+  if (!oneAgMiniMesData) {
+    oneAgMiniMesData = new Date();
+    oneAgMiniMesData.setDate(1);
+    oneAgMiniMesData.setHours(0,0,0,0);
+  }
+  var meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  var ano = oneAgMiniMesData.getFullYear();
+  var mes = oneAgMiniMesData.getMonth();
+  titulo.textContent = meses[mes] + ' ' + ano;
+
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  var hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0') + '-' + String(hoje.getDate()).padStart(2,'0');
+
+  // Começa a grade no domingo da primeira semana que contém dia 1
+  var primeiro = new Date(ano, mes, 1);
+  var dowPrim = primeiro.getDay();
+  var ini = new Date(primeiro);
+  ini.setDate(1 - dowPrim);
+
+  var html = '';
+  for (var i = 0; i < 42; i++) {
+    var d = new Date(ini);
+    d.setDate(ini.getDate() + i);
+    var iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    var isHoje = iso === hojeStr;
+    var isOutroMes = d.getMonth() !== mes;
+    var cls = 'one-ag-mini-mes-dia';
+    if (isOutroMes) cls += ' outro-mes';
+    if (isHoje) cls += ' hoje';
+    html += '<button class="' + cls + '" data-iso="' + iso + '" onclick="oneAgMiniMesClickDia(this.dataset.iso)">' + d.getDate() + '</button>';
+  }
+  grid.innerHTML = html;
+}
+
+function oneAgMiniMesNav(delta) {
+  if (!oneAgMiniMesData) {
+    oneAgMiniMesData = new Date();
+    oneAgMiniMesData.setDate(1);
+    oneAgMiniMesData.setHours(0,0,0,0);
+  }
+  oneAgMiniMesData.setMonth(oneAgMiniMesData.getMonth() + delta);
+  oneAgMiniMesRender();
+}
+
+function oneAgMiniMesClickDia(iso) {
+  var d = new Date(iso + 'T00:00:00');
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
+  // Segunda da semana de hoje
+  var dowHoje = hoje.getDay();
+  var diffSegHoje = (dowHoje === 0 ? -6 : 1 - dowHoje);
+  var segHoje = new Date(hoje);
+  segHoje.setDate(hoje.getDate() + diffSegHoje);
+  // Segunda da semana clicada
+  var dowClick = d.getDay();
+  var diffSegClick = (dowClick === 0 ? -6 : 1 - dowClick);
+  var segClick = new Date(d);
+  segClick.setDate(d.getDate() + diffSegClick);
+  // Diferença em semanas (round pra absorver fuso/DST)
+  var diffMs = segClick.getTime() - segHoje.getTime();
+  var diffSemanas = Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
+  oneAgWeekOffset = diffSemanas;
+  // Vista Hoje: aponta pro dia clicado
+  window.oneAgHojeSelecionado = iso;
+  // Vista Mês: offset em meses
+  oneAgMonthOffset = (d.getFullYear() - hoje.getFullYear()) * 12 + (d.getMonth() - hoje.getMonth());
+  renderOneAgendaPainel();
 }
 
 /* Scroll sincronizado: cada .one-ag-kday-col tem scroll Y interno
