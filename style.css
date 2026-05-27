@@ -4296,8 +4296,8 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   overflow: hidden;
 }
 .one-ag-mes-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
   background: #FBF8F2;
   border-bottom: 1px solid rgba(92,136,112,0.18);
   flex-shrink: 0;
@@ -4319,8 +4319,8 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 }
 /* Cada semana ocupa altura igual (1 / 5 ou 1 / 6 do espaço) */
 .one-ag-mes-semana {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
   border-bottom: 1px solid rgba(92,136,112,0.12);
   cursor: pointer;
   transition: background .12s;
