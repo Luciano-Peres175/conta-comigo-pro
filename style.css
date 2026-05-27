@@ -4665,6 +4665,10 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   background: #fff;
   cursor: default;
   width: 100%;
+  /* Mantém os 1200px (24h * 50px) firmes mesmo dentro do flex column
+     da coluna — sem isso o flex padrão encolhia o body pra caber, e o
+     overflow-y: auto da coluna não tinha nada pra rolar. */
+  flex-shrink: 0;
 }
 /* Card posicionado absolutamente na timeline semanal */
 .one-ag-tl-card {
