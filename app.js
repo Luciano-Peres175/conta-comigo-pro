@@ -6612,6 +6612,11 @@ function oneAgMiniMesClickDia(iso) {
    (pra preservar o contorno fechado da coluna no viewport), mas quando
    uma rola TODAS rolam juntas — assim como a régua à esquerda. Flag
    de "sincronizando" evita loop infinito de eventos. */
+/* Estado do scroll Y da Agenda — preservado entre re-renders do painel.
+   Valor inicial 400 (= 8h * 50px) abre a Agenda já em 08:00, que é o
+   horário de trabalho. Usuário rola pra cima pra ver antes. */
+var oneAgScrollY = 400;
+
 function oneAgSyncScrollSetup(kanban) {
   if (!kanban) return;
   var rulerContent = kanban.querySelector('.one-ag-tl-ruler-content');
@@ -6622,6 +6627,7 @@ function oneAgSyncScrollSetup(kanban) {
     if (sincronizando) return;
     sincronizando = true;
     var top = source.scrollTop;
+    oneAgScrollY = top; // memoriza pra próximo render
     cols.forEach(function(col) {
       if (col !== source && col.scrollTop !== top) col.scrollTop = top;
     });
@@ -6630,6 +6636,17 @@ function oneAgSyncScrollSetup(kanban) {
   }
   cols.forEach(function(col) {
     col.addEventListener('scroll', function(){ syncAll(col); }, { passive: true });
+  });
+  // Aplica scroll inicial (ou o último valor memorizado pelo usuário).
+  // requestAnimationFrame garante que o layout já está pronto.
+  requestAnimationFrame(function() {
+    cols[0].scrollTop = oneAgScrollY;
+    // Propaga manualmente — em alguns browsers o setter de scrollTop
+    // não dispara o event 'scroll' quando o valor não muda da última vez.
+    cols.forEach(function(col) {
+      if (col !== cols[0]) col.scrollTop = oneAgScrollY;
+    });
+    if (rulerContent) rulerContent.style.transform = 'translateY(' + (-oneAgScrollY) + 'px)';
   });
 }
 
