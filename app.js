@@ -6443,6 +6443,32 @@ function renderOneAgendaPainel() {
   });
 
   oneInitAgendaSortable();
+  oneAgSyncScrollSetup(kanban);
+}
+
+/* Scroll sincronizado: cada .one-ag-kday-col tem scroll Y interno
+   (pra preservar o contorno fechado da coluna no viewport), mas quando
+   uma rola TODAS rolam juntas — assim como a régua à esquerda. Flag
+   de "sincronizando" evita loop infinito de eventos. */
+function oneAgSyncScrollSetup(kanban) {
+  if (!kanban) return;
+  var rulerContent = kanban.querySelector('.one-ag-tl-ruler-content');
+  var cols = kanban.querySelectorAll('.one-ag-kday-col');
+  if (!cols.length) return;
+  var sincronizando = false;
+  function syncAll(source) {
+    if (sincronizando) return;
+    sincronizando = true;
+    var top = source.scrollTop;
+    cols.forEach(function(col) {
+      if (col !== source && col.scrollTop !== top) col.scrollTop = top;
+    });
+    if (rulerContent) rulerContent.style.transform = 'translateY(' + (-top) + 'px)';
+    requestAnimationFrame(function(){ sincronizando = false; });
+  }
+  cols.forEach(function(col) {
+    col.addEventListener('scroll', function(){ syncAll(col); }, { passive: true });
+  });
 }
 
 /* Linha horizontal de "agora" — atravessa todas as colunas */

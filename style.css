@@ -4431,39 +4431,39 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   min-width: 0;
 }
 
-/* Body row: ruler + colunas (sem headers). Scroll Y unificado aqui —
-   régua + 7 colunas rolam juntas, permitindo enxergar a hora exata em
-   todas as colunas ao mesmo tempo. Headers de cima ficam fixos sem sticky. */
+/* Body row: ruler + colunas (sem headers). Cada coluna tem scroll Y
+   interno com contorno fechado visível; JS sincroniza o scroll entre
+   todas as colunas + a régua, então o usuário tem a sensação de scroll
+   unificado mas as molduras das colunas permanecem fixas no viewport. */
 .one-ag-week-main {
   display: flex;
   flex-direction: row;
   padding: 0 8px 8px 0;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(92,136,112,0.25) transparent;
+  overflow-y: hidden;
+  overflow-x: visible;
 }
-.one-ag-week-main::-webkit-scrollbar { width: 4px; }
-.one-ag-week-main::-webkit-scrollbar-thumb { background: rgba(92,136,112,0.25); border-radius: 2px; }
 
-/* Régua das horas — sticky à esquerda dentro do .one-ag-week-main.
-   Como o scroll Y vive no pai (.one-ag-week-main), a régua rola junto
-   com as colunas verticalmente. O content interno mantém os 1200px
-   pra que a régua tenha a altura natural pra acompanhar o body. */
+/* Régua das horas — sticky à esquerda. Como o scroll é interno em cada
+   coluna e sincronizado via JS, o conteúdo da régua é deslocado via
+   transform pelo JS pra acompanhar o scroll comum. */
 .one-ag-tl-ruler {
   position: sticky;
   left: 0;
   z-index: 6;
   flex: 0 0 44px;
   width: 44px;
+  height: 100%;
   background: #FBF8F2;
   border-right: 1px solid rgba(127,168,142,0.12);
+  overflow: hidden;
 }
 .one-ag-tl-ruler-content {
   position: relative;
   height: 1200px; /* 24h * 50px — mesmo do body de cada coluna */
   width: 100%;
+  will-change: transform;
 }
 .one-ag-week-ruler {
   flex: 0 0 44px;
@@ -4492,7 +4492,9 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   transform: translateY(calc(-100% - 2px));
 }
 
-/* Faixa das 7 colunas — gap igual ao kanban do Tarefas pra dar respiro entre dias. */
+/* Faixa das 7 colunas — gap igual ao kanban do Tarefas. height: 100%
+   garante pai com altura definida pra que as colunas-filhas com
+   max-height: 100% tenham referência e o contorno fechado funcione. */
 .one-ag-tl-cols {
   display: flex;
   gap: 10px;
@@ -4500,6 +4502,7 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   position: relative;
   flex: 1;
   min-width: 0;
+  height: 100%;
 }
 .one-ag-week-cols {
   align-items: flex-start;
@@ -4535,9 +4538,11 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
 }
 .one-ag-tl-grid-line:nth-child(odd) { border-top-style: solid; border-top-color: rgba(127,168,142,0.05); }
 
-/* Coluna do dia — visual claymorphism. Scroll vertical é unificado no
-   pai .one-ag-week-main: régua + 7 colunas rolam juntas. A coluna fica
-   com altura natural (1200px do body interno). */
+/* Coluna do dia — visual claymorphism, altura limitada pelo pai pra
+   manter o contorno fechado visível. Scroll Y interno; sincroniza com
+   as outras colunas + régua via JS. Scrollbar oculta porque a barra
+   real ficaria duplicada em 7 lugares — o usuário rola via wheel ou
+   touchpad em qualquer coluna e o JS propaga. */
 .one-ag-kday-col {
   flex: 1;
   min-width: 120px;
@@ -4548,10 +4553,14 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
     0 0 0 1.5px rgba(92,136,112,0.45),
     0 0 0 4px rgba(92,136,112,0.10),
     0 4px 10px rgba(0,0,0,.06);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  max-height: 100%;
+  scrollbar-width: none;
 }
+.one-ag-kday-col::-webkit-scrollbar { display: none; }
 @media (max-width: 900px) {
   .one-ag-kday-col {
     flex: 0 0 140px;
