@@ -678,6 +678,20 @@
       <!-- Variante Tarefas — Kanban TaskAreas (5 colunas padrão) -->
       <div class="one-desktop-tarefas" data-panel="tarefas" hidden>
 
+        <!-- Mini-mês absolute: encaixa nas 2 linhas (header + filtros) à direita.
+             Setas externas ficam à esquerda do card, alinhadas com a linha de filtros. -->
+        <div class="one-tar-mini-mes-setas">
+          <button onclick="oneAgMiniMesNav(-1)" aria-label="Mês anterior">‹</button>
+          <button onclick="oneAgMiniMesNav(1)" aria-label="Próximo mês">›</button>
+        </div>
+        <div class="one-ag-mini-mes one-ag-mini-mes-tar" id="one-tar-mini-mes" aria-label="Calendário do mês">
+          <div class="one-ag-mini-mes-titulo">—</div>
+          <div class="one-ag-mini-mes-dow">
+            <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+          </div>
+          <div class="one-ag-mini-mes-grid"></div>
+        </div>
+
         <!-- Header estilo TaskAreas: logo + contadores + ações na mesma linha -->
         <div class="one-tar-header">
           <div class="one-tar-header-left">

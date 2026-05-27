@@ -9497,6 +9497,79 @@ button.one-fin-card:hover {
   background: #6A9078;
 }
 
+/* ── Mini-mês na Tarefas (variante reduzida + position absolute) ─────
+   Encaixa nas 2 linhas (header + filtros) à direita, sem mexer na
+   altura delas. Setas ficam fora do card, à esquerda, alinhadas com
+   a linha de filtros. Aprovado 27/05/2026. */
+.one-ag-mini-mes-tar {
+  position: absolute;
+  top: 18px;         /* = padding-top do .one-desktop-tarefas */
+  right: 24px;       /* = padding-right do .one-desktop-tarefas */
+  width: 160px;
+  height: 95px;
+  padding: 5px 8px 7px;
+  border-radius: 10px;
+  z-index: 4;
+  gap: 1px;
+}
+.one-ag-mini-mes-tar .one-ag-mini-mes-titulo {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2D3D2F;
+  text-transform: capitalize;
+  text-align: center;
+  display: block;
+  margin: 0 0 1px 0;
+}
+.one-ag-mini-mes-tar .one-ag-mini-mes-dow {
+  font-size: 7.5px;
+  padding: 0;
+  margin-bottom: 1px;
+  letter-spacing: 0;
+}
+.one-ag-mini-mes-tar .one-ag-mini-mes-grid {
+  grid-auto-rows: 10px;
+  gap: 0;
+}
+.one-ag-mini-mes-tar .one-ag-mini-mes-dia {
+  font-size: 8.5px;
+  width: 13px;
+  height: 10px;
+}
+.one-ag-mini-mes-tar .one-ag-mini-mes-dia.hoje {
+  width: 10px;
+  height: 10px;
+}
+
+/* Setas externas — alinhadas com a linha de filtros (.one-tar-bar) */
+.one-tar-mini-mes-setas {
+  position: absolute;
+  top: 62px;         /* aproximadamente a linha dos filtros */
+  right: 190px;      /* 24 (padding) + 160 (mini width) + 6 (gap) */
+  display: flex;
+  gap: 4px;
+  z-index: 5;
+}
+.one-tar-mini-mes-setas button {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(92,136,112,0.40);
+  background: #FBF8F2;
+  color: #5C8870;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background .15s ease;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-tar-mini-mes-setas button:hover { background: rgba(92,136,112,0.12); }
+
 /* Barra de filtros com botões à direita (Nova categoria + Compromisso) */
 .one-ag-bar-with-actions {
   display: flex;
