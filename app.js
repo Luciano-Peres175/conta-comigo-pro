@@ -5247,6 +5247,9 @@ function renderOneTarefasPainel() {
   var el = document.getElementById('one-tarefas-list');
   var count = document.getElementById('one-tarefas-count');
   if (!el) return;
+  // Mini-mês do header (compartilhado com Agenda) — roda sempre que a tela
+  // de Tarefas é renderizada pra garantir que apareça preenchido.
+  if (typeof oneAgMiniMesRender === 'function') oneAgMiniMesRender();
   var todasTarefas = []; try { todasTarefas = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
   var pendentes = todasTarefas.filter(function(t){ return !t.concluida; });
   if (count) count.textContent = pendentes.length + ' pendente' + (pendentes.length === 1 ? '' : 's');
@@ -6452,9 +6455,8 @@ function renderOneAgendaPainel() {
 var oneAgMiniMesData = null; // Date apontando pro primeiro dia do mês visível
 
 function oneAgMiniMesRender() {
-  var titulo = document.getElementById('one-ag-mini-mes-titulo');
-  var grid = document.getElementById('one-ag-mini-mes-grid');
-  if (!titulo || !grid) return;
+  var instancias = document.querySelectorAll('.one-ag-mini-mes');
+  if (!instancias.length) return;
   if (!oneAgMiniMesData) {
     oneAgMiniMesData = new Date();
     oneAgMiniMesData.setDate(1);
@@ -6463,7 +6465,7 @@ function oneAgMiniMesRender() {
   var meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   var ano = oneAgMiniMesData.getFullYear();
   var mes = oneAgMiniMesData.getMonth();
-  titulo.textContent = meses[mes] + ' ' + ano;
+  var tituloTexto = meses[mes] + ' ' + ano;
 
   var hoje = new Date(); hoje.setHours(0,0,0,0);
   var hojeStr = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0') + '-' + String(hoje.getDate()).padStart(2,'0');
@@ -6486,7 +6488,14 @@ function oneAgMiniMesRender() {
     if (isHoje) cls += ' hoje';
     html += '<button class="' + cls + '" data-iso="' + iso + '" onclick="oneAgMiniMesClickDia(this.dataset.iso)">' + d.getDate() + '</button>';
   }
-  grid.innerHTML = html;
+
+  // Renderiza em todas as instâncias (Agenda + Tarefas + outras telas no futuro)
+  instancias.forEach(function(inst) {
+    var titulo = inst.querySelector('.one-ag-mini-mes-titulo');
+    var grid = inst.querySelector('.one-ag-mini-mes-grid');
+    if (titulo) titulo.textContent = tituloTexto;
+    if (grid) grid.innerHTML = html;
+  });
 }
 
 function oneAgMiniMesNav(delta) {

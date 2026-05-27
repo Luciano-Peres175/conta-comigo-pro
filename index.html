@@ -678,7 +678,7 @@
       <!-- Variante Tarefas — Kanban TaskAreas (5 colunas padrão) -->
       <div class="one-desktop-tarefas" data-panel="tarefas" hidden>
 
-        <!-- Header estilo TaskAreas: logo + contadores + ações na mesma linha -->
+        <!-- Header estilo TaskAreas: logo + contadores + ações + mini-mês compacto à direita -->
         <div class="one-tar-header">
           <div class="one-tar-header-left">
             <span class="one-tar-logo"><img src="assets/icons/icon-tarefas.png" class="one-tar-logo-icon" alt="">TaskAreas</span>
@@ -687,6 +687,17 @@
             <span class="one-tar-pill conc" id="one-tar-concluidas">0 concluídas</span>
             <button class="one-tar-btn-area" onclick="oneTarNovaArea()">+ Nova área</button>
             <button class="one-tar-btn-nova" onclick="oneTarModalAbrir()">+ Tarefa</button>
+          </div>
+          <div class="one-ag-mini-mes one-ag-mini-mes-compact" id="one-tar-mini-mes" aria-label="Calendário do mês">
+            <div class="one-ag-mini-mes-top">
+              <button class="one-ag-mini-mes-nav" onclick="oneAgMiniMesNav(-1)" aria-label="Mês anterior">‹</button>
+              <span class="one-ag-mini-mes-titulo">—</span>
+              <button class="one-ag-mini-mes-nav" onclick="oneAgMiniMesNav(1)" aria-label="Próximo mês">›</button>
+            </div>
+            <div class="one-ag-mini-mes-dow">
+              <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+            </div>
+            <div class="one-ag-mini-mes-grid"></div>
           </div>
         </div>
 
