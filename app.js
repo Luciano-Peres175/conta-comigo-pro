@@ -6488,12 +6488,15 @@ function oneAgMiniMesRender() {
     html += '<button class="' + cls + '" data-iso="' + iso + '" onclick="oneAgMiniMesClickDia(this.dataset.iso)">' + d.getDate() + '</button>';
   }
 
-  // Renderiza em todas as instâncias (Agenda + Tarefas + outras telas no futuro)
+  // Renderiza em todas as instâncias (Agenda + Tarefas + outras no futuro)
   instancias.forEach(function(inst) {
-    var titulo = inst.querySelector('.one-ag-mini-mes-titulo');
     var grid = inst.querySelector('.one-ag-mini-mes-grid');
-    if (titulo) titulo.textContent = tituloTexto;
     if (grid) grid.innerHTML = html;
+  });
+  // Título pode estar dentro do card (Agenda) OU fora dele (Tarefas, junto às setas)
+  // — atualizamos todos os elementos com a classe pra manter sincronizados.
+  document.querySelectorAll('.one-ag-mini-mes-titulo').forEach(function(t) {
+    t.textContent = tituloTexto;
   });
 }
 

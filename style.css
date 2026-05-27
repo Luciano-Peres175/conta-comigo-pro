@@ -9512,44 +9512,46 @@ button.one-fin-card:hover {
   z-index: 4;
   gap: 1px;
 }
-.one-ag-mini-mes-tar .one-ag-mini-mes-titulo {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 11px;
-  font-weight: 600;
-  color: #2D3D2F;
-  text-transform: capitalize;
-  text-align: center;
-  display: block;
-  margin: 0 0 1px 0;
-}
 .one-ag-mini-mes-tar .one-ag-mini-mes-dow {
-  font-size: 7.5px;
-  padding: 0;
-  margin-bottom: 1px;
-  letter-spacing: 0;
+  font-size: 8.5px;
+  padding: 0 0 2px 0;
+  margin-bottom: 2px;
+  letter-spacing: 0.2px;
+  border-bottom: 1px solid rgba(127,168,142,0.20);
 }
 .one-ag-mini-mes-tar .one-ag-mini-mes-grid {
-  grid-auto-rows: 10px;
+  grid-auto-rows: 12px;
   gap: 0;
 }
 .one-ag-mini-mes-tar .one-ag-mini-mes-dia {
-  font-size: 8.5px;
-  width: 13px;
-  height: 10px;
+  font-size: 9.5px;
+  width: 15px;
+  height: 12px;
 }
 .one-ag-mini-mes-tar .one-ag-mini-mes-dia.hoje {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
 }
 
-/* Setas externas — alinhadas com a linha de filtros (.one-tar-bar) */
+/* Setas + nome do mês externos — alinhados com a linha de filtros */
 .one-tar-mini-mes-setas {
   position: absolute;
   top: 62px;         /* aproximadamente a linha dos filtros */
   right: 190px;      /* 24 (padding) + 160 (mini width) + 6 (gap) */
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
   z-index: 5;
+}
+.one-tar-mini-mes-setas .one-ag-mini-mes-titulo {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2D3D2F;
+  text-transform: capitalize;
+  white-space: nowrap;
+  min-width: 92px;
+  text-align: center;
 }
 .one-tar-mini-mes-setas button {
   width: 22px;
@@ -9567,6 +9569,7 @@ button.one-fin-card:hover {
   padding: 0;
   transition: background .15s ease;
   font-family: system-ui, -apple-system, sans-serif;
+  flex-shrink: 0;
 }
 .one-tar-mini-mes-setas button:hover { background: rgba(92,136,112,0.12); }
 
