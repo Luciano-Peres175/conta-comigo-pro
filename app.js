@@ -6344,13 +6344,15 @@ function renderOneAgendaPainel() {
     gridLines += '<div class="one-ag-tl-grid-line" style="top:' + (gh * PX) + 'px"></div>';
   }
 
-  // Régua única à esquerda — SEM cap (o cap fica na .one-ag-week-top)
-  var rulerHtml = '<div class="one-ag-tl-ruler one-ag-week-ruler">';
+  // Régua única à esquerda — SEM cap (o cap fica na .one-ag-week-top).
+  // Labels ficam dentro de .one-ag-tl-ruler-content que é deslocado via
+  // transform pelo JS pra acompanhar a coluna ativa (scroll independente).
+  var rulerHtml = '<div class="one-ag-tl-ruler one-ag-week-ruler"><div class="one-ag-tl-ruler-content">';
   for (var rh = H_START; rh <= H_END; rh++) {
     var rt = (rh - H_START) * PX;
     rulerHtml += '<div class="one-ag-tl-hour" style="top:' + rt + 'px">' + (rh < 10 ? '0' : '') + rh + ':00</div>';
   }
-  rulerHtml += '</div>';
+  rulerHtml += '</div></div>';
 
   // Acumula headers (linha sticky) e bodies (colunas) separadamente
   var headerColsHtml = '';
@@ -6441,6 +6443,28 @@ function renderOneAgendaPainel() {
   });
 
   oneInitAgendaSortable();
+  oneAgSyncRulerSetup(kanban);
+}
+
+/* Sincroniza a régua com a coluna ativa. Cada .one-ag-kday-col rola por
+   dentro de forma independente; o conteúdo da régua é deslocado via
+   translateY pra acompanhar a última coluna onde o usuário rolou ou
+   passou o mouse. */
+function oneAgSyncRulerSetup(kanban) {
+  if (!kanban) return;
+  var rulerContent = kanban.querySelector('.one-ag-tl-ruler-content');
+  if (!rulerContent) return;
+  var cols = kanban.querySelectorAll('.one-ag-kday-col');
+  function sync(col) {
+    rulerContent.style.transform = 'translateY(' + (-col.scrollTop) + 'px)';
+  }
+  cols.forEach(function(col) {
+    col.addEventListener('scroll', function(){ sync(col); }, { passive: true });
+    col.addEventListener('mouseenter', function(){ sync(col); });
+  });
+  // Estado inicial: alinha pela coluna "hoje" se existir, senão a primeira
+  var inicial = kanban.querySelector('.one-ag-kday-col.today') || cols[0];
+  if (inicial) sync(inicial);
 }
 
 /* Linha horizontal de "agora" — atravessa todas as colunas */
