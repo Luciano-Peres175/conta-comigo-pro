@@ -678,17 +678,19 @@
       <!-- Variante Tarefas — Kanban TaskAreas (5 colunas padrão) -->
       <div class="one-desktop-tarefas" data-panel="tarefas" hidden>
 
-        <!-- Header estilo TaskAreas: logo + contadores (ações foram pra linha dos filtros) -->
+        <!-- Header estilo TaskAreas: logo + contadores + ações na mesma linha -->
         <div class="one-tar-header">
           <div class="one-tar-header-left">
             <span class="one-tar-logo"><img src="assets/icons/icon-tarefas.png" class="one-tar-logo-icon" alt="">TaskAreas</span>
             <span class="one-tar-pill" id="one-tar-total">0 tarefas</span>
             <span class="one-tar-pill em-and" id="one-tar-em-and">0 em andamento</span>
             <span class="one-tar-pill conc" id="one-tar-concluidas">0 concluídas</span>
+            <button class="one-tar-btn-area" onclick="oneTarNovaArea()">+ Nova área</button>
+            <button class="one-tar-btn-nova" onclick="oneTarModalAbrir()">+ Tarefa</button>
           </div>
         </div>
 
-        <!-- Filtros + ações (Nova área / Tarefa) colados após o botão Baixa -->
+        <!-- Filtros -->
         <div class="one-tar-bar">
           <div class="one-tar-filters" id="one-tar-filters">
             <button class="one-tar-filter active" data-f="todos"     onclick="oneTarSetFilter(this)">Todos</button>
@@ -699,8 +701,6 @@
             <button class="one-tar-filter prio"    data-p="Alta"     onclick="oneTarSetPrio(this)">Alta</button>
             <button class="one-tar-filter prio"    data-p="Normal"   onclick="oneTarSetPrio(this)">Normal</button>
             <button class="one-tar-filter prio"    data-p="Baixa"    onclick="oneTarSetPrio(this)">Baixa</button>
-            <button class="one-tar-btn-area" onclick="oneTarNovaArea()">+ Nova área</button>
-            <button class="one-tar-btn-nova" onclick="oneTarModalAbrir()">+ Tarefa</button>
           </div>
         </div>
 
