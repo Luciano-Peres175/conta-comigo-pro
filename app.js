@@ -6443,28 +6443,6 @@ function renderOneAgendaPainel() {
   });
 
   oneInitAgendaSortable();
-  oneAgSyncRulerSetup(kanban);
-}
-
-/* Sincroniza a régua com a coluna ativa. Cada .one-ag-kday-col rola por
-   dentro de forma independente; o conteúdo da régua é deslocado via
-   translateY pra acompanhar a última coluna onde o usuário rolou ou
-   passou o mouse. */
-function oneAgSyncRulerSetup(kanban) {
-  if (!kanban) return;
-  var rulerContent = kanban.querySelector('.one-ag-tl-ruler-content');
-  if (!rulerContent) return;
-  var cols = kanban.querySelectorAll('.one-ag-kday-col');
-  function sync(col) {
-    rulerContent.style.transform = 'translateY(' + (-col.scrollTop) + 'px)';
-  }
-  cols.forEach(function(col) {
-    col.addEventListener('scroll', function(){ sync(col); }, { passive: true });
-    col.addEventListener('mouseenter', function(){ sync(col); });
-  });
-  // Estado inicial: alinha pela coluna "hoje" se existir, senão a primeira
-  var inicial = kanban.querySelector('.one-ag-kday-col.today') || cols[0];
-  if (inicial) sync(inicial);
 }
 
 /* Linha horizontal de "agora" — atravessa todas as colunas */
