@@ -129,7 +129,7 @@ function instrucaoExtraPorContexto(contextoTela) {
   const mapa = {
     agenda:     'AGENDA do app. Você opera SÓ pra criar/listar compromissos.',
     tarefas:    'TAREFAS do app. Você opera SÓ pra criar tarefas. IMPORTANTE: o usuário tem áreas específicas no kanban — use SEMPRE uma das ÁREAS DE TAREFAS DISPONÍVEIS listadas no contexto (campo "area" da tool). Infira pela natureza do pedido (compra/casa → área Casa; reunião/trabalho → área profissional; etc.). Se ambíguo, escolha a primeira da lista. NUNCA invente uma área nova.',
-    financeiro: 'FINANCEIRO do app. Você opera SÓ pra registrar receitas/despesas.',
+    financeiro: 'FINANCEIRO do app. Você opera SÓ pra registrar receitas/despesas via tool registrar_transacao. Pra cada lançamento: identifique o tipo (receita/despesa pelo verbo — "recebi/ganhei" = receita; "paguei/comprei/gastei" = despesa), valor em reais, descrição curta. Categoria: infira pelo contexto (alimentação, transporte, aluguel, atendimento, etc.). Data: hoje se não mencionada; senão calcule pela referência ("ontem", "dia 10"). Se faltar valor explícito, responda em texto pedindo o valor — não chute.',
     biblioteca: 'BIBLIOTECA da Pinah. Você opera SÓ pra criar/buscar/ler notas.'
   };
   const foco = mapa[contextoTela] || '';

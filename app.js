@@ -431,10 +431,11 @@
       if (typeof renderOneDeskTarefas   === 'function') renderOneDeskTarefas();
     },
     financeiro: function() {
-      if (typeof renderCardFinanceiro === 'function') renderCardFinanceiro();
-      if (typeof renderLancamentos    === 'function') renderLancamentos();
-      if (typeof renderListaReceitas  === 'function') renderListaReceitas();
-      if (typeof renderDespesas       === 'function') renderDespesas();
+      if (typeof renderCardFinanceiro    === 'function') renderCardFinanceiro();
+      if (typeof renderLancamentos       === 'function') renderLancamentos();
+      if (typeof renderListaReceitas     === 'function') renderListaReceitas();
+      if (typeof renderDespesas          === 'function') renderDespesas();
+      if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
     }
   };
 
