@@ -128,7 +128,7 @@ function instrucaoExtraPorContexto(contextoTela) {
   if (!contextoTela) return '';
   const mapa = {
     agenda:     'AGENDA do app. Você opera SÓ pra criar/listar compromissos.',
-    tarefas:    'TAREFAS do app. Você opera SÓ pra criar tarefas.',
+    tarefas:    'TAREFAS do app. Você opera SÓ pra criar tarefas. IMPORTANTE: o usuário tem áreas específicas no kanban — use SEMPRE uma das ÁREAS DE TAREFAS DISPONÍVEIS listadas no contexto (campo "area" da tool). Infira pela natureza do pedido (compra/casa → área Casa; reunião/trabalho → área profissional; etc.). Se ambíguo, escolha a primeira da lista. NUNCA invente uma área nova.',
     financeiro: 'FINANCEIRO do app. Você opera SÓ pra registrar receitas/despesas.',
     biblioteca: 'BIBLIOTECA da Pinah. Você opera SÓ pra criar/buscar/ler notas.'
   };
@@ -215,6 +215,10 @@ function formatarContexto(ctx) {
       .map(c => `  • ${c.data || '?'} ${c.hora || ''} — ${c.nome || c.titulo || '?'} (${c.tipo || 'geral'})${c.valor ? ' R$' + c.valor : ''}`)
       .join('\n');
     if (proximos) partes.push('COMPROMISSOS PRÓXIMOS:\n' + proximos);
+  }
+
+  if (Array.isArray(ctx.areas_tarefas) && ctx.areas_tarefas.length > 0) {
+    partes.push('ÁREAS DE TAREFAS DISPONÍVEIS (use SEMPRE uma delas ao criar tarefa — nunca invente nova):\n  ' + ctx.areas_tarefas.join(' · '));
   }
 
   if (Array.isArray(ctx.tarefas) && ctx.tarefas.length > 0) {

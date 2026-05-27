@@ -3703,9 +3703,17 @@ function pinahGetContext() {
     try { return JSON.parse(localStorage.getItem('u_' + id + '_' + k) || '[]'); }
     catch (e) { return []; }
   }
+  // Lê áreas existentes do kanban de tarefas — Pinah precisa saber quais
+  // estão disponíveis pra atribuir corretamente (tarefa precisa de área).
+  var areasTarefas = [];
+  try {
+    var raw = localStorage.getItem('u_' + id + '_tarefas_areas');
+    if (raw) areasTarefas = JSON.parse(raw) || [];
+  } catch (e) {}
   return {
     compromissos: get('compromissos'),
     tarefas:      get('tarefas'),
+    areas_tarefas: areasTarefas,
     receitas:     get('receitas'),
     despesas:     get('despesas'),
     notas_cerebro: get('notas_cerebro').slice(-50).map(function(n) {
@@ -4457,9 +4465,26 @@ function pinahCriarCompromisso(input) {
 }
 
 function pinahCriarTarefa(input) {
-  if (!input || !input.area) {
-    console.warn('[pinahCriarTarefa] tarefa precisa de área — descartando:', input);
-    return;
+  if (!input) return;
+  // Áreas existentes — toda tarefa precisa cair em uma delas (princípio
+  // do Mentor: tarefa só existe dentro de uma área, sem orfã).
+  var areasExistentes = [];
+  try {
+    if (typeof oneTarGetAreas === 'function') areasExistentes = oneTarGetAreas();
+  } catch (e) {}
+  var area = input.area;
+  // Se a Pinah não mandou área OU mandou área que não existe na lista,
+  // tenta encaixar pela primeira área existente. Sem nenhuma cadastrada,
+  // descarta com aviso visível (Mentor define o comportamento depois).
+  if (!area || areasExistentes.indexOf(area) === -1) {
+    if (areasExistentes.length) {
+      console.warn('[pinahCriarTarefa] área inválida ou ausente — usando fallback:', area, '→', areasExistentes[0]);
+      area = areasExistentes[0];
+    } else {
+      console.warn('[pinahCriarTarefa] sem áreas cadastradas — tarefa não criada:', input);
+      if (typeof window.toast === 'function') window.toast('Crie uma área antes — a Pinah não pode criar tarefa sem área.', 'error');
+      return;
+    }
   }
   var store = _pinahGetSet('tarefas');
   var lista = store.get();
@@ -4467,7 +4492,7 @@ function pinahCriarTarefa(input) {
     id:         (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()),
     titulo:     input.titulo     || '',
     nome:       input.titulo     || '',
-    area:       input.area,
+    area:       area,
     prioridade: input.prioridade || 'normal',
     prazo:      input.prazo      || null,
     status:     'aberta',
@@ -4478,6 +4503,7 @@ function pinahCriarTarefa(input) {
   store.set(lista);
   supaUpsert('tarefas', novo);
   // Re-render imediato do kanban de tarefas
+  if (typeof renderOneTarefasPainel === 'function') renderOneTarefasPainel();
   if (window._pinahRerender) window._pinahRerender.tarefas();
 }
 
