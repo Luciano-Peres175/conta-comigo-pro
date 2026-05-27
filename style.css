@@ -9205,3 +9205,102 @@ button.one-fin-card:hover {
   pointer-events: none;
 }
 
+/* ════════════════════════════════════════════════════════════════
+   Drawer mobile estreito — só ícones de nav (sem legendas), sem
+   card Conta Comigo, Config e Sair seguem o padrão do desktop
+   (card claymorphism com ícone + label pequeno). Largura 33vw
+   limitada entre 130 e 180px. Aprovado pelo Mentor em 27/05/2026.
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  #sidebar {
+    --sidebar-w-mob: clamp(130px, 33vw, 180px);
+    width: var(--sidebar-w-mob) !important;
+    transform: translateX(calc(-1 * var(--sidebar-w-mob)));
+    padding: 14px 8px !important;
+    overflow-y: auto;
+  }
+  #sidebar.drawer-open {
+    transform: translateX(0) !important;
+  }
+
+  /* Saem do drawer mobile: título do app, card Conta Comigo, profile antigo */
+  #sidebar .sidebar-logo,
+  #sidebar .one-desk-card-conta,
+  #sidebar .sidebar-profile {
+    display: none !important;
+  }
+
+  /* Mesa do menu: largura toda do drawer, sem fundo decorativo */
+  #sidebar .sidebar-mesa-aux {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  /* Nav: só ícones, sem texto. font-size: 0 esconde o label de texto
+     do botão sem afetar a img (que tem dimensão própria). */
+  #sidebar .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: visible !important;
+  }
+  #sidebar .nav-item {
+    font-size: 0 !important;
+    justify-content: center;
+    gap: 0 !important;
+    padding: 8px !important;
+  }
+  #sidebar .nav-item .nav-icon img {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  #sidebar .nav-label,
+  #sidebar .sidebar-footer {
+    display: none !important;
+  }
+
+  /* Card Config/Sair (padrão desktop) como rodapé do drawer mobile */
+  #sidebar .sidebar-config-card {
+    display: flex !important;
+    flex-direction: column;
+    gap: 6px;
+    margin: auto 0 0 0 !important;
+    padding: 10px !important;
+    background: #FBF8F2;
+    border-radius: 14px;
+    box-shadow: 0 0 0 1.5px rgba(92,136,112,0.80);
+    flex-shrink: 0;
+  }
+  #sidebar .sidebar-config-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: #5C8870;
+    cursor: pointer;
+    text-align: left;
+  }
+  #sidebar .sidebar-config-btn-sair {
+    color: #A82424;
+  }
+  #sidebar .sidebar-config-btn img.sidebar-config-btn-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    object-fit: contain !important;
+    flex-shrink: 0;
+    display: block !important;
+  }
+}
+
