@@ -6913,13 +6913,205 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 }
 .one-fin-btn-sync:hover { background: rgba(127,168,142,0.10); }
 
-/* ── 3 cards slim no topo: Pendentes + Vencendo + Saldo (versão compacta) ── */
+/* ── Extrato em 2 colunas (Receitas | Despesas) ────────────────────
+   Cada coluna: header fixo, corpo com scroll Y interno, SOMA fixa embaixo.
+   Faturas de cartão entram condensadas como 1 linha por mês. */
+.one-fin-extrato-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.one-fin-extrato-col {
+  background: #FBF8F2;
+  border: 1px solid rgba(127,168,142,0.16);
+  border-radius: 14px;
+  padding: 12px 14px 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 0;
+  overflow: hidden;
+}
+.one-fin-extrato-col-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(127,168,142,0.20);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-extrato-col-titulo {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2D3D2F;
+  letter-spacing: .2px;
+}
+.one-fin-extrato-col-rec .one-fin-extrato-col-titulo { color: #1F6B52; }
+.one-fin-extrato-col-desp .one-fin-extrato-col-titulo { color: #A02D24; }
+.one-fin-extrato-col-cnt {
+  font-size: 11px;
+  color: #6B7F6F;
+  font-weight: 500;
+}
+.one-fin-extrato-col-body {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 0 8px;
+}
+.one-fin-extrato-col-foot {
+  border-top: 1px solid rgba(127,168,142,0.20);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 2px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-extrato-col-foot .lbl { font-size: 11px; font-weight: 700; color: #6B7F6F; letter-spacing: .3px; }
+.one-fin-extrato-col-foot .val { font-size: 14px; font-weight: 700; }
+.one-fin-extrato-col-rec .one-fin-extrato-col-foot .val { color: #1F6B52; }
+.one-fin-extrato-col-desp .one-fin-extrato-col-foot .val { color: #A02D24; }
+.one-fin-extrato-item {
+  display: grid;
+  grid-template-columns: 26px 28px 1fr 90px;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 2px;
+  border-bottom: 1px solid rgba(127,168,142,0.08);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+}
+.one-fin-extrato-item.pago { opacity: 0.55; text-decoration: line-through; }
+.one-fin-extrato-item-ico {
+  width: 22px; height: 22px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+.one-fin-extrato-item-dia {
+  font-weight: 600;
+  color: #6B7F6F;
+  text-align: center;
+}
+.one-fin-extrato-item-nome {
+  color: #2D3D2F;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.one-fin-extrato-item-nome .badge-fatura {
+  font-size: 9px;
+  color: #9B72B0;
+  background: rgba(155,114,176,0.12);
+  padding: 1px 5px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-left: 5px;
+}
+.one-fin-extrato-item-nome .badge-fixa {
+  font-size: 9px;
+  color: #5B7CFA;
+  background: rgba(91,124,250,0.12);
+  padding: 1px 5px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-left: 5px;
+}
+.one-fin-extrato-item-val {
+  text-align: right;
+  font-weight: 600;
+  font-size: 12.5px;
+}
+.one-fin-extrato-col-rec .one-fin-extrato-item-val { color: #1F6B52; }
+.one-fin-extrato-col-desp .one-fin-extrato-item-val { color: #A02D24; }
+.one-fin-extrato-vazio {
+  text-align: center;
+  color: #9CAB9C;
+  font-style: italic;
+  padding: 20px 8px;
+  font-size: 12px;
+  font-family: Playfair Display, Georgia, serif;
+}
+
+/* ── Topo do Resumo: hero esquerda + Pendentes/Vencendo direita ── */
 .one-fin-top-cards {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.4fr;
-  gap: 8px;
-  margin-bottom: 8px;
+  grid-template-columns: minmax(0, 2.2fr) minmax(220px, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
   flex-shrink: 0;
+}
+.one-fin-side-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.one-fin-side-cards .one-fin-card { min-height: 60px; }
+
+/* HERO: card grande gradient com saldo em destaque + 3 chips coloridos */
+.one-fin-card-hero {
+  background: linear-gradient(135deg, #5C8870 0%, #9B7FF0 100%);
+  color: #fff;
+  border: none;
+  padding: 14px 18px 14px 20px;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(92,136,112,.25);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 0;
+}
+.one-fin-hero-lbl {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: rgba(255,255,255,.88);
+  font-weight: 600;
+}
+.one-fin-hero-val {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -.6px;
+  line-height: 1.05;
+  margin-bottom: 4px;
+}
+.one-fin-hero-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 7px;
+}
+.one-fin-hero-stat {
+  background: rgba(255,255,255,.16);
+  border-radius: 10px;
+  padding: 7px 11px;
+}
+.one-fin-hero-stat.in {
+  background: rgba(39,133,106,.42);
+  box-shadow: inset 0 0 0 1px rgba(127,168,142,.45);
+}
+.one-fin-hero-stat.out {
+  background: rgba(192,57,43,.42);
+  box-shadow: inset 0 0 0 1px rgba(224,122,107,.50);
+}
+.one-fin-hero-stat.inv {
+  background: rgba(91,124,250,.40);
+  box-shadow: inset 0 0 0 1px rgba(91,124,250,.55);
+}
+.one-fin-hero-stat-lbl {
+  font-size: 10.5px;
+  color: rgba(255,255,255,.92);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.one-fin-hero-stat-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -.2px;
 }
 .one-fin-card {
   display: flex;
