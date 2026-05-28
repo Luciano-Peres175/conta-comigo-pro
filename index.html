@@ -369,28 +369,15 @@
             </div>
           </div>
 
-          <!-- Tabs: réplica do desktop (Visão geral / Resumo / Dashboard / Extrato / Fixas / Contas) -->
+          <!-- Tabs: Lançamentos / Categorias / Contas -->
           <div class="one-fin-mob-tabs" role="tablist">
-            <button class="one-fin-mob-tab active" data-vista="geral"     onclick="oneFinMobSetVista('geral')">Visão geral</button>
-            <button class="one-fin-mob-tab"        data-vista="resumo"    onclick="oneFinMobSetVista('resumo')">Resumo</button>
-            <button class="one-fin-mob-tab"        data-vista="dashboard" onclick="oneFinMobSetVista('dashboard')">Dashboard</button>
-            <button class="one-fin-mob-tab"        data-vista="extrato"   onclick="oneFinMobSetVista('extrato')">Extrato</button>
-            <button class="one-fin-mob-tab"        data-vista="fixas"     onclick="oneFinMobSetVista('fixas')">Fixas</button>
-            <button class="one-fin-mob-tab"        data-vista="contas"    onclick="oneFinMobSetVista('contas')">Contas</button>
+            <button class="one-fin-mob-tab active" data-vista="lancamentos" onclick="oneFinMobSetVista('lancamentos')">Lançamentos</button>
+            <button class="one-fin-mob-tab"        data-vista="categorias"  onclick="oneFinMobSetVista('categorias')">Categorias</button>
+            <button class="one-fin-mob-tab"        data-vista="contas"      onclick="oneFinMobSetVista('contas')">Contas</button>
           </div>
 
-          <!-- Vista Visão geral (default) — placeholder por enquanto, implementação na entrega 2 -->
-          <div class="one-fin-mob-vista" data-vista="geral">
-            <div class="one-fin-mob-empty">Visão geral chega na próxima entrega.</div>
-          </div>
-
-          <!-- Vista Resumo — placeholder, entrega 3 -->
-          <div class="one-fin-mob-vista" data-vista="resumo" hidden>
-            <div class="one-fin-mob-empty">Resumo chega depois da Visão geral.</div>
-          </div>
-
-          <!-- Vista Extrato: filtros de período + lista (renomeada de Lançamentos pra bater com o desktop) -->
-          <div class="one-fin-mob-vista" data-vista="extrato" hidden>
+          <!-- Aba Lançamentos: filtros de período + lista -->
+          <div class="one-fin-mob-vista" data-vista="lancamentos">
             <div class="one-fin-mob-period-tabs" id="one-fin-mob-period">
               <button class="one-fin-mob-period active" data-periodo="mes" onclick="oneFinMobSetPeriodo(this)">Mês</button>
               <button class="one-fin-mob-period" data-periodo="30"  onclick="oneFinMobSetPeriodo(this)">30d</button>
@@ -404,8 +391,8 @@
             <div class="one-fin-mob-list" id="one-fin-mob-list"></div>
           </div>
 
-          <!-- Vista Dashboard: toggle + donut + lista (renomeada de Categorias pra bater com o desktop) -->
-          <div class="one-fin-mob-vista" data-vista="dashboard" hidden>
+          <!-- Aba Categorias: toggle + donut + lista -->
+          <div class="one-fin-mob-vista" data-vista="categorias" hidden>
             <div class="one-fin-mob-cat-toggle">
               <button class="one-fin-mob-cat-btn active" data-tipo="despesas" onclick="oneFinMobSetCatTipo('despesas')">Despesas</button>
               <button class="one-fin-mob-cat-btn"        data-tipo="receitas" onclick="oneFinMobSetCatTipo('receitas')">Receitas</button>
@@ -418,11 +405,6 @@
               </div>
             </div>
             <div class="one-fin-mob-cat-list" id="one-fin-mob-cat-list"></div>
-          </div>
-
-          <!-- Vista Fixas — placeholder, entrega 4 -->
-          <div class="one-fin-mob-vista" data-vista="fixas" hidden>
-            <div class="one-fin-mob-empty">Fixas chegam na última entrega.</div>
           </div>
 
           <!-- Aba Contas: bancos + cartões de crédito -->

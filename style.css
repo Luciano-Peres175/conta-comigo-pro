@@ -2563,11 +2563,9 @@
 .one-fin-mob-card-stats .in{background:rgba(127,168,142,.45);}
 .one-fin-mob-card-stats .out{background:rgba(224,122,107,.45);}
 
-/* Tabs do Financeiro mobile — 6 pills (Visão geral, Resumo, Dashboard, Extrato, Fixas, Contas).
-   Scroll horizontal sutil quando não cabe na largura — scrollbar oculta. */
-.one-fin-mob-tabs{display:flex;gap:4px;background:#F0E8F8;padding:3px;border-radius:10px;flex-shrink:0;margin-bottom:9px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
-.one-fin-mob-tabs::-webkit-scrollbar{display:none;}
-.one-fin-mob-tab{flex-shrink:0;background:transparent;border:none;font-size:11.5px;font-weight:600;color:#5A5060;padding:7px 10px;border-radius:8px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif;white-space:nowrap;}
+/* Tabs Lançamentos / Categorias */
+.one-fin-mob-tabs{display:flex;gap:4px;background:#F0E8F8;padding:3px;border-radius:10px;flex-shrink:0;margin-bottom:9px;}
+.one-fin-mob-tab{flex:1;background:transparent;border:none;font-size:11.5px;font-weight:600;color:#5A5060;padding:7px 10px;border-radius:8px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif;}
 .one-fin-mob-tab.active{background:#fff;color:#5C8870;box-shadow:0 1px 4px rgba(92,136,112,.15);}
 
 /* Vista (área de conteúdo da aba ativa) */
