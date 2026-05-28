@@ -9773,44 +9773,44 @@ function _oneFinBrlDet(v) {
 /* Lança em lista todos os lançamentos (reais + instâncias virtuais de fixas)
    atrelados à conta. Pra fixas, gera instâncias dos próximos 6 meses + atual. */
 function _oneFinLancamentosDaConta(contaId) {
+  /* Filtra pelo mês ativo do header (mesma navegação das outras vistas).
+     Saldo atual da conta continua sendo histórico — só a lista é mensal. */
+  var mesAtivo = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : new Date().getMonth();
+  var anoAtivo = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : new Date().getFullYear();
+  var prefix = anoAtivo + '-' + String(mesAtivo + 1).padStart(2, '0');
+  var noMes = function(dataStr) { return dataStr && dataStr.indexOf(prefix) === 0; };
+
   var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
   var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
   var lista = [];
   receitas.forEach(function(r){
-    if (String(r.contaId) === String(contaId)) {
-      lista.push({ tipo:'in', key:'receitas', id:r.id, nome:r.nome||r.descricao||'Receita',
-                   categoria:r.categoria||'', valor:Number(r.valor)||0, data:r.data,
-                   status:r.status||'pendente', _fixa:false });
-    }
+    if (String(r.contaId) !== String(contaId)) return;
+    if (!noMes(r.data)) return;
+    lista.push({ tipo:'in', key:'receitas', id:r.id, nome:r.nome||r.descricao||'Receita',
+                 categoria:r.categoria||'', valor:Number(r.valor)||0, data:r.data,
+                 status:r.status||'pendente', _fixa:false });
   });
   despesas.forEach(function(d){
-    if (String(d.contaId) === String(contaId)) {
-      lista.push({ tipo:'out', key:'despesas', id:d.id, nome:d.descricao||d.nome||'Despesa',
-                   categoria:d.categoria||'', valor:Number(d.valor)||0, data:d.data,
-                   faturaMesAno:d.faturaMesAno, status:d.status||'pago', _fixa:false });
-    }
+    if (String(d.contaId) !== String(contaId)) return;
+    if (!noMes(d.data)) return;
+    lista.push({ tipo:'out', key:'despesas', id:d.id, nome:d.descricao||d.nome||'Despesa',
+                 categoria:d.categoria||'', valor:Number(d.valor)||0, data:d.data,
+                 faturaMesAno:d.faturaMesAno, status:d.status||'pago', _fixa:false });
   });
-  /* Instâncias de fixas: gera mês atual + próximos 11 (1 ano à frente) */
-  var hoje = new Date();
-  for (var k = 0; k < 12; k++) {
-    var m = hoje.getMonth() + k, a = hoje.getFullYear();
-    while (m > 11) { m -= 12; a++; }
-    var inst = oneFinInstanciasDoMes(m, a);
-    inst.receitas.forEach(function(r){
-      if (String(r.contaId) === String(contaId)) {
-        lista.push({ tipo:'in', key:'receitasFixas', id:r._fixaId, nome:r.nome,
-                     categoria:r.categoria||'', valor:r.valor, data:r.data,
-                     status:'pendente', _fixa:true });
-      }
-    });
-    inst.despesas.forEach(function(d){
-      if (String(d.contaId) === String(contaId)) {
-        lista.push({ tipo:'out', key:'despesasFixas', id:d._fixaId, nome:d.nome,
-                     categoria:d.categoria||'', valor:d.valor, data:d.data,
-                     faturaMesAno:d.faturaMesAno, status:'pendente', _fixa:true });
-      }
-    });
-  }
+  /* Instâncias de fixas — só do mês ativo (não mais 12 meses à frente). */
+  var inst = oneFinInstanciasDoMes(mesAtivo, anoAtivo);
+  inst.receitas.forEach(function(r){
+    if (String(r.contaId) !== String(contaId)) return;
+    lista.push({ tipo:'in', key:'receitasFixas', id:r._fixaId, nome:r.nome,
+                 categoria:r.categoria||'', valor:r.valor, data:r.data,
+                 status:r.status || 'pendente', _fixa:true });
+  });
+  inst.despesas.forEach(function(d){
+    if (String(d.contaId) !== String(contaId)) return;
+    lista.push({ tipo:'out', key:'despesasFixas', id:d._fixaId, nome:d.nome,
+                 categoria:d.categoria||'', valor:d.valor, data:d.data,
+                 faturaMesAno:d.faturaMesAno, status:d.status || 'pendente', _fixa:true });
+  });
   lista.sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
   return lista;
 }
