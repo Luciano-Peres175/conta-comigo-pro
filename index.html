@@ -535,6 +535,13 @@
 
     <!-- Prompt FIXO no fundo — visível em todos os slides -->
     <div class="one-prompt-global-wrap">
+      <!-- Balão fugaz mobile da Pinah: aparece em cima do prompt quando a Pinah
+           executa uma ação dentro de uma funcionalidade no mobile.
+           Some sozinho em ~4 segundos. -->
+      <div class="one-pinah-balao one-pinah-balao-mob" id="one-pinah-balao-mob" hidden>
+        <img src="assets/icons/icon-avatarfam14-pinha.PNG" class="one-pinah-balao-avatar" alt="Pinah">
+        <span class="one-pinah-balao-texto" id="one-pinah-balao-mob-texto"></span>
+      </div>
       <div id="chat-file-chip-mob" class="chat-file-chip" style="display:none">
         <span id="chat-file-chip-mob-nome">📎 arquivo.pdf</span>
         <button onclick="_chatLimparArquivo()" class="chat-file-chip-x">✕</button>

@@ -9476,6 +9476,18 @@ button.one-fin-card:hover {
 }
 .one-prompt-row-global { position: relative; }
 
+/* Variante mobile do balão fugaz — vem por cima do prompt fixo no fundo.
+   Sobrescreve o right:24px do desktop e ocupa quase toda a faixa horizontal,
+   já que o prompt mobile usa a largura toda. */
+.one-prompt-global-wrap { position: relative; }
+.one-pinah-balao-mob {
+  left: 16px;
+  right: 16px;
+  max-width: none;
+  margin-bottom: 6px;
+  z-index: 60;
+}
+
 /* ── Mini-mês na Tarefas (variante reduzida + position absolute) ─────
    Encaixa nas 2 linhas (header + filtros) à direita, sem mexer na
    altura delas. Setas ficam fora do card, à esquerda, alinhadas com

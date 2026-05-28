@@ -3847,8 +3847,20 @@ function pinahLerNotaLocal(identificador) {
 /* Detecta o contexto de tela ativa. Retorna 'agenda', 'tarefas', etc., ou
    null se o chat está visível (ou nenhum painel detectado).
    Usado pra: (a) filtrar tools no backend; (b) decidir entre balão fugaz
-   e fallback pro chat principal. */
+   e fallback pro chat principal.
+   Mobile (< 900px): olha o slide ativo do carrossel.
+   Desktop: olha o painel data-panel visível dentro do main. */
 function pinahDetectarContexto() {
+  if (window.innerWidth < 900) {
+    var wrap = document.getElementById('one-screens-wrap');
+    if (wrap && wrap.offsetWidth) {
+      var idx = Math.round(wrap.scrollLeft / wrap.offsetWidth);
+      var mapaMob = ['chat', 'agenda', 'financeiro', 'tarefas', 'biblioteca'];
+      var ctxMob = mapaMob[idx];
+      return (ctxMob && ctxMob !== 'chat') ? ctxMob : null;
+    }
+    return null;
+  }
   var chatPanel = document.querySelector('.one-desktop-main > [data-panel="chat"]:not([hidden])');
   if (chatPanel) return null;
   var paineis = ['agenda', 'tarefas', 'financeiro', 'biblioteca', 'fiscal'];
@@ -3860,12 +3872,13 @@ function pinahDetectarContexto() {
   return null;
 }
 
-/* Mostra um balão fugaz à direita do prompt com texto curto. Some em 4s.
-   Usado pra confirmar ações executadas pela Pinah dentro de uma
-   funcionalidade (em vez de mostrar a resposta no chat). */
+/* Mostra um balão fugaz com texto curto. Some em 4s.
+   Desktop: usa #one-pinah-balao (à direita do prompt).
+   Mobile:  usa #one-pinah-balao-mob (em cima do prompt fixo). */
 function pinahMostrarBalao(html) {
-  var balao = document.getElementById('one-pinah-balao');
-  var span = document.getElementById('one-pinah-balao-texto');
+  var ehMobile = window.innerWidth < 900;
+  var balao = document.getElementById(ehMobile ? 'one-pinah-balao-mob' : 'one-pinah-balao');
+  var span  = document.getElementById(ehMobile ? 'one-pinah-balao-mob-texto' : 'one-pinah-balao-texto');
   if (!balao || !span) return;
   span.innerHTML = html;
   balao.hidden = false;
@@ -3943,19 +3956,23 @@ function pinahFeedbackTool(nome, input, ctx) {
     default: return;
   }
 
-  /* Fix A — bolha visual no chat */
+  /* Fix A — bolha visual no chat.
+     Ordem: chat desktop > funcionalidade (balão fugaz, mobile ou desktop) >
+            chat mobile aberto > toast genérico. Prioriza o balão fugaz
+            quando o usuário está dentro de uma funcionalidade, mesmo no mobile. */
   if (ctx.emChat) {
     pinahAddBubble('pinah', visivel);
+  } else if (pinahDetectarContexto()) {
+    /* Dentro de uma funcionalidade (Agenda/Tarefas/etc): balão fugaz
+       (desktop = à direita do prompt; mobile = acima do prompt fixo). */
+    pinahMostrarBalao(pinahRenderText(visivel));
   } else if (ctx.isMobile && ctx.msgsMob) {
+    /* Mobile no slide chat: bolha no histórico do chat mobile. */
     var b = document.createElement('div');
     b.className = 'chat-bubble pinah-bubble';
     b.innerHTML = pinahRenderText(visivel);
     ctx.msgsMob.appendChild(b);
     ctx.msgsMob.scrollTop = ctx.msgsMob.scrollHeight;
-  } else if (pinahDetectarContexto()) {
-    /* Dentro de uma funcionalidade (Agenda/Tarefas/etc): balão fugaz
-       à direita do prompt em vez do toast genérico. */
-    pinahMostrarBalao(pinahRenderText(visivel));
   } else if (typeof window.toast === 'function') {
     /* Fallback (sem contexto identificado): toast tradicional */
     window.toast(visivel.replace(/\*\*/g, ''), null, { duration: 5000 });
@@ -4843,8 +4860,16 @@ function oneMobScrollToChat() {
   if (wrap) wrap.scrollTo({ left: 0, behavior: 'smooth' });
 }
 
-/* Focar input de qualquer slide → arrasta para o chat */
+/* Focar input no mobile.
+   Antes: sempre arrastava pro slide chat.
+   Agora: respeita o contexto. Se o usuário está num slide de funcionalidade
+   (Agenda/Tarefas/Financeiro/Biblioteca), mantém o slide pra Pinah Agente
+   executar a ação direto na tela. Se está em outro slide (chat ou desconhecido),
+   arrasta pro chat como antes. */
 function oneMobInputFocus() {
+  if (typeof pinahDetectarContexto === 'function' && pinahDetectarContexto()) {
+    return;
+  }
   oneMobScrollToChat();
 }
 
