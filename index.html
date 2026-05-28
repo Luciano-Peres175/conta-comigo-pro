@@ -379,25 +379,9 @@
             <button class="one-fin-mob-tab"        data-vista="contas"    onclick="oneFinMobSetVista('contas')">Contas</button>
           </div>
 
-          <!-- Vista Visão geral (default) — réplica do desktop adaptada à largura mobile.
-               Card 1: lançamentos recentes do mês (lista flat, com link "Ver extrato").
-               Card 2: balanço 6 meses em barras. -->
+          <!-- Vista Visão geral (default) — placeholder por enquanto, implementação na entrega 2 -->
           <div class="one-fin-mob-vista" data-vista="geral">
-            <div class="one-fin-geral-card">
-              <div class="one-fin-geral-head">
-                <span class="one-fin-geral-title">Lançamentos do mês</span>
-                <button class="one-fin-geral-link" onclick="oneFinMobSetVista('extrato')">Ver extrato →</button>
-              </div>
-              <div id="one-fin-mob-geral-recent"></div>
-            </div>
-            <div class="one-fin-geral-card" style="margin-top:10px">
-              <div class="one-fin-geral-head">
-                <span class="one-fin-geral-title">Balanço — 6 meses</span>
-              </div>
-              <div style="position:relative;height:200px;padding:8px 0">
-                <canvas id="one-fin-mob-bars-geral"></canvas>
-              </div>
-            </div>
+            <div class="one-fin-mob-empty">Visão geral chega na próxima entrega.</div>
           </div>
 
           <!-- Vista Resumo — placeholder, entrega 3 -->
