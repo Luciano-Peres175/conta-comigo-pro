@@ -859,11 +859,34 @@
             </div>
           </div>
 
-          <!-- View Fixas — receitas e despesas fixas. Navegação de mês usa o
-               header estático do Financeiro (mesma do Resumo, Extrato, etc.). -->
+          <!-- View Fixas — receitas e despesas fixas em 2 colunas (mesmo padrão
+               visual do Extrato), itens editáveis. Navegação de mês usa o header. -->
           <div class="one-fin-vista" data-vista="fixas" hidden>
             <div class="one-fin-fixas-resumo" id="one-fin-fixas-resumo"></div>
-            <div class="one-fin-fixas-body" id="one-fin-fixas-body"></div>
+            <div class="one-fin-extrato-grid">
+              <div class="one-fin-extrato-col one-fin-extrato-col-rec">
+                <div class="one-fin-extrato-col-head">
+                  <span class="one-fin-extrato-col-titulo">↑ Receitas fixas</span>
+                  <span class="one-fin-extrato-col-cnt" id="one-fin-fixas-rec-cnt">0 fixas</span>
+                </div>
+                <div class="one-fin-extrato-col-body" id="one-fin-fixas-rec-body"></div>
+                <div class="one-fin-extrato-col-foot">
+                  <span class="lbl">SOMA →</span>
+                  <span class="val" id="one-fin-fixas-rec-soma">R$ 0,00</span>
+                </div>
+              </div>
+              <div class="one-fin-extrato-col one-fin-extrato-col-desp">
+                <div class="one-fin-extrato-col-head">
+                  <span class="one-fin-extrato-col-titulo">↓ Despesas fixas</span>
+                  <span class="one-fin-extrato-col-cnt" id="one-fin-fixas-desp-cnt">0 fixas</span>
+                </div>
+                <div class="one-fin-extrato-col-body" id="one-fin-fixas-desp-body"></div>
+                <div class="one-fin-extrato-col-foot">
+                  <span class="lbl">SOMA →</span>
+                  <span class="val" id="one-fin-fixas-desp-soma">R$ 0,00</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- View Contas — bancos e cartões de crédito -->

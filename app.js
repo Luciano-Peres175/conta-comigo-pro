@@ -11114,24 +11114,27 @@ function oneFinRenderFixas() {
       '<div class="one-fin-fixas-card"><span class="one-fin-fixas-card-lbl">Saldo fixo</span><span class="one-fin-fixas-card-val ' + (saldoFixo>=0?'in':'out') + '">' + (saldoFixo>=0?'+':'') + _oneFinBrlDet(saldoFixo) + '</span></div>';
   }
 
-  /* Corpo: despesas em cima, receitas embaixo */
-  var body = document.getElementById('one-fin-fixas-body');
-  if (!body) return;
+  /* Corpo: 2 colunas (Receitas | Despesas), mesmo padrão visual do Extrato.
+     Cada item segue editável via clique (modal de edição) e botões ✏️ 🗑️. */
+  var setText3 = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
 
-  var html = '';
-  html += '<div class="one-fin-fixas-secao">' +
-            '<div class="one-fin-fixas-secao-titulo">Despesas fixas</div>' +
-            (despesas.length
-              ? despesas.map(_oneFinFixaLinhaHtml).join('')
-              : '<div class="one-fin-fixas-vazio">Nenhuma despesa fixa cadastrada ainda.</div>') +
-          '</div>';
-  html += '<div class="one-fin-fixas-secao">' +
-            '<div class="one-fin-fixas-secao-titulo">Receitas fixas</div>' +
-            (receitas.length
-              ? receitas.map(_oneFinFixaLinhaHtml).join('')
-              : '<div class="one-fin-fixas-vazio">Nenhuma receita fixa cadastrada ainda.</div>') +
-          '</div>';
-  body.innerHTML = html;
+  var elRec  = document.getElementById('one-fin-fixas-rec-body');
+  if (elRec) {
+    elRec.innerHTML = receitas.length
+      ? receitas.map(_oneFinFixaLinhaHtml).join('')
+      : '<div class="one-fin-extrato-vazio">Nenhuma receita fixa cadastrada</div>';
+  }
+  setText3('one-fin-fixas-rec-cnt',  receitas.length + (receitas.length === 1 ? ' fixa' : ' fixas'));
+  setText3('one-fin-fixas-rec-soma', _oneFinBrlDet(totalEnt));
+
+  var elDesp = document.getElementById('one-fin-fixas-desp-body');
+  if (elDesp) {
+    elDesp.innerHTML = despesas.length
+      ? despesas.map(_oneFinFixaLinhaHtml).join('')
+      : '<div class="one-fin-extrato-vazio">Nenhuma despesa fixa cadastrada</div>';
+  }
+  setText3('one-fin-fixas-desp-cnt',  despesas.length + (despesas.length === 1 ? ' fixa' : ' fixas'));
+  setText3('one-fin-fixas-desp-soma', _oneFinBrlDet(totalSai));
 }
 window.oneFinRenderFixas = oneFinRenderFixas;
 
