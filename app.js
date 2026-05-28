@@ -5780,13 +5780,6 @@ function renderOneFinanceiroPainel() {
   var ano = window.oneFinAnoAtivo;
   var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-  /* Botão "voltar pro hoje" só aparece quando estamos fora do mês corrente */
-  var btnHoje = document.getElementById('one-fin-mes-hoje-btn');
-  if (btnHoje) {
-    var foraDoMes = (mes !== hoje.getMonth() || ano !== hoje.getFullYear());
-    btnHoje.style.display = foraDoMes ? '' : 'none';
-  }
-
   function noMes(d) {
     var date = new Date(d + 'T00:00:00');
     return date.getMonth() === mes && date.getFullYear() === ano;
@@ -6030,14 +6023,6 @@ function oneFinMesProx() {
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
 }
 window.oneFinMesProx = oneFinMesProx;
-
-function oneFinMesHoje() {
-  var h = new Date();
-  window.oneFinMesAtivo = h.getMonth();
-  window.oneFinAnoAtivo = h.getFullYear();
-  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
-}
-window.oneFinMesHoje = oneFinMesHoje;
 
 /* ── Blocos colapsáveis na Visão Geral (Sessão C frente 4) ── */
 function oneFinSetAgrupamento(modo) {
