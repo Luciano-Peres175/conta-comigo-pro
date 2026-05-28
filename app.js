@@ -7096,41 +7096,28 @@ function renderOneFinanceiro() {
   var totalDesp  = despMes.filter(function(d){ return (d.status||'').toLowerCase() === 'pago'; }).reduce(function(s,d){ return s+(d.valor||0); },0);
   var totalFixas = fixas.reduce(function(s,f){ return s+(f.valor||0); },0);
   totalDesp += totalFixas;
-  var pendenteVal = recMes.filter(function(r){ return r.status !== 'Pago'; }).reduce(function(s,r){ return s+(r.valor||0); },0);
-  var saldo = totalRec - totalDesp;
 
-  /* Pendentes = receitas do mês não pagas */
-  var pendQtd = recMes.filter(function(r){ return r.status !== 'Pago'; }).length;
-
-  /* Vencendo = despesas não pagas com data ≤ hoje+7d */
-  var hojeISO = now.toISOString().slice(0,10);
-  var limISO  = new Date(now.getTime() + 7*86400000).toISOString().slice(0,10);
-  var venc = despMes.filter(function(d){
-    var st = (d.status||'').toLowerCase();
-    return st !== 'pago' && d.data && d.data <= limISO;
-  });
-  var vencVal = venc.reduce(function(s,d){ return s+(d.valor||0); },0);
+  /* Saldo total das contas (banco) — fonte de verdade vinda do desktop. */
+  var saldoContas = (typeof _oneFinResumoSaldoEmContas === 'function') ? _oneFinResumoSaldoEmContas() : 0;
 
   /* Header: mês */
   var mesEl = document.getElementById('one-fin-mob-mes');
   if (mesEl) mesEl.textContent = mesNomes[mes].toUpperCase() + ' / ' + ano;
 
-  /* 3 cards slim */
+  /* Card hero — saldo das contas em destaque + receitas/despesas do mês */
   function _set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
-  _set('one-fin-mob-num-pend', String(pendQtd));
-  _set('one-fin-mob-val-pend', _oneFinFmt(pendenteVal));
-  _set('one-fin-mob-num-venc', String(venc.length));
-  _set('one-fin-mob-val-venc', _oneFinFmt(vencVal));
-  _set('one-fin-mob-saldo',    (saldo < 0 ? '−' : '') + _oneFinFmt(saldo));
-  _set('one-fin-mob-ent',      _oneFinFmt(totalRec));
-  _set('one-fin-mob-sai',      _oneFinFmt(totalDesp));
-  _set('one-fin-mob-pen',      _oneFinFmt(pendenteVal));
+  _set('one-fin-mob-hero-saldo', (saldoContas < 0 ? '−' : '') + _oneFinFmt(saldoContas));
+  _set('one-fin-mob-hero-rec',   _oneFinFmt(totalRec));
+  _set('one-fin-mob-hero-desp',  _oneFinFmt(totalDesp));
 
-  /* Render da aba ativa */
-  if (oneFinMobVista === 'lancamentos') {
-    oneFinMobRenderLista(receitas, despesas);
-  } else {
-    oneFinMobRenderCategorias();
+  /* Acompanhamento do mês — reusa o renderer da vista Resumo do desktop,
+     mas apontando só pro bloco de Obrigações (caixa/invest têm IDs fake). */
+  if (typeof oneFinRenderResumo === 'function') {
+    oneFinRenderResumo({
+      caixaId:  'one-fin-mob-skip-caixa',
+      obrigId:  'one-fin-mob-acompanhamento',
+      investId: 'one-fin-mob-skip-invest'
+    });
   }
 }
 

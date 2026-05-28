@@ -348,83 +348,26 @@
             <button class="one-fin-mob-btn-novo" onclick="oneFinModalAbrir()" aria-label="Novo lançamento">＋</button>
           </div>
 
-          <!-- 3 cards slim no topo (Pendentes / Vencendo / Saldo) -->
-          <div class="one-fin-mob-top-cards">
-            <button class="one-fin-mob-card pendentes" type="button" onclick="oneFinMobFiltrarPendentes()">
-              <div class="one-fin-mob-card-row"><span class="one-fin-mob-card-num" id="one-fin-mob-num-pend">0</span><span class="one-fin-mob-card-lbl">Pendentes</span></div>
-              <div class="one-fin-mob-card-sub" id="one-fin-mob-val-pend">R$ 0,00</div>
-            </button>
-            <button class="one-fin-mob-card vencendo" type="button" onclick="oneFinMobFiltrarVencendo()">
-              <div class="one-fin-mob-card-row"><span class="one-fin-mob-card-num" id="one-fin-mob-num-venc">0</span><span class="one-fin-mob-card-lbl">Vencendo</span></div>
-              <div class="one-fin-mob-card-sub" id="one-fin-mob-val-venc">R$ 0,00</div>
-            </button>
-            <div class="one-fin-mob-card saldo">
-              <div class="one-fin-mob-card-saldo" id="one-fin-mob-saldo">R$ 0,00</div>
-              <div class="one-fin-mob-card-lbl">Saldo do mês</div>
-              <div class="one-fin-mob-card-stats">
-                <span class="in">↑ <span id="one-fin-mob-ent">R$ 0</span></span>
-                <span class="out">↓ <span id="one-fin-mob-sai">R$ 0</span></span>
-                <span class="wait">⏳ <span id="one-fin-mob-pen">R$ 0</span></span>
+          <!-- Card hero: saldo total das contas em destaque + receitas e despesas do mês.
+               Mesmo gradient verde→roxo do card "Saldo do mês" antigo. -->
+          <div class="one-fin-mob-hero">
+            <div class="one-fin-mob-hero-lbl">SALDO EM CONTAS</div>
+            <div class="one-fin-mob-hero-val" id="one-fin-mob-hero-saldo">R$ 0,00</div>
+            <div class="one-fin-mob-hero-stats">
+              <div class="one-fin-mob-hero-stat">
+                <div class="one-fin-mob-hero-stat-lbl">↑ Receitas</div>
+                <div class="one-fin-mob-hero-stat-val" id="one-fin-mob-hero-rec">R$ 0,00</div>
+              </div>
+              <div class="one-fin-mob-hero-stat">
+                <div class="one-fin-mob-hero-stat-lbl">↓ Despesas</div>
+                <div class="one-fin-mob-hero-stat-val" id="one-fin-mob-hero-desp">R$ 0,00</div>
               </div>
             </div>
           </div>
 
-          <!-- Tabs: Lançamentos / Categorias / Contas -->
-          <div class="one-fin-mob-tabs" role="tablist">
-            <button class="one-fin-mob-tab active" data-vista="lancamentos" onclick="oneFinMobSetVista('lancamentos')">Lançamentos</button>
-            <button class="one-fin-mob-tab"        data-vista="categorias"  onclick="oneFinMobSetVista('categorias')">Categorias</button>
-            <button class="one-fin-mob-tab"        data-vista="contas"      onclick="oneFinMobSetVista('contas')">Contas</button>
-          </div>
-
-          <!-- Aba Lançamentos: filtros de período + lista -->
-          <div class="one-fin-mob-vista" data-vista="lancamentos">
-            <div class="one-fin-mob-period-tabs" id="one-fin-mob-period">
-              <button class="one-fin-mob-period active" data-periodo="mes" onclick="oneFinMobSetPeriodo(this)">Mês</button>
-              <button class="one-fin-mob-period" data-periodo="30"  onclick="oneFinMobSetPeriodo(this)">30d</button>
-              <button class="one-fin-mob-period" data-periodo="15"  onclick="oneFinMobSetPeriodo(this)">15d</button>
-              <button class="one-fin-mob-period" data-periodo="7"   onclick="oneFinMobSetPeriodo(this)">7d</button>
-            </div>
-            <div class="one-fin-mob-filtro-ativo" id="one-fin-mob-filtro-ativo" hidden>
-              <span class="one-fin-mob-filtro-chip" id="one-fin-mob-filtro-chip">Filtro</span>
-              <button class="one-fin-mob-filtro-clear" onclick="oneFinMobLimparFiltro()">✕</button>
-            </div>
-            <div class="one-fin-mob-list" id="one-fin-mob-list"></div>
-          </div>
-
-          <!-- Aba Categorias: toggle + donut + lista -->
-          <div class="one-fin-mob-vista" data-vista="categorias" hidden>
-            <div class="one-fin-mob-cat-toggle">
-              <button class="one-fin-mob-cat-btn active" data-tipo="despesas" onclick="oneFinMobSetCatTipo('despesas')">Despesas</button>
-              <button class="one-fin-mob-cat-btn"        data-tipo="receitas" onclick="oneFinMobSetCatTipo('receitas')">Receitas</button>
-            </div>
-            <div class="one-fin-mob-donut-wrap">
-              <canvas id="one-fin-mob-donut"></canvas>
-              <div class="one-fin-mob-donut-center">
-                <div class="one-fin-mob-donut-lbl">Total</div>
-                <div class="one-fin-mob-donut-val" id="one-fin-mob-donut-total">R$ 0,00</div>
-              </div>
-            </div>
-            <div class="one-fin-mob-cat-list" id="one-fin-mob-cat-list"></div>
-          </div>
-
-          <!-- Aba Contas: bancos + cartões de crédito -->
-          <div class="one-fin-mob-vista" data-vista="contas" hidden>
-            <div id="one-fin-mob-contas-modo-lista">
-              <div class="one-fin-contas-header">
-                <span class="one-fin-contas-title">Minhas contas</span>
-                <button class="one-fin-btn-novo" onclick="oneFinContaModalAbrir()">+ Nova conta</button>
-              </div>
-              <div class="one-fin-contas-lista" id="one-fin-mob-contas-lista"></div>
-            </div>
-            <div id="one-fin-mob-contas-modo-detalhe" hidden>
-              <div class="one-fin-conta-det-header">
-                <button class="one-fin-conta-det-back" onclick="oneFinVoltarContas()" title="Voltar">‹ Contas</button>
-                <span class="one-fin-conta-det-titulo" id="one-fin-mob-conta-det-titulo">—</span>
-                <button class="one-fin-conta-det-edit" onclick="oneFinEditarContaAberta()" title="Editar conta">⚙️</button>
-              </div>
-              <div id="one-fin-mob-conta-det-body"></div>
-            </div>
-          </div>
+          <!-- Acompanhamento do mês — reusa a função oneFinRenderResumo do desktop
+               apontando só pro obrigId. Header + corpo + soma com sticky (display:grid). -->
+          <div class="one-fin-resumo-bloco one-fin-resumo-bloco-obrigacoes one-fin-mob-acomp" id="one-fin-mob-acompanhamento"></div>
         </div>
       </div>
 

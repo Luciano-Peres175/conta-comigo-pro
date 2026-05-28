@@ -2572,6 +2572,95 @@
 .one-fin-mob-vista{flex:1;display:flex;flex-direction:column;min-height:0;}
 .one-fin-mob-vista[hidden]{display:none;}
 
+/* ── Novo layout Financeiro mobile (28/05/2026) ───────────────────────
+   Card hero no topo (saldo total em destaque + receitas/despesas do mês)
+   + bloco Acompanhamento ocupando o resto da tela com sticky header/footer. */
+.one-fin-mob-hero{
+  background:linear-gradient(135deg,#5C8870 0%,#9B7FF0 100%);
+  border-radius:16px;
+  padding:14px 16px 12px;
+  color:#fff;
+  box-shadow:0 4px 14px rgba(92,136,112,.30);
+  margin-bottom:10px;
+  flex-shrink:0;
+  font-family:system-ui,-apple-system,sans-serif;
+}
+.one-fin-mob-hero-lbl{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  color:rgba(255,255,255,.85);
+  font-weight:600;
+  margin-bottom:2px;
+}
+.one-fin-mob-hero-val{
+  font-size:26px;
+  font-weight:600;
+  letter-spacing:-.5px;
+  margin-bottom:10px;
+  line-height:1.1;
+}
+.one-fin-mob-hero-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.one-fin-mob-hero-stat{
+  background:rgba(255,255,255,.16);
+  border-radius:10px;
+  padding:7px 10px;
+}
+.one-fin-mob-hero-stat-lbl{
+  font-size:10px;
+  color:rgba(255,255,255,.85);
+  font-weight:500;
+  margin-bottom:1px;
+}
+.one-fin-mob-hero-stat-val{
+  font-size:13.5px;
+  font-weight:700;
+  color:#fff;
+}
+
+/* Acompanhamento mobile — herda o grid auto/1fr/auto do desktop, mas
+   ocupa todo o espaço restante do slide e aperta o grid de colunas pra
+   caber na largura do iPhone (sem scroll horizontal). */
+.one-fin-mob-acomp{
+  flex:1;
+  min-height:0;
+  padding:10px 12px;
+}
+.one-fin-mob-acomp .one-fin-resumo-obr-head,
+.one-fin-mob-acomp .one-fin-resumo-obr-row{
+  grid-template-columns:22px 22px 1fr 58px 58px 58px;
+  gap:4px;
+  font-size:11px;
+  padding:4px 2px;
+}
+.one-fin-mob-acomp .one-fin-resumo-obr-head{
+  font-size:9px;
+  letter-spacing:.2px;
+}
+.one-fin-mob-acomp .one-fin-resumo-titulo{
+  font-size:12px;
+  margin-bottom:8px;
+}
+.one-fin-mob-acomp .one-fin-resumo-apagar-input{
+  font-size:11px;
+  padding:2px 4px;
+}
+.one-fin-mob-acomp .one-fin-resumo-obr-row.total{
+  padding:6px 2px;
+}
+.one-fin-mob-acomp .one-fin-resumo-subtit{
+  font-size:10px;
+  margin:6px 0 4px;
+}
+.one-fin-mob-acomp .one-fin-resumo-vazio{
+  font-size:11px;
+  padding:14px 8px;
+}
+
 /* Filtros de período */
 .one-fin-mob-period-tabs{display:flex;gap:5px;flex-shrink:0;margin-bottom:7px;}
 .one-fin-mob-period{flex:1;background:#fff;border:1.5px solid rgba(92,136,112,.20);border-radius:9px;padding:6px;font-size:11px;font-weight:600;color:#5A5060;cursor:pointer;font-family:system-ui,-apple-system,sans-serif;}
