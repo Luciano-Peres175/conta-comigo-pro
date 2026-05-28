@@ -2602,24 +2602,39 @@
 }
 .one-fin-mob-hero-stats{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
 }
 .one-fin-mob-hero-stat{
   background:rgba(255,255,255,.16);
   border-radius:10px;
-  padding:7px 10px;
+  padding:7px 8px;
+}
+/* Variantes coloridas dos chips — tons do tema com translucência pra harmonizar
+   com o gradient verde→roxo do hero. */
+.one-fin-mob-hero-stat.in{
+  background:rgba(39,133,106,.45);
+  box-shadow:inset 0 0 0 1px rgba(127,168,142,.45);
+}
+.one-fin-mob-hero-stat.out{
+  background:rgba(192,57,43,.45);
+  box-shadow:inset 0 0 0 1px rgba(224,122,107,.50);
+}
+.one-fin-mob-hero-stat.inv{
+  background:rgba(91,124,250,.42);
+  box-shadow:inset 0 0 0 1px rgba(91,124,250,.55);
 }
 .one-fin-mob-hero-stat-lbl{
-  font-size:10px;
-  color:rgba(255,255,255,.85);
+  font-size:9.5px;
+  color:rgba(255,255,255,.92);
   font-weight:500;
   margin-bottom:1px;
 }
 .one-fin-mob-hero-stat-val{
-  font-size:13.5px;
+  font-size:12.5px;
   font-weight:700;
   color:#fff;
+  letter-spacing:-.2px;
 }
 
 /* Acompanhamento mobile — herda o grid auto/1fr/auto do desktop, mas

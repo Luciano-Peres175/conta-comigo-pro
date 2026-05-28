@@ -7097,18 +7097,21 @@ function renderOneFinanceiro() {
   var totalFixas = fixas.reduce(function(s,f){ return s+(f.valor||0); },0);
   totalDesp += totalFixas;
 
-  /* Saldo total das contas (banco) — fonte de verdade vinda do desktop. */
-  var saldoContas = (typeof _oneFinResumoSaldoEmContas === 'function') ? _oneFinResumoSaldoEmContas() : 0;
+  /* Saldo total das contas (banco) + total de investimentos — fonte
+     de verdade vinda do desktop. */
+  var saldoContas   = (typeof _oneFinResumoSaldoEmContas === 'function') ? _oneFinResumoSaldoEmContas() : 0;
+  var totalInvest   = (typeof _oneFinResumoTotalInvestimentos === 'function') ? _oneFinResumoTotalInvestimentos() : 0;
 
   /* Header: mês */
   var mesEl = document.getElementById('one-fin-mob-mes');
   if (mesEl) mesEl.textContent = mesNomes[mes].toUpperCase() + ' / ' + ano;
 
-  /* Card hero — saldo das contas em destaque + receitas/despesas do mês */
+  /* Card hero — saldo das contas em destaque + receitas/despesas/investimentos */
   function _set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
   _set('one-fin-mob-hero-saldo', (saldoContas < 0 ? '−' : '') + _oneFinFmt(saldoContas));
   _set('one-fin-mob-hero-rec',   _oneFinFmt(totalRec));
   _set('one-fin-mob-hero-desp',  _oneFinFmt(totalDesp));
+  _set('one-fin-mob-hero-inv',   _oneFinFmt(totalInvest));
 
   /* Acompanhamento do mês — reusa o renderer da vista Resumo do desktop,
      mas apontando só pro bloco de Obrigações (caixa/invest têm IDs fake). */
