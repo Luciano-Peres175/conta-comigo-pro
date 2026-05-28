@@ -9099,41 +9099,34 @@ window.oneFinFiltroAtivo = window.oneFinFiltroAtivo || null; // null | 'pendente
 function _brlFin(v) { return 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 
 function renderOnePendenciasAlertas() {
-  var hoje = new Date().toISOString().slice(0, 10);
-  var hojeDate = new Date(); hojeDate.setHours(0,0,0,0);
+  /* Usa o mesmo cálculo do Acompanhamento do mês (Resumo) — receitas com
+     aPagar>0 (futuras) e despesas+faturas com aPagar>0 (pendentes). Assim
+     os cards batem com o hero ↓ Despesas e com o que aparece no Resumo. */
+  var hojeD = new Date();
+  var mes = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : hojeD.getMonth();
+  var ano = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : hojeD.getFullYear();
 
-  // Receitas pendentes (status === 'pendente')
-  var receitas = [];
-  try { receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
-  var recPendList = receitas.filter(function(r){
-    var s = String(r.status || '').toLowerCase();
-    return s === 'pendente' || s === 'aberto' || s === 'aguardando';
-  });
-  var recPend = recPendList.length;
-  var recPendValor = recPendList.reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
+  var recCnt = 0, recVal = 0, despCnt = 0, despVal = 0;
+  if (typeof _oneFinResumoColetarObrigacoes === 'function') {
+    var obrig = _oneFinResumoColetarObrigacoes(mes, ano);
+    /* Receitas futuras: tudo com aPagar > 0 (esperado - recebido) */
+    obrig.receitasFixas.forEach(function(it){
+      if ((it.aPagar||0) > 0) { recCnt++; recVal += (it.aPagar||0); }
+    });
+    /* Despesas pendentes: despesas reais + fixas (sem cartão) + faturas abertas */
+    obrig.despesas.forEach(function(it){
+      if ((it.aPagar||0) > 0) { despCnt++; despVal += (it.aPagar||0); }
+    });
+    obrig.faturas.forEach(function(it){
+      if ((it.aPagar||0) > 0) { despCnt++; despVal += (it.aPagar||0); }
+    });
+  }
 
-  // Despesas vencendo — próximos 7 dias OU vencidas no mês sem pago
-  var despesas = [];
-  try { despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){}
-  var em7Dias = new Date(hojeDate); em7Dias.setDate(em7Dias.getDate() + 7);
-  var em7DiasStr = em7Dias.toISOString().slice(0,10);
-  var inicioMes = new Date(hojeDate.getFullYear(), hojeDate.getMonth(), 1).toISOString().slice(0,10);
-  var despVencList = despesas.filter(function(d){
-    var data = d.data || '';
-    if (!data) return false;
-    var status = String(d.status || '').toLowerCase();
-    if (status === 'pago' || status === 'quitado') return false;
-    return (data >= hoje && data <= em7DiasStr) || (data >= inicioMes && data < hoje);
-  });
-  var despVenc = despVencList.length;
-  var despVencValor = despVencList.reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
-
-  // Atualiza DOM
   var setText = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
-  setText('one-pn-num-receitas', recPend);
-  setText('one-pn-val-receitas', _brlFin(recPendValor));
-  setText('one-pn-num-despesas', despVenc);
-  setText('one-pn-val-despesas', _brlFin(despVencValor));
+  setText('one-pn-num-receitas', recCnt);
+  setText('one-pn-val-receitas', _brlFin(recVal));
+  setText('one-pn-num-despesas', despCnt);
+  setText('one-pn-val-despesas', _brlFin(despVal));
 }
 window.renderOnePendenciasAlertas = renderOnePendenciasAlertas;
 

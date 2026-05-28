@@ -729,25 +729,25 @@
               </div>
             </div>
 
-            <!-- Pendentes (esverdeado) — atalho pro Extrato filtrado por receitas pendentes -->
-            <button class="one-fin-card one-fin-card-pendentes" type="button" onclick="oneFinFiltrarPendentes()" title="Ver receitas pendentes no Extrato">
-              <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>
+            <!-- Receitas Futuras (esverdeado) — receitas do mês ainda não recebidas -->
+            <button class="one-fin-card one-fin-card-pendentes" type="button" onclick="oneFinFiltrarPendentes()" title="Ver receitas previstas no Extrato">
               <div class="one-fin-card-body">
+                <div class="one-fin-card-top-lbl">Receitas futuras</div>
                 <div class="one-fin-card-row">
+                  <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>
                   <span class="one-fin-card-num" id="one-pn-num-receitas">0</span>
-                  <span class="one-fin-card-lbl">Pendentes</span>
                 </div>
                 <div class="one-fin-card-sub" id="one-pn-val-receitas">R$ 0,00</div>
               </div>
             </button>
 
-            <!-- Vencendo (vermelho) — atalho pro Extrato filtrado por despesas a vencer -->
-            <button class="one-fin-card one-fin-card-vencendo" type="button" onclick="oneFinFiltrarVencendo()" title="Ver despesas a vencer no Extrato">
-              <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <!-- Despesas Pendentes (vermelho) — despesas do mês ainda não pagas, sem cartão -->
+            <button class="one-fin-card one-fin-card-vencendo" type="button" onclick="oneFinFiltrarVencendo()" title="Ver despesas pendentes no Extrato">
               <div class="one-fin-card-body">
+                <div class="one-fin-card-top-lbl">Despesas pendentes</div>
                 <div class="one-fin-card-row">
+                  <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
                   <span class="one-fin-card-num" id="one-pn-num-despesas">0</span>
-                  <span class="one-fin-card-lbl">Vencendo</span>
                 </div>
                 <div class="one-fin-card-sub" id="one-pn-val-despesas">R$ 0,00</div>
               </div>

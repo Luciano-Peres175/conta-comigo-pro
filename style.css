@@ -7084,6 +7084,17 @@ button.one-fin-card:hover {
   line-height: 1.05;
   font-family: system-ui, -apple-system, sans-serif;
 }
+/* Legenda em cima do card (Receitas futuras / Despesas pendentes) */
+.one-fin-card-top-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-card-pendentes .one-fin-card-top-lbl { color: #2D5A3F; }
+.one-fin-card-vencendo  .one-fin-card-top-lbl { color: #5A2018; }
 .one-fin-card-lbl {
   font-size: 11.5px;
   color: #6B7F6F;
