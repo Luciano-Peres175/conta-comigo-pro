@@ -6974,7 +6974,7 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 .one-fin-extrato-col-desp .one-fin-extrato-col-foot .val { color: #A02D24; }
 .one-fin-extrato-item {
   display: grid;
-  grid-template-columns: 26px 28px 1fr 90px;
+  grid-template-columns: 26px 28px 1fr 90px auto;
   gap: 6px;
   align-items: center;
   padding: 5px 2px;
@@ -6982,6 +6982,21 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 12px;
 }
+.one-fin-extrato-item-actions {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+.one-fin-extrato-item-actions .one-fin-item-btn {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0.55;
+  transition: opacity .15s ease;
+}
+.one-fin-extrato-item:hover .one-fin-extrato-item-actions .one-fin-item-btn { opacity: 1; }
 .one-fin-extrato-item.pago { opacity: 0.55; text-decoration: line-through; }
 .one-fin-extrato-item-ico {
   width: 22px; height: 22px;

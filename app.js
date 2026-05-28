@@ -5853,11 +5853,13 @@ function renderOneFinanceiroPainel() {
      escreve em window.oneFinFiltroAtivo nesse fluxo, e o branch antigo que
      zerava a coluna oposta ficou aqui só como nota histórica. */
 
-  /* Receitas: reais + fixas instanciadas. */
+  /* Receitas: reais + fixas instanciadas. key/id pra suportar editar/excluir. */
   var itensRec = rFil.map(function(r){
     var ehFixa = !!r._fixa;
     return {
       tipo: 'in',
+      key:  ehFixa ? 'receitasFixas' : 'receitas',
+      id:   ehFixa ? (r._fixaId || r.id) : r.id,
       nome: r.nome || r.descricao || 'Receita',
       categoria: r.categoria || r.tipo || '',
       valor: Number(r.valor) || 0,
@@ -5883,6 +5885,8 @@ function renderOneFinanceiroPainel() {
       var ehFixa = !!d._fixa;
       return {
         tipo: 'out',
+        key:  ehFixa ? 'despesasFixas' : 'despesas',
+        id:   ehFixa ? (d._fixaId || d.id) : d.id,
         nome: d.descricao || d.nome || 'Despesa',
         categoria: d.categoria || '',
         valor: Number(d.valor) || 0,
@@ -5941,11 +5945,24 @@ function renderOneFinanceiroPainel() {
     else if (it._fixa) badge = '<span class="badge-fixa">↻ fixa</span>';
     var nomeSafe = (it.nome||'').replace(/</g,'&lt;');
     var sinal = it.tipo === 'in' ? '+' : '−';
+    /* Botões editar/excluir — só pra itens não-fatura com key+id reais.
+       Fatura é vista agregada (clique abre modal de pagamento via Resumo). */
+    var actions = '';
+    if (!it._fatura && it.key && it.id != null && it.id !== '') {
+      var safeId   = String(it.id||'').replace(/'/g,"\\'");
+      var safeKey  = String(it.key||'');
+      var safeData = String(it.data||'').replace(/'/g,"\\'");
+      actions = '<div class="one-fin-extrato-item-actions" onclick="event.stopPropagation()">' +
+                  '<button class="one-fin-item-btn" onclick="oneFinEditar(\'' + safeKey + '\',\'' + safeId + '\',\'' + safeData + '\')" title="Editar">✏️</button>' +
+                  '<button class="one-fin-item-btn del" onclick="oneFinExcluir(\'' + safeKey + '\',\'' + safeId + '\',\'' + safeData + '\')" title="Excluir">🗑️</button>' +
+                '</div>';
+    }
     return '<div class="one-fin-extrato-item' + pagoCls + '">' +
              '<div class="one-fin-extrato-item-ico" style="background:' + bg + ';color:' + cor + '">' + ico + '</div>' +
              '<div class="one-fin-extrato-item-dia">' + dia + '</div>' +
              '<div class="one-fin-extrato-item-nome">' + nomeSafe + badge + '</div>' +
              '<div class="one-fin-extrato-item-val">' + sinal + brl(it.valor).replace('R$ ','R$') + '</div>' +
+             actions +
            '</div>';
   }
 
