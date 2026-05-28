@@ -710,53 +710,43 @@
         </div>
         <div class="one-fin-content">
 
-          <!-- Layout do topo: hero gradient à esquerda (saldo em contas + 3 chips
-               coloridos) + coluna direita com Pendentes e Vencendo empilhados.
-               Os 2 cards da direita são atalhos pro Extrato com filtro pré-aplicado. -->
+          <!-- 3 cards slim no topo: Pendentes + Vencendo + Saldo -->
           <div class="one-fin-top-cards">
-            <!-- HERO: saldo em contas em destaque + Receitas/Despesas/Investimentos -->
-            <div class="one-fin-card one-fin-card-hero">
-              <div class="one-fin-hero-lbl">SALDO EM CONTAS</div>
-              <div class="one-fin-hero-val" id="one-fin-saldo-big">R$ 0,00</div>
-              <div class="one-fin-hero-stats">
-                <div class="one-fin-hero-stat in">
-                  <div class="one-fin-hero-stat-lbl">↑ Receitas</div>
-                  <div class="one-fin-hero-stat-val" id="one-fin-entradas-big">R$ 0,00</div>
+            <button class="one-fin-card one-fin-card-pendentes" type="button" onclick="oneFinFiltrarPendentes()">
+              <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>
+              <div class="one-fin-card-body">
+                <div class="one-fin-card-row">
+                  <span class="one-fin-card-num" id="one-pn-num-receitas">0</span>
+                  <span class="one-fin-card-lbl">Pendentes</span>
                 </div>
-                <div class="one-fin-hero-stat out">
-                  <div class="one-fin-hero-stat-lbl">↓ Despesas</div>
-                  <div class="one-fin-hero-stat-val" id="one-fin-saidas-big">R$ 0,00</div>
+                <div class="one-fin-card-sub" id="one-pn-val-receitas">R$ 0,00</div>
+              </div>
+            </button>
+
+            <button class="one-fin-card one-fin-card-vencendo" type="button" onclick="oneFinFiltrarVencendo()">
+              <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+              <div class="one-fin-card-body">
+                <div class="one-fin-card-row">
+                  <span class="one-fin-card-num" id="one-pn-num-despesas">0</span>
+                  <span class="one-fin-card-lbl">Vencendo</span>
                 </div>
-                <div class="one-fin-hero-stat inv">
-                  <div class="one-fin-hero-stat-lbl">📈 Investimentos</div>
-                  <div class="one-fin-hero-stat-val" id="one-fin-hero-inv-big">R$ 0,00</div>
+                <div class="one-fin-card-sub" id="one-pn-val-despesas">R$ 0,00</div>
+              </div>
+            </button>
+
+            <div class="one-fin-card one-fin-card-saldo">
+              <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+              <div class="one-fin-card-body">
+                <div class="one-fin-card-row">
+                  <span class="one-fin-card-num" id="one-fin-saldo-big">R$ 0,00</span>
+                </div>
+                <div class="one-fin-card-lbl">Saldo em contas</div>
+                <div class="one-fin-card-stats">
+                  <span class="one-fin-card-stat in">↑ <span id="one-fin-entradas-big">R$ 0</span></span>
+                  <span class="one-fin-card-stat out">↓ <span id="one-fin-saidas-big">R$ 0</span></span>
+                  <span class="one-fin-card-stat wait">⏳ <span id="one-fin-pendente-big">R$ 0</span></span>
                 </div>
               </div>
-            </div>
-
-            <!-- Lateral direita: Pendentes em cima de Vencendo -->
-            <div class="one-fin-side-cards">
-              <button class="one-fin-card one-fin-card-pendentes" type="button" onclick="oneFinFiltrarPendentes()" title="Ver receitas pendentes no Extrato">
-                <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>
-                <div class="one-fin-card-body">
-                  <div class="one-fin-card-row">
-                    <span class="one-fin-card-num" id="one-pn-num-receitas">0</span>
-                    <span class="one-fin-card-lbl">Pendentes</span>
-                  </div>
-                  <div class="one-fin-card-sub" id="one-pn-val-receitas">R$ 0,00</div>
-                </div>
-              </button>
-
-              <button class="one-fin-card one-fin-card-vencendo" type="button" onclick="oneFinFiltrarVencendo()" title="Ver despesas a vencer no Extrato">
-                <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-                <div class="one-fin-card-body">
-                  <div class="one-fin-card-row">
-                    <span class="one-fin-card-num" id="one-pn-num-despesas">0</span>
-                    <span class="one-fin-card-lbl">Vencendo</span>
-                  </div>
-                  <div class="one-fin-card-sub" id="one-pn-val-despesas">R$ 0,00</div>
-                </div>
-              </button>
             </div>
           </div>
 
@@ -810,9 +800,7 @@
             </div>
           </div>
 
-          <!-- View Extrato — 2 colunas (Receitas | Despesas) com scroll
-               independente, header e SOMA fixos. Faturas de cartão entram
-               condensadas (1 linha por fatura do mês), igual ao Acompanhamento. -->
+          <!-- View Extrato — lista completa com filtros de período -->
           <div class="one-fin-vista" data-vista="extrato" hidden>
             <div class="one-fin-extrato-controls">
               <div class="one-fin-period-tabs one-fin-period-tabs-mini" id="one-fin-period-tabs">
@@ -826,30 +814,7 @@
                 <button class="one-fin-filtro-clear" onclick="oneFinLimparFiltro()">✕ limpar</button>
               </div>
             </div>
-            <div class="one-fin-extrato-grid">
-              <div class="one-fin-extrato-col one-fin-extrato-col-rec">
-                <div class="one-fin-extrato-col-head">
-                  <span class="one-fin-extrato-col-titulo">↑ Receitas</span>
-                  <span class="one-fin-extrato-col-cnt" id="one-fin-extrato-rec-cnt">0 lançamentos</span>
-                </div>
-                <div class="one-fin-extrato-col-body" id="one-fin-extrato-rec-body"></div>
-                <div class="one-fin-extrato-col-foot">
-                  <span class="lbl">SOMA →</span>
-                  <span class="val" id="one-fin-extrato-rec-soma">R$ 0,00</span>
-                </div>
-              </div>
-              <div class="one-fin-extrato-col one-fin-extrato-col-desp">
-                <div class="one-fin-extrato-col-head">
-                  <span class="one-fin-extrato-col-titulo">↓ Despesas</span>
-                  <span class="one-fin-extrato-col-cnt" id="one-fin-extrato-desp-cnt">0 lançamentos</span>
-                </div>
-                <div class="one-fin-extrato-col-body" id="one-fin-extrato-desp-body"></div>
-                <div class="one-fin-extrato-col-foot">
-                  <span class="lbl">SOMA →</span>
-                  <span class="val" id="one-fin-extrato-desp-soma">R$ 0,00</span>
-                </div>
-              </div>
-            </div>
+            <div class="one-pn-body" id="one-fin-list-big" style="flex:1;overflow-y:auto"></div>
           </div>
 
           <!-- View Fixas — receitas e despesas fixas, navegáveis mês a mês -->
