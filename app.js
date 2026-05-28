@@ -7068,7 +7068,7 @@ function renderOneAgenda() {
 /* ── Financeiro (screen-one) ─────────────────────────────── */
 /* ── Financeiro mobile — Fase 3: 3 cards + 2 abas ─────────────── */
 /* Estado da tela mobile (independente do desktop) */
-var oneFinMobVista       = 'lancamentos';   // 'lancamentos' | 'categorias'
+var oneFinMobVista       = 'geral';          // 'geral' | 'resumo' | 'dashboard' | 'extrato' | 'fixas' | 'contas'
 var oneFinMobPeriodo     = 'mes';            // 'mes' | '30' | '15' | '7'
 var oneFinMobCatTipo     = 'despesas';       // 'despesas' | 'receitas'
 var oneFinMobFiltroAtivo = null;             // null | 'pendentes' | 'vencendo'
@@ -7126,15 +7126,16 @@ function renderOneFinanceiro() {
   _set('one-fin-mob-sai',      _oneFinFmt(totalDesp));
   _set('one-fin-mob-pen',      _oneFinFmt(pendenteVal));
 
-  /* Render da aba ativa */
-  if (oneFinMobVista === 'lancamentos') {
-    oneFinMobRenderLista(receitas, despesas);
-  } else {
-    oneFinMobRenderCategorias();
-  }
+  /* Render da aba ativa.
+     Vistas geral/resumo/fixas ficam como placeholders nesta entrega — serão
+     implementadas nas entregas seguintes. */
+  if      (oneFinMobVista === 'extrato')   oneFinMobRenderLista(receitas, despesas);
+  else if (oneFinMobVista === 'dashboard') oneFinMobRenderCategorias();
+  else if (oneFinMobVista === 'contas')    { if (typeof oneFinRenderContas === 'function') oneFinRenderContas(); }
+  /* geral / resumo / fixas: nada por enquanto, mostram empty state do HTML */
 }
 
-/* Troca aba Lançamentos / Categorias */
+/* Troca de vista no header — réplica das 6 abas do desktop. */
 function oneFinMobSetVista(vista) {
   oneFinMobVista = vista;
   document.querySelectorAll('.one-fin-mob-tab').forEach(function(b){
@@ -7143,9 +7144,10 @@ function oneFinMobSetVista(vista) {
   document.querySelectorAll('.one-fin-mob-vista').forEach(function(v){
     v.hidden = v.dataset.vista !== vista;
   });
-  if (vista === 'lancamentos') oneFinMobRenderLista();
-  else if (vista === 'contas') { if (typeof oneFinRenderContas === 'function') oneFinRenderContas(); }
-  else oneFinMobRenderCategorias();
+  if      (vista === 'extrato')   oneFinMobRenderLista();
+  else if (vista === 'dashboard') oneFinMobRenderCategorias();
+  else if (vista === 'contas')    { if (typeof oneFinRenderContas === 'function') oneFinRenderContas(); }
+  /* geral / resumo / fixas: placeholders até a próxima entrega */
 }
 
 /* Filtro de período */
@@ -7156,15 +7158,15 @@ function oneFinMobSetPeriodo(btn) {
   oneFinMobRenderLista();
 }
 
-/* Filtros do top-card */
+/* Filtros do top-card — pulam pra vista Extrato (antiga Lançamentos). */
 function oneFinMobFiltrarPendentes() {
   oneFinMobFiltroAtivo = oneFinMobFiltroAtivo === 'pendentes' ? null : 'pendentes';
-  if (oneFinMobVista !== 'lancamentos') oneFinMobSetVista('lancamentos');
+  if (oneFinMobVista !== 'extrato') oneFinMobSetVista('extrato');
   oneFinMobRenderLista();
 }
 function oneFinMobFiltrarVencendo() {
   oneFinMobFiltroAtivo = oneFinMobFiltroAtivo === 'vencendo' ? null : 'vencendo';
-  if (oneFinMobVista !== 'lancamentos') oneFinMobSetVista('lancamentos');
+  if (oneFinMobVista !== 'extrato') oneFinMobSetVista('extrato');
   oneFinMobRenderLista();
 }
 function oneFinMobLimparFiltro() {
@@ -7199,6 +7201,10 @@ function oneFinMobRenderLista(receitasParam, despesasParam) {
   });
   despesas.forEach(function(d){
     if (!d.data || d.data < inicioISO) return;
+    /* Despesas que viraram fatura de cartão (faturaMesAno preenchido) NÃO entram
+       no Extrato. Aparecem só no detalhe da Conta (aba Contas), igual ao desktop.
+       Quando a fatura é paga, o pagamento aparece como uma saída única do banco. */
+    if (d.faturaMesAno) return;
     items.push({key:'despesas', id:d.id, data:d.data, nome:d.descricao||d.nome||'Despesa', tipo:'desp', valor:d.valor||0, status:d.status, cat:d.categoria});
   });
 
