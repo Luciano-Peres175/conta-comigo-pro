@@ -5893,8 +5893,8 @@ function renderOneFinanceiroPainel() {
       };
     });
 
-  /* Faturas condensadas — só no modo "Mês" sem filtro Pendentes/Vencendo. */
-  if (periodo === 'mes' && !filtroAtivo) {
+  /* Faturas condensadas — só no modo "Mês". */
+  if (periodo === 'mes') {
     var mesAnoExt = ano + '-' + String(mes + 1).padStart(2, '0');
     var contasExt = (typeof oneFinGetContas === 'function') ? oneFinGetContas() : [];
     contasExt.forEach(function(c){
