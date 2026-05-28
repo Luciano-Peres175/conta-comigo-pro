@@ -9155,17 +9155,20 @@ function renderOnePendenciasAlertas() {
 }
 window.renderOnePendenciasAlertas = renderOnePendenciasAlertas;
 
-/* Filtros funcionais nos cards de alerta — clicam, filtram a lista no Extrato e chaveiam vista */
+/* Cards Pendentes/Vencendo viram atalhos diretos pro Extrato (sem filtro
+   por coluna). Antes zeravam a coluna oposta, o que passava info errada
+   (parecia que não havia despesas no mês). Agora pulam pra Extrato e mostram
+   as 2 colunas completas, igual ao pill Extrato. */
 function oneFinFiltrarPendentes() {
-  window.oneFinFiltroAtivo = 'pendentes';
+  window.oneFinFiltroAtivo = null;
   oneFinSetVista('extrato');
-  oneFinAtualizarChipFiltro('Receitas pendentes');
+  oneFinAtualizarChipFiltro(null);
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
 }
 function oneFinFiltrarVencendo() {
-  window.oneFinFiltroAtivo = 'vencendo';
+  window.oneFinFiltroAtivo = null;
   oneFinSetVista('extrato');
-  oneFinAtualizarChipFiltro('Despesas vencendo');
+  oneFinAtualizarChipFiltro(null);
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
 }
 function oneFinLimparFiltro() {
