@@ -5848,28 +5848,10 @@ function renderOneFinanceiroPainel() {
     dFil = despesas.filter(function(d){ var dd = d.data||''; return dd >= inicioStr && dd <= hojeStr; }).concat(_instInt.despesas);
   }
 
-  /* Filtros vindos dos cards Pendentes/Vencendo: limitam o foco a uma coluna. */
-  var filtroAtivo = window.oneFinFiltroAtivo || null;
-  if (filtroAtivo === 'pendentes') {
-    rFil = rFil.filter(function(r){
-      var s = String(r.status || '').toLowerCase();
-      return s === 'pendente' || s === 'aberto' || s === 'aguardando';
-    });
-    dFil = [];
-  } else if (filtroAtivo === 'vencendo') {
-    var hojeStr2 = hoje.toISOString().slice(0,10);
-    var em7Dias2 = new Date(hoje); em7Dias2.setDate(em7Dias2.getDate() + 7);
-    var em7Str = em7Dias2.toISOString().slice(0,10);
-    var inicioMes2 = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().slice(0,10);
-    dFil = dFil.filter(function(d){
-      var data = d.data || '';
-      if (!data) return false;
-      var status = String(d.status || '').toLowerCase();
-      if (status === 'pago' || status === 'quitado') return false;
-      return (data >= hojeStr2 && data <= em7Str) || (data >= inicioMes2 && data < hojeStr2);
-    });
-    rFil = [];
-  }
+  /* Filtro vindo dos cards Pendentes/Vencendo foi removido — os cards agora
+     são atalhos puros pro Extrato e mostram as 2 colunas completas. Nada
+     escreve em window.oneFinFiltroAtivo nesse fluxo, e o branch antigo que
+     zerava a coluna oposta ficou aqui só como nota histórica. */
 
   /* Receitas: reais + fixas instanciadas. */
   var itensRec = rFil.map(function(r){
