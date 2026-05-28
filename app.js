@@ -5825,23 +5825,29 @@ function renderOneFinanceiroPainel() {
   setText('one-fin-pendente-big',      brl(totalPendente));
   setText('one-fin-card-invest-val',   brl(totalInvest));
 
-  var el = document.getElementById('one-fin-list-big');
-  if (!el) return;
+  /* Extrato em 2 colunas — Receitas | Despesas, cada uma com seu scroll
+     interno e SOMA fixa embaixo. Filtros: Hoje, 7/15/30d, Mês.
+     Faturas de cartão entram condensadas como 1 linha por mês no modo Mês. */
+  var elRecBody = document.getElementById('one-fin-extrato-rec-body');
+  var elDespBody = document.getElementById('one-fin-extrato-desp-body');
+  if (!elRecBody && !elDespBody) return;
 
-  // Filtro de período da lista (afeta SÓ a lista, não os totais do mês acima)
   var periodo = window.oneFinFiltroPeriodo || 'mes';
   var rFil = receitas, dFil = despesas;
   if (periodo === 'mes') {
     rFil = rMes; dFil = dMes;
+  } else if (periodo === 'hoje') {
+    var hojeStrH = hoje.toISOString().slice(0,10);
+    var _instH = (typeof oneFinInstanciasNoIntervalo === 'function')
+                   ? oneFinInstanciasNoIntervalo(hojeStrH, hojeStrH)
+                   : { receitas: [], despesas: [] };
+    rFil = receitas.filter(function(r){ return (r.data||'') === hojeStrH; }).concat(_instH.receitas);
+    dFil = despesas.filter(function(d){ return (d.data||'') === hojeStrH; }).concat(_instH.despesas);
   } else {
     var dias = parseInt(periodo, 10) || 30;
     var inicio = new Date(hoje); inicio.setDate(inicio.getDate() - dias);
     var inicioStr = inicio.toISOString().slice(0,10);
     var hojeStr = hoje.toISOString().slice(0,10);
-    /* Inclui instâncias virtuais de fixas no intervalo — sem isso o Extrato
-       em 7/15/30d ficava só com lançamentos reais e omitia as fixas.
-       Cap superior em hojeStr: "últimos N dias" não inclui parcelas futuras
-       (8/10, 9/10 de despesas parceladas têm datas em meses à frente). */
     var _instInt = (typeof oneFinInstanciasNoIntervalo === 'function')
                      ? oneFinInstanciasNoIntervalo(inicioStr, hojeStr)
                      : { receitas: [], despesas: [] };
@@ -5849,14 +5855,15 @@ function renderOneFinanceiroPainel() {
     dFil = despesas.filter(function(d){ var dd = d.data||''; return dd >= inicioStr && dd <= hojeStr; }).concat(_instInt.despesas);
   }
 
-  // Filtro adicional vindo dos cards de alerta (pendentes / vencendo)
-  if (window.oneFinFiltroAtivo === 'pendentes') {
+  /* Filtros vindos dos cards Pendentes/Vencendo: limitam o foco a uma coluna. */
+  var filtroAtivo = window.oneFinFiltroAtivo || null;
+  if (filtroAtivo === 'pendentes') {
     rFil = rFil.filter(function(r){
       var s = String(r.status || '').toLowerCase();
       return s === 'pendente' || s === 'aberto' || s === 'aguardando';
     });
-    dFil = []; // pendentes é só de receitas
-  } else if (window.oneFinFiltroAtivo === 'vencendo') {
+    dFil = [];
+  } else if (filtroAtivo === 'vencendo') {
     var hojeStr2 = hoje.toISOString().slice(0,10);
     var em7Dias2 = new Date(hoje); em7Dias2.setDate(em7Dias2.getDate() + 7);
     var em7Str = em7Dias2.toISOString().slice(0,10);
@@ -5868,71 +5875,125 @@ function renderOneFinanceiroPainel() {
       if (status === 'pago' || status === 'quitado') return false;
       return (data >= hojeStr2 && data <= em7Str) || (data >= inicioMes2 && data < hojeStr2);
     });
-    rFil = []; // vencendo é só de despesas
+    rFil = [];
   }
 
-  /* Pra instâncias virtuais de fixas (vêm com _fixa=true), o editar/excluir
-     precisa apontar pra tabela das FIXAS, não pra receitas/despesas reais.
-     Sem isso, oneFinModalEditar busca o id da instância virtual dentro de
-     'despesas' e não acha — sai em silêncio. */
-  var lancamentos = rFil.map(function(r){
+  /* Receitas: reais + fixas instanciadas. */
+  var itensRec = rFil.map(function(r){
     var ehFixa = !!r._fixa;
-    return { tipo:'in', key: ehFixa ? 'receitasFixas' : 'receitas',
-             id: ehFixa ? (r._fixaId || r.id) : r.id,
-             nome:r.nome || r.descricao || 'Receita',
-             categoria: r.categoria || r.tipo || '', valor:Number(r.valor)||0, data:r.data,
-             status: r.status || '', _fixa: ehFixa };
-  }).concat(dFil.map(function(d){
-    var ehFixa = !!d._fixa;
-    return { tipo:'out', key: ehFixa ? 'despesasFixas' : 'despesas',
-             id: ehFixa ? (d._fixaId || d.id) : d.id,
-             nome:d.descricao || d.nome || 'Despesa',
-             categoria: d.categoria || '', valor:Number(d.valor)||0, data:d.data,
-             status: d.status || '', _fixa: ehFixa };
-  })).sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
+    return {
+      tipo: 'in',
+      nome: r.nome || r.descricao || 'Receita',
+      categoria: r.categoria || r.tipo || '',
+      valor: Number(r.valor) || 0,
+      data: r.data,
+      status: r.status || '',
+      _fixa: ehFixa,
+      _fatura: false
+    };
+  }).sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
 
-  if (!lancamentos.length) {
-    el.innerHTML = '<p style="color:#9CAB9C;font-size:13px;padding:18px 0;text-align:center;font-style:italic;font-family:Playfair Display,Georgia,serif">Nenhum lançamento no período</p>';
-    return;
+  /* Despesas: reais + fixas SEM cartão (cartão entra condensado como fatura). */
+  var itensDesp = dFil
+    .filter(function(d){
+      var contaId = d.contaId;
+      if (contaId) {
+        var conta = (typeof oneFinGetConta === 'function') ? oneFinGetConta(contaId) : null;
+        if (conta && conta.tipo === 'cartao') return false;
+      }
+      if (d.faturaMesAno) return false;
+      return true;
+    })
+    .map(function(d){
+      var ehFixa = !!d._fixa;
+      return {
+        tipo: 'out',
+        nome: d.descricao || d.nome || 'Despesa',
+        categoria: d.categoria || '',
+        valor: Number(d.valor) || 0,
+        data: d.data,
+        status: d.status || '',
+        _fixa: ehFixa,
+        _fatura: false
+      };
+    });
+
+  /* Faturas condensadas — só no modo "Mês" sem filtro Pendentes/Vencendo. */
+  if (periodo === 'mes' && !filtroAtivo) {
+    var mesAnoExt = ano + '-' + String(mes + 1).padStart(2, '0');
+    var contasExt = (typeof oneFinGetContas === 'function') ? oneFinGetContas() : [];
+    contasExt.forEach(function(c){
+      if (c.tipo !== 'cartao') return;
+      var totalFat = (typeof oneFinFaturaDoMes === 'function') ? oneFinFaturaDoMes(c.id, mesAnoExt) : 0;
+      if (totalFat <= 0) return;
+      var pagaFat = !!(Array.isArray(c.faturasPagas) && c.faturasPagas.indexOf(mesAnoExt) >= 0);
+      var diaVenc = c.diaVencimento || 10;
+      var dataFatura = ano + '-' + String(mes + 1).padStart(2, '0') + '-' + String(diaVenc).padStart(2, '0');
+      itensDesp.push({
+        tipo: 'out',
+        nome: c.nome + ' (Fatura ' + mesAnoExt + ')',
+        categoria: 'Cartão',
+        icone: c.icone || '💳',
+        cor: c.cor || '#9B72B0',
+        valor: totalFat,
+        data: dataFatura,
+        status: pagaFat ? 'pago' : 'pendente',
+        _fixa: false,
+        _fatura: true
+      });
+    });
   }
 
-  // Agrupa por data
-  var grupos = {};
-  lancamentos.forEach(function(l){
-    var key = l.data || 'sem-data';
-    if (!grupos[key]) grupos[key] = [];
-    grupos[key].push(l);
-  });
-  var datas = Object.keys(grupos).sort(function(a,b){ return b.localeCompare(a); });
+  itensDesp.sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
 
-  var html = '';
-  datas.slice(0, 30).forEach(function(data){
-    var label = _oneFinDataLabel(data, hoje);
-    html += '<div class="one-fin-day-header">' + label + '</div>';
-    grupos[data].forEach(function(l){
-      var cat = oneFinCatIcon(l.categoria);
-      var sinal = l.tipo === 'in' ? '+' : '-';
-      var safeId = (l.id||'').replace(/'/g,"\\'");
-      var safeKey = l.key;
-      var safeData = (l.data || '').replace(/'/g,"\\'");
-      var nome = l.nome.replace(/</g,'&lt;');
-      var catLabel = l.categoria ? l.categoria.replace(/</g,'&lt;') : (l.tipo==='in'?'Receita':'Despesa');
-      var pendBadge = l.status === 'pendente' ? ' · <span style="color:#D4A655;font-weight:600">pendente</span>' : '';
-      html += '<div class="one-fin-item-row">' +
-                '<div class="one-fin-item-icon" style="background:' + cat.bg + ';color:' + cat.cor + '">' + cat.emoji + '</div>' +
-                '<div class="one-fin-item-body">' +
-                  '<div class="one-fin-item-nome">' + nome + '</div>' +
-                  '<div class="one-fin-item-meta">' + catLabel + pendBadge + '</div>' +
-                '</div>' +
-                '<div class="one-fin-item-valor ' + (l.tipo==='in'?'in':'out') + '">' + sinal + brl(l.valor).replace('R$ ','R$') + '</div>' +
-                '<div class="one-fin-item-actions">' +
-                  '<button class="one-fin-item-btn" onclick="oneFinEditar(\'' + safeKey + '\',\'' + safeId + '\',\'' + safeData + '\')" title="Editar">✏️</button>' +
-                  '<button class="one-fin-item-btn del" onclick="oneFinExcluir(\'' + safeKey + '\',\'' + safeId + '\',\'' + safeData + '\')" title="Excluir">🗑️</button>' +
-                '</div>' +
-              '</div>';
-    });
-  });
-  el.innerHTML = html;
+  /* Render — função de linha do extrato */
+  function _renderLinhaExt(it) {
+    var ico, bg, cor;
+    if (it._fatura) {
+      ico = it.icone || '💳';
+      bg  = (it.cor || '#9B72B0') + '22';
+      cor = it.cor || '#9B72B0';
+    } else {
+      var cat = (typeof oneFinCatIcon === 'function') ? oneFinCatIcon(it.categoria) : { emoji:'💸', cor:'#6B7F6F', bg:'#F2F6F1' };
+      ico = cat.emoji;
+      bg  = cat.bg;
+      cor = cat.cor;
+    }
+    var dia = it.data ? parseInt(it.data.split('-')[2], 10) : '—';
+    var pagoCls = (String(it.status||'').toLowerCase() === 'pago') ? ' pago' : '';
+    var badge = '';
+    if (it._fatura) badge = '<span class="badge-fatura">fatura</span>';
+    else if (it._fixa) badge = '<span class="badge-fixa">↻ fixa</span>';
+    var nomeSafe = (it.nome||'').replace(/</g,'&lt;');
+    var sinal = it.tipo === 'in' ? '+' : '−';
+    return '<div class="one-fin-extrato-item' + pagoCls + '">' +
+             '<div class="one-fin-extrato-item-ico" style="background:' + bg + ';color:' + cor + '">' + ico + '</div>' +
+             '<div class="one-fin-extrato-item-dia">' + dia + '</div>' +
+             '<div class="one-fin-extrato-item-nome">' + nomeSafe + badge + '</div>' +
+             '<div class="one-fin-extrato-item-val">' + sinal + brl(it.valor).replace('R$ ','R$') + '</div>' +
+           '</div>';
+  }
+
+  /* Popula coluna Receitas */
+  var setText2 = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
+  if (elRecBody) {
+    elRecBody.innerHTML = itensRec.length
+      ? itensRec.map(_renderLinhaExt).join('')
+      : '<div class="one-fin-extrato-vazio">Nenhuma receita no período</div>';
+  }
+  var somaRec = itensRec.reduce(function(s,i){ return s + i.valor; }, 0);
+  setText2('one-fin-extrato-rec-cnt', itensRec.length + (itensRec.length === 1 ? ' lançamento' : ' lançamentos'));
+  setText2('one-fin-extrato-rec-soma', brl(somaRec));
+
+  /* Popula coluna Despesas */
+  if (elDespBody) {
+    elDespBody.innerHTML = itensDesp.length
+      ? itensDesp.map(_renderLinhaExt).join('')
+      : '<div class="one-fin-extrato-vazio">Nenhuma despesa no período</div>';
+  }
+  var somaDesp = itensDesp.reduce(function(s,i){ return s + i.valor; }, 0);
+  setText2('one-fin-extrato-desp-cnt', itensDesp.length + (itensDesp.length === 1 ? ' lançamento' : ' lançamentos'));
+  setText2('one-fin-extrato-desp-soma', brl(somaDesp));
 }
 
 function zerarFinanceiro() {

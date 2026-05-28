@@ -816,13 +816,16 @@
             </div>
           </div>
 
-          <!-- View Extrato — lista completa com filtros de período -->
+          <!-- View Extrato — 2 colunas (Receitas | Despesas) com scroll
+               independente, header e SOMA fixos. Faturas de cartão entram
+               condensadas (1 linha por fatura do mês) no modo Mês. -->
           <div class="one-fin-vista" data-vista="extrato" hidden>
             <div class="one-fin-extrato-controls">
               <div class="one-fin-period-tabs one-fin-period-tabs-mini" id="one-fin-period-tabs">
-                <button class="one-fin-period-tab" data-periodo="7"   onclick="oneFinSetPeriodo('7')">7d</button>
-                <button class="one-fin-period-tab" data-periodo="15"  onclick="oneFinSetPeriodo('15')">15d</button>
-                <button class="one-fin-period-tab" data-periodo="30"  onclick="oneFinSetPeriodo('30')">30d</button>
+                <button class="one-fin-period-tab" data-periodo="hoje" onclick="oneFinSetPeriodo('hoje')">Hoje</button>
+                <button class="one-fin-period-tab" data-periodo="7"    onclick="oneFinSetPeriodo('7')">7d</button>
+                <button class="one-fin-period-tab" data-periodo="15"   onclick="oneFinSetPeriodo('15')">15d</button>
+                <button class="one-fin-period-tab" data-periodo="30"   onclick="oneFinSetPeriodo('30')">30d</button>
                 <button class="one-fin-period-tab active" data-periodo="mes" onclick="oneFinSetPeriodo('mes')">Mês</button>
               </div>
               <div class="one-fin-filtros-ativos" id="one-fin-filtros-ativos" hidden>
@@ -830,7 +833,30 @@
                 <button class="one-fin-filtro-clear" onclick="oneFinLimparFiltro()">✕ limpar</button>
               </div>
             </div>
-            <div class="one-pn-body" id="one-fin-list-big" style="flex:1;overflow-y:auto"></div>
+            <div class="one-fin-extrato-grid">
+              <div class="one-fin-extrato-col one-fin-extrato-col-rec">
+                <div class="one-fin-extrato-col-head">
+                  <span class="one-fin-extrato-col-titulo">↑ Receitas</span>
+                  <span class="one-fin-extrato-col-cnt" id="one-fin-extrato-rec-cnt">0 lançamentos</span>
+                </div>
+                <div class="one-fin-extrato-col-body" id="one-fin-extrato-rec-body"></div>
+                <div class="one-fin-extrato-col-foot">
+                  <span class="lbl">SOMA →</span>
+                  <span class="val" id="one-fin-extrato-rec-soma">R$ 0,00</span>
+                </div>
+              </div>
+              <div class="one-fin-extrato-col one-fin-extrato-col-desp">
+                <div class="one-fin-extrato-col-head">
+                  <span class="one-fin-extrato-col-titulo">↓ Despesas</span>
+                  <span class="one-fin-extrato-col-cnt" id="one-fin-extrato-desp-cnt">0 lançamentos</span>
+                </div>
+                <div class="one-fin-extrato-col-body" id="one-fin-extrato-desp-body"></div>
+                <div class="one-fin-extrato-col-foot">
+                  <span class="lbl">SOMA →</span>
+                  <span class="val" id="one-fin-extrato-desp-soma">R$ 0,00</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- View Fixas — receitas e despesas fixas, navegáveis mês a mês -->

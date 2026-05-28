@@ -6913,6 +6913,128 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 }
 .one-fin-btn-sync:hover { background: rgba(127,168,142,0.10); }
 
+/* ── Extrato em 2 colunas (Receitas | Despesas) ────────────────────
+   Cada coluna: header fixo, corpo com scroll Y interno, SOMA fixa embaixo.
+   Faturas de cartão entram condensadas como 1 linha por mês na coluna Despesas. */
+.one-fin-extrato-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.one-fin-extrato-col {
+  background: #FBF8F2;
+  border: 1px solid rgba(127,168,142,0.16);
+  border-radius: 14px;
+  padding: 12px 14px 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 0;
+  overflow: hidden;
+}
+.one-fin-extrato-col-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(127,168,142,0.20);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-extrato-col-titulo {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2D3D2F;
+  letter-spacing: .2px;
+}
+.one-fin-extrato-col-rec .one-fin-extrato-col-titulo { color: #1F6B52; }
+.one-fin-extrato-col-desp .one-fin-extrato-col-titulo { color: #A02D24; }
+.one-fin-extrato-col-cnt {
+  font-size: 11px;
+  color: #6B7F6F;
+  font-weight: 500;
+}
+.one-fin-extrato-col-body {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 0 8px;
+}
+.one-fin-extrato-col-foot {
+  border-top: 1px solid rgba(127,168,142,0.20);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 2px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.one-fin-extrato-col-foot .lbl { font-size: 11px; font-weight: 700; color: #6B7F6F; letter-spacing: .3px; }
+.one-fin-extrato-col-foot .val { font-size: 14px; font-weight: 700; }
+.one-fin-extrato-col-rec .one-fin-extrato-col-foot .val { color: #1F6B52; }
+.one-fin-extrato-col-desp .one-fin-extrato-col-foot .val { color: #A02D24; }
+.one-fin-extrato-item {
+  display: grid;
+  grid-template-columns: 26px 28px 1fr 90px;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 2px;
+  border-bottom: 1px solid rgba(127,168,142,0.08);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+}
+.one-fin-extrato-item.pago { opacity: 0.55; text-decoration: line-through; }
+.one-fin-extrato-item-ico {
+  width: 22px; height: 22px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+.one-fin-extrato-item-dia {
+  font-weight: 600;
+  color: #6B7F6F;
+  text-align: center;
+}
+.one-fin-extrato-item-nome {
+  color: #2D3D2F;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.one-fin-extrato-item-nome .badge-fatura {
+  font-size: 9px;
+  color: #9B72B0;
+  background: rgba(155,114,176,0.12);
+  padding: 1px 5px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-left: 5px;
+}
+.one-fin-extrato-item-nome .badge-fixa {
+  font-size: 9px;
+  color: #5B7CFA;
+  background: rgba(91,124,250,0.12);
+  padding: 1px 5px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-left: 5px;
+}
+.one-fin-extrato-item-val {
+  text-align: right;
+  font-weight: 600;
+  font-size: 12.5px;
+}
+.one-fin-extrato-col-rec .one-fin-extrato-item-val { color: #1F6B52; }
+.one-fin-extrato-col-desp .one-fin-extrato-item-val { color: #A02D24; }
+.one-fin-extrato-vazio {
+  text-align: center;
+  color: #9CAB9C;
+  font-style: italic;
+  padding: 20px 8px;
+  font-size: 12px;
+  font-family: Playfair Display, Georgia, serif;
+}
+
 /* ── Linha do header do Financeiro: 4 cards (hero + Pendentes + Vencendo + Investimentos) ── */
 .one-fin-top-cards {
   display: grid;
