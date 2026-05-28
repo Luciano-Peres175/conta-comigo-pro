@@ -7126,13 +7126,12 @@ function renderOneFinanceiro() {
   _set('one-fin-mob-sai',      _oneFinFmt(totalDesp));
   _set('one-fin-mob-pen',      _oneFinFmt(pendenteVal));
 
-  /* Render da aba ativa.
-     Vistas geral/resumo/fixas ficam como placeholders nesta entrega — serão
-     implementadas nas entregas seguintes. */
-  if      (oneFinMobVista === 'extrato')   oneFinMobRenderLista(receitas, despesas);
+  /* Render da aba ativa. */
+  if      (oneFinMobVista === 'geral')     renderOneFinGeralMob();
+  else if (oneFinMobVista === 'extrato')   oneFinMobRenderLista(receitas, despesas);
   else if (oneFinMobVista === 'dashboard') oneFinMobRenderCategorias();
   else if (oneFinMobVista === 'contas')    { if (typeof oneFinRenderContas === 'function') oneFinRenderContas(); }
-  /* geral / resumo / fixas: nada por enquanto, mostram empty state do HTML */
+  /* resumo / fixas: placeholders até as próximas entregas */
 }
 
 /* Troca de vista no header — réplica das 6 abas do desktop. */
@@ -7144,10 +7143,11 @@ function oneFinMobSetVista(vista) {
   document.querySelectorAll('.one-fin-mob-vista').forEach(function(v){
     v.hidden = v.dataset.vista !== vista;
   });
-  if      (vista === 'extrato')   oneFinMobRenderLista();
+  if      (vista === 'geral')     renderOneFinGeralMob();
+  else if (vista === 'extrato')   oneFinMobRenderLista();
   else if (vista === 'dashboard') oneFinMobRenderCategorias();
   else if (vista === 'contas')    { if (typeof oneFinRenderContas === 'function') oneFinRenderContas(); }
-  /* geral / resumo / fixas: placeholders até a próxima entrega */
+  /* resumo / fixas: placeholders até as próximas entregas */
 }
 
 /* Filtro de período */
@@ -7172,6 +7172,127 @@ function oneFinMobFiltrarVencendo() {
 function oneFinMobLimparFiltro() {
   oneFinMobFiltroAtivo = null;
   oneFinMobRenderLista();
+}
+
+/* ── Vista Visão geral mobile (entrega 2) ─────────────────────────────
+   Réplica da Visão geral do desktop adaptada à largura mobile:
+   - Lista flat dos lançamentos do mês (até 8 mais recentes)
+   - Gráfico de barras com balanço de 6 meses (mês atual + 5 próximos)
+   Mobile usa mês atual (sem navegação ainda). Reusa _brlFin, oneFinCatIcon
+   e oneFinInstanciasDoMes do escopo global. */
+function renderOneFinGeralMob() {
+  var hoje = new Date();
+  var mes = hoje.getMonth();
+  var ano = hoje.getFullYear();
+  var prefix = ano + '-' + String(mes+1).padStart(2,'0');
+
+  var receitas = [], despesas = [];
+  try { receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
+  try { despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){}
+
+  /* Instâncias virtuais das fixas no mês ativo */
+  var inst = (typeof oneFinInstanciasDoMes === 'function') ? oneFinInstanciasDoMes(mes, ano) : { receitas: [], despesas: [] };
+
+  /* Lista unificada (receitas reais + receitas fixas instanciadas +
+     despesas reais sem fatura de cartão + despesas fixas instanciadas).
+     Despesas com faturaMesAno ficam fora — mesmo critério do Extrato. */
+  var itens = [];
+  receitas.forEach(function(r){
+    if (!r.data || !r.data.startsWith(prefix)) return;
+    itens.push({ tipo:'in',  nome: r.nome || r.descricao || 'Receita', categoria: r.categoria || '', valor: Number(r.valor)||0, data: r.data, _fixa:false });
+  });
+  inst.receitas.forEach(function(r){
+    itens.push({ tipo:'in',  nome: r.nome, categoria: r.categoria || '', valor: Number(r.valor)||0, data: r.data, _fixa:true });
+  });
+  despesas.forEach(function(d){
+    if (!d.data || !d.data.startsWith(prefix)) return;
+    if (d.faturaMesAno) return;
+    itens.push({ tipo:'out', nome: d.descricao || d.nome || 'Despesa', categoria: d.categoria || '', valor: Number(d.valor)||0, data: d.data, _fixa:false });
+  });
+  inst.despesas.forEach(function(d){
+    itens.push({ tipo:'out', nome: d.nome, categoria: d.categoria || '', valor: Number(d.valor)||0, data: d.data, _fixa:true });
+  });
+  itens.sort(function(a,b){ return (b.data||'').localeCompare(a.data||''); });
+
+  /* Renderiza lista (até 8 mais recentes) */
+  var listEl = document.getElementById('one-fin-mob-geral-recent');
+  if (listEl) {
+    if (!itens.length) {
+      listEl.innerHTML = '<p style="text-align:center;color:#9CAB9C;font-size:12px;padding:14px 0;font-style:italic;font-family:Playfair Display,Georgia,serif">Nenhum lançamento neste mês</p>';
+    } else {
+      var top = itens.slice(0, 8);
+      listEl.innerHTML = top.map(function(l){
+        var corVal = l.tipo === 'in' ? '#27856A' : '#C0392B';
+        var sinal  = l.tipo === 'in' ? '+' : '-';
+        var icoCat = (typeof oneFinCatIcon === 'function') ? oneFinCatIcon(l.categoria) : { emoji: l.tipo==='in' ? '💚' : '🔴', cor:'#6B7F6F', bg:'#F2F6F1' };
+        var dataF  = l.data ? l.data.split('-').reverse().slice(0,2).join('/') : '';
+        var badge  = l._fixa ? ' <span style="font-size:9px;color:#9B72B0;background:rgba(155,114,176,0.12);padding:1px 5px;border-radius:6px;font-weight:600">↻ fixa</span>' : '';
+        var nomeS  = (l.nome||'').replace(/</g,'&lt;');
+        return '<div class="one-fin-item" style="padding:6px 0">' +
+                 '<div class="one-fin-item-icon" style="background:' + icoCat.bg + ';color:' + icoCat.cor + '">' + icoCat.emoji + '</div>' +
+                 '<div class="one-fin-item-info">' +
+                   '<div class="one-fin-item-name">' + nomeS + badge + '</div>' +
+                   '<div class="one-fin-item-date">' + dataF + '</div>' +
+                 '</div>' +
+                 '<div class="one-fin-item-value ' + (l.tipo==='in'?'rec':'desp') + '" style="color:' + corVal + '">' + sinal + _brlFin(l.valor).replace('R$ ','R$') + '</div>' +
+               '</div>';
+      }).join('');
+    }
+  }
+
+  /* Gráfico de barras: mês atual + 5 próximos (mesmo dataset do desktop). */
+  var canvas = document.getElementById('one-fin-mob-bars-geral');
+  if (!canvas || typeof Chart === 'undefined') {
+    if (canvas) setTimeout(renderOneFinGeralMob, 200);
+    return;
+  }
+  if (!window.oneFinMobCharts) window.oneFinMobCharts = {};
+  if (window.oneFinMobCharts.barsGeral) window.oneFinMobCharts.barsGeral.destroy();
+
+  var mesesL = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var labels = [], rData = [], dData = [];
+  for (var i = 0; i < 6; i++) {
+    var m = mes + i, a = ano;
+    while (m > 11) { m -= 12; a++; }
+    var labelMes = mesesL[m];
+    if (a !== ano) labelMes += '/' + String(a).slice(-2);
+    labels.push(labelMes);
+    var rReais = receitas
+      .filter(function(r){ if (!r.data) return false; var d = new Date(r.data+'T00:00:00'); return d.getMonth()===m && d.getFullYear()===a; })
+      .reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
+    var dReais = despesas
+      .filter(function(d){ if (!d.data || d.faturaMesAno) return false; var dt = new Date(d.data+'T00:00:00'); return dt.getMonth()===m && dt.getFullYear()===a; })
+      .reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+    var instM = (typeof oneFinInstanciasDoMes === 'function') ? oneFinInstanciasDoMes(m, a) : { receitas:[], despesas:[] };
+    var rFix = instM.receitas.reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
+    var dFix = instM.despesas.reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+    rData.push(rReais + rFix);
+    dData.push(dReais + dFix);
+  }
+
+  window.oneFinMobCharts.barsGeral = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Receitas', data: rData, backgroundColor: '#7FA88E', borderRadius: 5 },
+        { label: 'Despesas', data: dData, backgroundColor: '#E07A6B', borderRadius: 5 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 }, color: '#6B7F6F', usePointStyle: true, boxWidth: 6 } },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ': ' + _brlFin(ctx.parsed.y); } } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { font: { size: 9 }, color: '#6B7F6F', callback: function(v){ return 'R$ ' + (v/1000).toFixed(0) + 'k'; } }, grid: { color: 'rgba(127,168,142,0.10)' } },
+        x: { ticks: { font: { size: 10 }, color: '#6B7F6F' }, grid: { display: false } }
+      },
+      animation: { duration: 500 }
+    }
+  });
 }
 
 /* Aba Lançamentos: lista filtrada por período + filtros opcionais */
