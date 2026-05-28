@@ -5812,15 +5812,18 @@ function renderOneFinanceiroPainel() {
   }
   /* Valor central = saldo em contas (banco), igual ao bloco Caixa do Resumo. */
   var saldoEmContas = (typeof _oneFinResumoSaldoEmContas === 'function') ? _oneFinResumoSaldoEmContas() : 0;
+  /* Total acumulado em investimentos — alimenta o 4º card da linha. */
+  var totalInvest   = (typeof _oneFinResumoTotalInvestimentos === 'function') ? _oneFinResumoTotalInvestimentos() : 0;
 
   function brl(v) { return 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
   var setText = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
 
   setText('one-fin-periodo', meses[mes] + '/' + ano);
-  setText('one-fin-saldo-big',    brl(saldoEmContas));
-  setText('one-fin-entradas-big', brl(totalReceitasPagas));
-  setText('one-fin-saidas-big',   brl(totalAPagarMes));
-  setText('one-fin-pendente-big', brl(totalPendente));
+  setText('one-fin-saldo-big',         brl(saldoEmContas));
+  setText('one-fin-entradas-big',      brl(totalReceitasPagas));
+  setText('one-fin-saidas-big',        brl(totalAPagarMes));
+  setText('one-fin-pendente-big',      brl(totalPendente));
+  setText('one-fin-card-invest-val',   brl(totalInvest));
 
   var el = document.getElementById('one-fin-list-big');
   if (!el) return;

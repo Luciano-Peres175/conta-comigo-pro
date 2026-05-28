@@ -710,9 +710,28 @@
         </div>
         <div class="one-fin-content">
 
-          <!-- 3 cards slim no topo: Pendentes + Vencendo + Saldo -->
+          <!-- 4 cards na linha do header: hero largo + Pendentes + Vencendo + Investimentos -->
           <div class="one-fin-top-cards">
-            <button class="one-fin-card one-fin-card-pendentes" type="button" onclick="oneFinFiltrarPendentes()">
+            <!-- HERO: saldo em contas em destaque + 2 pills inline (Receitas/Despesas do mês) -->
+            <div class="one-fin-card one-fin-card-hero">
+              <div class="one-fin-hero-main">
+                <div class="one-fin-hero-lbl">SALDO EM CONTAS</div>
+                <div class="one-fin-hero-val" id="one-fin-saldo-big">R$ 0,00</div>
+              </div>
+              <div class="one-fin-hero-pills">
+                <div class="one-fin-hero-pill in">
+                  <div class="one-fin-hero-pill-lbl">↑ Receitas</div>
+                  <div class="one-fin-hero-pill-val" id="one-fin-entradas-big">R$ 0,00</div>
+                </div>
+                <div class="one-fin-hero-pill out">
+                  <div class="one-fin-hero-pill-lbl">↓ Despesas</div>
+                  <div class="one-fin-hero-pill-val" id="one-fin-saidas-big">R$ 0,00</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pendentes (esverdeado) — atalho pro Extrato filtrado por receitas pendentes -->
+            <button class="one-fin-card one-fin-card-pendentes" type="button" onclick="oneFinFiltrarPendentes()" title="Ver receitas pendentes no Extrato">
               <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></div>
               <div class="one-fin-card-body">
                 <div class="one-fin-card-row">
@@ -723,7 +742,8 @@
               </div>
             </button>
 
-            <button class="one-fin-card one-fin-card-vencendo" type="button" onclick="oneFinFiltrarVencendo()">
+            <!-- Vencendo (vermelho) — atalho pro Extrato filtrado por despesas a vencer -->
+            <button class="one-fin-card one-fin-card-vencendo" type="button" onclick="oneFinFiltrarVencendo()" title="Ver despesas a vencer no Extrato">
               <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
               <div class="one-fin-card-body">
                 <div class="one-fin-card-row">
@@ -734,18 +754,14 @@
               </div>
             </button>
 
-            <div class="one-fin-card one-fin-card-saldo">
-              <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <!-- Investimentos (azul) — só informativo por enquanto; futura tela de investimentos -->
+            <div class="one-fin-card one-fin-card-invest" title="Total acumulado em investimentos">
+              <div class="one-fin-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg></div>
               <div class="one-fin-card-body">
                 <div class="one-fin-card-row">
-                  <span class="one-fin-card-num" id="one-fin-saldo-big">R$ 0,00</span>
+                  <span class="one-fin-card-num" id="one-fin-card-invest-val">R$ 0,00</span>
                 </div>
-                <div class="one-fin-card-lbl">Saldo em contas</div>
-                <div class="one-fin-card-stats">
-                  <span class="one-fin-card-stat in">↑ <span id="one-fin-entradas-big">R$ 0</span></span>
-                  <span class="one-fin-card-stat out">↓ <span id="one-fin-saidas-big">R$ 0</span></span>
-                  <span class="one-fin-card-stat wait">⏳ <span id="one-fin-pendente-big">R$ 0</span></span>
-                </div>
+                <div class="one-fin-card-lbl">Investimentos</div>
               </div>
             </div>
           </div>

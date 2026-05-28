@@ -6913,11 +6913,11 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 }
 .one-fin-btn-sync:hover { background: rgba(127,168,142,0.10); }
 
-/* ── 3 cards slim no topo: Pendentes + Vencendo + Saldo (versão compacta) ── */
+/* ── Linha do header do Financeiro: 4 cards (hero + Pendentes + Vencendo + Investimentos) ── */
 .one-fin-top-cards {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.4fr;
-  gap: 8px;
+  grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
   margin-bottom: 8px;
   flex-shrink: 0;
 }
@@ -6976,15 +6976,19 @@ button.one-fin-card:hover {
   line-height: 1.2;
 }
 
-/* Variantes coloridas */
+/* Variantes coloridas — Pendentes esverdeado, Vencendo vermelho, Investimentos azul */
 .one-fin-card-pendentes {
-  background: #FCF6E8;
-  border-color: rgba(212,166,85,0.28);
+  background: #E9F4ED;
+  border-color: rgba(39,133,106,0.30);
 }
 .one-fin-card-pendentes .one-fin-card-icon {
-  background: rgba(212,166,85,0.22);
-  color: #8B6914;
+  background: rgba(39,133,106,0.20);
+  color: #1F6B52;
 }
+.one-fin-card-pendentes .one-fin-card-num { color: #1F6B52; }
+.one-fin-card-pendentes .one-fin-card-lbl { color: #2D5A3F; }
+.one-fin-card-pendentes .one-fin-card-sub { color: #2D5A3F; }
+
 .one-fin-card-vencendo {
   background: #FDECEA;
   border-color: rgba(192,57,43,0.22);
@@ -6993,17 +6997,82 @@ button.one-fin-card:hover {
   background: rgba(192,57,43,0.20);
   color: #A02D24;
 }
-.one-fin-card-saldo {
-  background: linear-gradient(135deg, #7FA88E 0%, #5C8870 100%);
-  border-color: rgba(58,88,72,0.20);
+.one-fin-card-vencendo .one-fin-card-num { color: #A02D24; }
+.one-fin-card-vencendo .one-fin-card-lbl { color: #5A2018; }
+.one-fin-card-vencendo .one-fin-card-sub { color: #5A2018; }
+
+.one-fin-card-invest {
+  background: #E6EEFE;
+  border-color: rgba(91,124,250,0.30);
+}
+.one-fin-card-invest .one-fin-card-icon {
+  background: rgba(91,124,250,0.18);
+  color: #2F4FB8;
+}
+.one-fin-card-invest .one-fin-card-num { color: #2F4FB8; font-size: 16px; }
+.one-fin-card-invest .one-fin-card-lbl { color: #3F4F8A; }
+
+/* HERO — card largo gradient verde→roxo com saldo em destaque + 2 pills inline */
+.one-fin-card-hero {
+  background: linear-gradient(135deg, #5C8870 0%, #9B7FF0 100%);
+  border: none;
+  padding: 14px 18px;
+  border-radius: 12px;
+  color: #fff;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) auto;
+  align-items: center;
+  gap: 14px;
+  font-family: system-ui, -apple-system, sans-serif;
+  box-shadow: 0 4px 14px rgba(92,136,112,.22);
+  min-height: 56px;
+}
+.one-fin-hero-main { min-width: 0; }
+.one-fin-hero-lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: rgba(255,255,255,.88);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.one-fin-hero-val {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -.5px;
+  line-height: 1.05;
   color: #fff;
 }
-.one-fin-card-saldo .one-fin-card-icon {
-  background: rgba(255,255,255,0.22);
-  color: #fff;
+.one-fin-hero-pills {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 7px;
 }
-.one-fin-card-saldo .one-fin-card-num { color: #fff; font-size: 16px; }
-.one-fin-card-saldo .one-fin-card-lbl { color: rgba(255,255,255,0.78); }
+.one-fin-hero-pill {
+  border-radius: 9px;
+  padding: 6px 10px;
+  min-width: 96px;
+}
+.one-fin-hero-pill.in {
+  background: rgba(39,133,106,.45);
+  box-shadow: inset 0 0 0 1px rgba(127,168,142,.45);
+}
+.one-fin-hero-pill.out {
+  background: rgba(192,57,43,.45);
+  box-shadow: inset 0 0 0 1px rgba(224,122,107,.50);
+}
+.one-fin-hero-pill-lbl {
+  font-size: 10px;
+  color: rgba(255,255,255,.92);
+  font-weight: 500;
+  margin-bottom: 1px;
+}
+.one-fin-hero-pill-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -.2px;
+}
 .one-fin-card-stats {
   display: flex;
   gap: 10px;
