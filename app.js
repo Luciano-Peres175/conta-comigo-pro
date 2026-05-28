@@ -5796,18 +5796,30 @@ function renderOneFinanceiroPainel() {
   var rMes = receitas.filter(function(r){ return noMes(r.data); }).concat(_instMes.receitas);
   var dMes = despesas.filter(function(d){ return noMes(d.data); }).concat(_instMes.despesas);
 
-  var totalReceitas  = rMes.filter(function(r){ return r.status !== 'pendente'; }).reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
-  var totalDespesas  = dMes.reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
-  var totalPendente  = rMes.filter(function(r){ return r.status === 'pendente'; }).reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
-  var saldo = totalReceitas - totalDespesas;
+  /* Card grande do desktop — agora reflete a REALIDADE em conta, não
+     o movimento previsto do mês. Valor central = saldo somado das contas
+     bancárias (mesma fonte do mobile e do bloco Caixa do Resumo). Os 3
+     mini-stats embaixo mostram o movimento previsto pra contextualizar. */
+  var totalReceitasPagas = rMes.filter(function(r){ return r.status !== 'pendente'; }).reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
+  var totalPendente      = rMes.filter(function(r){ return r.status === 'pendente'; }).reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
+  /* Saídas = a pagar do mês (fixas + faturas com aPagar > 0), mesmo cálculo
+     do bloco Acompanhamento. Antes somava TODAS as despesas como já pagas. */
+  var totalAPagarMes = 0;
+  if (typeof _oneFinResumoColetarObrigacoes === 'function') {
+    var _obrigBig = _oneFinResumoColetarObrigacoes(mes, ano);
+    totalAPagarMes = _obrigBig.despesas.reduce(function(s,i){ return s + (i.aPagar||0); }, 0) +
+                     _obrigBig.faturas.reduce(function(s,i){ return s + (i.aPagar||0); }, 0);
+  }
+  /* Valor central = saldo em contas (banco), igual ao bloco Caixa do Resumo. */
+  var saldoEmContas = (typeof _oneFinResumoSaldoEmContas === 'function') ? _oneFinResumoSaldoEmContas() : 0;
 
   function brl(v) { return 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
   var setText = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
 
   setText('one-fin-periodo', meses[mes] + '/' + ano);
-  setText('one-fin-saldo-big', brl(saldo));
-  setText('one-fin-entradas-big', brl(totalReceitas));
-  setText('one-fin-saidas-big', brl(totalDespesas));
+  setText('one-fin-saldo-big',    brl(saldoEmContas));
+  setText('one-fin-entradas-big', brl(totalReceitasPagas));
+  setText('one-fin-saidas-big',   brl(totalAPagarMes));
   setText('one-fin-pendente-big', brl(totalPendente));
 
   var el = document.getElementById('one-fin-list-big');
@@ -7092,10 +7104,19 @@ function renderOneFinanceiro() {
   var recMes  = receitas.filter(function(r){ return r.data && r.data.startsWith(prefix); });
   var despMes = despesas.filter(function(d){ return d.data && d.data.startsWith(prefix); });
 
-  var totalRec   = recMes.filter(function(r){ return r.status === 'Pago'; }).reduce(function(s,r){ return s+(r.valor||0); },0);
-  var totalDesp  = despMes.filter(function(d){ return (d.status||'').toLowerCase() === 'pago'; }).reduce(function(s,d){ return s+(d.valor||0); },0);
-  var totalFixas = fixas.reduce(function(s,f){ return s+(f.valor||0); },0);
-  totalDesp += totalFixas;
+  /* Receitas pagas do mês (mesmo cálculo do desktop). */
+  var totalRec = recMes.filter(function(r){ return r.status === 'Pago'; }).reduce(function(s,r){ return s+(r.valor||0); },0);
+
+  /* Despesas = "Pagamentos do mês" (totalAPagarDespesas do desktop):
+     soma do aPagar de todas as fixas (excluído o já pago) + soma do aPagar
+     das faturas de cartão. Antes o mobile somava TODAS as fixas (incluindo
+     já pagas), o que inflava o número absurdamente. */
+  var totalDesp = 0;
+  if (typeof _oneFinResumoColetarObrigacoes === 'function') {
+    var obrig = _oneFinResumoColetarObrigacoes(mes, ano);
+    totalDesp = obrig.despesas.reduce(function(s,i){ return s + (i.aPagar||0); }, 0) +
+                obrig.faturas.reduce(function(s,i){ return s + (i.aPagar||0); }, 0);
+  }
 
   /* Saldo total das contas (banco) + total de investimentos — fonte
      de verdade vinda do desktop. */
@@ -9625,6 +9646,30 @@ function oneFinSaldoBanco(contaId) {
 window.oneFinSaldoBanco = oneFinSaldoBanco;
 
 /* Fatura aberta do cartão: total dos lançamentos cuja faturaMesAno é a próxima a fechar */
+/* Total da fatura de um mês específico — usado pelo Resumo quando o usuário
+   navega entre meses (≠ oneFinFaturaAberta, que sempre olha a próxima a fechar
+   a partir de hoje e por isso vazava faturas futuras pra o mês anterior). */
+function oneFinFaturaDoMes(contaId, mesAno) {
+  var conta = oneFinGetConta(contaId);
+  if (!conta || conta.tipo !== 'cartao' || !mesAno) return 0;
+  var despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
+  var totalReais = despesas.filter(function(d){
+    return String(d.contaId) === String(contaId) && d.faturaMesAno === mesAno;
+  }).reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+  var totalFixas = 0;
+  if (typeof oneFinInstanciasVizinhas === 'function') {
+    var partes = mesAno.split('-');
+    var anoF = parseInt(partes[0], 10);
+    var mesF = parseInt(partes[1], 10) - 1;
+    var inst = oneFinInstanciasVizinhas(mesF, anoF);
+    totalFixas = inst.despesas.filter(function(d){
+      return String(d.contaId) === String(contaId) && d.faturaMesAno === mesAno;
+    }).reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+  }
+  return totalReais + totalFixas;
+}
+window.oneFinFaturaDoMes = oneFinFaturaDoMes;
+
 function oneFinFaturaAberta(contaId) {
   var conta = oneFinGetConta(contaId);
   if (!conta || conta.tipo !== 'cartao') return 0;
@@ -11413,31 +11458,26 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
     });
   });
 
-  /* Faturas de cartão — 1 linha por cartão, sempre mostrando a "fatura no momento"
-     (a próxima a fechar, mesmo cálculo usado pela aba Contas em oneFinFaturaAberta).
-     Conforme o Mentor cadastra despesas no cartão, o valor sobe e aparece no Resumo.
-     Bolinha permite marcar como paga; ao marcar, baixa do total a pagar. */
+  /* Faturas de cartão — 1 linha por cartão, mostrando a fatura DO MÊS de
+     navegação (não a "próxima a fechar"). Sem isso, navegar pra um mês
+     passado mostrava a fatura futura riscada como "a pagar" e omitia a
+     fatura paga daquele mês. Agora cada mês mostra sua própria fatura. */
   contas.forEach(function(c){
     if (c.tipo !== 'cartao') return;
-    var totalFatura = (typeof oneFinFaturaAberta === 'function') ? oneFinFaturaAberta(c.id) : 0;
+    var totalFatura = (typeof oneFinFaturaDoMes === 'function') ? oneFinFaturaDoMes(c.id, mesAno) : 0;
     if (totalFatura <= 0) return;
-    /* mesAno da fatura aberta = próxima a fechar (mesmo cálculo de oneFinFaturaAberta) */
-    var hoje = new Date();
-    var compAlvo = (typeof oneFinCalcularFatura === 'function')
-      ? oneFinCalcularFatura(hoje.toISOString().slice(0,10), c.diaFechamento)
-      : mesAno;
-    var pagaFat = !!(Array.isArray(c.faturasPagas) && c.faturasPagas.indexOf(compAlvo) >= 0);
+    var pagaFat = !!(Array.isArray(c.faturasPagas) && c.faturasPagas.indexOf(mesAno) >= 0);
     out.faturas.push({
       kind: 'fatura',
       dia: c.diaVencimento || '—',
-      nome: c.nome + ' (Fatura ' + compAlvo + ')',
+      nome: c.nome + ' (Fatura ' + mesAno + ')',
       icone: c.icone || '💳',
       cor: c.cor || '#9B72B0',
       esperado: totalFatura,
       aPagar: pagaFat ? 0 : totalFatura,
       diferenca: pagaFat ? totalFatura : 0,
       pago: pagaFat,
-      ref: 'cartao:' + c.id + ':' + compAlvo
+      ref: 'cartao:' + c.id + ':' + mesAno
     });
   });
 
@@ -11486,7 +11526,14 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
   return out;
 }
 
-function oneFinRenderResumo() {
+function oneFinRenderResumo(opts) {
+  /* opts opcional: { caixaId, obrigId, investId } pra renderizar em outro
+     conjunto de elementos (ex: o slide Financeiro mobile só usa obrigId).
+     Default = IDs do desktop. */
+  opts = opts || {};
+  var _caixaId  = opts.caixaId  || 'one-fin-resumo-caixa';
+  var _obrigId  = opts.obrigId  || 'one-fin-resumo-obrigacoes';
+  var _investId = opts.investId || 'one-fin-resumo-invest';
   var hoje = new Date();
   var mes = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : hoje.getMonth();
   var ano = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : hoje.getFullYear();
@@ -11505,7 +11552,7 @@ function oneFinRenderResumo() {
   var patrimonio          = resultadoMes + investimentos;
 
   /* ── Bloco 1: Caixa do mês ── */
-  var caixa = document.getElementById('one-fin-resumo-caixa');
+  var caixa = document.getElementById(_caixaId);
   if (caixa) {
     var linhas = [
       { lbl: 'Saldo em conta(s)',                 val: saldoContas,         sinal: '(+)', cor: saldoContas >= 0 ? '#27856A' : '#C0392B' },
@@ -11530,7 +11577,7 @@ function oneFinRenderResumo() {
      Ordem: receitas primeiro (a confirmar, com bolinha pra marcar como recebida),
      depois despesas (incluindo faturas de cartão). Ambos grupos ordenados por dia
      de vencimento DECRESCENTE (dia maior primeiro). */
-  var bloco2 = document.getElementById('one-fin-resumo-obrigacoes');
+  var bloco2 = document.getElementById(_obrigId);
   if (bloco2) {
     var ordDesc = function(a,b){
       var da = (a.dia === '—' ? 0 : a.dia);
@@ -11628,7 +11675,7 @@ function oneFinRenderResumo() {
   }
 
   /* ── Bloco 3: Investimentos ── */
-  var bloco3 = document.getElementById('one-fin-resumo-invest');
+  var bloco3 = document.getElementById(_investId);
   if (bloco3) {
     var contas = (typeof oneFinGetContas === 'function') ? oneFinGetContas() : [];
     var invs = contas.filter(function(c){ return c.tipo === 'investimento'; });
