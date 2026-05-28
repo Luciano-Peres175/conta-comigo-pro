@@ -10031,21 +10031,26 @@ function oneFinInstanciasDoMes(mes, ano) {
   var receitasFixas = JSON.parse(localStorage.getItem(oneU('receitasFixas')) || '[]');
   var despesasFixas = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]');
   var receitas = [], despesas = [];
+  var mesAnoStr = ano + '-' + String(mes + 1).padStart(2, '0');
 
   receitasFixas.forEach(function(rf){
     if (!oneFinFixaAtivaNoMes(rf, mes, ano)) return;
+    /* Lê pagoPorMes do template — se o valor pago cobre o esperado, a
+       instância vai como 'pago' (a bolinha do Resumo reflete em Extrato/Geral). */
+    var espRF = Number(rf.valor) || 0;
+    var pagoRF = (typeof oneFinFixaPagoNoMes === 'function') ? oneFinFixaPagoNoMes(rf, mesAnoStr) : 0;
     receitas.push({
       id: '_fix_r_' + rf.id + '_' + ano + '_' + mes,
       _fixa: true, _fixaId: rf.id, _fixaKey: 'receitasFixas',
       nome: rf.nome || rf.descricao || 'Receita fixa',
       descricao: rf.descricao || rf.nome || 'Receita fixa',
-      valor: Number(rf.valor) || 0,
+      valor: espRF,
       data: oneFinDataFixaNoMes(rf, mes, ano),
       categoria: rf.categoria || '',
       contaId: rf.contaId || '',
       tipo: 'receita',
       recorrencia: 'fixa',
-      status: 'pendente'
+      status: (pagoRF >= espRF && espRF > 0) ? 'pago' : 'pendente'
     });
   });
 
@@ -10053,18 +10058,20 @@ function oneFinInstanciasDoMes(mes, ano) {
     if (!oneFinFixaAtivaNoMes(df, mes, ano)) return;
     var conta = df.contaId ? oneFinGetConta(df.contaId) : null;
     var dataF = oneFinDataFixaNoMes(df, mes, ano);
+    var espDF = Number(df.valor) || 0;
+    var pagoDF = (typeof oneFinFixaPagoNoMes === 'function') ? oneFinFixaPagoNoMes(df, mesAnoStr) : 0;
     despesas.push({
       id: '_fix_d_' + df.id + '_' + ano + '_' + mes,
       _fixa: true, _fixaId: df.id, _fixaKey: 'despesasFixas',
       nome: df.nome || df.descricao || 'Despesa fixa',
       descricao: df.descricao || df.nome || 'Despesa fixa',
-      valor: Number(df.valor) || 0,
+      valor: espDF,
       data: dataF,
       categoria: df.categoria || '',
       contaId: df.contaId || '',
       tipo: 'despesa',
       recorrencia: 'fixa',
-      status: 'pendente',
+      status: (pagoDF >= espDF && espDF > 0) ? 'pago' : 'pendente',
       faturaMesAno: (conta && conta.tipo === 'cartao')
         ? oneFinCalcularFatura(dataF, conta.diaFechamento)
         : null
@@ -11206,6 +11213,40 @@ function oneFinCartaoMarcarFaturaPaga(contaId, mesAno, marcar, contaOrigemId, va
   contas[idx] = c;
   localStorage.setItem(oneU('contas'), JSON.stringify(contas));
   if (typeof supaUpsert === 'function') supaUpsert('contas', c);
+
+  /* Propaga o status pra TODAS as despesas individuais daquela fatura.
+     Marca/desmarca cada despesa como pago + flag _pagoViaFatura pra saber
+     que a marcação veio da fatura (e poder reverter sem afetar despesas
+     marcadas individualmente). */
+  var despesas = []; try { despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){}
+  var alterada = false;
+  despesas.forEach(function(d){
+    if (String(d.contaId) !== String(contaId)) return;
+    if (d.faturaMesAno !== mesAno) return;
+    if (marcar) {
+      if ((d.status || '').toLowerCase() !== 'pago') {
+        d.status = 'pago';
+        d._pagoViaFatura = true;
+        alterada = true;
+      }
+    } else {
+      if (d._pagoViaFatura) {
+        d.status = 'pendente';
+        delete d._pagoViaFatura;
+        alterada = true;
+      }
+    }
+  });
+  if (alterada) {
+    localStorage.setItem(oneU('despesas'), JSON.stringify(despesas));
+    if (typeof supaUpsert === 'function') {
+      despesas.forEach(function(d){
+        if (String(d.contaId) === String(contaId) && d.faturaMesAno === mesAno) {
+          supaUpsert('despesas', d);
+        }
+      });
+    }
+  }
   return true;
 }
 window.oneFinCartaoMarcarFaturaPaga = oneFinCartaoMarcarFaturaPaga;
