@@ -11029,22 +11029,14 @@ window.oneFinSetVista = oneFinSetVista;
    receitas embaixo. Cada linha tem ✏️ 🗑️ + click no corpo abre
    ficha individual (fase 2).
    ════════════════════════════════════════════════════════════════ */
+/* Fixas usa o mesmo mês ativo do header estático (oneFinMesAtivo/oneFinAnoAtivo).
+   A navegação interna foi removida — quando o usuário troca o mês no header,
+   o render das Fixas reflete automaticamente. */
 function oneFinFixasMesAtivo() {
-  var mesBase = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : new Date().getMonth();
-  var anoBase = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : new Date().getFullYear();
-  var off = window.oneFinFixasOffset || 0;
-  var m = mesBase + off, a = anoBase;
-  while (m < 0)  { m += 12; a--; }
-  while (m > 11) { m -= 12; a++; }
-  return { mes: m, ano: a, offset: off };
+  var m = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : new Date().getMonth();
+  var a = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : new Date().getFullYear();
+  return { mes: m, ano: a, offset: 0 };
 }
-
-function oneFinFixasPrev() { window.oneFinFixasOffset = (window.oneFinFixasOffset || 0) - 1; oneFinRenderFixas(); }
-function oneFinFixasProx() { window.oneFinFixasOffset = (window.oneFinFixasOffset || 0) + 1; oneFinRenderFixas(); }
-function oneFinFixasHoje() { window.oneFinFixasOffset = 0; oneFinRenderFixas(); }
-window.oneFinFixasPrev = oneFinFixasPrev;
-window.oneFinFixasProx = oneFinFixasProx;
-window.oneFinFixasHoje = oneFinFixasHoje;
 
 function _oneFinFixaLinhaHtml(item) {
   /* item: { tipo:'in'|'out', key, id, nome, valor, dia, contaId, categoria, status, dataInstancia } */
@@ -11090,13 +11082,6 @@ window.oneFinFixaAbrir = oneFinFixaAbrir;
 
 function oneFinRenderFixas() {
   var ctx = oneFinFixasMesAtivo();
-  var meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-
-  /* Label + botão "voltar pro mês atual" */
-  var lbl = document.getElementById('one-fin-fixas-lbl');
-  if (lbl) lbl.textContent = meses[ctx.mes] + '/' + ctx.ano;
-  var btnHoje = document.getElementById('one-fin-fixas-hoje');
-  if (btnHoje) btnHoje.hidden = (ctx.offset === 0);
 
   /* Instâncias do mês: usa o pipeline já existente (oneFinInstanciasDoMes) */
   var inst = (typeof oneFinInstanciasDoMes === 'function')

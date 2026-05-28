@@ -859,14 +859,9 @@
             </div>
           </div>
 
-          <!-- View Fixas — receitas e despesas fixas, navegáveis mês a mês -->
+          <!-- View Fixas — receitas e despesas fixas. Navegação de mês usa o
+               header estático do Financeiro (mesma do Resumo, Extrato, etc.). -->
           <div class="one-fin-vista" data-vista="fixas" hidden>
-            <div class="one-fin-fixas-nav">
-              <button class="one-fin-mes-btn" onclick="oneFinFixasPrev()" title="Mês anterior">‹</button>
-              <span class="one-fin-fixas-lbl" id="one-fin-fixas-lbl">—</span>
-              <button class="one-fin-mes-btn" onclick="oneFinFixasProx()" title="Próximo mês">›</button>
-              <button class="one-fin-mes-btn one-fin-mes-hoje" id="one-fin-fixas-hoje" onclick="oneFinFixasHoje()" title="Voltar pro mês atual" hidden>↺</button>
-            </div>
             <div class="one-fin-fixas-resumo" id="one-fin-fixas-resumo"></div>
             <div class="one-fin-fixas-body" id="one-fin-fixas-body"></div>
           </div>
