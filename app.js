@@ -5818,7 +5818,7 @@ function renderOneFinanceiroPainel() {
   function brl(v) { return 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
   var setText = function(id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
 
-  setText('one-fin-periodo', meses[mes] + '/' + ano);
+  setText('one-fin-periodo', meses[mes].slice(0,3) + '/' + ano);
   setText('one-fin-saldo-big',         brl(saldoEmContas));
   setText('one-fin-entradas-big',      brl(totalReceitasPagas));
   setText('one-fin-saidas-big',        brl(totalAPagarMes));
@@ -6869,7 +6869,7 @@ function renderOneAgMes() {
   var mes  = ref.getMonth();
 
   var MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  if (label) label.textContent = MESES[mes] + ' ' + ano;
+  if (label) label.textContent = MESES[mes].slice(0,3) + '/' + ano;
 
   // Segunda da semana que contém o primeiro dia do mês
   var primeiroDia = new Date(ano, mes, 1);
@@ -7189,7 +7189,7 @@ function renderOneFinanceiro() {
 
   /* Header: mês */
   var mesEl = document.getElementById('one-fin-mob-mes');
-  if (mesEl) mesEl.textContent = mesNomes[mes].toUpperCase() + ' / ' + ano;
+  if (mesEl) mesEl.textContent = mesNomes[mes].slice(0,3).toUpperCase() + ' / ' + ano;
 
   /* Card hero — saldo das contas em destaque + receitas/despesas/investimentos */
   function _set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
