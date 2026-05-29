@@ -4822,21 +4822,29 @@ async function pinahEnviar(texto, arquivo) {
           /* Tool já gerou balão. Não duplicar com toast extra. */
         } else if (contextoTela) {
           /* Dentro de uma funcionalidade e Pinah respondeu só texto (não
-             entendeu como ação, ou foi conversa pura): fallback abre o
-             chat principal com a mensagem original. */
-          var textoOriginal = displayText;
-          var textoResposta = textoFinal;
-          if (typeof swapToCenter === 'function') swapToCenter('chat');
-          setTimeout(function() {
-            var welcomeBack = document.getElementById('pinah-welcome');
-            var msgsBack    = document.getElementById('pinah-msgs');
-            var clearRowBack = document.getElementById('pinah-clear-row');
-            if (welcomeBack) welcomeBack.hidden = true;
-            if (msgsBack) msgsBack.hidden = false;
-            if (clearRowBack) clearRowBack.hidden = false;
-            pinahAddBubble('user', textoOriginal);
-            pinahAddBubble('pinah', textoResposta);
-          }, 60);
+             entendeu como ação, ou foi conversa pura): leva a conversa pro chat. */
+          if (isMobile) {
+            /* Mobile: as bolhas (usuário + resposta) já foram escritas na área
+               de chat mobile (#one-chat-msgs-mob) durante o streaming. Só falta
+               deslizar o carrossel pro slide do chat. swapToCenter é desktop-only
+               e não mexe no carrossel — por isso usamos oneMobScrollToChat(). */
+            if (typeof oneMobScrollToChat === 'function') oneMobScrollToChat();
+          } else {
+            /* Desktop: abre o painel de chat e replica a conversa lá. */
+            var textoOriginal = displayText;
+            var textoResposta = textoFinal;
+            if (typeof swapToCenter === 'function') swapToCenter('chat');
+            setTimeout(function() {
+              var welcomeBack = document.getElementById('pinah-welcome');
+              var msgsBack    = document.getElementById('pinah-msgs');
+              var clearRowBack = document.getElementById('pinah-clear-row');
+              if (welcomeBack) welcomeBack.hidden = true;
+              if (msgsBack) msgsBack.hidden = false;
+              if (clearRowBack) clearRowBack.hidden = false;
+              pinahAddBubble('user', textoOriginal);
+              pinahAddBubble('pinah', textoResposta);
+            }, 60);
+          }
         } else {
           /* Fora de qualquer painel reconhecido: toast tradicional. */
           var resumo = textoFinal.trim().replace(/\n/g, ' ');
