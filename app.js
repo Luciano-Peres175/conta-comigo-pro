@@ -6026,6 +6026,7 @@ function oneFinMesPrev() {
   window.oneFinMesAtivo--;
   if (window.oneFinMesAtivo < 0) { window.oneFinMesAtivo = 11; window.oneFinAnoAtivo--; }
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  if (typeof renderOneFinanceiro === 'function') renderOneFinanceiro();
 }
 window.oneFinMesPrev = oneFinMesPrev;
 
@@ -6038,6 +6039,7 @@ function oneFinMesProx() {
   window.oneFinMesAtivo++;
   if (window.oneFinMesAtivo > 11) { window.oneFinMesAtivo = 0; window.oneFinAnoAtivo++; }
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  if (typeof renderOneFinanceiro === 'function') renderOneFinanceiro();
 }
 window.oneFinMesProx = oneFinMesProx;
 
@@ -7156,27 +7158,26 @@ function _oneFinFmt(v) {
   return 'R$ ' + Math.abs(v||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
 }
 
+/* Financeiro mobile — D063: feed vertical da pill Início.
+   Usa o MÊS ATIVO do app (oneFinMesAtivo/AnoAtivo), igual ao desktop, pra que
+   as setas do header naveguem os dois lados juntos. Reaproveita os cálculos
+   de saldo/obrigações/investimentos do desktop e a render de contas. */
 function renderOneFinanceiro() {
-  var now = new Date();
-  var mes = now.getMonth(), ano = now.getFullYear();
+  var hoje = new Date();
+  if (typeof window.oneFinMesAtivo !== 'number') window.oneFinMesAtivo = hoje.getMonth();
+  if (typeof window.oneFinAnoAtivo !== 'number') window.oneFinAnoAtivo = hoje.getFullYear();
+  var mes = window.oneFinMesAtivo, ano = window.oneFinAnoAtivo;
   var mesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   var prefix = ano + '-' + String(mes+1).padStart(2,'0');
 
-  var receitas = [], despesas = [], fixas = [];
+  var receitas = [];
   try { receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
-  try { despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){}
-  try { fixas    = JSON.parse(localStorage.getItem(oneU('despesasFixas')) || '[]'); } catch(e){}
 
-  var recMes  = receitas.filter(function(r){ return r.data && r.data.startsWith(prefix); });
-  var despMes = despesas.filter(function(d){ return d.data && d.data.startsWith(prefix); });
+  /* Receitas recebidas do mês (status diferente de pendente) + instâncias de fixas. */
+  var recMes = receitas.filter(function(r){ return r.data && r.data.startsWith(prefix); });
+  var totalRec = recMes.filter(function(r){ return r.status !== 'pendente'; }).reduce(function(s,r){ return s+(Number(r.valor)||0); },0);
 
-  /* Receitas pagas do mês (mesmo cálculo do desktop). */
-  var totalRec = recMes.filter(function(r){ return r.status === 'Pago'; }).reduce(function(s,r){ return s+(r.valor||0); },0);
-
-  /* Despesas = "Pagamentos do mês" (totalAPagarDespesas do desktop):
-     soma do aPagar de todas as fixas (excluído o já pago) + soma do aPagar
-     das faturas de cartão. Antes o mobile somava TODAS as fixas (incluindo
-     já pagas), o que inflava o número absurdamente. */
+  /* Despesas = a pagar do mês (fixas + faturas), mesmo cálculo do desktop. */
   var totalDesp = 0;
   if (typeof _oneFinResumoColetarObrigacoes === 'function') {
     var obrig = _oneFinResumoColetarObrigacoes(mes, ano);
@@ -7184,194 +7185,37 @@ function renderOneFinanceiro() {
                 obrig.faturas.reduce(function(s,i){ return s + (i.aPagar||0); }, 0);
   }
 
-  /* Saldo total das contas (banco) + total de investimentos — fonte
-     de verdade vinda do desktop. */
-  var saldoContas   = (typeof _oneFinResumoSaldoEmContas === 'function') ? _oneFinResumoSaldoEmContas() : 0;
-  var totalInvest   = (typeof _oneFinResumoTotalInvestimentos === 'function') ? _oneFinResumoTotalInvestimentos() : 0;
+  var saldoContas = (typeof _oneFinResumoSaldoEmContas === 'function') ? _oneFinResumoSaldoEmContas() : 0;
+  var totalInvest = (typeof _oneFinResumoTotalInvestimentos === 'function') ? _oneFinResumoTotalInvestimentos() : 0;
 
-  /* Header: mês */
   var mesEl = document.getElementById('one-fin-mob-mes');
   if (mesEl) mesEl.textContent = mesNomes[mes].slice(0,3).toUpperCase() + ' / ' + ano;
 
-  /* Card hero — saldo das contas em destaque + receitas/despesas/investimentos */
   function _set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
   _set('one-fin-mob-hero-saldo', (saldoContas < 0 ? '−' : '') + _oneFinFmt(saldoContas));
   _set('one-fin-mob-hero-rec',   _oneFinFmt(totalRec));
   _set('one-fin-mob-hero-desp',  _oneFinFmt(totalDesp));
   _set('one-fin-mob-hero-inv',   _oneFinFmt(totalInvest));
 
-  /* Acompanhamento do mês — reusa o renderer da vista Resumo do desktop,
-     mas apontando só pro bloco de Obrigações (caixa/invest têm IDs fake). */
-  if (typeof oneFinRenderResumo === 'function') {
-    oneFinRenderResumo({
-      caixaId:  'one-fin-mob-skip-caixa',
-      obrigId:  'one-fin-mob-acompanhamento',
-      investId: 'one-fin-mob-skip-invest'
-    });
-  }
+  /* Contas + Cartões + Investimentos (a função já popula o container mobile). */
+  if (typeof oneFinRenderContas === 'function') oneFinRenderContas();
+  /* Pizza por categoria + balanço de 6 meses. */
+  if (typeof oneFinMobRenderCategorias === 'function') oneFinMobRenderCategorias();
+  if (typeof oneFinMobRenderBalanco === 'function') oneFinMobRenderBalanco();
 }
 
-/* Troca aba Lançamentos / Categorias */
-function oneFinMobSetVista(vista) {
-  oneFinMobVista = vista;
-  document.querySelectorAll('.one-fin-mob-tab').forEach(function(b){
-    b.classList.toggle('active', b.dataset.vista === vista);
+/* Troca de pill no Financeiro mobile. Por ora só "Início" tem feed;
+   as outras mostram placeholder até a próxima sessão. */
+function oneFinMobSetPill(pill) {
+  document.querySelectorAll('#one-fin-mob-pills .one-fin-mob-pill').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-pill') === pill);
   });
-  document.querySelectorAll('.one-fin-mob-vista').forEach(function(v){
-    v.hidden = v.dataset.vista !== vista;
+  document.querySelectorAll('#one-fin-mob-feed .one-fin-mob-pane').forEach(function(p){
+    p.hidden = p.getAttribute('data-pane') !== pill;
   });
-  if (vista === 'lancamentos') oneFinMobRenderLista();
-  else if (vista === 'contas') { if (typeof oneFinRenderContas === 'function') oneFinRenderContas(); }
-  else oneFinMobRenderCategorias();
+  if (pill === 'inicio') renderOneFinanceiro();
 }
-
-/* Filtro de período */
-function oneFinMobSetPeriodo(btn) {
-  oneFinMobPeriodo = btn.dataset.periodo;
-  document.querySelectorAll('#one-fin-mob-period .one-fin-mob-period').forEach(function(b){ b.classList.remove('active'); });
-  btn.classList.add('active');
-  oneFinMobRenderLista();
-}
-
-/* Filtros do top-card */
-function oneFinMobFiltrarPendentes() {
-  oneFinMobFiltroAtivo = oneFinMobFiltroAtivo === 'pendentes' ? null : 'pendentes';
-  if (oneFinMobVista !== 'lancamentos') oneFinMobSetVista('lancamentos');
-  oneFinMobRenderLista();
-}
-function oneFinMobFiltrarVencendo() {
-  oneFinMobFiltroAtivo = oneFinMobFiltroAtivo === 'vencendo' ? null : 'vencendo';
-  if (oneFinMobVista !== 'lancamentos') oneFinMobSetVista('lancamentos');
-  oneFinMobRenderLista();
-}
-function oneFinMobLimparFiltro() {
-  oneFinMobFiltroAtivo = null;
-  oneFinMobRenderLista();
-}
-
-/* Aba Lançamentos: lista filtrada por período + filtros opcionais */
-function oneFinMobRenderLista(receitasParam, despesasParam) {
-  var listEl = document.getElementById('one-fin-mob-list');
-  if (!listEl) return;
-
-  var receitas = receitasParam, despesas = despesasParam;
-  if (!receitas) { try { receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){ receitas = []; } }
-  if (!despesas) { try { despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){ despesas = []; } }
-
-  /* Janela de período */
-  var hoje = new Date();
-  var dataInicio;
-  if (oneFinMobPeriodo === 'mes') {
-    dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-  } else {
-    var dias = parseInt(oneFinMobPeriodo, 10) || 30;
-    dataInicio = new Date(hoje.getTime() - dias*86400000);
-  }
-  var inicioISO = dataInicio.toISOString().slice(0,10);
-
-  var items = [];
-  receitas.forEach(function(r){
-    if (!r.data || r.data < inicioISO) return;
-    items.push({key:'receitas', id:r.id, data:r.data, nome:r.nome||r.tipo||'Receita', tipo:'rec', valor:r.valor||0, status:r.status, cat:r.categoria});
-  });
-  despesas.forEach(function(d){
-    if (!d.data || d.data < inicioISO) return;
-    items.push({key:'despesas', id:d.id, data:d.data, nome:d.descricao||d.nome||'Despesa', tipo:'desp', valor:d.valor||0, status:d.status, cat:d.categoria});
-  });
-
-  /* Aplica filtro do top-card */
-  var chipEl  = document.getElementById('one-fin-mob-filtro-chip');
-  var chipWrap= document.getElementById('one-fin-mob-filtro-ativo');
-  if (oneFinMobFiltroAtivo === 'pendentes') {
-    items = items.filter(function(it){ return it.tipo === 'rec' && it.status !== 'Pago'; });
-    if (chipEl)  chipEl.textContent = '⏳ Apenas receitas pendentes';
-    if (chipWrap) chipWrap.hidden = false;
-  } else if (oneFinMobFiltroAtivo === 'vencendo') {
-    var lim = new Date(hoje.getTime() + 7*86400000).toISOString().slice(0,10);
-    items = items.filter(function(it){ return it.tipo === 'desp' && (it.status||'').toLowerCase() !== 'pago' && it.data <= lim; });
-    if (chipEl)  chipEl.textContent = '⚠️ Apenas despesas vencendo';
-    if (chipWrap) chipWrap.hidden = false;
-  } else {
-    if (chipWrap) chipWrap.hidden = true;
-  }
-
-  items.sort(function(a,b){ return b.data.localeCompare(a.data); });
-
-  if (items.length === 0) {
-    listEl.innerHTML = '<div class="one-fin-mob-empty">Nenhum lançamento no período</div>';
-    return;
-  }
-
-  var catIcons = {
-    'Atendimento':'🩺','Avaliação':'📋','Capacitação':'📚',
-    'Material Estudo':'📖','Equipamentos':'🔧','Alimentação':'🍽️',
-    'Transporte':'🚗','Saúde':'💊','default':'💰'
-  };
-  listEl.innerHTML = '';
-  items.forEach(function(item){
-    var icon  = catIcons[item.cat] || (item.tipo==='rec' ? '💚' : '🔴');
-    var bg    = item.tipo==='rec' ? '#EDF7F2' : '#FDF2F2';
-    var parts = (item.data||'----').split('-');
-    var dateLabel = (parts[2]||'?') + '/' + (parts[1]||'?');
-    var stLow = (item.status||'').toLowerCase();
-    var ehPend = item.tipo==='rec' ? item.status !== 'Pago' : stLow !== 'pago';
-    var el = document.createElement('div');
-    el.className = 'one-fin-item' + (ehPend ? ' pend' : '');
-    el.dataset.key = item.key;
-    el.dataset.id  = item.id;
-    el.innerHTML = '<div class="one-fin-item-icon" style="background:' + bg + '">' + icon + '</div>'
-      + '<div class="one-fin-item-info">'
-      + '<div class="one-fin-item-name">' + (item.nome+'').replace(/</g,'&lt;') + '</div>'
-      + '<div class="one-fin-item-date">' + dateLabel + (ehPend ? ' · pendente' : '') + '</div>'
-      + '</div>'
-      + '<div class="one-fin-item-value ' + item.tipo + '">'
-      + (item.tipo==='rec' ? '+' : '−') + _oneFinFmt(item.valor)
-      + '</div>';
-    listEl.appendChild(el);
-  });
-  oneFinMobBindItens(listEl);
-}
-
-/* Long-press num lançamento → editar / excluir */
-function oneFinMobBindItens(root) {
-  var items = root.querySelectorAll('.one-fin-item');
-  items.forEach(function(card) {
-    var pressTimer = null, startX = 0, startY = 0, moved = false;
-    function clear() { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } }
-    card.addEventListener('pointerdown', function(ev) {
-      startX = ev.clientX; startY = ev.clientY; moved = false;
-      pressTimer = setTimeout(function() {
-        if (moved) return;
-        oneFinMobAcoesItem(card.dataset.key, card.dataset.id);
-      }, 450);
-    });
-    card.addEventListener('pointermove', function(ev) {
-      if (Math.abs(ev.clientX - startX) > 8 || Math.abs(ev.clientY - startY) > 8) { moved = true; clear(); }
-    });
-    card.addEventListener('pointerup', clear);
-    card.addEventListener('pointercancel', clear);
-    card.addEventListener('pointerleave', clear);
-  });
-}
-function oneFinMobAcoesItem(key, id) {
-  /* V1 — prompt nativo. Mesmo padrão das Tarefas. P024 cobre a versão visual. */
-  var acao = window.prompt('Lançamento — digite "e" pra editar ou "x" pra excluir:', 'e');
-  if (!acao) return;
-  acao = acao.trim().toLowerCase();
-  if (acao === 'e' && typeof oneFinModalEditar === 'function') {
-    oneFinModalEditar(key, id);
-  } else if (acao === 'x') {
-    if (!confirm('Excluir este lançamento?')) return;
-    var lista = [];
-    try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
-    lista = lista.filter(function(x){ return String(x.id) !== String(id); });
-    localStorage.setItem(oneU(key), JSON.stringify(lista));
-    if (typeof supaDelete === 'function') supaDelete(key, id);
-    if (typeof oneToast === 'function') oneToast('Lançamento excluído.');
-    renderOneFinanceiro();
-    if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
-  }
-}
+window.oneFinMobSetPill = oneFinMobSetPill;
 
 /* Aba Categorias: toggle + donut + lista */
 function oneFinMobSetCatTipo(tipo) {
@@ -7390,13 +7234,23 @@ function oneFinMobRenderCategorias() {
       : JSON.parse(localStorage.getItem(oneU('despesas')) || '[]');
   } catch(e) { dados = []; }
 
-  var hoje = new Date();
-  var mes = hoje.getMonth(), ano = hoje.getFullYear();
+  /* Mês ativo do app (mesma fonte do desktop), não o de hoje. */
+  var mes = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : new Date().getMonth();
+  var ano = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : new Date().getFullYear();
   var doMes = dados.filter(function(it){
     if (!it.data) return false;
     var d = new Date(it.data + 'T00:00:00');
     return d.getMonth() === mes && d.getFullYear() === ano;
   });
+
+  /* Inclui instâncias virtuais de fixas no mês ativo, igual ao desktop. */
+  if (typeof oneFinInstanciasDoMes === 'function') {
+    var inst = oneFinInstanciasDoMes(mes, ano);
+    var fixasDoMes = (oneFinMobCatTipo === 'receitas') ? (inst.receitas || []) : (inst.despesas || []);
+    fixasDoMes.forEach(function(f){
+      doMes.push({ valor: Number(f.valor) || 0, categoria: f.categoria || '', tipo: f.tipo || oneFinMobCatTipo });
+    });
+  }
 
   var grupos = {};
   doMes.forEach(function(it){
@@ -7458,8 +7312,63 @@ function oneFinMobRenderCategorias() {
     }
   });
 }
+window.oneFinMobRenderCategorias = oneFinMobRenderCategorias;
 
-/* (resíduo do renderOneFinanceiro antigo limpo na Fase 3 — 16/05/2026) */
+/* Balanço mobile — barras de receitas x despesas dos últimos 6 meses
+   (mesmo desenho do desktop, canvas próprio pra não brigar com IDs). */
+window.oneFinMobBarsChart = window.oneFinMobBarsChart || null;
+function oneFinMobRenderBalanco() {
+  var canvas = document.getElementById('one-fin-mob-bars');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  var receitas = [], despesas = [];
+  try { receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
+  try { despesas = JSON.parse(localStorage.getItem(oneU('despesas')) || '[]'); } catch(e){}
+
+  /* Ancorado no mês ativo do app: 6 meses terminando nele. */
+  var mesBase = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : new Date().getMonth();
+  var anoBase = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : new Date().getFullYear();
+  var meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var labels = [], rData = [], dData = [];
+  for (var i = 5; i >= 0; i--) {
+    var m = mesBase - i, a = anoBase;
+    while (m < 0) { m += 12; a--; }
+    labels.push(meses[m] + '/' + String(a).slice(2));
+    var rTot = receitas
+      .filter(function(r){ if (!r.data) return false; var d = new Date(r.data+'T00:00:00'); return d.getMonth()===m && d.getFullYear()===a && r.status !== 'pendente'; })
+      .reduce(function(s,r){ return s + (Number(r.valor)||0); }, 0);
+    var dTot = despesas
+      .filter(function(d){ if (!d.data) return false; var dt = new Date(d.data+'T00:00:00'); return dt.getMonth()===m && dt.getFullYear()===a; })
+      .reduce(function(s,d){ return s + (Number(d.valor)||0); }, 0);
+    rData.push(rTot);
+    dData.push(dTot);
+  }
+
+  if (window.oneFinMobBarsChart) { try { window.oneFinMobBarsChart.destroy(); } catch(e){} }
+  window.oneFinMobBarsChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Receitas', data: rData, backgroundColor: '#7FA88E', borderRadius: 6 },
+        { label: 'Despesas', data: dData, backgroundColor: '#E07A6B', borderRadius: 6 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, color: '#6B7F6F', usePointStyle: true } },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ': R$ ' + ctx.parsed.y.toLocaleString('pt-BR', {minimumFractionDigits:2}); } } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { font: { size: 10 }, color: '#6B7F6F', callback: function(v){ return 'R$ ' + (v/1000).toFixed(0) + 'k'; } }, grid: { color: 'rgba(127,168,142,0.10)' } },
+        x: { ticks: { font: { size: 11 }, color: '#6B7F6F' }, grid: { display: false } }
+      },
+      animation: { duration: 500 }
+    }
+  });
+}
+window.oneFinMobRenderBalanco = oneFinMobRenderBalanco;
 
 /* ── Tarefas mobile — Fase 4: kanban portado ─────────────────── */
 /* Filtros mobile (independentes do desktop pra não brigar com a sidebar) */

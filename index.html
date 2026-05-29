@@ -335,43 +335,98 @@
 
       </div>
 
-      <!-- FINANCEIRO -->
-      <!-- FINANCEIRO (2º slide mobile) — Fase 3: 3 cards slim + 2 abas (Lançamentos / Categorias) -->
+      <!-- FINANCEIRO (slide mobile) — D063: feed vertical único estilo Mobills/Organizze.
+           Header + pills fixos no topo; feed rola; prompt da Pinah é global (fixo embaixo). -->
       <div class="one-screen one-financeiro" style="padding:8px 0 0;">
         <div class="one-fin-mob-wrap">
-          <!-- Header com mês + botão "+" -->
+
+          <!-- Header fixo: logo + navegação de mês + botão Novo -->
           <div class="one-fin-mob-header">
-            <div class="one-fin-mob-titulo">
-              <span class="one-fin-mob-logo"><img src="assets/icons/icon-financeiro.png" class="one-tar-logo-icon" alt="">Financeiro</span>
+            <span class="one-fin-mob-logo"><img src="assets/icons/icon-financeiro.png" class="one-tar-logo-icon" alt="">Financeiro</span>
+            <div class="one-fin-mob-mesnav">
+              <button class="one-fin-mob-mesbtn" onclick="oneFinMesPrev()" aria-label="Mês anterior">‹</button>
               <span class="one-fin-mob-mes" id="one-fin-mob-mes">—</span>
+              <button class="one-fin-mob-mesbtn" onclick="oneFinMesProx()" aria-label="Próximo mês">›</button>
             </div>
             <button class="one-fin-mob-btn-novo" onclick="oneFinModalAbrir()" aria-label="Novo lançamento">＋</button>
           </div>
 
-          <!-- Card hero: saldo total das contas em destaque + receitas e despesas do mês.
-               Mesmo gradient verde→roxo do card "Saldo do mês" antigo. -->
-          <div class="one-fin-mob-hero">
-            <div class="one-fin-mob-hero-lbl">SALDO EM CONTAS</div>
-            <div class="one-fin-mob-hero-val" id="one-fin-mob-hero-saldo">R$ 0,00</div>
-            <div class="one-fin-mob-hero-stats">
-              <div class="one-fin-mob-hero-stat in">
-                <div class="one-fin-mob-hero-stat-lbl">↑ Receitas</div>
-                <div class="one-fin-mob-hero-stat-val" id="one-fin-mob-hero-rec">R$ 0,00</div>
-              </div>
-              <div class="one-fin-mob-hero-stat out">
-                <div class="one-fin-mob-hero-stat-lbl">↓ Despesas</div>
-                <div class="one-fin-mob-hero-stat-val" id="one-fin-mob-hero-desp">R$ 0,00</div>
-              </div>
-              <div class="one-fin-mob-hero-stat inv">
-                <div class="one-fin-mob-hero-stat-lbl">📈 Investimentos</div>
-                <div class="one-fin-mob-hero-stat-val" id="one-fin-mob-hero-inv">R$ 0,00</div>
-              </div>
-            </div>
+          <!-- Pills fixas -->
+          <div class="one-fin-mob-pills" id="one-fin-mob-pills">
+            <button class="one-fin-mob-pill active" data-pill="inicio"  onclick="oneFinMobSetPill('inicio')">Início</button>
+            <button class="one-fin-mob-pill"        data-pill="resumo"  onclick="oneFinMobSetPill('resumo')">Resumo</button>
+            <button class="one-fin-mob-pill"        data-pill="extrato" onclick="oneFinMobSetPill('extrato')">Extrato</button>
+            <button class="one-fin-mob-pill"        data-pill="geral"   onclick="oneFinMobSetPill('geral')">Visão geral</button>
+            <button class="one-fin-mob-pill"        data-pill="fixas"   onclick="oneFinMobSetPill('fixas')">Fixas</button>
           </div>
 
-          <!-- Acompanhamento do mês — reusa a função oneFinRenderResumo do desktop
-               apontando só pro obrigId. Header + corpo + soma com sticky (display:grid). -->
-          <div class="one-fin-resumo-bloco one-fin-resumo-bloco-obrigacoes one-fin-mob-acomp" id="one-fin-mob-acompanhamento"></div>
+          <!-- Feed rolável -->
+          <div class="one-fin-mob-feed" id="one-fin-mob-feed">
+
+            <!-- ===== Pill INÍCIO ===== -->
+            <div class="one-fin-mob-pane" data-pane="inicio">
+
+              <!-- Hero (rola junto com o conteúdo) -->
+              <div class="one-fin-mob-hero">
+                <div class="one-fin-mob-hero-lbl">SALDO EM CONTAS</div>
+                <div class="one-fin-mob-hero-val" id="one-fin-mob-hero-saldo">R$ 0,00</div>
+                <div class="one-fin-mob-hero-stats">
+                  <div class="one-fin-mob-hero-stat in">
+                    <div class="one-fin-mob-hero-stat-lbl">↑ Receitas</div>
+                    <div class="one-fin-mob-hero-stat-val" id="one-fin-mob-hero-rec">R$ 0,00</div>
+                  </div>
+                  <div class="one-fin-mob-hero-stat out">
+                    <div class="one-fin-mob-hero-stat-lbl">↓ Despesas</div>
+                    <div class="one-fin-mob-hero-stat-val" id="one-fin-mob-hero-desp">R$ 0,00</div>
+                  </div>
+                  <div class="one-fin-mob-hero-stat inv">
+                    <div class="one-fin-mob-hero-stat-lbl">📈 Investimentos</div>
+                    <div class="one-fin-mob-hero-stat-val" id="one-fin-mob-hero-inv">R$ 0,00</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contas + Cartões + Investimentos (oneFinRenderContas preenche as 3 seções) -->
+              <div class="one-fin-mob-secao-lista" id="one-fin-mob-contas-lista"></div>
+
+              <!-- Dashboard (pizza) -->
+              <div class="one-fin-mob-bloco">
+                <div class="one-fin-mob-bloco-head">
+                  <span class="one-fin-mob-bloco-tit">Por categoria</span>
+                  <div class="one-fin-mob-cat-toggle">
+                    <button class="one-fin-mob-cat-btn active" data-tipo="despesas" onclick="oneFinMobSetCatTipo('despesas')">Despesas</button>
+                    <button class="one-fin-mob-cat-btn"        data-tipo="receitas" onclick="oneFinMobSetCatTipo('receitas')">Receitas</button>
+                  </div>
+                </div>
+                <div class="one-fin-mob-donut-wrap">
+                  <canvas id="one-fin-mob-donut"></canvas>
+                  <div class="one-fin-mob-donut-center">
+                    <div class="one-fin-mob-donut-lbl">Total</div>
+                    <div class="one-fin-mob-donut-val" id="one-fin-mob-donut-total">R$ 0,00</div>
+                  </div>
+                </div>
+                <div class="one-fin-mob-cat-list" id="one-fin-mob-cat-list"></div>
+              </div>
+
+              <!-- Balanço (6 meses) -->
+              <div class="one-fin-mob-bloco">
+                <div class="one-fin-mob-bloco-head">
+                  <span class="one-fin-mob-bloco-tit">Balanço — 6 meses</span>
+                </div>
+                <div class="one-fin-mob-bars-wrap">
+                  <canvas id="one-fin-mob-bars"></canvas>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ===== Outras pills (sub-telas entram numa próxima sessão) ===== -->
+            <div class="one-fin-mob-pane" data-pane="resumo"  hidden><div class="one-fin-mob-empty">Resumo chega em breve.</div></div>
+            <div class="one-fin-mob-pane" data-pane="extrato" hidden><div class="one-fin-mob-empty">Extrato chega em breve.</div></div>
+            <div class="one-fin-mob-pane" data-pane="geral"   hidden><div class="one-fin-mob-empty">Visão geral chega em breve.</div></div>
+            <div class="one-fin-mob-pane" data-pane="fixas"   hidden><div class="one-fin-mob-empty">Fixas chega em breve.</div></div>
+
+          </div>
         </div>
       </div>
 

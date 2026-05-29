@@ -2720,6 +2720,39 @@
 .one-fin-mob-cat-val{font-size:11.5px;font-weight:700;color:#5A5060;flex-shrink:0;}
 .one-fin-mob-cat-pct{font-size:9.5px;font-weight:700;color:#fff;padding:2px 6px;border-radius:6px;flex-shrink:0;min-width:32px;text-align:center;}
 
+/* ══ Financeiro mobile — D063: feed vertical (Início) ══════════════════
+   Header + pills fixos; feed rola; blocos brancos empilhados. */
+.one-fin-mob-header .one-fin-mob-logo{flex:1;min-width:0;}
+.one-fin-mob-mesnav{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.one-fin-mob-mesbtn{width:26px;height:26px;border-radius:8px;border:none;background:#F0E8F8;color:#5C8870;font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.one-fin-mob-mesbtn:active{transform:scale(.92);}
+.one-fin-mob-header .one-fin-mob-mes{font-size:11px;color:#5A5060;font-weight:600;letter-spacing:.3px;min-width:62px;text-align:center;}
+
+/* Pills */
+.one-fin-mob-pills{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;padding:0 0 9px;}
+.one-fin-mob-pills::-webkit-scrollbar{display:none;}
+.one-fin-mob-pill{flex:0 0 auto;background:#F0E8F8;border:none;font-size:12px;font-weight:600;color:#5A5060;padding:7px 14px;border-radius:20px;cursor:pointer;font-family:system-ui,-apple-system,sans-serif;white-space:nowrap;}
+.one-fin-mob-pill.active{background:#5C8870;color:#fff;box-shadow:0 2px 8px rgba(92,136,112,.30);}
+
+/* Feed rolável + panes */
+.one-fin-mob-feed{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;min-height:0;display:flex;flex-direction:column;}
+.one-fin-mob-feed::-webkit-scrollbar{display:none;}
+.one-fin-mob-pane{display:flex;flex-direction:column;gap:12px;padding-bottom:14px;}
+.one-fin-mob-pane[hidden]{display:none;}
+
+/* Blocos brancos do feed (pizza, balanço) */
+.one-fin-mob-bloco{background:#fff;border-radius:16px;padding:12px 13px;box-shadow:0 1px 8px rgba(92,136,112,.10);}
+.one-fin-mob-bloco-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+.one-fin-mob-bloco-tit{font-size:13px;font-weight:600;color:#3A3050;font-family:'Playfair Display',Georgia,serif;}
+.one-fin-mob-bars-wrap{position:relative;height:220px;}
+
+/* No feed, a lista de categorias não rola sozinha — cresce com o conteúdo. */
+.one-fin-mob-feed .one-fin-mob-cat-list{flex:none;overflow:visible;}
+.one-fin-mob-bloco .one-fin-mob-cat-toggle{margin-bottom:0;width:auto;}
+
+/* Container das seções de Contas/Cartões/Investimentos no feed */
+.one-fin-mob-secao-lista{display:flex;flex-direction:column;gap:12px;}
+
 /* ── Tarefas mobile (4º slide) ───────────────────────────────── */
 .one-tar-mob-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:0 10px 6px;}
 .one-tar-mob-nav{display:flex;align-items:center;justify-content:space-between;padding:4px 0 8px;flex-shrink:0;}
