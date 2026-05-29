@@ -425,10 +425,16 @@
       if (typeof renderCardAgenda     === 'function') renderCardAgenda();
       if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
       if (typeof renderAgendaHome     === 'function') renderAgendaHome();
+      /* Mobile: a Pinah Agente opera dentro do carrossel mobile, então
+         o re-render precisa atingir as telas mobile também (senão a ação
+         salva mas a tela não muda). */
+      if (typeof renderOneAgenda         === 'function') renderOneAgenda();
+      if (typeof renderOneAgendaPainelMob === 'function') renderOneAgendaPainelMob();
     },
     tarefas:   function() {
       if (typeof renderOneTarefasPainel === 'function') renderOneTarefasPainel();
       if (typeof renderOneDeskTarefas   === 'function') renderOneDeskTarefas();
+      if (typeof renderOneTarefasMobile === 'function') renderOneTarefasMobile();
     },
     financeiro: function() {
       if (typeof renderCardFinanceiro    === 'function') renderCardFinanceiro();
@@ -436,6 +442,7 @@
       if (typeof renderListaReceitas     === 'function') renderListaReceitas();
       if (typeof renderDespesas          === 'function') renderDespesas();
       if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+      if (typeof renderOneFinanceiro       === 'function') renderOneFinanceiro();
     }
   };
 
@@ -4660,7 +4667,10 @@ async function pinahEnviar(texto, arquivo) {
     /* Mobile: substitui bolha de typing pela bolha de resposta */
     if (isMobile && msgsMob) {
       var tb = document.getElementById('mob-typing-bub');
-      if (tb) { tb.className = 'chat-bubble pinah-bubble'; tb.innerHTML = ''; }
+      /* Tira o id ao virar bolha de resposta: senão a próxima mensagem cria
+         outra #mob-typing-bub e o getElementById pega a bolha velha, fazendo
+         a resposta nova sobrescrever uma antiga (diálogo embaralhado). */
+      if (tb) { tb.className = 'chat-bubble pinah-bubble'; tb.innerHTML = ''; tb.removeAttribute('id'); }
       mobBubble = tb;
     }
     if (emChat) pinahTypingHide();
