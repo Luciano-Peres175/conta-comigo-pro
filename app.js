@@ -7198,8 +7198,7 @@ function renderOneFinanceiro() {
   var saldoContas = (typeof _oneFinResumoSaldoEmContas === 'function') ? _oneFinResumoSaldoEmContas() : 0;
   var totalInvest = (typeof _oneFinResumoTotalInvestimentos === 'function') ? _oneFinResumoTotalInvestimentos() : 0;
 
-  var mesEl = document.getElementById('one-fin-mob-mes');
-  if (mesEl) mesEl.textContent = mesNomes[mes].slice(0,3).toUpperCase() + ' / ' + ano;
+  oneFinMobAtualizaMesLabel();
 
   function _set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
   _set('one-fin-mob-hero-saldo', (saldoContas < 0 ? '−' : '') + _oneFinFmt(saldoContas));
@@ -7213,6 +7212,18 @@ function renderOneFinanceiro() {
   if (typeof oneFinMobRenderCategorias === 'function') oneFinMobRenderCategorias();
   if (typeof oneFinMobRenderBalanco === 'function') oneFinMobRenderBalanco();
 }
+
+/* Atualiza só o rótulo de mês do header mobile — independe da pill ativa,
+   por isso roda em toda navegação de mês (antes só atualizava na Início). */
+function oneFinMobAtualizaMesLabel() {
+  var hoje = new Date();
+  var mes = (typeof window.oneFinMesAtivo === 'number') ? window.oneFinMesAtivo : hoje.getMonth();
+  var ano = (typeof window.oneFinAnoAtivo === 'number') ? window.oneFinAnoAtivo : hoje.getFullYear();
+  var mesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var el = document.getElementById('one-fin-mob-mes');
+  if (el) el.textContent = mesNomes[mes].slice(0,3).toUpperCase() + ' / ' + ano;
+}
+window.oneFinMobAtualizaMesLabel = oneFinMobAtualizaMesLabel;
 
 /* Pill ativa no Financeiro mobile. */
 function oneFinMobPillAtiva() {
@@ -7241,8 +7252,12 @@ function oneFinMobRenderPane(pill) {
   }
 }
 
-/* Re-renderiza a pill ativa — usado pela navegação de mês. */
-function oneFinMobRefresh() { oneFinMobRenderPane(oneFinMobPillAtiva()); }
+/* Re-renderiza a pill ativa — usado pela navegação de mês. Atualiza o rótulo
+   do mês sempre, mesmo quando a pill ativa não é a Início. */
+function oneFinMobRefresh() {
+  oneFinMobAtualizaMesLabel();
+  oneFinMobRenderPane(oneFinMobPillAtiva());
+}
 window.oneFinMobRefresh = oneFinMobRefresh;
 
 /* Troca de pill no Financeiro mobile. */
@@ -7256,6 +7271,7 @@ function oneFinMobSetPill(pill) {
   /* Rola o feed pro topo ao trocar de pill. */
   var feed = document.getElementById('one-fin-mob-feed');
   if (feed) feed.scrollTop = 0;
+  oneFinMobAtualizaMesLabel();
   oneFinMobRenderPane(pill);
 }
 window.oneFinMobSetPill = oneFinMobSetPill;
