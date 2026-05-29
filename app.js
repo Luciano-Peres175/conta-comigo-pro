@@ -6004,6 +6004,16 @@ function renderOneFinanceiroPainel() {
   var somaDesp = itensDesp.reduce(function(s,i){ return s + i.valor; }, 0);
   setText2('one-fin-extrato-desp-cnt', itensDesp.length + (itensDesp.length === 1 ? ' lançamento' : ' lançamentos'));
   setText2('one-fin-extrato-desp-soma', brl(somaDesp));
+
+  /* ── Espelha o Extrato pro slide mobile (pill Extrato, colunas empilhadas) ── */
+  var _mRec = document.getElementById('one-fin-mob-extrato-rec-body');
+  if (_mRec && elRecBody) _mRec.innerHTML = elRecBody.innerHTML;
+  var _mDesp = document.getElementById('one-fin-mob-extrato-desp-body');
+  if (_mDesp && elDespBody) _mDesp.innerHTML = elDespBody.innerHTML;
+  setText2('one-fin-mob-extrato-rec-cnt',  itensRec.length + (itensRec.length === 1 ? ' lançamento' : ' lançamentos'));
+  setText2('one-fin-mob-extrato-rec-soma', brl(somaRec));
+  setText2('one-fin-mob-extrato-desp-cnt', itensDesp.length + (itensDesp.length === 1 ? ' lançamento' : ' lançamentos'));
+  setText2('one-fin-mob-extrato-desp-soma', brl(somaDesp));
 }
 
 function zerarFinanceiro() {
@@ -6026,7 +6036,7 @@ function oneFinMesPrev() {
   window.oneFinMesAtivo--;
   if (window.oneFinMesAtivo < 0) { window.oneFinMesAtivo = 11; window.oneFinAnoAtivo--; }
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
-  if (typeof renderOneFinanceiro === 'function') renderOneFinanceiro();
+  if (typeof oneFinMobRefresh === 'function') oneFinMobRefresh();
 }
 window.oneFinMesPrev = oneFinMesPrev;
 
@@ -6039,7 +6049,7 @@ function oneFinMesProx() {
   window.oneFinMesAtivo++;
   if (window.oneFinMesAtivo > 11) { window.oneFinMesAtivo = 0; window.oneFinAnoAtivo++; }
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
-  if (typeof renderOneFinanceiro === 'function') renderOneFinanceiro();
+  if (typeof oneFinMobRefresh === 'function') oneFinMobRefresh();
 }
 window.oneFinMesProx = oneFinMesProx;
 
@@ -7204,8 +7214,38 @@ function renderOneFinanceiro() {
   if (typeof oneFinMobRenderBalanco === 'function') oneFinMobRenderBalanco();
 }
 
-/* Troca de pill no Financeiro mobile. Por ora só "Início" tem feed;
-   as outras mostram placeholder até a próxima sessão. */
+/* Pill ativa no Financeiro mobile. */
+function oneFinMobPillAtiva() {
+  var a = document.querySelector('#one-fin-mob-pills .one-fin-mob-pill.active');
+  return a ? a.getAttribute('data-pill') : 'inicio';
+}
+
+/* Renderiza o conteúdo de uma pill. Reaproveita os renders do desktop:
+   Início e Resumo chamam funções com alvo próprio; Extrato, Fixas e Visão
+   geral usam os renders do desktop, que espelham o resultado pros containers
+   mobile (ver final de renderOneFinanceiroPainel / oneFinRenderFixas /
+   oneFinRenderGeral). */
+function oneFinMobRenderPane(pill) {
+  if (pill === 'resumo') {
+    if (typeof oneFinRenderResumo === 'function') {
+      oneFinRenderResumo({ caixaId: 'one-fin-mob-resumo-caixa', obrigId: 'one-fin-mob-resumo-obrig', investId: 'one-fin-mob-resumo-invest' });
+    }
+  } else if (pill === 'extrato') {
+    if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  } else if (pill === 'geral') {
+    if (typeof oneFinRenderGeral === 'function') oneFinRenderGeral();
+  } else if (pill === 'fixas') {
+    if (typeof oneFinRenderFixas === 'function') oneFinRenderFixas();
+  } else {
+    if (typeof renderOneFinanceiro === 'function') renderOneFinanceiro();
+  }
+}
+
+/* Re-renderiza a pill ativa — usado pela navegação de mês. */
+function oneFinMobRefresh() { oneFinMobRenderPane(oneFinMobPillAtiva()); }
+window.oneFinMobRefresh = oneFinMobRefresh;
+
+/* Troca de pill no Financeiro mobile. */
 function oneFinMobSetPill(pill) {
   document.querySelectorAll('#one-fin-mob-pills .one-fin-mob-pill').forEach(function(b){
     b.classList.toggle('active', b.getAttribute('data-pill') === pill);
@@ -7213,7 +7253,10 @@ function oneFinMobSetPill(pill) {
   document.querySelectorAll('#one-fin-mob-feed .one-fin-mob-pane').forEach(function(p){
     p.hidden = p.getAttribute('data-pane') !== pill;
   });
-  if (pill === 'inicio') renderOneFinanceiro();
+  /* Rola o feed pro topo ao trocar de pill. */
+  var feed = document.getElementById('one-fin-mob-feed');
+  if (feed) feed.scrollTop = 0;
+  oneFinMobRenderPane(pill);
 }
 window.oneFinMobSetPill = oneFinMobSetPill;
 
@@ -11049,6 +11092,18 @@ function oneFinRenderFixas() {
   }
   setText3('one-fin-fixas-desp-cnt',  despesas.length + (despesas.length === 1 ? ' fixa' : ' fixas'));
   setText3('one-fin-fixas-desp-soma', _oneFinBrlDet(totalSai));
+
+  /* ── Espelha as Fixas pro slide mobile (pill Fixas, colunas empilhadas) ── */
+  var _fResumo = document.getElementById('one-fin-mob-fixas-resumo');
+  if (_fResumo && resumo) _fResumo.innerHTML = resumo.innerHTML;
+  var _fRec = document.getElementById('one-fin-mob-fixas-rec-body');
+  if (_fRec && elRec) _fRec.innerHTML = elRec.innerHTML;
+  var _fDesp = document.getElementById('one-fin-mob-fixas-desp-body');
+  if (_fDesp && elDesp) _fDesp.innerHTML = elDesp.innerHTML;
+  setText3('one-fin-mob-fixas-rec-cnt',  receitas.length + (receitas.length === 1 ? ' fixa' : ' fixas'));
+  setText3('one-fin-mob-fixas-rec-soma', _oneFinBrlDet(totalEnt));
+  setText3('one-fin-mob-fixas-desp-cnt', despesas.length + (despesas.length === 1 ? ' fixa' : ' fixas'));
+  setText3('one-fin-mob-fixas-desp-soma', _oneFinBrlDet(totalSai));
 }
 window.oneFinRenderFixas = oneFinRenderFixas;
 
@@ -11818,6 +11873,10 @@ function oneFinRenderGeral() {
       }).join('');
     }
   }
+
+  /* Espelha a lista agrupada pro slide mobile (pill Visão geral, sem balanço). */
+  var _geralMob = document.getElementById('one-fin-mob-geral-recent');
+  if (_geralMob && listEl) _geralMob.innerHTML = listEl.innerHTML;
 
   // 2) Gráfico de barras: mês ativo + 5 próximos, considerando reais + fixas instanciadas
   var canvas = document.getElementById('one-fin-bars-geral');

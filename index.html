@@ -420,11 +420,60 @@
 
             </div>
 
-            <!-- ===== Outras pills (sub-telas entram numa próxima sessão) ===== -->
-            <div class="one-fin-mob-pane" data-pane="resumo"  hidden><div class="one-fin-mob-empty">Resumo chega em breve.</div></div>
-            <div class="one-fin-mob-pane" data-pane="extrato" hidden><div class="one-fin-mob-empty">Extrato chega em breve.</div></div>
-            <div class="one-fin-mob-pane" data-pane="geral"   hidden><div class="one-fin-mob-empty">Visão geral chega em breve.</div></div>
-            <div class="one-fin-mob-pane" data-pane="fixas"   hidden><div class="one-fin-mob-empty">Fixas chega em breve.</div></div>
+            <!-- ===== Pill RESUMO (espelho da planilha mestre) ===== -->
+            <div class="one-fin-mob-pane" data-pane="resumo" hidden>
+              <div class="one-fin-resumo-bloco" id="one-fin-mob-resumo-caixa"></div>
+              <div class="one-fin-resumo-bloco one-fin-resumo-bloco-obrigacoes one-fin-mob-acomp" id="one-fin-mob-resumo-obrig"></div>
+              <div class="one-fin-resumo-bloco one-fin-resumo-bloco-investimentos" id="one-fin-mob-resumo-invest"></div>
+            </div>
+
+            <!-- ===== Pill EXTRATO (Receitas em cima, Despesas embaixo) ===== -->
+            <div class="one-fin-mob-pane" data-pane="extrato" hidden>
+              <div class="one-fin-mob-bloco">
+                <div class="one-fin-mob-bloco-head">
+                  <span class="one-fin-mob-bloco-tit">↑ Receitas</span>
+                  <span class="one-fin-mob-bloco-cnt" id="one-fin-mob-extrato-rec-cnt">0 lançamentos</span>
+                </div>
+                <div class="one-fin-mob-extrato-body" id="one-fin-mob-extrato-rec-body"></div>
+                <div class="one-fin-mob-bloco-foot"><span>SOMA →</span><span id="one-fin-mob-extrato-rec-soma">R$ 0,00</span></div>
+              </div>
+              <div class="one-fin-mob-bloco">
+                <div class="one-fin-mob-bloco-head">
+                  <span class="one-fin-mob-bloco-tit">↓ Despesas</span>
+                  <span class="one-fin-mob-bloco-cnt" id="one-fin-mob-extrato-desp-cnt">0 lançamentos</span>
+                </div>
+                <div class="one-fin-mob-extrato-body" id="one-fin-mob-extrato-desp-body"></div>
+                <div class="one-fin-mob-bloco-foot"><span>SOMA →</span><span id="one-fin-mob-extrato-desp-soma">R$ 0,00</span></div>
+              </div>
+            </div>
+
+            <!-- ===== Pill VISÃO GERAL (lista agrupada, sem balanço) ===== -->
+            <div class="one-fin-mob-pane" data-pane="geral" hidden>
+              <div class="one-fin-mob-bloco">
+                <div id="one-fin-mob-geral-recent"></div>
+              </div>
+            </div>
+
+            <!-- ===== Pill FIXAS (resumo + Receitas em cima, Despesas embaixo) ===== -->
+            <div class="one-fin-mob-pane" data-pane="fixas" hidden>
+              <div class="one-fin-fixas-resumo one-fin-mob-fixas-resumo" id="one-fin-mob-fixas-resumo"></div>
+              <div class="one-fin-mob-bloco">
+                <div class="one-fin-mob-bloco-head">
+                  <span class="one-fin-mob-bloco-tit">↑ Receitas fixas</span>
+                  <span class="one-fin-mob-bloco-cnt" id="one-fin-mob-fixas-rec-cnt">0 fixas</span>
+                </div>
+                <div class="one-fin-mob-extrato-body" id="one-fin-mob-fixas-rec-body"></div>
+                <div class="one-fin-mob-bloco-foot"><span>SOMA →</span><span id="one-fin-mob-fixas-rec-soma">R$ 0,00</span></div>
+              </div>
+              <div class="one-fin-mob-bloco">
+                <div class="one-fin-mob-bloco-head">
+                  <span class="one-fin-mob-bloco-tit">↓ Despesas fixas</span>
+                  <span class="one-fin-mob-bloco-cnt" id="one-fin-mob-fixas-desp-cnt">0 fixas</span>
+                </div>
+                <div class="one-fin-mob-extrato-body" id="one-fin-mob-fixas-desp-body"></div>
+                <div class="one-fin-mob-bloco-foot"><span>SOMA →</span><span id="one-fin-mob-fixas-desp-soma">R$ 0,00</span></div>
+              </div>
+            </div>
 
           </div>
         </div>

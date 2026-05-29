@@ -2753,6 +2753,22 @@
 /* Container das seções de Contas/Cartões/Investimentos no feed */
 .one-fin-mob-secao-lista{display:flex;flex-direction:column;gap:12px;}
 
+/* ── Sub-telas (pills Resumo / Extrato / Visão geral / Fixas) ── */
+/* Cabeçalho e rodapé dos blocos empilhados (Extrato e Fixas) */
+.one-fin-mob-bloco-cnt{font-size:10.5px;color:#9A94A4;font-weight:500;}
+.one-fin-mob-bloco-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid rgba(127,168,142,.18);font-weight:700;font-size:12.5px;color:#3A3050;}
+.one-fin-mob-extrato-body{display:flex;flex-direction:column;gap:3px;}
+
+/* Resumo mobile: no desktop o bloco de obrigações tem altura fixa e tabela
+   larga; no feed mobile ele cresce com o conteúdo e a tabela rola na lateral. */
+.one-fin-mob-pane .one-fin-resumo-bloco{margin-bottom:0;}
+.one-fin-mob-pane .one-fin-resumo-bloco-obrigacoes{height:auto;overflow-x:auto;overflow-y:visible;}
+.one-fin-mob-pane .one-fin-resumo-obrig-corpo{overflow:visible;}
+
+/* Fixas: os 3 cards de resumo se encaixam na largura do celular */
+.one-fin-mob-fixas-resumo{display:flex;gap:8px;flex-wrap:wrap;}
+.one-fin-mob-fixas-resumo .one-fin-fixas-card{flex:1;min-width:92px;}
+
 /* ── Tarefas mobile (4º slide) ───────────────────────────────── */
 .one-tar-mob-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:0 10px 6px;}
 .one-tar-mob-nav{display:flex;align-items:center;justify-content:space-between;padding:4px 0 8px;flex-shrink:0;}
