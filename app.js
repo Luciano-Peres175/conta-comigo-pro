@@ -8435,6 +8435,52 @@ function oneToast(msg) {
     localStorage.setItem(oneU('one_init'), '1');
   }
 
+  /* Exporta TODO o armazenamento local deste aparelho num .json (read-only).
+     Serve pra diagnosticar o descompasso mobile x desktop sem apagar nem
+     alterar nada. Inclui um resumo por entidade pra leitura rápida. */
+  function oneExportarDadosLocais() {
+    try {
+      var dump = {};
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        dump[k] = localStorage.getItem(k);
+      }
+      var uid = (window.authUser && window.authUser.id) ? window.authUser.id : 'anon';
+      var resumo = {};
+      ['receitas','despesas','despesasFixas','receitasFixas','compromissos','tarefas','tarefas_areas','notas_cerebro','contas','despesas_fixas','receitas_fixas'].forEach(function(ent){
+        var raw = localStorage.getItem('u_' + uid + '_' + ent);
+        if (raw == null) { resumo[ent] = '(chave ausente)'; return; }
+        try { var arr = JSON.parse(raw); resumo[ent] = Array.isArray(arr) ? (arr.length + ' itens') : (typeof arr); }
+        catch(e) { resumo[ent] = '(nao-json)'; }
+      });
+      var payload = {
+        _meta: {
+          exportadoEm: new Date().toISOString(),
+          userId: uid,
+          userEmail: (window.authUser && window.authUser.email) ? window.authUser.email : '',
+          userAgent: navigator.userAgent,
+          url: window.location.href,
+          totalChaves: Object.keys(dump).length,
+          resumoEntidades: resumo
+        },
+        localStorage: dump
+      };
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g, '-');
+      var a = document.createElement('a');
+      a.href = url; a.download = 'conta-comigo-backup-' + stamp + '.json';
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ try { document.body.removeChild(a); } catch(e){} URL.revokeObjectURL(url); }, 1500);
+      if (typeof oneToast === 'function') oneToast('✓ Backup gerado (' + Object.keys(dump).length + ' chaves)');
+      else if (typeof toast === 'function') toast('Backup gerado.', 'success');
+    } catch(e) {
+      console.error('[oneExportarDadosLocais] erro', e);
+      if (typeof oneToast === 'function') oneToast('⚠ Erro ao exportar backup', 'error');
+    }
+  }
+  window.oneExportarDadosLocais = oneExportarDadosLocais;
+
   /* ── IMPORTAR — Biblioteca da Pinah ─────────────────────────────── */
 
   var _impTabAtiva = 'url';
