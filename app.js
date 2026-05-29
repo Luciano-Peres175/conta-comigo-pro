@@ -12570,12 +12570,13 @@ function renderOneAgendaPainelMob() {
     }
   }
 
-  // Régua única à esquerda
-  var rulerHtml = '<div class="one-ag-tl-ruler one-ag-week-ruler">';
+  // Régua única à esquerda. Os labels ficam dentro de .one-ag-tl-ruler-content,
+  // que o JS desloca via transform pra acompanhar o scroll das colunas (igual desktop).
+  var rulerHtml = '<div class="one-ag-tl-ruler one-ag-week-ruler"><div class="one-ag-tl-ruler-content">';
   for (var rh = H_START; rh <= H_END; rh++) {
     rulerHtml += '<div class="one-ag-tl-hour" style="top:' + ((rh - H_START) * PX) + 'px">' + (rh < 10 ? '0' : '') + rh + ':00</div>';
   }
-  rulerHtml += '</div>';
+  rulerHtml += '</div></div>';
 
   // Grid lines (reutilizadas em cada coluna)
   var gridLines = '';
@@ -12669,6 +12670,9 @@ function renderOneAgendaPainelMob() {
 
   // Inicia DnD touch nas colunas/cards mobile
   oneInitAgendaTouchDnDMob('#one-ag-kanban-mob', SNAP_MIN);
+  // Scroll Y sincronizado entre colunas + régua (mesma função do desktop):
+  // rolar uma coluna rola todas e desliza a régua de horas junto.
+  oneAgSyncScrollSetup(kanban);
   oneAgRenderTopCardsMob();
 }
 window.renderOneAgendaPainelMob = renderOneAgendaPainelMob;
