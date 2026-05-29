@@ -2071,6 +2071,14 @@
             <div style="font-size:11px;font-weight:400;color:#2C6B4F;opacity:.80;margin-top:2px">Baixa um arquivo .json com todos os dados guardados neste aparelho. Nao apaga nem altera nada.</div>
           </div>
         </button>
+        <input type="file" id="input-importar-backup" accept="application/json,.json" style="display:none" onchange="oneImportarDadosLocais(this)">
+        <button id="btn-importar-backup" onclick="document.getElementById('input-importar-backup').click()" style="background:#E8EEF7;color:#2C4F6B;border:1px solid #BFD0E0;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px">
+          <i data-lucide="upload" style="width:16px;height:16px;flex-shrink:0"></i>
+          <div style="flex:1">
+            <div>Importar backup para este aparelho</div>
+            <div style="font-size:11px;font-weight:400;color:#2C4F6B;opacity:.80;margin-top:2px">Substitui os dados deste aparelho pelos de um arquivo .json (ex.: o backup do desktop). Pede confirmacao antes.</div>
+          </div>
+        </button>
         <button id="btn-carregar-demo" onclick="carregarDemo()" style="background:#F0E8F8;color:#6B3F8A;border:1px solid #D6BFE5;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px">
           <i data-lucide="sprout" style="width:16px;height:16px;flex-shrink:0"></i>
           <div style="flex:1">

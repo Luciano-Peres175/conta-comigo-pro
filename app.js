@@ -8481,6 +8481,75 @@ function oneToast(msg) {
   }
   window.oneExportarDadosLocais = oneExportarDadosLocais;
 
+  /* Importa um backup .json (gerado pelo Exportar) PARA este aparelho.
+     Substitui os dados locais por uma cópia fiel do arquivo — serve pra
+     o celular adotar o retrato limpo do desktop, recuperando os vínculos
+     de conta (contaId/faturaMesAno) que o servidor não guarda.
+     Preserva a sessão de login DESTE aparelho (não importa o token). */
+  function oneImportarDadosLocais(inputEl) {
+    try {
+      var file = inputEl && inputEl.files && inputEl.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var payload;
+        try { payload = JSON.parse(ev.target.result); }
+        catch(e) {
+          alert('Arquivo inválido — não é um backup .json legível.');
+          inputEl.value = '';
+          return;
+        }
+        var dump = payload && payload.localStorage;
+        if (!dump || typeof dump !== 'object') {
+          alert('Arquivo inválido — não encontrei os dados (localStorage) dentro do backup.');
+          inputEl.value = '';
+          return;
+        }
+        // Confere se o backup é do mesmo usuário deste aparelho.
+        var uidAtual = (window.authUser && window.authUser.id) ? window.authUser.id : null;
+        var uidBackup = payload._meta && payload._meta.userId;
+        if (uidAtual && uidBackup && uidAtual !== uidBackup) {
+          if (!confirm('ATENÇÃO: este backup é de OUTRO usuário (' + (payload._meta.userEmail || uidBackup) + ').\n\nImportar mesmo assim? Isso vai sobrescrever os dados deste aparelho.')) {
+            inputEl.value = '';
+            return;
+          }
+        }
+        var qtd = Object.keys(dump).length;
+        var quando = (payload._meta && payload._meta.exportadoEm) ? new Date(payload._meta.exportadoEm).toLocaleString('pt-BR') : 'data desconhecida';
+        if (!confirm('Isto vai SUBSTITUIR todos os dados deste aparelho pelos do backup.\n\nBackup: ' + quando + ' · ' + qtd + ' chaves.\n\nA sua sessão de login continua. Confirmar?')) {
+          inputEl.value = '';
+          return;
+        }
+        // Preserva o token de login DESTE aparelho.
+        var tokensPreservados = {};
+        for (var i = 0; i < localStorage.length; i++) {
+          var kk = localStorage.key(i);
+          if (kk && kk.indexOf('-auth-token') !== -1) tokensPreservados[kk] = localStorage.getItem(kk);
+        }
+        // Limpa tudo e escreve o conteúdo do backup (menos os tokens do backup).
+        localStorage.clear();
+        Object.keys(dump).forEach(function(k){
+          if (k.indexOf('-auth-token') !== -1) return; // não importa sessão de outro aparelho
+          try { localStorage.setItem(k, dump[k]); } catch(e) { console.warn('[import] falhou em', k, e); }
+        });
+        // Restaura o token deste aparelho.
+        Object.keys(tokensPreservados).forEach(function(k){ localStorage.setItem(k, tokensPreservados[k]); });
+        inputEl.value = '';
+        if (typeof oneToast === 'function') oneToast('✓ Backup importado — recarregando…');
+        setTimeout(function(){ window.location.reload(); }, 800);
+      };
+      reader.onerror = function() {
+        alert('Não consegui ler o arquivo.');
+        inputEl.value = '';
+      };
+      reader.readAsText(file);
+    } catch(e) {
+      console.error('[oneImportarDadosLocais] erro', e);
+      alert('Erro ao importar backup. Veja o console.');
+    }
+  }
+  window.oneImportarDadosLocais = oneImportarDadosLocais;
+
   /* ── IMPORTAR — Biblioteca da Pinah ─────────────────────────────── */
 
   var _impTabAtiva = 'url';
