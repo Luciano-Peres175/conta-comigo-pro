@@ -2769,6 +2769,35 @@
 .one-fin-mob-fixas-resumo{display:flex;gap:8px;flex-wrap:wrap;}
 .one-fin-mob-fixas-resumo .one-fin-fixas-card{flex:1;min-width:92px;}
 
+/* ── Aperto das linhas no mobile (nome com reticências, valor sem quebrar) ──
+   As linhas vêm dos renders do desktop; no celular precisam de fonte menor,
+   colunas mais justas e valores que não embrulham. */
+.one-fin-mob-feed .one-fin-extrato-item{grid-template-columns:20px 20px 1fr auto auto;gap:5px;font-size:11.5px;}
+.one-fin-mob-feed .one-fin-extrato-item-ico{width:20px;height:20px;font-size:12px;}
+.one-fin-mob-feed .one-fin-extrato-item-nome{font-size:11.5px;}
+.one-fin-mob-feed .one-fin-extrato-item-nome .badge-fatura,
+.one-fin-mob-feed .one-fin-extrato-item-nome .badge-fixa{font-size:8px;padding:1px 4px;margin-left:3px;}
+.one-fin-mob-feed .one-fin-extrato-item-val{font-size:11.5px;white-space:nowrap;}
+.one-fin-mob-feed .one-fin-extrato-item-actions .one-fin-item-btn{opacity:1;font-size:11px;padding:2px 3px;}
+
+/* Visão geral — grupos e itens */
+.one-fin-mob-feed .one-fin-grupo-nome{font-size:12.5px;}
+.one-fin-mob-feed .one-fin-grupo-total{font-size:12.5px;white-space:nowrap;}
+.one-fin-mob-feed .one-fin-grupo-item-nome{font-size:12px;}
+.one-fin-mob-feed .one-fin-grupo-item-val{font-size:12px;white-space:nowrap;}
+.one-fin-mob-feed .one-fin-grupo-item-actions .one-fin-item-btn{opacity:1;font-size:11px;padding:2px 3px;}
+
+/* Fixas — linhas */
+.one-fin-mob-feed .one-fin-fixa-body{min-width:0;}
+.one-fin-mob-feed .one-fin-fixa-nome{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.one-fin-mob-feed .one-fin-fixa-meta{font-size:10px;}
+.one-fin-mob-feed .one-fin-fixa-val{font-size:11.5px;white-space:nowrap;}
+.one-fin-mob-feed .one-fin-fixa-actions .one-fin-item-btn{font-size:11px;padding:2px 3px;}
+
+/* Contas (Início) — nome com reticências e valor sem quebrar em 2 linhas */
+.one-fin-mob-feed .one-fin-conta-nome{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.one-fin-mob-feed .one-fin-conta-val-num{font-size:12.5px;white-space:nowrap;}
+
 /* ── Tarefas mobile (4º slide) ───────────────────────────────── */
 .one-tar-mob-wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:0 10px 6px;}
 .one-tar-mob-nav{display:flex;align-items:center;justify-content:space-between;padding:4px 0 8px;flex-shrink:0;}
