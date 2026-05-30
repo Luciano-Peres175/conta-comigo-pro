@@ -8312,14 +8312,36 @@ function oneAgToggleRealizado(id) {
   if (typeof renderOneAgenda === 'function') renderOneAgenda();
 }
 
-function oneAgExcluir(id) {
+async function oneAgExcluir(id) {
   if (!confirm('Excluir este compromisso? A receita vinculada (se houver) também será removida.')) return;
+
+  // Espera o servidor confirmar ANTES de apagar do aparelho. Sem isso o
+  // compromisso sumia da tela mas voltava no reload — porque a exclusão nunca
+  // chegava ao servidor e a sincronização puxava ele de volta.
+  var resp = (typeof supaDelete === 'function')
+    ? await supaDelete('compromissos', id)
+    : { ok: true };
+  if (resp && resp.ok === false && resp.motivo !== 'tabela-desconhecida') {
+    var detalhe = resp.motivo === 'zero-linhas'
+      ? 'O servidor não apagou esta linha (provável trava de permissão na tabela de compromissos no Supabase).'
+      : (resp.error && (resp.error.message || resp.error.code)) || resp.motivo || 'motivo desconhecido';
+    alert('Não consegui excluir no servidor, então deixei o compromisso onde está pra não enganar.\n\nMotivo: ' + detalhe);
+    return;
+  }
+
   var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos'))||'[]'); } catch(e){}
   lista = lista.filter(function(c){ return c.id !== id; });
   localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
+
+  // Receita(s) vinculada(s): apaga no servidor pelo id de cada uma, depois local.
   var rec = []; try { rec = JSON.parse(localStorage.getItem(oneU('receitas'))||'[]'); } catch(e){}
+  var vinculadas = rec.filter(function(r){ return r.compromissoId === id; });
+  for (var i = 0; i < vinculadas.length; i++) {
+    if (typeof supaDelete === 'function') await supaDelete('receitas', vinculadas[i].id);
+  }
   rec = rec.filter(function(r){ return r.compromissoId !== id; });
   localStorage.setItem(oneU('receitas'), JSON.stringify(rec));
+
   if (typeof oneToast === 'function') oneToast('✓ Compromisso excluído.');
   renderOneAgendaPainel();
   if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
