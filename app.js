@@ -5474,16 +5474,12 @@ function renderOneTarefasPainel() {
     var cards = tasks.map(function(t) {
       var conc = !!t.concluida;
       var cp = corPrio(t.prioridade);
-      return '<div class="one-tar-card' + (conc ? ' concluida' : '') + '" style="border-left-color:' + (conc ? '#4CAF50' : cor) + '">' +
-        '<div class="one-tar-check" data-tid="' + t.id + '" onclick="oneTarToggle(this.dataset.tid)" style="background:' + (conc?'#4CAF50':'transparent') + ';border-color:' + (conc?'#4CAF50':'#C0BAD0') + '">' + (conc?'✓':'') + '</div>' +
+      return '<div class="one-tar-card' + (conc ? ' concluida' : '') + '" data-tid="' + t.id + '" onclick="oneTarModalEditar(this.dataset.tid)" style="cursor:pointer;border-left-color:' + (conc ? '#4CAF50' : cor) + '">' +
+        '<div class="one-tar-check" data-tid="' + t.id + '" onclick="event.stopPropagation();oneTarToggle(this.dataset.tid)" style="background:' + (conc?'#4CAF50':'transparent') + ';border-color:' + (conc?'#4CAF50':'#C0BAD0') + '">' + (conc?'✓':'') + '</div>' +
         '<div class="one-tar-card-body">' +
           '<div class="one-tar-card-nome">' + ((t.nome||t.titulo||'Sem nome')+'').replace(/</g,'&lt;') + '</div>' +
           '<span class="one-tar-prio-badge" style="background:' + cp.bg + ';color:' + cp.cor + '">' + (t.prioridade||'Normal') + '</span>' +
           (t.data ? '<div class="one-tar-card-data">' + t.data.split('-').reverse().join('/') + '</div>' : '') +
-        '</div>' +
-        '<div class="one-tar-card-actions">' +
-          '<button class="one-tar-card-btn edit" data-tid="' + t.id + '" onclick="event.stopPropagation();oneTarModalEditar(this.dataset.tid)" title="Editar">✏️</button>' +
-          '<button class="one-tar-card-btn del" data-tid="' + t.id + '" onclick="event.stopPropagation();oneTarExcluir(this.dataset.tid)" title="Excluir">🗑️</button>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -5531,6 +5527,32 @@ function renderOneTarefasPainel() {
         oneTarSaveAreas(novaOrdem);
         if (typeof oneToast === 'function') oneToast('✓ Ordem das áreas atualizada');
       }
+    });
+  }
+
+  // Arrastar CARD de tarefa entre áreas (inbox → organizar). Um Sortable por
+  // corpo de coluna, todos no mesmo grupo, pra o card poder pular de área.
+  // Clique sem arrastar continua abrindo a edição (o Sortable só age no arrasto).
+  if (kanbanEl && typeof Sortable !== 'undefined') {
+    if (window._oneTarCardSortables) {
+      window._oneTarCardSortables.forEach(function(s){ try { s.destroy(); } catch(e){} });
+    }
+    window._oneTarCardSortables = [];
+    Array.prototype.forEach.call(kanbanEl.querySelectorAll('.one-tar-col-body'), function(body){
+      var s = Sortable.create(body, {
+        group: 'one-tar-cards',
+        draggable: '.one-tar-card',
+        animation: 150,
+        ghostClass: 'one-tar-card-ghost',
+        onEnd: function(evt){
+          var card = evt.item;
+          var tid = (card && card.dataset) ? card.dataset.tid : null;
+          var destCol = evt.to.closest ? evt.to.closest('.one-tar-col') : null;
+          var novaArea = destCol ? destCol.dataset.area : null;
+          oneTarMoverCard(tid, novaArea);
+        }
+      });
+      window._oneTarCardSortables.push(s);
     });
   }
   // Atualiza o card-resumo da sidebar direita após qualquer render do painel de tarefas
@@ -5626,6 +5648,20 @@ function oneTarToggle(id) {
   if (typeof renderOneTarefasMobile==='function') renderOneTarefasMobile();
 }
 
+
+function oneTarMoverCard(tid, novaArea) {
+  if (!tid || !novaArea) { renderOneTarefasPainel(); return; }
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
+  var idx = lista.findIndex(function(t){ return t.id === tid; });
+  if (idx === -1) { renderOneTarefasPainel(); return; }
+  if (lista[idx].area === novaArea) { renderOneTarefasPainel(); return; } // mesma área, nada muda
+  lista[idx].area = novaArea;
+  localStorage.setItem(oneU('tarefas'), JSON.stringify(lista));
+  if (typeof supaUpsert === 'function') supaUpsert('tarefas', lista[idx]);
+  if (typeof oneToast === 'function') oneToast('✓ Tarefa movida para ' + novaArea);
+  renderOneTarefasPainel();
+  if (typeof renderOneTarefasMobile === 'function') renderOneTarefasMobile();
+}
 
 function oneTarExcluir(id) {
   if (!confirm('Excluir esta tarefa?')) return;
@@ -6643,7 +6679,6 @@ function renderOneAgendaPainel() {
             '<div class="one-ag-kcard-nome">' + nome + '</div>' +
             (tipo ? '<div class="one-ag-kcard-tipo"><span class="one-ag-kcard-dot" style="background:' + cat.cor + '"></span>' + tipo + '</div>' : '') +
           '</div>' +
-          '<div class="one-ag-kcard-actions"><button class="one-tar-card-btn del" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgExcluir(this.dataset.cid)" title="Excluir">🗑️</button></div>' +
         '</div>';
       }).join('');
     }(doDia, H_START, PX));
@@ -6876,7 +6911,6 @@ function renderOneAgDia() {
         '<div class="one-ag-kcard-nome" style="font-size:14px">' + nome + '</div>' +
         (tipo?'<div class="one-ag-kcard-tipo"><span class="one-ag-kcard-dot" style="background:'+cat.cor+'"></span>'+tipo+'</div>':'') +
       '</div>' +
-      '<div class="one-ag-kcard-actions"><button class="one-tar-card-btn del" data-cid="' + c.id + '" onclick="event.stopPropagation();oneAgExcluir(this.dataset.cid)">🗑️</button></div>' +
     '</div>';
   }).join('');
 
@@ -8361,6 +8395,8 @@ function oneAgModalAbrir(date) {
   document.getElementById('one-ag-modal-tipo').value = '';
   document.getElementById('one-ag-modal-valor').value = '';
   document.getElementById('one-ag-modal-obs').value  = '';
+  var delNovo = document.getElementById('one-ag-modal-del');
+  if (delNovo) delNovo.style.display = 'none';
   modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-ag-modal-nome').focus(); }, 100);
 }
@@ -8379,6 +8415,8 @@ function oneAgModalEditar(id) {
   document.getElementById('one-ag-modal-tipo').value  = c.tipo || '';
   document.getElementById('one-ag-modal-valor').value = c.valor || '';
   document.getElementById('one-ag-modal-obs').value   = c.observacoes || '';
+  var delEd = document.getElementById('one-ag-modal-del');
+  if (delEd) delEd.style.display = '';
   modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-ag-modal-nome').focus(); }, 100);
 }
@@ -8386,6 +8424,13 @@ function oneAgModalEditar(id) {
 function oneAgModalFechar() {
   var modal = document.getElementById('one-ag-modal');
   if (modal) modal.classList.remove('open');
+}
+
+async function oneAgModalExcluir() {
+  var id = document.getElementById('one-ag-modal-id').value;
+  if (!id) return;
+  await oneAgExcluir(id); // confirma + apaga no servidor + re-render
+  oneAgModalFechar();
 }
 
 function oneAgModalSalvar() {
