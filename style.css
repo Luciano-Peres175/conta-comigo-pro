@@ -3951,9 +3951,15 @@ body:has(#screen-one.active) #drawer-overlay       { z-index:10000 !important; }
   align-items: flex-start;
   gap: 6px;
   border-left: 3px solid #7FA88E;
-  transition: opacity .15s;
+  box-shadow: 0 1px 3px rgba(58,88,72,0.08);
+  transition: opacity .15s, box-shadow .15s, transform .15s;
 }
 .one-tar-card.concluida { opacity: 0.45; }
+.one-tar-card:hover {
+  box-shadow: 0 4px 12px rgba(58,88,72,0.18);
+  transform: translateY(-1px);
+}
+.one-tar-card:active { transform: translateY(0); }
 .one-tar-check {
   width: 16px; height: 16px;
   border-radius: 50%;
