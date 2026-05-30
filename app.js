@@ -4257,7 +4257,11 @@ async function supaSync() {
           return;
         }
         var rows = result.data || [];
-        var itensServer = rows.map(function(row) { return _supaMapFromRow(localKey, row); });
+        var itensServer = rows.map(function(row) {
+          var it = _supaMapFromRow(localKey, row);
+          it._synced = true; // veio do servidor → já passou pela sincronização
+          return it;
+        });
         var itensLocal = [];
         try { itensLocal = JSON.parse(localStorage.getItem(prefix + localKey) || '[]'); } catch(e) {}
         var camposLocais = SUPA_CAMPOS_LOCAIS[localKey] || [];
@@ -4284,7 +4288,12 @@ async function supaSync() {
         var idsServer = {};
         itensServer.forEach(function(s){ if (s && s.id) idsServer[s.id] = true; });
         itensLocal.forEach(function(l){
-          if (l && l.id && !idsServer[l.id]) merged.push(l);
+          if (!l || !l.id || idsServer[l.id]) return;
+          // Item que está só no aparelho. Se ele JÁ tinha sido sincronizado
+          // antes (_synced) e agora sumiu do servidor, foi apagado de propósito
+          // em outro aparelho → NÃO ressuscitar. Se nunca subiu (_synced falsy),
+          // é criação local ainda pendente de upload → preservar.
+          if (!l._synced) merged.push(l);
         });
         localStorage.setItem(prefix + localKey, JSON.stringify(merged));
         console.log('[supaSync]', tabela, '→', merged.length, 'itens (' + itensServer.length + ' do server + ' + (merged.length - itensServer.length) + ' só locais)');
