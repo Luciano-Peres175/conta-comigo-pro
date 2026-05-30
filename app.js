@@ -5649,6 +5649,8 @@ function oneTarModalAbrir(area) {
   var sel = document.getElementById('one-tar-modal-area');
   var areaDefault = (area && areas.indexOf(area) !== -1) ? area : areas[0];
   sel.innerHTML = areas.map(function(a){ return '<option value="' + a.replace(/"/g,'&quot;') + '"' + (a===areaDefault?' selected':'') + '>' + a + '</option>'; }).join('');
+  var del = document.getElementById('one-tar-modal-del');
+  if (del) del.style.display = 'none';
   modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-tar-modal-nome').focus(); }, 100);
 }
@@ -5669,8 +5671,24 @@ function oneTarModalEditar(id) {
   var sel = document.getElementById('one-tar-modal-area');
   var areas = oneTarGetAreas();
   sel.innerHTML = areas.map(function(a){ return '<option value="' + a.replace(/"/g,'&quot;') + '"' + (a===t.area?' selected':'') + '>' + a + '</option>'; }).join('');
+  var del = document.getElementById('one-tar-modal-del');
+  if (del) del.style.display = '';
   modal.classList.add('open');
   setTimeout(function(){ document.getElementById('one-tar-modal-nome').focus(); }, 100);
+}
+
+function oneTarModalExcluir() {
+  var id = document.getElementById('one-tar-modal-id').value;
+  if (!id) return;
+  if (!confirm('Excluir esta tarefa?')) return;
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('tarefas'))||'[]'); } catch(e){}
+  lista = lista.filter(function(t){ return t.id !== id; });
+  localStorage.setItem(oneU('tarefas'), JSON.stringify(lista));
+  supaDelete('tarefas', id);
+  if (typeof oneToast==='function') oneToast('Tarefa excluída.');
+  oneTarModalFechar();
+  if (typeof renderOneTarefasPainel==='function') renderOneTarefasPainel();
+  if (typeof renderOneTarefasMobile==='function') renderOneTarefasMobile();
 }
 
 function oneTarModalFechar() {
@@ -7535,7 +7553,8 @@ function renderOneTarefasMobile() {
   oneInitTarefasSortableMob(el);
 }
 
-/* Liga eventos de check e long-press (edit/del) nos cards mobile */
+/* Liga eventos nos cards mobile: tocar no card abre a edição (igual à agenda);
+   tocar no círculo marca/desmarca como concluída. */
 function oneTarMobBindCards(root) {
   var checks = root.querySelectorAll('.one-tar-card-mob-check');
   checks.forEach(function(ck) {
@@ -7547,24 +7566,11 @@ function oneTarMobBindCards(root) {
   });
   var cards = root.querySelectorAll('.one-tar-card-mob');
   cards.forEach(function(card) {
-    var pressTimer = null;
-    var startX = 0, startY = 0, moved = false;
-    function clear() { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } }
-    card.addEventListener('pointerdown', function(ev) {
-      if (ev.target.closest('.one-tar-card-mob-check')) return;
-      startX = ev.clientX; startY = ev.clientY; moved = false;
-      pressTimer = setTimeout(function() {
-        if (moved) return;
-        var tid = card.dataset.tid;
-        oneTarMobAcoesCard(tid);
-      }, 450);
+    card.addEventListener('click', function(ev) {
+      if (ev.target.closest('.one-tar-card-mob-check')) return; // o check tem ação própria
+      var tid = card.dataset.tid;
+      if (typeof oneTarModalEditar === 'function') oneTarModalEditar(tid);
     });
-    card.addEventListener('pointermove', function(ev) {
-      if (Math.abs(ev.clientX - startX) > 8 || Math.abs(ev.clientY - startY) > 8) { moved = true; clear(); }
-    });
-    card.addEventListener('pointerup', clear);
-    card.addEventListener('pointercancel', clear);
-    card.addEventListener('pointerleave', clear);
   });
 }
 
@@ -8247,21 +8253,33 @@ function oneSalvarCompromisso() {
   if (typeof renderOneAgenda === 'function') renderOneAgenda();
 }
 
-function oneExcluirCompromisso() {
+async function oneExcluirCompromisso() {
   if (!oneEditandoCompromissoId) return;
   if (!confirm('Excluir este compromisso? A receita vinculada (se houver) também será removida.')) return;
 
   var idParaExcluir = oneEditandoCompromissoId;
 
+  // Espera o servidor confirmar ANTES de mexer no aparelho. Sem isso, o
+  // compromisso sumia da tela mas voltava no reload quando o servidor recusava
+  // a exclusão silenciosamente (ex: política de permissão da tabela).
+  var resp = await supaDelete('compromissos', idParaExcluir);
+  if (resp && resp.ok === false && resp.motivo !== 'tabela-desconhecida') {
+    var detalhe = resp.motivo === 'zero-linhas'
+      ? 'O servidor não apagou esta linha (provável trava de permissão na tabela de compromissos no Supabase).'
+      : (resp.error && (resp.error.message || resp.error.code)) || resp.motivo || 'motivo desconhecido';
+    alert('Não consegui excluir no servidor, então deixei o compromisso onde está pra não enganar.\n\nMotivo: ' + detalhe);
+    return;
+  }
+
+  // Servidor confirmou (ou tabela não existe no schema): apaga do aparelho.
   var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU('compromissos')) || '[]'); } catch(e){}
   lista = lista.filter(function(x){ return x.id !== idParaExcluir; });
   localStorage.setItem(oneU('compromissos'), JSON.stringify(lista));
-  supaDelete('compromissos', idParaExcluir);
 
   // Remove receita vinculada se existir
   var rec = []; try { rec = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]'); } catch(e){}
   var recVinculada = rec.find(function(r){ return r.compromissoId === idParaExcluir; });
-  if (recVinculada) supaDelete('receitas', recVinculada.id);
+  if (recVinculada) await supaDelete('receitas', recVinculada.id);
   rec = rec.filter(function(r){ return r.compromissoId !== idParaExcluir; });
   localStorage.setItem(oneU('receitas'), JSON.stringify(rec));
 
