@@ -11922,51 +11922,99 @@ function _oneFinNormNome(s) {
 function oneFinListarDup() {
   var pares = [['despesas', 'despesasFixas'], ['receitas', 'receitasFixas']];
   var out = [];
+  var seen = {};   /* "keyReal:idAvulso" já incluído — dedup entre as 2 passadas */
+
+  function _addCand(keyReal, keyFixa, it, molde, mesAno, motivo) {
+    var chave = keyReal + ':' + it.id;
+    if (seen[chave]) return;
+    var pp = mesAno.split('-'); var aa = parseInt(pp[0],10), mm = parseInt(pp[1],10);
+    var temOverride = !!(molde.valorPorMes && typeof molde.valorPorMes === 'object' && molde.valorPorMes[mesAno] != null);
+    var projeta = (typeof oneFinFixaAtivaNoMes === 'function') ? oneFinFixaAtivaNoMes(molde, mm - 1, aa) : false;
+    /* valor que o molde mostra naquele mês: override se houver, senão a base */
+    var valorMoldeMes = temOverride ? (Number(molde.valorPorMes[mesAno]) || 0) : (Number(molde.valor) || 0);
+    var nomeMudou = _oneFinNormNome(it.nome || it.descricao) !== _oneFinNormNome(molde.nome || molde.descricao);
+    var catMudou  = String(it.categoria || '').trim() !== String(molde.categoria || '').trim();
+    seen[chave] = true;
+    out.push({
+      keyReal: keyReal, keyFixa: keyFixa,
+      idAvulso: it.id, fixaId: molde.id,
+      nome: it.nome || it.descricao || '(sem nome)', mes: mesAno,
+      valorMolde: valorMoldeMes, valorAvulso: Number(it.valor) || 0,
+      temOverride: temOverride,
+      duplicadoVisivel: !!projeta,
+      viaOrigemFixaId: !!it.origemFixaId,
+      motivo: motivo,
+      revisarManual: !!(nomeMudou || catMudou),
+      nomeMudou: !!nomeMudou, catMudou: !!catMudou
+    });
+  }
+
   pares.forEach(function(pr) {
     var keyReal = pr[0], keyFixa = pr[1];
     var reais = []; try { reais = JSON.parse(localStorage.getItem(oneU(keyReal)) || '[]'); } catch(e){}
     var fixas = []; try { fixas = JSON.parse(localStorage.getItem(oneU(keyFixa)) || '[]'); } catch(e){}
+
+    function _achaMolde(it) {
+      var m = null;
+      if (it.origemFixaId) m = fixas.find(function(f){ return String(f.id) === String(it.origemFixaId); });
+      if (!m) {
+        var nomeN = _oneFinNormNome(it.nome || it.descricao);
+        m = fixas.find(function(f){ return _oneFinNormNome(f.nome || f.descricao) === nomeN; });
+      }
+      return m || null;
+    }
+
+    /* PASSADA 1 — avulso → molde (origemFixaId ou nome). Pega o duplicado
+       clássico (molde projeta a base + avulso editado) E o caso com override. */
     reais.forEach(function(it) {
       if (!it || it.recorrencia === 'fixa') return;
       var mesAno = _oneFinExtrairMesAno(it.data);
       if (!mesAno) return;
-      /* Casa o avulso com o molde: por origemFixaId (forte) ou por nome (fallback,
-         porque o sync antigo apagava o origemFixaId do local). */
-      var molde = null;
-      if (it.origemFixaId) molde = fixas.find(function(f){ return String(f.id) === String(it.origemFixaId); });
-      if (!molde) {
-        var nomeN = _oneFinNormNome(it.nome || it.descricao);
-        molde = fixas.find(function(f){ return _oneFinNormNome(f.nome || f.descricao) === nomeN; });
-      }
+      var molde = _achaMolde(it);
       if (!molde) return;
-      var p = mesAno.split('-'); var aa = parseInt(p[0],10), mm = parseInt(p[1],10);
+      var pp = mesAno.split('-'); var aa = parseInt(pp[0],10), mm = parseInt(pp[1],10);
+      var temOverride = !!(molde.valorPorMes && molde.valorPorMes[mesAno] != null);
       var projeta = (typeof oneFinFixaAtivaNoMes === 'function') ? oneFinFixaAtivaNoMes(molde, mm - 1, aa) : false;
-      /* Match só por nome (sem origemFixaId): só conta se de fato duplica
-         (molde projeta naquele mês), pra não pegar despesa avulsa homônima. */
-      if (!it.origemFixaId && !projeta) return;
-      var nomeMudou = _oneFinNormNome(it.nome || it.descricao) !== _oneFinNormNome(molde.nome || molde.descricao);
-      var catMudou  = String(it.categoria || '').trim() !== String(molde.categoria || '').trim();
-      out.push({
-        keyReal: keyReal, keyFixa: keyFixa,
-        idAvulso: it.id, fixaId: molde.id,
-        nome: it.nome || it.descricao || '(sem nome)', mes: mesAno,
-        valorMolde: Number(molde.valor) || 0, valorAvulso: Number(it.valor) || 0,
-        duplicadoVisivel: !!projeta,
-        viaOrigemFixaId: !!it.origemFixaId,
-        revisarManual: !!(nomeMudou || catMudou),
-        nomeMudou: !!nomeMudou, catMudou: !!catMudou
+      /* Match só por nome (sem origemFixaId): exige que o molde cubra o mês —
+         projeta OU já tem override — pra não pegar avulsa homônima solta. */
+      if (!it.origemFixaId && !projeta && !temOverride) return;
+      _addCand(keyReal, keyFixa, it, molde, mesAno,
+        it.origemFixaId ? 'origemFixaId' : (temOverride ? 'override+avulso' : 'projeta+avulso'));
+    });
+
+    /* PASSADA 2 — molde com override[mes] → avulso órfão no MESMO mês.
+       Cobre o caso do Claro Combo: a fixa já tem valorPorMes[mes] (override
+       certo), mas sobrou o avulso antigo de mesmo valor. O override cobre o
+       mês → o avulso é lixo, e a passada 1 pode não tê-lo casado. */
+    fixas.forEach(function(molde) {
+      var vpm = molde.valorPorMes;
+      if (!vpm || typeof vpm !== 'object') return;
+      var nomeMolde = _oneFinNormNome(molde.nome || molde.descricao);
+      Object.keys(vpm).forEach(function(mesAno) {
+        if (vpm[mesAno] == null) return;
+        reais.forEach(function(it) {
+          if (!it || it.recorrencia === 'fixa') return;
+          if (seen[keyReal + ':' + it.id]) return;
+          if (_oneFinExtrairMesAno(it.data) !== mesAno) return;
+          var casa = (it.origemFixaId && String(it.origemFixaId) === String(molde.id)) ||
+                     (_oneFinNormNome(it.nome || it.descricao) === nomeMolde);
+          if (!casa) return;
+          _addCand(keyReal, keyFixa, it, molde, mesAno, 'override+avulso');
+        });
       });
     });
   });
+
   try {
     console.table(out.map(function(r){ return {
       conta: r.nome, mes: r.mes,
       molde: r.valorMolde.toFixed(2), avulso: r.valorAvulso.toFixed(2),
+      override: r.temOverride, motivo: r.motivo,
       duplicadoVisivel: r.duplicadoVisivel, revisarManual: r.revisarManual
     }; }));
   } catch(e) { console.log(out); }
   console.log('[oneFinListarDup] candidatos:', out.length,
-    '| visíveis agora:', out.filter(function(r){ return r.duplicadoVisivel; }).length,
+    '| com override:', out.filter(function(r){ return r.temOverride; }).length,
     '| p/ revisão manual:', out.filter(function(r){ return r.revisarManual; }).length);
   window.__oneFinDup = out;
   return out;
@@ -11980,9 +12028,12 @@ function oneFinMigrarDup(aplicar) {
   console.log('[oneFinMigrarDup]', (aplicar === true ? '⚠ APLICANDO' : 'DRY-RUN (nada gravado)'),
               '— migrar:', plano.length, '| pular p/ revisão:', revisar.length);
   plano.forEach(function(c){
-    console.log('  → ' + c.nome + ' ' + c.mes + ': override=' + c.valorAvulso.toFixed(2) +
-                ' (molde ' + c.valorMolde.toFixed(2) + ', apaga avulso ' + c.idAvulso + ')' +
-                (c.duplicadoVisivel ? '' : ' [molde já pulava este mês]'));
+    console.log('  → ' + c.nome + ' ' + c.mes + ': ' +
+                (c.temOverride
+                  ? ('mantém override=' + c.valorMolde.toFixed(2))
+                  : ('cria override=' + c.valorAvulso.toFixed(2))) +
+                ' · apaga avulso ' + c.idAvulso +
+                (c.duplicadoVisivel ? '' : ' [molde não projetava este mês]'));
   });
   revisar.forEach(function(c){
     console.log('  ⚠ PULADO (revisão manual): ' + c.nome + ' ' + c.mes +
@@ -12004,7 +12055,9 @@ function oneFinMigrarDup(aplicar) {
       if (idx < 0) return;
       var f = fixas[idx];
       if (!f.valorPorMes || typeof f.valorPorMes !== 'object') f.valorPorMes = {};
-      f.valorPorMes[c.mes] = Number(c.valorAvulso) || 0;
+      /* Se já existe override pro mês, ele é a fonte da verdade — NÃO sobrescreve.
+         Só preenche quando ainda não há, com o valor do avulso (corrigido). */
+      if (f.valorPorMes[c.mes] == null) f.valorPorMes[c.mes] = Number(c.valorAvulso) || 0;
       if (Array.isArray(f.mesesPulados)) f.mesesPulados = f.mesesPulados.filter(function(m){ return m !== c.mes; });
       fixas[idx] = f; tocados[f.id] = f;
     });
