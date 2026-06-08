@@ -4149,7 +4149,8 @@ function _supaMapToRow(localKey, item, userId) {
         fim:           item.fim || null,
         meses_pulados: Array.isArray(item.mesesPulados) ? item.mesesPulados : [],
         conta_id:      item.contaId || null,
-        pago_por_mes:  (item.pagoPorMes && typeof item.pagoPorMes === 'object') ? item.pagoPorMes : {}
+        pago_por_mes:  (item.pagoPorMes && typeof item.pagoPorMes === 'object') ? item.pagoPorMes : {},
+        valor_por_mes: (item.valorPorMes && typeof item.valorPorMes === 'object') ? item.valorPorMes : {}
       });
     case 'receitas_fixas':
       return Object.assign(base, {
@@ -4163,7 +4164,8 @@ function _supaMapToRow(localKey, item, userId) {
         fim:           item.fim || null,
         meses_pulados: Array.isArray(item.mesesPulados) ? item.mesesPulados : [],
         conta_id:      item.contaId || null,
-        pago_por_mes:  (item.pagoPorMes && typeof item.pagoPorMes === 'object') ? item.pagoPorMes : {}
+        pago_por_mes:  (item.pagoPorMes && typeof item.pagoPorMes === 'object') ? item.pagoPorMes : {},
+        valor_por_mes: (item.valorPorMes && typeof item.valorPorMes === 'object') ? item.valorPorMes : {}
       });
     case 'contas':
       return Object.assign(base, {
@@ -4233,11 +4235,17 @@ function _supaMapFromRow(localKey, row) {
         diaDoMes:     row.dia_do_mes || null,
         inicio:       row.inicio || null,
         fim:          row.fim || null,
-        mesesPulados: Array.isArray(row.meses_pulados) ? row.meses_pulados : [],
+        /* [] do servidor = "nenhum mês pulado" → null, pra o merge defensivo
+           preservar o mesesPulados local (senão um sync que chega antes do
+           upsert do molde commitar zera o "pulo" e a projeção volta a duplicar). */
+        mesesPulados: (Array.isArray(row.meses_pulados) && row.meses_pulados.length > 0) ? row.meses_pulados : null,
         contaId:      row.conta_id || '',
         /* {} do servidor = "sem pagamento" → null, pra o merge defensivo
            preservar o pagoPorMes local em vez de zerar o recebido. */
         pagoPorMes:   (row.pago_por_mes && typeof row.pago_por_mes === 'object' && Object.keys(row.pago_por_mes).length > 0) ? row.pago_por_mes : null,
+        /* {} do servidor = "sem override" → null, mesma blindagem do pagoPorMes:
+           preserva o valorPorMes local (override de valor por mês). */
+        valorPorMes:  (row.valor_por_mes && typeof row.valor_por_mes === 'object' && Object.keys(row.valor_por_mes).length > 0) ? row.valor_por_mes : null,
         criadoEm:     row.created_at || ''
       };
     case 'receitas_fixas':
@@ -4252,11 +4260,17 @@ function _supaMapFromRow(localKey, row) {
         diaDoMes:     row.dia_do_mes || null,
         inicio:       row.inicio || null,
         fim:          row.fim || null,
-        mesesPulados: Array.isArray(row.meses_pulados) ? row.meses_pulados : [],
+        /* [] do servidor = "nenhum mês pulado" → null, pra o merge defensivo
+           preservar o mesesPulados local (senão um sync que chega antes do
+           upsert do molde commitar zera o "pulo" e a projeção volta a duplicar). */
+        mesesPulados: (Array.isArray(row.meses_pulados) && row.meses_pulados.length > 0) ? row.meses_pulados : null,
         contaId:      row.conta_id || '',
         /* {} do servidor = "sem pagamento" → null, pra o merge defensivo
            preservar o pagoPorMes local em vez de zerar o recebido. */
         pagoPorMes:   (row.pago_por_mes && typeof row.pago_por_mes === 'object' && Object.keys(row.pago_por_mes).length > 0) ? row.pago_por_mes : null,
+        /* {} do servidor = "sem override" → null, mesma blindagem do pagoPorMes:
+           preserva o valorPorMes local (override de valor por mês). */
+        valorPorMes:  (row.valor_por_mes && typeof row.valor_por_mes === 'object' && Object.keys(row.valor_por_mes).length > 0) ? row.valor_por_mes : null,
         criadoEm:     row.created_at || ''
       };
     case 'compromissos':
@@ -4326,8 +4340,8 @@ function _supaMapFromRow(localKey, row) {
 var SUPA_CAMPOS_LOCAIS = {
   receitas:       ['contaId', 'status'],
   despesas:       ['contaId', 'faturaMesAno', 'loteId', 'parcelaAtual', 'parcelasTotal', 'recorrencia', 'status'],
-  despesas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId', 'pagoPorMes'],
-  receitas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId', 'pagoPorMes'],
+  despesas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId', 'pagoPorMes', 'valorPorMes'],
+  receitas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId', 'pagoPorMes', 'valorPorMes'],
   compromissos:   [],
   tarefas:        [],
   notas_cerebro:  []
@@ -6584,13 +6598,26 @@ function oneFinEditar(key, id, dataInstancia) {
     }, function(escopo){
       if (!escopo) return;
       if (escopo === 'esta') {
-        var mat = oneFinFixaMaterializarMes(key, id, dataInstancia);
-        if (mat && typeof oneFinModalEditar === 'function') {
-          if (typeof oneToast === 'function') oneToast('✓ Mês destacado. Edite o lançamento.');
-          oneFinModalEditar(mat.key, mat.id);
+        /* Override de valor SÓ neste mês (valorPorMes). Não cria avulso nem
+           pula o mês: abre o modal no próprio molde, com o valor efetivo do
+           mês, e um gancho que faz o salvar gravar só o override. */
+        if (typeof oneFinModalEditar === 'function') {
+          oneFinModalEditar(key, id);   /* limpa gancho stale no topo */
+          window.__oneFinFixaValorMes = { key: key, fixaId: id, mesAno: mesAno };
+          /* Ajusta o modal pro contexto "só este mês": valor efetivo do mês
+             (override se houver, senão molde) e título explicando o escopo. */
+          try {
+            var efetivo = (typeof oneFinFixaValorNoMes === 'function') ? oneFinFixaValorNoMes(fix, mesAno) : (Number(fix.valor) || 0);
+            var inpVal = document.getElementById('one-fin-modal-valor');
+            if (inpVal) inpVal.value = efetivo;
+            var tit = document.getElementById('one-fin-modal-title');
+            if (tit) tit.textContent = 'Valor de ' + mesAno + ' (só este mês)';
+            /* Esconde o botão excluir: nesse escopo não dá pra excluir o molde. */
+            var btnDel = document.getElementById('one-fin-modal-btn-excluir');
+            if (btnDel) btnDel.style.display = 'none';
+          } catch(e) { console.warn('[oneFinEditar só este mês] ajuste parcial:', e); }
         }
-        if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
-        if (typeof oneFinRenderFixas==='function') oneFinRenderFixas();
+        return;
       } else if (escopo === 'proximas') {
         /* Encerra o template no mês anterior e abre modal NOVO já como fixa,
            pré-preenchido com os dados atuais, pra Mentor ajustar a partir do
@@ -10406,8 +10433,9 @@ function oneFinInstanciasDoMes(mes, ano) {
   receitasFixas.forEach(function(rf){
     if (!oneFinFixaAtivaNoMes(rf, mes, ano)) return;
     /* Lê pagoPorMes do template — se o valor pago cobre o esperado, a
-       instância vai como 'pago' (a bolinha do Resumo reflete em Extrato/Geral). */
-    var espRF = Number(rf.valor) || 0;
+       instância vai como 'pago' (a bolinha do Resumo reflete em Extrato/Geral).
+       Valor esperado respeita override do mês (valorPorMes) se houver. */
+    var espRF = (typeof oneFinFixaValorNoMes === 'function') ? oneFinFixaValorNoMes(rf, mesAnoStr) : (Number(rf.valor) || 0);
     var pagoRF = (typeof oneFinFixaPagoNoMes === 'function') ? oneFinFixaPagoNoMes(rf, mesAnoStr) : 0;
     receitas.push({
       id: '_fix_r_' + rf.id + '_' + ano + '_' + mes,
@@ -10428,7 +10456,7 @@ function oneFinInstanciasDoMes(mes, ano) {
     if (!oneFinFixaAtivaNoMes(df, mes, ano)) return;
     var conta = df.contaId ? oneFinGetConta(df.contaId) : null;
     var dataF = oneFinDataFixaNoMes(df, mes, ano);
-    var espDF = Number(df.valor) || 0;
+    var espDF = (typeof oneFinFixaValorNoMes === 'function') ? oneFinFixaValorNoMes(df, mesAnoStr) : (Number(df.valor) || 0);
     var pagoDF = (typeof oneFinFixaPagoNoMes === 'function') ? oneFinFixaPagoNoMes(df, mesAnoStr) : 0;
     despesas.push({
       id: '_fix_d_' + df.id + '_' + ano + '_' + mes,
@@ -11031,6 +11059,9 @@ function oneFinModalAbrir(tipoInicial) {
 window.oneFinModalAbrir = oneFinModalAbrir;
 
 function oneFinModalEditar(key, id) {
+  /* Zera gancho de "só este mês" ao abrir qualquer edição normal. O fluxo de
+     override (oneFinEditar escopo 'esta') re-seta o gancho DEPOIS desta chamada. */
+  window.__oneFinFixaValorMes = null;
   var lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]');
   var it = lista.find(function(x){ return String(x.id) === String(id); });
   if (!it) return;
@@ -11090,6 +11121,9 @@ window.oneFinModalEditar = oneFinModalEditar;
 function oneFinModalFechar() {
   var modal = document.getElementById('one-fin-modal');
   if (modal) modal.classList.remove('open');
+  /* Limpa ganchos temporários pra não vazar pro próximo lançamento editado
+     (ex.: fechar/cancelar o modal de "só este mês" sem salvar). */
+  window.__oneFinFixaValorMes = null;
 }
 window.oneFinModalFechar = oneFinModalFechar;
 
@@ -11144,6 +11178,26 @@ function oneFinModalSalvar() {
     if (typeof oneToast === 'function') oneToast('Preencha descrição e valor.', 'error');
     return;
   }
+
+  /* ─── Override de valor "só este mês" ───
+     Gancho setado por oneFinEditar (escopo 'esta'): grava o valor SÓ no
+     mês escolhido (valorPorMes do molde), sem criar avulso nem alterar o
+     valor-base da fixa. Curto-circuita o fluxo normal de salvar. */
+  var ovrMes = window.__oneFinFixaValorMes;
+  if (ovrMes && ovrMes.key && ovrMes.fixaId && ovrMes.mesAno) {
+    window.__oneFinFixaValorMes = null;
+    if (typeof oneFinFixaSetValorNoMes === 'function') {
+      oneFinFixaSetValorNoMes(ovrMes.key, ovrMes.fixaId, ovrMes.mesAno, valor);
+    }
+    oneFinModalFechar();
+    if (typeof oneToast === 'function') oneToast('✓ Valor de ' + ovrMes.mesAno + ' ajustado (só este mês).');
+    if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+    if (typeof renderDesktopSidebar === 'function') renderDesktopSidebar();
+    if (typeof oneFinRenderContas === 'function') oneFinRenderContas();
+    if (typeof oneFinRenderFixas === 'function') oneFinRenderFixas();
+    return;
+  }
+
   if (!contaId) {
     if (typeof oneToast === 'function') oneToast('Escolha uma conta. Se ainda não tem, clica em + Nova.', 'error');
     return;
@@ -11814,6 +11868,168 @@ function oneFinFixaSetPagoNoMes(key, fixaId, mesAno, valorPago) {
 }
 window.oneFinFixaSetPagoNoMes = oneFinFixaSetPagoNoMes;
 
+/* Helper: valor EFETIVO de uma fixa num mês. Se houver override de valor pra
+   aquele mês (valorPorMes[mesAno]), usa ele; senão usa o valor-base do molde.
+   Espelha o oneFinFixaPagoNoMes — é o coração do "editar só este mês". */
+function oneFinFixaValorNoMes(template, mesAno) {
+  if (!template) return 0;
+  var v = template.valorPorMes;
+  if (mesAno && v && typeof v === 'object' && v[mesAno] != null) return Number(v[mesAno]) || 0;
+  return Number(template.valor) || 0;
+}
+window.oneFinFixaValorNoMes = oneFinFixaValorNoMes;
+
+/* Helper: sobrescreve o valor de uma fixa SÓ num mês (override). valor != base
+   grava; valor == base (ou nulo) limpa o override (volta a seguir o molde).
+   NÃO cria lançamento avulso e NÃO mexe em mesesPulados. */
+function oneFinFixaSetValorNoMes(key, fixaId, mesAno, valor) {
+  if (!key || !fixaId || !mesAno) return false;
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+  var idx = lista.findIndex(function(x){ return String(x.id) === String(fixaId); });
+  if (idx < 0) return false;
+  var fix = lista[idx];
+  if (!fix.valorPorMes || typeof fix.valorPorMes !== 'object') fix.valorPorMes = {};
+  var novo = Number(valor) || 0;
+  var base = Number(fix.valor) || 0;
+  if (novo > 0 && novo !== base) {
+    fix.valorPorMes[mesAno] = novo;
+  } else {
+    delete fix.valorPorMes[mesAno];   /* igual ao molde → sem override */
+  }
+  lista[idx] = fix;
+  localStorage.setItem(oneU(key), JSON.stringify(lista));
+  if (typeof supaUpsert === 'function') supaUpsert(key, fix);
+  return true;
+}
+window.oneFinFixaSetValorNoMes = oneFinFixaSetValorNoMes;
+
+/* ════════════════════════════════════════════════════════════════
+   LIMPEZA DOS DUPLICADOS LEGADOS (materialização antiga → override)
+   Antes, "editar só este mês" criava um lançamento AVULSO (origemFixaId)
+   e pulava o mês no molde. Quando o "pulo" se perdia no sync, sobravam
+   PARES: linha projetada do molde + avulso editado. Estas funções:
+     • oneFinListarDup()  → READ-ONLY, lista os pares (nada é gravado).
+     • oneFinMigrarDup()  → DRY-RUN por padrão; oneFinMigrarDup(true) aplica:
+        converte cada avulso em override (valorPorMes[mês] = valor do avulso),
+        tira o mês de mesesPulados e APAGA o avulso. Vira UMA linha só.
+   Avulsos que mudaram nome/categoria entram como "revisar manual" e NÃO
+   são migrados automaticamente.
+   ════════════════════════════════════════════════════════════════ */
+function _oneFinNormNome(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function oneFinListarDup() {
+  var pares = [['despesas', 'despesasFixas'], ['receitas', 'receitasFixas']];
+  var out = [];
+  pares.forEach(function(pr) {
+    var keyReal = pr[0], keyFixa = pr[1];
+    var reais = []; try { reais = JSON.parse(localStorage.getItem(oneU(keyReal)) || '[]'); } catch(e){}
+    var fixas = []; try { fixas = JSON.parse(localStorage.getItem(oneU(keyFixa)) || '[]'); } catch(e){}
+    reais.forEach(function(it) {
+      if (!it || it.recorrencia === 'fixa') return;
+      var mesAno = _oneFinExtrairMesAno(it.data);
+      if (!mesAno) return;
+      /* Casa o avulso com o molde: por origemFixaId (forte) ou por nome (fallback,
+         porque o sync antigo apagava o origemFixaId do local). */
+      var molde = null;
+      if (it.origemFixaId) molde = fixas.find(function(f){ return String(f.id) === String(it.origemFixaId); });
+      if (!molde) {
+        var nomeN = _oneFinNormNome(it.nome || it.descricao);
+        molde = fixas.find(function(f){ return _oneFinNormNome(f.nome || f.descricao) === nomeN; });
+      }
+      if (!molde) return;
+      var p = mesAno.split('-'); var aa = parseInt(p[0],10), mm = parseInt(p[1],10);
+      var projeta = (typeof oneFinFixaAtivaNoMes === 'function') ? oneFinFixaAtivaNoMes(molde, mm - 1, aa) : false;
+      /* Match só por nome (sem origemFixaId): só conta se de fato duplica
+         (molde projeta naquele mês), pra não pegar despesa avulsa homônima. */
+      if (!it.origemFixaId && !projeta) return;
+      var nomeMudou = _oneFinNormNome(it.nome || it.descricao) !== _oneFinNormNome(molde.nome || molde.descricao);
+      var catMudou  = String(it.categoria || '').trim() !== String(molde.categoria || '').trim();
+      out.push({
+        keyReal: keyReal, keyFixa: keyFixa,
+        idAvulso: it.id, fixaId: molde.id,
+        nome: it.nome || it.descricao || '(sem nome)', mes: mesAno,
+        valorMolde: Number(molde.valor) || 0, valorAvulso: Number(it.valor) || 0,
+        duplicadoVisivel: !!projeta,
+        viaOrigemFixaId: !!it.origemFixaId,
+        revisarManual: !!(nomeMudou || catMudou),
+        nomeMudou: !!nomeMudou, catMudou: !!catMudou
+      });
+    });
+  });
+  try {
+    console.table(out.map(function(r){ return {
+      conta: r.nome, mes: r.mes,
+      molde: r.valorMolde.toFixed(2), avulso: r.valorAvulso.toFixed(2),
+      duplicadoVisivel: r.duplicadoVisivel, revisarManual: r.revisarManual
+    }; }));
+  } catch(e) { console.log(out); }
+  console.log('[oneFinListarDup] candidatos:', out.length,
+    '| visíveis agora:', out.filter(function(r){ return r.duplicadoVisivel; }).length,
+    '| p/ revisão manual:', out.filter(function(r){ return r.revisarManual; }).length);
+  window.__oneFinDup = out;
+  return out;
+}
+window.oneFinListarDup = oneFinListarDup;
+
+function oneFinMigrarDup(aplicar) {
+  var cands = Array.isArray(window.__oneFinDup) ? window.__oneFinDup : oneFinListarDup();
+  var plano   = cands.filter(function(c){ return !c.revisarManual; });
+  var revisar = cands.filter(function(c){ return c.revisarManual; });
+  console.log('[oneFinMigrarDup]', (aplicar === true ? '⚠ APLICANDO' : 'DRY-RUN (nada gravado)'),
+              '— migrar:', plano.length, '| pular p/ revisão:', revisar.length);
+  plano.forEach(function(c){
+    console.log('  → ' + c.nome + ' ' + c.mes + ': override=' + c.valorAvulso.toFixed(2) +
+                ' (molde ' + c.valorMolde.toFixed(2) + ', apaga avulso ' + c.idAvulso + ')' +
+                (c.duplicadoVisivel ? '' : ' [molde já pulava este mês]'));
+  });
+  revisar.forEach(function(c){
+    console.log('  ⚠ PULADO (revisão manual): ' + c.nome + ' ' + c.mes +
+                (c.nomeMudou ? ' [nome mudou]' : '') + (c.catMudou ? ' [categoria mudou]' : ''));
+  });
+  if (aplicar !== true) {
+    console.log('Confira a lista acima. Pra aplicar de verdade: oneFinMigrarDup(true)');
+    return { migrar: plano.length, revisar: revisar.length, aplicado: false };
+  }
+  /* 1) grava overrides nos moldes + remove o mês de mesesPulados */
+  [['despesas', 'despesasFixas'], ['receitas', 'receitasFixas']].forEach(function(pr){
+    var keyFixa = pr[1];
+    var doPlano = plano.filter(function(c){ return c.keyFixa === keyFixa; });
+    if (!doPlano.length) return;
+    var fixas = []; try { fixas = JSON.parse(localStorage.getItem(oneU(keyFixa)) || '[]'); } catch(e){}
+    var tocados = {};
+    doPlano.forEach(function(c){
+      var idx = fixas.findIndex(function(f){ return String(f.id) === String(c.fixaId); });
+      if (idx < 0) return;
+      var f = fixas[idx];
+      if (!f.valorPorMes || typeof f.valorPorMes !== 'object') f.valorPorMes = {};
+      f.valorPorMes[c.mes] = Number(c.valorAvulso) || 0;
+      if (Array.isArray(f.mesesPulados)) f.mesesPulados = f.mesesPulados.filter(function(m){ return m !== c.mes; });
+      fixas[idx] = f; tocados[f.id] = f;
+    });
+    localStorage.setItem(oneU(keyFixa), JSON.stringify(fixas));
+    Object.keys(tocados).forEach(function(id){ if (typeof supaUpsert === 'function') supaUpsert(keyFixa, tocados[id]); });
+  });
+  /* 2) apaga os avulsos migrados (local + servidor) */
+  ['despesas', 'receitas'].forEach(function(keyReal){
+    var ids = {};
+    plano.forEach(function(c){ if (c.keyReal === keyReal) ids[c.idAvulso] = true; });
+    if (!Object.keys(ids).length) return;
+    var lst = []; try { lst = JSON.parse(localStorage.getItem(oneU(keyReal)) || '[]'); } catch(e){}
+    lst = lst.filter(function(x){ return !ids[x.id]; });
+    localStorage.setItem(oneU(keyReal), JSON.stringify(lst));
+    Object.keys(ids).forEach(function(id){ if (typeof supaDelete === 'function') supaDelete(keyReal, id); });
+  });
+  window.__oneFinDup = null;
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  if (typeof oneFinRenderFixas === 'function') oneFinRenderFixas();
+  if (typeof oneFinRenderContas === 'function') oneFinRenderContas();
+  console.log('[oneFinMigrarDup] ✓ aplicado:', plano.length, 'migrados. Confira o Extrato/Resumo.');
+  return { migrar: plano.length, revisar: revisar.length, aplicado: true };
+}
+window.oneFinMigrarDup = oneFinMigrarDup;
+
 /* Coleta TODOS os lançamentos programados do mês:
    - Despesas reais (esporádicas) do mês sem fatura (sai direto da conta)
    - Instâncias de despesas fixas do mês sem fatura
@@ -12031,9 +12247,10 @@ function oneFinRenderResumo(opts) {
     var renderLinhaDespesa = function(it){
       var pagoCls = it.pago ? ' pago' : '';
       var isFatura = (it.kind === 'fatura');
-      var aPagarCell = isFatura
-        ? '<span class="one-fin-resumo-obr-apagar"' + (it.aPagar > 0 ? ' style="color:#C0392B;font-weight:600"' : ' style="color:#9CAB9C"') + '>' + _oneFinResumoBrl(it.aPagar) + '</span>'
-        : '<input class="one-fin-resumo-apagar-input" type="number" step="0.01" min="0" value="' + (it.aPagar || 0).toFixed(2) + '" data-ref="' + it.ref + '" onchange="oneFinResumoSetAPagar(this.dataset.ref, this.value)" />';
+      /* A Pagar é só leitura no Resumo. O ajuste de valor mora no lançamento
+         (Extrato/Contas): editar lá grava o override do mês (valorPorMes) e
+         reflete aqui. Evita dois lugares editando o mesmo número. */
+      var aPagarCell = '<span class="one-fin-resumo-obr-apagar"' + (it.aPagar > 0 ? ' style="color:#C0392B;font-weight:600"' : ' style="color:#9CAB9C"') + '>' + _oneFinResumoBrl(it.aPagar) + '</span>';
       var icoPrefix = isFatura ? ((it.icone || '💳') + ' ') : (it.contaIcone ? (it.contaIcone + ' ') : '');
       var tipoBadge = isFatura ? '<span style="font-size:10px;color:#9CAB9C;font-weight:500;margin-left:6px">Fatura</span>' : '';
       return '<div class="one-fin-resumo-obr-row' + pagoCls + '">' +
@@ -12059,7 +12276,7 @@ function oneFinRenderResumo(opts) {
                '<span class="one-fin-resumo-obr-dia">' + (it.dia || '—') + '</span>' +
                '<span class="one-fin-resumo-obr-nome">' + (it.nome || '').replace(/</g,'&lt;') + '</span>' +
                '<span class="one-fin-resumo-obr-esperado">' + _oneFinResumoBrl(it.esperado) + '</span>' +
-               '<input class="one-fin-resumo-apagar-input" type="number" step="0.01" min="0" value="' + (it.aPagar || 0).toFixed(2) + '" data-ref="' + it.ref + '" onchange="oneFinResumoSetAPagar(this.dataset.ref, this.value)" />' +
+               '<span class="one-fin-resumo-obr-apagar"' + (it.aPagar > 0 ? ' style="color:#C0392B;font-weight:600"' : ' style="color:#9CAB9C"') + '>' + _oneFinResumoBrl(it.aPagar) + '</span>' +
                '<span class="one-fin-resumo-obr-dif" style="color:#27856A">' + _oneFinResumoBrl(it.diferenca) + '</span>' +
              '</div>';
     };

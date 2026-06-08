@@ -113,3 +113,16 @@ alter table public.receitas_fixas
   add column if not exists pago_por_mes jsonb default '{}'::jsonb;
 alter table public.despesas_fixas
   add column if not exists pago_por_mes jsonb default '{}'::jsonb;
+
+-- ============================================================================
+-- ADENDO (2026-06-08) — override de VALOR por mês das FIXAS (valor_por_mes)
+-- ============================================================================
+-- "Editar só este mês" deixou de criar lançamento avulso (que duplicava com a
+-- projeção do molde). Agora grava um override de valor no próprio molde, em
+-- template.valorPorMes = { "YYYY-MM": valor }. A projeção do mês usa esse valor
+-- se existir, senão o valor-base da fixa. Espelha pago_por_mes.
+-- Aditivo/idempotente, default '{}'. O fromRow trata '{}' como "sem override".
+alter table public.receitas_fixas
+  add column if not exists valor_por_mes jsonb default '{}'::jsonb;
+alter table public.despesas_fixas
+  add column if not exists valor_por_mes jsonb default '{}'::jsonb;
