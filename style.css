@@ -6701,7 +6701,7 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 }
 .one-fin-resumo-obr-head, .one-fin-resumo-obr-row {
   display: grid;
-  grid-template-columns: 28px 32px 1fr 90px 90px 90px;
+  grid-template-columns: 28px 32px 1fr 92px 104px 96px;
   align-items: center;
   gap: 6px;
   padding: 5px 4px;
@@ -6722,7 +6722,34 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 .one-fin-resumo-obr-row .one-fin-resumo-obr-apagar,
 .one-fin-resumo-obr-row .one-fin-resumo-obr-dif {
   text-align: right;
+  /* Valor monetário nunca quebra em 2 linhas. */
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
+/* Célula "A Pagar" das fixas: número (nunca quebra, não encolhe) + lápis fixo
+   ao lado, sem disputar largura com o valor. */
+.one-fin-resumo-apagar-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+.one-fin-resumo-apagar-cell .one-fin-resumo-obr-apagar {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.one-fin-resumo-efetivo-pencil {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0 2px;
+  opacity: .55;
+}
+.one-fin-resumo-efetivo-pencil:hover { opacity: 1; }
 .one-fin-resumo-obr-row {
   border-bottom: 1px solid rgba(127,168,142,0.08);
 }
@@ -7082,6 +7109,9 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   grid-template-columns: 26px 28px 1fr 90px auto;
   gap: 6px;
   align-items: center;
+  /* Altura fixa e igual pra todas as linhas — descrição comprida (faturas)
+     não estica mais a linha. */
+  min-height: 34px;
   padding: 5px 2px;
   border-bottom: 1px solid rgba(127,168,142,0.08);
   font-family: system-ui, -apple-system, sans-serif;
@@ -7117,32 +7147,46 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 .one-fin-extrato-item-nome {
   color: #2D3D2F;
   font-weight: 500;
+  /* Container flex: texto trunca com reticências; tag fica inline sem empurrar
+     altura nem ser cortada junto com o nome. */
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.one-fin-extrato-item-nome-txt {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 .one-fin-extrato-item-nome .badge-fatura {
+  flex: 0 0 auto;
   font-size: 9px;
   color: #9B72B0;
   background: rgba(155,114,176,0.12);
   padding: 1px 5px;
   border-radius: 6px;
   font-weight: 600;
-  margin-left: 5px;
+  line-height: 1.4;
 }
 .one-fin-extrato-item-nome .badge-fixa {
+  flex: 0 0 auto;
   font-size: 9px;
   color: #5B7CFA;
   background: rgba(91,124,250,0.12);
   padding: 1px 5px;
   border-radius: 6px;
   font-weight: 600;
-  margin-left: 5px;
+  line-height: 1.4;
 }
 .one-fin-extrato-item-val {
   text-align: right;
   font-weight: 600;
   font-size: 12.5px;
+  white-space: nowrap;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
 }
 .one-fin-extrato-col-rec .one-fin-extrato-item-val { color: #1F6B52; }
 .one-fin-extrato-col-desp .one-fin-extrato-item-val { color: #A02D24; }

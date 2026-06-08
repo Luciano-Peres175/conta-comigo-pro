@@ -6195,6 +6195,8 @@ function renderOneFinanceiroPainel() {
     if (it._fatura) badge = '<span class="badge-fatura">fatura</span>';
     else if (it._fixa) badge = '<span class="badge-fixa">↻ fixa</span>';
     var nomeSafe = (it.nome||'').replace(/</g,'&lt;');
+    /* Nome completo no hover (tooltip) — desktop. Escapa aspas pro atributo. */
+    var nomeTitle = (it.nome||'').replace(/</g,'&lt;').replace(/"/g,'&quot;');
     var sinal = it.tipo === 'in' ? '+' : '−';
     /* Botões editar/excluir — só pra itens não-fatura com key+id reais.
        Fatura é vista agregada (clique abre modal de pagamento via Resumo). */
@@ -6211,7 +6213,10 @@ function renderOneFinanceiroPainel() {
     return '<div class="one-fin-extrato-item' + pagoCls + '">' +
              '<div class="one-fin-extrato-item-ico" style="background:' + bg + ';color:' + cor + '">' + ico + '</div>' +
              '<div class="one-fin-extrato-item-dia">' + dia + '</div>' +
-             '<div class="one-fin-extrato-item-nome">' + nomeSafe + badge + '</div>' +
+             '<div class="one-fin-extrato-item-nome">' +
+               '<span class="one-fin-extrato-item-nome-txt" title="' + nomeTitle + '">' + nomeSafe + '</span>' +
+               badge +
+             '</div>' +
              '<div class="one-fin-extrato-item-val">' + sinal + brl(it.valor).replace('R$ ','R$') + '</div>' +
              actions +
            '</div>';
@@ -12399,9 +12404,10 @@ function oneFinRenderResumo(opts) {
       var cor = ehFixa ? (it.aPagar > 0 ? '#2C2A26' : '#9CAB9C') : (it.aPagar > 0 ? '#C0392B' : '#9CAB9C');
       var span = '<span class="one-fin-resumo-obr-apagar" style="color:' + cor + ';font-weight:600">' + _oneFinResumoBrl(it.aPagar) + '</span>';
       if (!ehFixa) return span;
-      return '<span class="one-fin-resumo-apagar-cell" style="display:inline-flex;align-items:center;gap:4px;justify-content:flex-end">' +
+      /* Layout (flex + lápis fixo) vem do CSS .one-fin-resumo-apagar-cell. */
+      return '<span class="one-fin-resumo-apagar-cell">' +
                span +
-               '<button class="one-fin-resumo-efetivo-pencil" title="Lançar valor efetivo deste mês" onclick="oneFinResumoEditarEfetivo(\'' + it.ref + '\', this)" style="background:none;border:none;cursor:pointer;font-size:12px;line-height:1;padding:0 2px;opacity:.55">✏️</button>' +
+               '<button class="one-fin-resumo-efetivo-pencil" title="Lançar valor efetivo deste mês" onclick="oneFinResumoEditarEfetivo(\'' + it.ref + '\', this)">✏️</button>' +
              '</span>';
     };
     /* Célula Diferença. Fixa: esperado × efetivo, com sinal e cor (despesa acima
