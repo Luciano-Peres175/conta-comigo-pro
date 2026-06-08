@@ -245,6 +245,12 @@
       try { await _oneFinMigrarContasParaSupa(); } catch(e) { console.warn('[esconderTelaAuth] migração contas falhou:', e); }
     }
 
+    /* Backfill 1x: sobe os vínculos (contaId/faturaMesAno/status/parcelas) e as
+       fixas completas pro servidor, agora que o schema tem as colunas. */
+    if (typeof _oneFinBackfillVinculosParaSupa === 'function') {
+      try { await _oneFinBackfillVinculosParaSupa(); } catch(e) { console.warn('[esconderTelaAuth] backfill vínculos falhou:', e); }
+    }
+
     /* Multi-tenant: agora que sabemos quem é o user, inicializa demo (se primeira vez)
        e re-renderiza tudo lendo das chaves prefixadas. */
     if (typeof maybeInit === 'function') maybeInit();
@@ -4035,6 +4041,7 @@ const SUPA_TABLES = {
   receitas:       'receitas',
   despesas:       'despesas',
   despesas_fixas: 'despesas_fixas',
+  receitas_fixas: 'receitas_fixas',
   compromissos:   'compromissos',
   tarefas:        'tarefas',
   notas_cerebro:  'notas',
@@ -4053,6 +4060,19 @@ function _supaNormalizeKey(localKey) {
   return SUPA_ALIAS[localKey] || localKey;
 }
 
+/* supaSync itera as chaves de SUPA_TABLES (snake_case) e usa a mesma string
+   como sufixo do localStorage. As fixas, porém, vivem em camelCase no app
+   (despesasFixas/receitasFixas). Sem traduzir, o pull gravaria/leria em
+   u_<id>_despesas_fixas (snake) — chave que o resto do app nunca toca, então
+   as fixas vindas do servidor ficavam invisíveis. */
+const SUPA_LOCAL_KEY = {
+  despesas_fixas: 'despesasFixas',
+  receitas_fixas: 'receitasFixas'
+};
+function _supaLocalKey(localKey) {
+  return SUPA_LOCAL_KEY[localKey] || localKey;
+}
+
 /* Mapeia item localStorage → row Supabase */
 function _supaMapToRow(localKey, item, userId) {
   var base = { user_id: userId };
@@ -4066,15 +4086,23 @@ function _supaMapToRow(localKey, item, userId) {
         categoria:       item.categoria || '',
         tipo:            item.tipo || 'receita',
         status:          item.status || 'pendente',
-        forma_pagamento: item.forma_pagamento || item.formaPagamento || ''
+        forma_pagamento: item.forma_pagamento || item.formaPagamento || '',
+        conta_id:        item.contaId || null
       });
     case 'despesas':
       return Object.assign(base, {
-        id:        item.id,
-        descricao: item.descricao || item.nome || '',
-        valor:     item.valor || 0,
-        data:      item.data || new Date().toISOString().slice(0,10),
-        categoria: item.categoria || ''
+        id:             item.id,
+        descricao:      item.descricao || item.nome || '',
+        valor:          item.valor || 0,
+        data:           item.data || new Date().toISOString().slice(0,10),
+        categoria:      item.categoria || '',
+        conta_id:       item.contaId || null,
+        fatura_mes_ano: item.faturaMesAno || null,
+        status:         item.status || null,
+        lote_id:        item.loteId || null,
+        parcela_atual:  item.parcelaAtual || null,
+        parcelas_total: item.parcelasTotal || null,
+        recorrencia:    item.recorrencia || null
       });
     case 'compromissos':
       return Object.assign(base, {
@@ -4111,10 +4139,29 @@ function _supaMapToRow(localKey, item, userId) {
       });
     case 'despesas_fixas':
       return Object.assign(base, {
-        id:        item.id,
-        descricao: item.descricao || '',
-        categoria: item.categoria || 'Outros',
-        valor:     Number(item.valor) || 0
+        id:            item.id,
+        descricao:     item.descricao || '',
+        categoria:     item.categoria || 'Outros',
+        valor:         Number(item.valor) || 0,
+        nome:          item.nome || '',
+        dia_do_mes:    item.diaDoMes || null,
+        inicio:        item.inicio || null,
+        fim:           item.fim || null,
+        meses_pulados: Array.isArray(item.mesesPulados) ? item.mesesPulados : [],
+        conta_id:      item.contaId || null
+      });
+    case 'receitas_fixas':
+      return Object.assign(base, {
+        id:            item.id,
+        descricao:     item.descricao || '',
+        categoria:     item.categoria || 'Outros',
+        valor:         Number(item.valor) || 0,
+        nome:          item.nome || '',
+        dia_do_mes:    item.diaDoMes || null,
+        inicio:        item.inicio || null,
+        fim:           item.fim || null,
+        meses_pulados: Array.isArray(item.mesesPulados) ? item.mesesPulados : [],
+        conta_id:      item.contaId || null
       });
     case 'contas':
       return Object.assign(base, {
@@ -4151,19 +4198,58 @@ function _supaMapFromRow(localKey, row) {
         status:          row.status || '',
         forma_pagamento: row.forma_pagamento || '',
         formaPagamento:  row.forma_pagamento || '',
+        contaId:         row.conta_id || '',
         criadoEm:        row.created_at || ''
       };
     case 'despesas':
       return {
-        id:         row.id,
-        descricao:  row.descricao || '',
-        nome:       row.descricao || '',
-        valor:      row.valor || 0,
-        data:       row.data || '',
-        categoria:  row.categoria || '',
-        tipo:       row.tipo || 'despesa',
-        status:     row.status || '',
-        criadoEm:   row.created_at || ''
+        id:            row.id,
+        descricao:     row.descricao || '',
+        nome:          row.descricao || '',
+        valor:         row.valor || 0,
+        data:          row.data || '',
+        categoria:     row.categoria || '',
+        tipo:          row.tipo || 'despesa',
+        status:        row.status || '',
+        contaId:       row.conta_id || '',
+        faturaMesAno:  row.fatura_mes_ano || null,
+        loteId:        row.lote_id || null,
+        parcelaAtual:  row.parcela_atual || null,
+        parcelasTotal: row.parcelas_total || null,
+        recorrencia:   row.recorrencia || '',
+        criadoEm:      row.created_at || ''
+      };
+    case 'despesas_fixas':
+      return {
+        id:           row.id,
+        nome:         row.nome || row.descricao || '',
+        descricao:    row.descricao || row.nome || '',
+        categoria:    row.categoria || '',
+        valor:        Number(row.valor) || 0,
+        tipo:         'despesa',
+        recorrencia:  'fixa',
+        diaDoMes:     row.dia_do_mes || null,
+        inicio:       row.inicio || null,
+        fim:          row.fim || null,
+        mesesPulados: Array.isArray(row.meses_pulados) ? row.meses_pulados : [],
+        contaId:      row.conta_id || '',
+        criadoEm:     row.created_at || ''
+      };
+    case 'receitas_fixas':
+      return {
+        id:           row.id,
+        nome:         row.nome || row.descricao || '',
+        descricao:    row.descricao || row.nome || '',
+        categoria:    row.categoria || '',
+        valor:        Number(row.valor) || 0,
+        tipo:         'receita',
+        recorrencia:  'fixa',
+        diaDoMes:     row.dia_do_mes || null,
+        inicio:       row.inicio || null,
+        fim:          row.fim || null,
+        mesesPulados: Array.isArray(row.meses_pulados) ? row.meses_pulados : [],
+        contaId:      row.conta_id || '',
+        criadoEm:     row.created_at || ''
       };
     case 'compromissos':
       return {
@@ -4233,6 +4319,7 @@ var SUPA_CAMPOS_LOCAIS = {
   receitas:       ['contaId', 'status'],
   despesas:       ['contaId', 'faturaMesAno', 'loteId', 'parcelaAtual', 'parcelasTotal', 'recorrencia', 'status'],
   despesas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId'],
+  receitas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId'],
   compromissos:   [],
   tarefas:        [],
   notas_cerebro:  []
@@ -4262,8 +4349,9 @@ async function supaSync() {
           it._synced = true; // veio do servidor → já passou pela sincronização
           return it;
         });
+        var lsKey = _supaLocalKey(localKey); // fixas vivem em camelCase no localStorage
         var itensLocal = [];
-        try { itensLocal = JSON.parse(localStorage.getItem(prefix + localKey) || '[]'); } catch(e) {}
+        try { itensLocal = JSON.parse(localStorage.getItem(prefix + lsKey) || '[]'); } catch(e) {}
         var camposLocais = SUPA_CAMPOS_LOCAIS[localKey] || [];
         /* Indexa local por id pra merge rápido */
         var idxLocal = {};
@@ -4295,7 +4383,7 @@ async function supaSync() {
           // é criação local ainda pendente de upload → preservar.
           if (!l._synced) merged.push(l);
         });
-        localStorage.setItem(prefix + localKey, JSON.stringify(merged));
+        localStorage.setItem(prefix + lsKey, JSON.stringify(merged));
         console.log('[supaSync]', tabela, '→', merged.length, 'itens (' + itensServer.length + ' do server + ' + (merged.length - itensServer.length) + ' só locais)');
       } catch(e) {
         console.warn('[supaSync] Exceção na tabela', tabela, e);
@@ -4390,6 +4478,54 @@ async function _oneFinMigrarContasParaSupa() {
   }
 }
 window._oneFinMigrarContasParaSupa = _oneFinMigrarContasParaSupa;
+
+/* Backfill 1x dos vínculos: reenvia receitas/despesas/fixas locais COMPLETAS
+   pro servidor. Necessário porque, até esta versão, _supaMapToRow recortava
+   contaId/faturaMesAno/status/parcelas das despesas e mandava as fixas
+   incompletas (receitasFixas nem tinha tabela). Com as colunas novas no schema,
+   este re-push leva o dado bom do aparelho-fonte (tipicamente o desktop, onde
+   os lançamentos foram criados) pro servidor; os outros aparelhos passam a
+   puxar tudo via supaSync. Roda 1x por usuário (flag no localStorage).
+   IMPORTANTE: idealmente o primeiro login pós-deploy é no aparelho mais
+   completo — upsert é onConflict=id, então o último a escrever vence.
+   Auto-recupera: se as colunas ainda não existirem (SQL não aplicado), os
+   upserts falham, a flag não é gravada e tenta de novo no próximo load. */
+async function _oneFinBackfillVinculosParaSupa() {
+  if (!window.supa || !window.authUser) return;
+  var uid = window.authUser.id;
+  var flagKey = 'u_' + uid + '_vinculos_backfill_v1';
+  if (localStorage.getItem(flagKey) === '1') return; /* já rodou */
+  /* Chaves de localStorage reais do app (camelCase). supaUpsert normaliza
+     despesasFixas→despesas_fixas / receitasFixas→receitas_fixas via SUPA_ALIAS. */
+  var chaves = ['receitas', 'despesas', 'despesasFixas', 'receitasFixas'];
+  var grupos = chaves.map(function(k){
+    var arr = [];
+    try { arr = JSON.parse(localStorage.getItem('u_' + uid + '_' + k) || '[]') || []; } catch(e) { arr = []; }
+    return { key: k, arr: arr };
+  });
+  var total = grupos.reduce(function(s,g){ return s + g.arr.length; }, 0);
+  if (!total) { localStorage.setItem(flagKey, '1'); return; } /* nada local a subir */
+  console.log('[backfill-vinculos] reenviando', total, 'itens (receitas/despesas/fixas)…');
+  var ok = 0, falhas = 0;
+  for (var i = 0; i < grupos.length; i++) {
+    var g = grupos[i];
+    for (var j = 0; j < g.arr.length; j++) {
+      var item = g.arr[j];
+      if (!item || !item.id) continue;
+      if (String(item.id).indexOf('_fix_') === 0) continue; /* instância virtual, não persiste */
+      try { await supaUpsert(g.key, item); ok++; }
+      catch (e) { console.error('[backfill-vinculos] falha', g.key, item.id, e); falhas++; }
+    }
+  }
+  console.log('[backfill-vinculos] OK:', ok, '· Falhas:', falhas);
+  if (falhas === 0) {
+    localStorage.setItem(flagKey, '1');
+    if (typeof oneToast === 'function') oneToast('✓ Lançamentos sincronizados no servidor');
+  } else {
+    if (typeof oneToast === 'function') oneToast('⚠ Backfill: ' + ok + ' OK, ' + falhas + ' falharam (tenta de novo no próximo load)');
+  }
+}
+window._oneFinBackfillVinculosParaSupa = _oneFinBackfillVinculosParaSupa;
 
 /* Helper: detecta erro de rede (DNS, offline, fetch falhou) vs erro de servidor.
    Usado por supaUpsert/supaDelete pra disparar banner persistente quando a falha
