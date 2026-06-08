@@ -6336,15 +6336,21 @@ function oneFinDialogoEscopo(opts, callback) {
   var labelTodas    = ehLote ? 'Todas as parcelas' : 'Todos os meses (template)';
   var subTodas      = ehLote ? 'Aplica a todas as parcelas do lote' : 'Altera a fixa inteira, vale pra todos os meses';
 
+  /* ocultarEsta: esconde "Só este mês". Usado no EDITAR fixa — o valor efetivo
+     do mês agora se lança no Resumo (lápis), não mais aqui. No excluir, "Só
+     este mês" continua (pular o mês). */
+  var btnEsta = opts.ocultarEsta ? '' : (
+      '<button data-escopo="esta"     class="one-fin-dlg-btn" style="display:block;width:100%;text-align:left;background:#FFF;border:1px solid rgba(155,114,176,0.25);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer">' +
+        '<div style="font-weight:600;color:#2C2A26">' + labelEsta + '</div>' +
+        '<div style="color:#6B6660;font-size:12px;margin-top:2px">' + subEsta + '</div>' +
+      '</button>');
+
   dlg.innerHTML =
     '<div class="one-fin-dlg-card" style="background:#F4F1EA;border-radius:18px;padding:22px 22px 18px;max-width:440px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,0.25);font-family:Inter,system-ui,sans-serif">' +
       '<div class="one-fin-dlg-title" style="font-weight:700;color:#2C2A26;font-size:17px;margin-bottom:4px">' + verbo + ' ' + tituloRef + '</div>' +
       sub +
       '<div class="one-fin-dlg-question" style="color:#6B6660;font-size:14px;margin:10px 0 14px">Em qual escopo?</div>' +
-      '<button data-escopo="esta"     class="one-fin-dlg-btn" style="display:block;width:100%;text-align:left;background:#FFF;border:1px solid rgba(155,114,176,0.25);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer">' +
-        '<div style="font-weight:600;color:#2C2A26">' + labelEsta + '</div>' +
-        '<div style="color:#6B6660;font-size:12px;margin-top:2px">' + subEsta + '</div>' +
-      '</button>' +
+      btnEsta +
       '<button data-escopo="proximas" class="one-fin-dlg-btn" style="display:block;width:100%;text-align:left;background:#FFF;border:1px solid rgba(155,114,176,0.25);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer">' +
         '<div style="font-weight:600;color:#2C2A26">' + labelProximas + '</div>' +
         '<div style="color:#6B6660;font-size:12px;margin-top:2px">' + subProximas + '</div>' +
@@ -6606,31 +6612,13 @@ function oneFinEditar(key, id, dataInstancia) {
     oneFinDialogoEscopo({
       acao: 'editar', contexto: 'fixa',
       nomeLbl: fix.nome || fix.descricao || 'Fixa',
-      dataLbl: mesAno
+      dataLbl: mesAno,
+      /* Editar fixa mexe SÓ na previsão. O valor efetivo de um mês se lança
+         no Resumo (lápis na linha), não mais aqui — por isso some o "Só este mês". */
+      ocultarEsta: true
     }, function(escopo){
       if (!escopo) return;
-      if (escopo === 'esta') {
-        /* Override de valor SÓ neste mês (valorPorMes). Não cria avulso nem
-           pula o mês: abre o modal no próprio molde, com o valor efetivo do
-           mês, e um gancho que faz o salvar gravar só o override. */
-        if (typeof oneFinModalEditar === 'function') {
-          oneFinModalEditar(key, id);   /* limpa gancho stale no topo */
-          window.__oneFinFixaValorMes = { key: key, fixaId: id, mesAno: mesAno };
-          /* Ajusta o modal pro contexto "só este mês": valor efetivo do mês
-             (override se houver, senão molde) e título explicando o escopo. */
-          try {
-            var efetivo = (typeof oneFinFixaValorNoMes === 'function') ? oneFinFixaValorNoMes(fix, mesAno) : (Number(fix.valor) || 0);
-            var inpVal = document.getElementById('one-fin-modal-valor');
-            if (inpVal) inpVal.value = efetivo;
-            var tit = document.getElementById('one-fin-modal-title');
-            if (tit) tit.textContent = 'Valor de ' + mesAno + ' (só este mês)';
-            /* Esconde o botão excluir: nesse escopo não dá pra excluir o molde. */
-            var btnDel = document.getElementById('one-fin-modal-btn-excluir');
-            if (btnDel) btnDel.style.display = 'none';
-          } catch(e) { console.warn('[oneFinEditar só este mês] ajuste parcial:', e); }
-        }
-        return;
-      } else if (escopo === 'proximas') {
+      if (escopo === 'proximas') {
         /* Encerra o template no mês anterior e abre modal NOVO já como fixa,
            pré-preenchido com os dados atuais, pra Mentor ajustar a partir do
            mês escolhido. Se ele salvar sem mudar nada, gera fixa idêntica. */
@@ -11815,12 +11803,14 @@ function oneFinResumoTogglePago(ref) {
     var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
     var fix = lista.find(function(x){ return String(x.id) === String(a); });
     if (!fix) return;
-    var esperado = Number(fix.valor) || 0;
+    /* Marca pago pelo valor EFETIVO do mês (override se houver), não pela base —
+       assim o saldo do banco (que soma pagoPorMes) bate com o que foi pago. */
+    var efetivo = (typeof oneFinFixaValorNoMes === 'function') ? oneFinFixaValorNoMes(fix, b) : (Number(fix.valor) || 0);
     var pago = oneFinFixaPagoNoMes(fix, b);
-    if (pago >= esperado && esperado > 0) {
+    if (pago >= efetivo && efetivo > 0) {
       oneFinFixaSetPagoNoMes(key, a, b, 0);
     } else {
-      oneFinFixaSetPagoNoMes(key, a, b, esperado);
+      oneFinFixaSetPagoNoMes(key, a, b, efetivo);
     }
   } else if (kind === 'cartao') {
     var contas = []; try { contas = JSON.parse(localStorage.getItem(oneU('contas')) || '[]'); } catch(e){}
@@ -11851,6 +11841,51 @@ function oneFinResumoTogglePago(ref) {
   if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
 }
 window.oneFinResumoTogglePago = oneFinResumoTogglePago;
+
+/* Lápis do Resumo: lança o VALOR EFETIVO de uma fixa naquele mês. Troca a célula
+   A Pagar por um input inline; ao confirmar (Enter/blur) grava via
+   oneFinResumoSetEfetivo. Esc cancela. Só vale pra fixas (fixa-d/fixa-r). */
+function oneFinResumoEditarEfetivo(ref, btn) {
+  if (!btn || !ref) return;
+  var cell = btn.parentNode;   /* .one-fin-resumo-apagar-cell */
+  if (!cell) return;
+  var p = String(ref).split(':');
+  var kind = p[0], fixaId = p[1], mes = p[2];
+  if (kind !== 'fixa-d' && kind !== 'fixa-r') return;
+  var key = (kind === 'fixa-r') ? 'receitasFixas' : 'despesasFixas';
+  var lista = []; try { lista = JSON.parse(localStorage.getItem(oneU(key)) || '[]'); } catch(e){}
+  var fix = lista.find(function(x){ return String(x.id) === String(fixaId); });
+  var atual = (fix && typeof oneFinFixaValorNoMes === 'function') ? oneFinFixaValorNoMes(fix, mes) : (fix ? (Number(fix.valor)||0) : 0);
+  cell.innerHTML = '<input class="one-fin-resumo-apagar-input" type="number" step="0.01" min="0" inputmode="decimal" value="' + (Number(atual)||0).toFixed(2) + '" style="width:84px" />';
+  var inp = cell.querySelector('input');
+  if (!inp) return;
+  inp.focus(); inp.select();
+  var done = false;
+  var salvar = function(){ if (done) return; done = true; oneFinResumoSetEfetivo(ref, inp.value); };
+  inp.addEventListener('blur', salvar);
+  inp.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') { e.preventDefault(); inp.blur(); }
+    else if (e.key === 'Escape') { done = true; if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo(); }
+  });
+}
+window.oneFinResumoEditarEfetivo = oneFinResumoEditarEfetivo;
+
+/* Grava o valor efetivo do mês no molde (valorPorMes). Vazio ou igual à base
+   limpa o override (volta a seguir a previsão). Não cria lançamento avulso. */
+function oneFinResumoSetEfetivo(ref, valorEfetivo) {
+  if (!ref) return;
+  var p = String(ref).split(':');
+  var kind = p[0], fixaId = p[1], mes = p[2];
+  if (kind !== 'fixa-d' && kind !== 'fixa-r') return;
+  var key = (kind === 'fixa-r') ? 'receitasFixas' : 'despesasFixas';
+  var raw = String(valorEfetivo == null ? '' : valorEfetivo).trim().replace(',', '.');
+  var v = (raw === '') ? 0 : (parseFloat(raw) || 0);
+  if (typeof oneFinFixaSetValorNoMes === 'function') oneFinFixaSetValorNoMes(key, fixaId, mes, v);
+  if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  if (typeof renderDesktopSidebar === 'function') renderDesktopSidebar();
+}
+window.oneFinResumoSetEfetivo = oneFinResumoSetEfetivo;
 
 /* Edita o "A Pagar" de uma linha direto no Resumo (input inline).
    Pra fixa: grava em pagoPorMes do template.
@@ -12197,18 +12232,20 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
     var conta = template && template.contaId ? (typeof oneFinGetConta === 'function' && oneFinGetConta(template.contaId)) : null;
     if (conta && conta.tipo === 'cartao') return; /* vai pra fatura do cartão */
     if (d.faturaMesAno) return; /* legado: fixa de cartão sem contaId — vai pra fatura */
-    var esperado = Number(d.valor) || 0;
+    /* Esperado = base do molde (previsão). Efetivo = override do mês (se houver),
+       que vira A Pagar. Diferença = efetivo − esperado (gastou mais/menos). */
+    var esperado = template ? (Number(template.valor) || 0) : (Number(d.valor) || 0);
+    var efetivo  = template ? oneFinFixaValorNoMes(template, mesAno) : (Number(d.valor) || 0);
     var pago = oneFinFixaPagoNoMes(template, mesAno);
-    var aPagar = Math.max(esperado - pago, 0);
-    var quitada = pago >= esperado && esperado > 0;
+    var quitada = pago >= efetivo && efetivo > 0;
     out.despesas.push({
       kind: 'fixa-d',
       dia: d.diaDoMes || (d.data ? parseInt(d.data.split('-')[2],10) : 1),
       nome: d.nome || d.descricao || 'Despesa fixa',
       contaIcone: conta ? (conta.icone || '🏦') : '',
       esperado: esperado,
-      aPagar: aPagar,
-      diferenca: pago,
+      aPagar: efetivo,
+      diferenca: efetivo - esperado,
       pago: quitada,
       ref: 'fixa-d:' + fixaId + ':' + mesAno
     });
@@ -12263,17 +12300,19 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
   (instDoMes.receitas || []).forEach(function(r){
     var fixaId = r._fixaId;
     var template = listaRF.find(function(x){ return String(x.id) === String(fixaId); });
-    var esperado = Number(r.valor) || 0;
+    /* Esperado = base do molde. Efetivo = override do mês (se houver) → A Pagar.
+       Diferença = efetivo − esperado (recebeu mais/menos que o previsto). */
+    var esperado = template ? (Number(template.valor) || 0) : (Number(r.valor) || 0);
+    var efetivo  = template ? oneFinFixaValorNoMes(template, mesAno) : (Number(r.valor) || 0);
     var pago = oneFinFixaPagoNoMes(template, mesAno);
-    var aReceber = Math.max(esperado - pago, 0);
-    var recebida = pago >= esperado && esperado > 0;
+    var recebida = pago >= efetivo && efetivo > 0;
     out.receitasFixas.push({
       kind: 'fixa-r',
       dia: r.diaDoMes || (r.data ? parseInt(r.data.split('-')[2],10) : 1),
       nome: r.nome || r.descricao || 'Receita fixa',
       esperado: esperado,
-      aPagar: aReceber,
-      diferenca: pago,
+      aPagar: efetivo,
+      diferenca: efetivo - esperado,
       pago: recebida,
       ref: 'fixa-r:' + fixaId + ':' + mesAno
     });
@@ -12346,13 +12385,36 @@ function oneFinRenderResumo(opts) {
     var todasReceitas = obrig.receitasFixas.slice().sort(ordDesc);
 
     /* Linha de fixa de despesa: A Pagar editável; linha de fatura: A Pagar fixo (= total da fatura) */
+    /* Célula A Pagar. Em FIXAS, A Pagar = valor efetivo do mês e ganha um ✏️
+       pra lançar/ajustar esse efetivo (grava valorPorMes; vazio/igual à base
+       limpa o override). Fatura/avulso seguem como antes (vermelho = a pagar). */
+    var _apagarCell = function(it){
+      var ehFixa = (it.kind === 'fixa-d' || it.kind === 'fixa-r');
+      var cor = ehFixa ? (it.aPagar > 0 ? '#2C2A26' : '#9CAB9C') : (it.aPagar > 0 ? '#C0392B' : '#9CAB9C');
+      var span = '<span class="one-fin-resumo-obr-apagar" style="color:' + cor + ';font-weight:600">' + _oneFinResumoBrl(it.aPagar) + '</span>';
+      if (!ehFixa) return span;
+      return '<span class="one-fin-resumo-apagar-cell" style="display:inline-flex;align-items:center;gap:4px;justify-content:flex-end">' +
+               span +
+               '<button class="one-fin-resumo-efetivo-pencil" title="Lançar valor efetivo deste mês" onclick="oneFinResumoEditarEfetivo(\'' + it.ref + '\', this)" style="background:none;border:none;cursor:pointer;font-size:12px;line-height:1;padding:0 2px;opacity:.55">✏️</button>' +
+             '</span>';
+    };
+    /* Célula Diferença. Fixa: esperado × efetivo, com sinal e cor (despesa acima
+       do previsto = vermelho; receita acima = verde; zero = cinza "—"). Demais
+       linhas mantêm o comportamento antigo. */
+    var _difCell = function(it, ehReceita){
+      var ehFixa = (it.kind === 'fixa-d' || it.kind === 'fixa-r');
+      if (!ehFixa) return '<span class="one-fin-resumo-obr-dif" style="color:#27856A">' + _oneFinResumoBrl(it.diferenca) + '</span>';
+      var dif = Number(it.diferenca) || 0;   /* efetivo - esperado */
+      if (!dif) return '<span class="one-fin-resumo-obr-dif" style="color:#9CAB9C">—</span>';
+      var acima = dif > 0;                    /* gastou/recebeu mais que o previsto */
+      var ruim  = ehReceita ? !acima : acima;
+      var cor   = ruim ? '#C0392B' : '#27856A';
+      return '<span class="one-fin-resumo-obr-dif" style="color:' + cor + ';font-weight:600">' + (acima ? '+' : '−') + _oneFinResumoBrl(Math.abs(dif)) + '</span>';
+    };
+
     var renderLinhaDespesa = function(it){
       var pagoCls = it.pago ? ' pago' : '';
       var isFatura = (it.kind === 'fatura');
-      /* A Pagar é só leitura no Resumo. O ajuste de valor mora no lançamento
-         (Extrato/Contas): editar lá grava o override do mês (valorPorMes) e
-         reflete aqui. Evita dois lugares editando o mesmo número. */
-      var aPagarCell = '<span class="one-fin-resumo-obr-apagar"' + (it.aPagar > 0 ? ' style="color:#C0392B;font-weight:600"' : ' style="color:#9CAB9C"') + '>' + _oneFinResumoBrl(it.aPagar) + '</span>';
       var icoPrefix = isFatura ? ((it.icone || '💳') + ' ') : (it.contaIcone ? (it.contaIcone + ' ') : '');
       var tipoBadge = isFatura ? '<span style="font-size:10px;color:#9CAB9C;font-weight:500;margin-left:6px">Fatura</span>' : '';
       return '<div class="one-fin-resumo-obr-row' + pagoCls + '">' +
@@ -12362,8 +12424,8 @@ function oneFinRenderResumo(opts) {
                '<span class="one-fin-resumo-obr-dia">' + (it.dia || '—') + '</span>' +
                '<span class="one-fin-resumo-obr-nome">' + icoPrefix + (it.nome || '').replace(/</g,'&lt;') + tipoBadge + '</span>' +
                '<span class="one-fin-resumo-obr-esperado">' + _oneFinResumoBrl(it.esperado) + '</span>' +
-               aPagarCell +
-               '<span class="one-fin-resumo-obr-dif" style="color:#27856A">' + _oneFinResumoBrl(it.diferenca) + '</span>' +
+               _apagarCell(it) +
+               _difCell(it, false) +
              '</div>';
     };
 
@@ -12378,8 +12440,8 @@ function oneFinRenderResumo(opts) {
                '<span class="one-fin-resumo-obr-dia">' + (it.dia || '—') + '</span>' +
                '<span class="one-fin-resumo-obr-nome">' + (it.nome || '').replace(/</g,'&lt;') + '</span>' +
                '<span class="one-fin-resumo-obr-esperado">' + _oneFinResumoBrl(it.esperado) + '</span>' +
-               '<span class="one-fin-resumo-obr-apagar"' + (it.aPagar > 0 ? ' style="color:#C0392B;font-weight:600"' : ' style="color:#9CAB9C"') + '>' + _oneFinResumoBrl(it.aPagar) + '</span>' +
-               '<span class="one-fin-resumo-obr-dif" style="color:#27856A">' + _oneFinResumoBrl(it.diferenca) + '</span>' +
+               _apagarCell(it) +
+               _difCell(it, true) +
              '</div>';
     };
 
@@ -12423,7 +12485,7 @@ function oneFinRenderResumo(opts) {
                   '<span class="one-fin-resumo-obr-nome" style="font-weight:700">SOMA →</span>' +
                   '<span class="one-fin-resumo-obr-esperado" style="font-weight:700">' + _oneFinResumoBrl(somaEsperado) + '</span>' +
                   '<span class="one-fin-resumo-obr-apagar" style="font-weight:700;color:#C0392B">' + _oneFinResumoBrl(somaAPagar) + '</span>' +
-                  '<span class="one-fin-resumo-obr-dif" style="font-weight:700;color:#27856A">' + _oneFinResumoBrl(somaDif) + '</span>' +
+                  '<span class="one-fin-resumo-obr-dif" style="font-weight:700;color:#6B6660">' + _oneFinResumoBrl(somaDif) + '</span>' +
                 '</div>' +
               '</div>'
             : '')
