@@ -354,6 +354,7 @@
           <!-- Pills fixas -->
           <div class="one-fin-mob-pills" id="one-fin-mob-pills">
             <button class="one-fin-mob-pill active" data-pill="inicio"  onclick="oneFinMobSetPill('inicio')">Início</button>
+            <button class="one-fin-mob-pill"        data-pill="contas"  onclick="oneFinMobSetPill('contas')">Contas</button>
             <button class="one-fin-mob-pill"        data-pill="resumo"  onclick="oneFinMobSetPill('resumo')">Resumo</button>
             <button class="one-fin-mob-pill"        data-pill="extrato" onclick="oneFinMobSetPill('extrato')">Extrato</button>
             <button class="one-fin-mob-pill"        data-pill="geral"   onclick="oneFinMobSetPill('geral')">Visão geral</button>
@@ -386,8 +387,16 @@
                 </div>
               </div>
 
-              <!-- Contas + Cartões + Investimentos (oneFinRenderContas preenche as 3 seções) -->
-              <div class="one-fin-mob-secao-lista" id="one-fin-mob-contas-lista"></div>
+              <!-- Resumo de contas — toque abre a aba Contas (lista mora lá agora) -->
+              <button type="button" class="one-fin-mob-contas-resumo" onclick="oneFinMobSetPill('contas')">
+                <span class="one-fin-mob-contas-resumo-ico">🏦</span>
+                <span class="one-fin-mob-contas-resumo-txt">
+                  <span class="one-fin-mob-contas-resumo-lbl">Saldo total em contas</span>
+                  <span class="one-fin-mob-contas-resumo-sub" id="one-fin-mob-contas-resumo-sub">Ver minhas contas</span>
+                </span>
+                <span class="one-fin-mob-contas-resumo-val" id="one-fin-mob-contas-resumo-val">R$ 0,00</span>
+                <span class="one-fin-mob-contas-resumo-chev">›</span>
+              </button>
 
               <!-- Dashboard (pizza) -->
               <div class="one-fin-mob-bloco">
@@ -416,6 +425,31 @@
                 <div class="one-fin-mob-bars-wrap">
                   <canvas id="one-fin-mob-bars"></canvas>
                 </div>
+              </div>
+
+            </div>
+
+            <!-- ===== Pill CONTAS (lista dedicada → detalhe → voltar) ===== -->
+            <div class="one-fin-mob-pane" data-pane="contas" hidden>
+
+              <!-- Modo lista: bancos, cartões e investimentos -->
+              <div id="one-fin-mob-contas-modo-lista">
+                <div class="one-fin-mob-contas-head">
+                  <span class="one-fin-mob-contas-head-tit">Minhas contas</span>
+                  <button class="one-fin-mob-contas-head-novo" onclick="oneFinContaModalAbrir()">+ Nova conta</button>
+                </div>
+                <!-- oneFinRenderContas preenche as 3 seções aqui -->
+                <div class="one-fin-mob-secao-lista" id="one-fin-mob-contas-lista"></div>
+              </div>
+
+              <!-- Modo detalhe: fatura/extrato da conta aberta -->
+              <div id="one-fin-mob-contas-modo-detalhe" hidden>
+                <div class="one-fin-conta-det-header">
+                  <button class="one-fin-conta-det-back" onclick="oneFinVoltarContas()" title="Voltar">‹ Contas</button>
+                  <span class="one-fin-conta-det-titulo" id="one-fin-mob-conta-det-titulo">—</span>
+                  <button class="one-fin-conta-det-edit" onclick="oneFinEditarContaAberta()" title="Editar conta">⚙️</button>
+                </div>
+                <div id="one-fin-mob-conta-det-body"></div>
               </div>
 
             </div>

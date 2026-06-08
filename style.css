@@ -2753,6 +2753,22 @@
 /* Container das seções de Contas/Cartões/Investimentos no feed */
 .one-fin-mob-secao-lista{display:flex;flex-direction:column;gap:12px;}
 
+/* Card-resumo de contas no Início — toque abre a aba Contas */
+.one-fin-mob-contas-resumo{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border:1px solid rgba(127,168,142,.20);border-radius:14px;padding:13px 15px;cursor:pointer;box-shadow:0 1px 3px rgba(58,48,80,.05);transition:transform .12s ease,box-shadow .12s ease;}
+.one-fin-mob-contas-resumo:active{transform:scale(.99);box-shadow:0 1px 2px rgba(58,48,80,.04);}
+.one-fin-mob-contas-resumo-ico{flex:none;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;background:rgba(127,168,142,.14);}
+.one-fin-mob-contas-resumo-txt{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+.one-fin-mob-contas-resumo-lbl{font-size:13px;font-weight:600;color:#3A3050;}
+.one-fin-mob-contas-resumo-sub{font-size:11px;color:#9A94A4;}
+.one-fin-mob-contas-resumo-val{flex:none;font-size:15px;font-weight:700;color:#3A3050;}
+.one-fin-mob-contas-resumo-chev{flex:none;font-size:20px;line-height:1;color:#B8B2C2;font-weight:600;}
+
+/* Cabeçalho da aba Contas dedicada (modo lista) */
+.one-fin-mob-contas-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.one-fin-mob-contas-head-tit{font-size:15px;font-weight:700;color:#3A3050;}
+.one-fin-mob-contas-head-novo{background:#7FA88E;color:#fff;border:none;border-radius:10px;padding:8px 13px;font-size:12.5px;font-weight:600;cursor:pointer;}
+.one-fin-mob-contas-head-novo:active{filter:brightness(.95);}
+
 /* ── Sub-telas (pills Resumo / Extrato / Visão geral / Fixas) ── */
 /* Cabeçalho e rodapé dos blocos empilhados (Extrato e Fixas) */
 .one-fin-mob-bloco-cnt{font-size:10.5px;color:#9A94A4;font-weight:500;}

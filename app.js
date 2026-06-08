@@ -7267,6 +7267,11 @@ function renderOneFinanceiro() {
   _set('one-fin-mob-hero-desp',  _oneFinFmt(totalDesp));
   _set('one-fin-mob-hero-inv',   _oneFinFmt(totalInvest));
 
+  /* Card-resumo de contas no Início (a lista mora na aba Contas). */
+  _set('one-fin-mob-contas-resumo-val', (saldoContas < 0 ? '−' : '') + _oneFinFmt(saldoContas));
+  var _nContas = (typeof oneFinGetContas === 'function') ? oneFinGetContas().length : 0;
+  _set('one-fin-mob-contas-resumo-sub', _nContas === 1 ? '1 conta · ver todas' : _nContas + ' contas · ver todas');
+
   /* Contas + Cartões + Investimentos (a função já popula o container mobile). */
   if (typeof oneFinRenderContas === 'function') oneFinRenderContas();
   /* Pizza por categoria + balanço de 6 meses. */
@@ -7308,6 +7313,15 @@ function oneFinMobRenderPane(pill) {
     if (typeof oneFinRenderGeral === 'function') oneFinRenderGeral();
   } else if (pill === 'fixas') {
     if (typeof oneFinRenderFixas === 'function') oneFinRenderFixas();
+  } else if (pill === 'contas') {
+    /* Ao entrar na aba Contas, sempre começa no modo lista (não fica preso
+       num detalhe aberto antes). Toca só os containers mobile. */
+    var _ml = document.getElementById('one-fin-mob-contas-modo-lista');
+    var _md = document.getElementById('one-fin-mob-contas-modo-detalhe');
+    if (_ml) _ml.hidden = false;
+    if (_md) _md.hidden = true;
+    window.oneFinContaAberta = null;
+    if (typeof oneFinRenderContas === 'function') oneFinRenderContas();
   } else {
     if (typeof renderOneFinanceiro === 'function') renderOneFinanceiro();
   }
