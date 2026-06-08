@@ -126,3 +126,14 @@ alter table public.receitas_fixas
   add column if not exists valor_por_mes jsonb default '{}'::jsonb;
 alter table public.despesas_fixas
   add column if not exists valor_por_mes jsonb default '{}'::jsonb;
+
+-- ============================================================================
+-- ADENDO (2026-06-08) — âncora do "saldo de hoje" das CONTAS (saldo_data)
+-- ============================================================================
+-- O campo "Saldo atual" passa a ser uma âncora: saldoInicial = saldo NAQUELE dia
+-- (saldo_data). oneFinSaldoBanco só conta lançamentos confirmados com data
+-- DEPOIS de saldo_data — sem recontar o passado já embutido no valor informado.
+-- Aditivo/idempotente. O app só envia saldo_data quando a conta foi ancorada,
+-- então rodar isto não é urgente pro funcionamento local (é pra cross-device).
+alter table public.contas
+  add column if not exists saldo_data text;   -- 'YYYY-MM-DD'

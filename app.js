@@ -4167,8 +4167,8 @@ function _supaMapToRow(localKey, item, userId) {
         pago_por_mes:  (item.pagoPorMes && typeof item.pagoPorMes === 'object') ? item.pagoPorMes : {},
         valor_por_mes: (item.valorPorMes && typeof item.valorPorMes === 'object') ? item.valorPorMes : {}
       });
-    case 'contas':
-      return Object.assign(base, {
+    case 'contas': {
+      var rowConta = Object.assign(base, {
         id:                     item.id,
         nome:                   item.nome || '',
         tipo:                   item.tipo || 'banco',
@@ -4182,6 +4182,12 @@ function _supaMapToRow(localKey, item, userId) {
         faturas_pagas_detalhe: (item.faturasPagasDetalhe && typeof item.faturasPagasDetalhe === 'object') ? item.faturasPagasDetalhe : {},
         meses_fechados:         Array.isArray(item.mesesFechados) ? item.mesesFechados : []
       });
+      /* saldo_data (âncora do "saldo de hoje") só é enviado se a conta já foi
+         ancorada — assim, antes da coluna existir no Supabase, o upsert das
+         contas (banco compartilhado) não quebra por coluna desconhecida. */
+      if (item.saldoData) rowConta.saldo_data = item.saldoData;
+      return rowConta;
+    }
     default:
       return Object.assign(base, item);
   }
@@ -4325,6 +4331,9 @@ function _supaMapFromRow(localKey, row) {
         faturasPagas:       Array.isArray(row.faturas_pagas) ? row.faturas_pagas : [],
         faturasPagasDetalhe: (row.faturas_pagas_detalhe && typeof row.faturas_pagas_detalhe === 'object') ? row.faturas_pagas_detalhe : {},
         mesesFechados:      Array.isArray(row.meses_fechados) ? row.meses_fechados : [],
+        /* âncora do saldo. Sem coluna no servidor → undefined → o merge
+           defensivo (SUPA_CAMPOS_LOCAIS.contas) preserva a âncora local. */
+        saldoData:          row.saldo_data || null,
         criadoEm:           row.created_at || ''
       };
     default:
@@ -4342,6 +4351,9 @@ var SUPA_CAMPOS_LOCAIS = {
   despesas:       ['contaId', 'faturaMesAno', 'loteId', 'parcelaAtual', 'parcelasTotal', 'recorrencia', 'status'],
   despesas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId', 'pagoPorMes', 'valorPorMes'],
   receitas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId', 'pagoPorMes', 'valorPorMes'],
+  /* saldoData: âncora local-first. Enquanto a coluna saldo_data não existir (ou
+     vier vazia) no servidor, o merge preserva a âncora gravada no aparelho. */
+  contas:         ['saldoData'],
   compromissos:   [],
   tarefas:        [],
   notas_cerebro:  []
@@ -9917,6 +9929,9 @@ function oneFinAddConta(obj) {
     diaFechamento: (tipo === 'cartao') ? _oneFinClampDia(obj.diaFechamento, 1)  : null,
     diaVencimento: (tipo === 'cartao') ? _oneFinClampDia(obj.diaVencimento, 10) : null,
     saldoInicial: (tipo === 'banco') ? (Number(obj.saldoInicial) || 0) : null,
+    /* Âncora do saldo: data em que o "saldo atual" foi informado. Daí pra
+       frente só lançamentos posteriores mexem no saldo (ver oneFinSaldoBanco). */
+    saldoData:    (tipo === 'banco') ? (obj.saldoData || new Date().toISOString().slice(0,10)) : null,
     saldo:        (tipo === 'investimento') ? (Number(obj.saldo) || 0) : null,
     criado: new Date().toISOString()
   };
@@ -9943,11 +9958,13 @@ function oneFinUpdateConta(id, obj) {
     atual.diaFechamento = _oneFinClampDia(atual.diaFechamento, 1);
     atual.diaVencimento = _oneFinClampDia(atual.diaVencimento, 10);
     atual.saldoInicial = null;
+    atual.saldoData = null;
     atual.saldo = null;
   } else if (atual.tipo === 'investimento') {
     atual.diaFechamento = null;
     atual.diaVencimento = null;
     atual.saldoInicial = null;
+    atual.saldoData = null;
     if (obj.saldo != null) atual.saldo = Number(obj.saldo) || 0;
   } else {
     /* banco */
@@ -9955,6 +9972,9 @@ function oneFinUpdateConta(id, obj) {
     atual.diaVencimento = null;
     atual.saldo = null;
     if (obj.saldoInicial != null) atual.saldoInicial = Number(obj.saldoInicial) || 0;
+    /* Re-ancora só quando um novo saldo é informado (obj.saldoData vem do modal).
+       Campo vazio na edição → mantém a âncora anterior. */
+    if (obj.saldoData != null) atual.saldoData = obj.saldoData;
   }
   _oneFinSaveContas(lista);
   if (typeof supaUpsert === 'function') supaUpsert('contas', atual);
@@ -10004,11 +10024,28 @@ function oneFinSaldoBanco(contaId) {
   if (!conta || conta.tipo !== 'banco') return 0;
   var saldo = Number(conta.saldoInicial) || 0;
 
+  /* Âncora: data em que o "saldo atual" foi informado. saldoInicial = saldo
+     NAQUELE dia. Só conta movimentos confirmados com data DEPOIS da âncora —
+     o que veio antes/no dia já está embutido no valor informado, não reconta.
+     Conta legada (sem saldoData) → âncora nula → soma tudo (comportamento antigo). */
+  var ancora = (typeof conta.saldoData === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(conta.saldoData)) ? conta.saldoData : null;
+  var aposAncora = function(dataStr){
+    if (!ancora) return true;            /* sem âncora → legado (conta tudo) */
+    return (typeof dataStr === 'string' && dataStr > ancora);
+  };
+  /* Data efetiva de uma ocorrência de fixa no mês 'YYYY-MM' (mês + diaDoMes). */
+  var dataFixaNoMes = function(mesAno, diaDoMes){
+    var dd = parseInt(diaDoMes, 10) || 1;
+    if (dd < 1) dd = 1; if (dd > 28) dd = 28;
+    return mesAno + '-' + String(dd).padStart(2, '0');
+  };
+
   /* Entradas — receitas reais. Se tem valorPago, usa ele (suporta parcial).
      Senão, soma o valor cheio quando status=pago. */
   var receitas = JSON.parse(localStorage.getItem(oneU('receitas')) || '[]');
   receitas.forEach(function(r){
     if (String(r.contaId) !== String(contaId)) return;
+    if (!aposAncora(r.data)) return;
     if (typeof r.valorPago === 'number' && r.valorPago > 0) {
       saldo += r.valorPago;
     } else if (r.status === 'pago') {
@@ -10022,7 +10059,10 @@ function oneFinSaldoBanco(contaId) {
     if (String(rf.contaId) !== String(contaId)) return;
     var p = rf.pagoPorMes;
     if (p && typeof p === 'object') {
-      Object.keys(p).forEach(function(m){ saldo += Number(p[m]) || 0; });
+      Object.keys(p).forEach(function(m){
+        if (!aposAncora(dataFixaNoMes(m, rf.diaDoMes))) return;
+        saldo += Number(p[m]) || 0;
+      });
     }
   });
 
@@ -10031,6 +10071,7 @@ function oneFinSaldoBanco(contaId) {
   despesas.forEach(function(d){
     if (String(d.contaId) !== String(contaId)) return;
     if (d.faturaMesAno) return;
+    if (!aposAncora(d.data)) return;
     if (typeof d.valorPago === 'number' && d.valorPago > 0) {
       saldo -= d.valorPago;
     } else if (d.status === 'pago') {
@@ -10044,7 +10085,10 @@ function oneFinSaldoBanco(contaId) {
     if (String(df.contaId) !== String(contaId)) return;
     var p = df.pagoPorMes;
     if (p && typeof p === 'object') {
-      Object.keys(p).forEach(function(m){ saldo -= Number(p[m]) || 0; });
+      Object.keys(p).forEach(function(m){
+        if (!aposAncora(dataFixaNoMes(m, df.diaDoMes))) return;
+        saldo -= Number(p[m]) || 0;
+      });
     }
   });
 
@@ -10060,6 +10104,7 @@ function oneFinSaldoBanco(contaId) {
     Object.keys(det).forEach(function(mesAno){
       var d = det[mesAno];
       if (d && String(d.contaId) === String(contaId)) {
+        if (!aposAncora(d.data || (mesAno + '-01'))) return;
         saldo -= Number(d.valor) || 0;
       }
     });
@@ -10721,13 +10766,17 @@ function oneFinContaModalSalvar() {
     var saldoIniInp = document.getElementById('one-fin-conta-modal-saldo-inicial');
     var rawSaldoIni = saldoIniInp ? String(saldoIniInp.value).trim() : '';
     if (rawSaldoIni === '' && id) {
-      /* Preserva valor anterior se o campo foi deixado vazio na edição */
+      /* Campo vazio na edição: preserva o saldo anterior e NÃO re-ancora
+         (obj.saldoData fica de fora → oneFinUpdateConta mantém a âncora atual). */
       var contaAtual = (typeof oneFinGetConta === 'function') ? oneFinGetConta(id) : null;
       obj.saldoInicial = (contaAtual && contaAtual.saldoInicial != null) ? Number(contaAtual.saldoInicial) : 0;
     } else {
       /* Aceita vírgula como separador decimal (PT-BR) */
       var saldoIni = parseFloat(rawSaldoIni.replace(',', '.'));
       obj.saldoInicial = isNaN(saldoIni) ? 0 : saldoIni;
+      /* Valor informado = saldo de HOJE → ancora a data de hoje. A partir dela,
+         só lançamentos posteriores entram no saldo (sem recontar o passado). */
+      obj.saldoData = new Date().toISOString().slice(0, 10);
     }
   }
   if (tipo === 'cartao') {
