@@ -10476,6 +10476,7 @@ function oneFinInstanciasDoMes(mes, ano) {
       nome: rf.nome || rf.descricao || 'Receita fixa',
       descricao: rf.descricao || rf.nome || 'Receita fixa',
       valor: espRF,
+      valorBase: Number(rf.valor) || 0,   /* previsão (molde), sem override — usado pela aba Fixas */
       data: oneFinDataFixaNoMes(rf, mes, ano),
       categoria: rf.categoria || '',
       contaId: rf.contaId || '',
@@ -10497,6 +10498,7 @@ function oneFinInstanciasDoMes(mes, ano) {
       nome: df.nome || df.descricao || 'Despesa fixa',
       descricao: df.descricao || df.nome || 'Despesa fixa',
       valor: espDF,
+      valorBase: Number(df.valor) || 0,   /* previsão (molde), sem override — usado pela aba Fixas */
       data: dataF,
       categoria: df.categoria || '',
       contaId: df.contaId || '',
@@ -11519,15 +11521,19 @@ function oneFinRenderFixas() {
                 ? oneFinInstanciasDoMes(ctx.mes, ctx.ano)
                 : { receitas: [], despesas: [] };
 
+  /* A aba Fixas é a PREVISÃO: mostra o valor-base do molde (valorBase), não o
+     efetivo do mês (override). O efetivo/A Pagar mora só no Resumo (lápis).
+     Assim editar a fixa ("este e os próximos" / "todos") reflete no card, mesmo
+     que exista um override de valor_por_mes naquele mês. */
   var despesas = (inst.despesas || []).map(function(d){
     return { tipo:'out', key:'despesasFixas', id:d._fixaId, nome:d.nome,
-             valor:Number(d.valor)||0, dia:d.diaDoMes || (d.data ? parseInt(d.data.split('-')[2],10) : null),
+             valor:Number(d.valorBase != null ? d.valorBase : d.valor)||0, dia:d.diaDoMes || (d.data ? parseInt(d.data.split('-')[2],10) : null),
              contaId:d.contaId, categoria:d.categoria||'',
              status:d.status || 'pendente', dataInstancia: d.data || '' };
   });
   var receitas = (inst.receitas || []).map(function(r){
     return { tipo:'in', key:'receitasFixas', id:r._fixaId, nome:r.nome,
-             valor:Number(r.valor)||0, dia:r.diaDoMes || (r.data ? parseInt(r.data.split('-')[2],10) : null),
+             valor:Number(r.valorBase != null ? r.valorBase : r.valor)||0, dia:r.diaDoMes || (r.data ? parseInt(r.data.split('-')[2],10) : null),
              contaId:r.contaId, categoria:r.categoria||'',
              status:r.status || 'pendente', dataInstancia: r.data || '' };
   });
