@@ -4396,6 +4396,21 @@ async function supaSync() {
         var merged = itensServer.map(function(srv){
           var loc = idxLocal[srv.id];
           if (!loc) return srv;
+          /* Conta: a âncora de saldo é um PAR (saldoInicial + saldoData). saldoInicial
+             é "autoritativo do servidor", então sozinho ele seria sobrescrito pelo
+             saldo-base ANTIGO do servidor no reload. Se o servidor ainda não tem a
+             âncora (saldoData vazio) mas o aparelho tem, o saldo digitado vive só no
+             local (upsert falhou/atrasou ou a coluna saldo_data acabou de nascer) →
+             preserva o PAR inteiro. Quando o servidor passa a ter saldoData, ele volta
+             a ser autoritativo (cross-device normal). */
+          if (localKey === 'contas') {
+            var srvAncora = (typeof srv.saldoData === 'string' && srv.saldoData) ? srv.saldoData : null;
+            var locAncora = (loc.saldoData != null && String(loc.saldoData)) ? String(loc.saldoData) : null;
+            if (!srvAncora && locAncora) {
+              srv.saldoData = locAncora;
+              if (loc.saldoInicial != null) srv.saldoInicial = Number(loc.saldoInicial) || 0;
+            }
+          }
           camposLocais.forEach(function(k){
             if ((srv[k] === undefined || srv[k] === null || srv[k] === '') && loc[k] !== undefined) {
               srv[k] = loc[k];

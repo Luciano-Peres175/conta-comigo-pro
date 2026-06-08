@@ -137,3 +137,18 @@ alter table public.despesas_fixas
 -- então rodar isto não é urgente pro funcionamento local (é pra cross-device).
 alter table public.contas
   add column if not exists saldo_data text;   -- 'YYYY-MM-DD'
+
+-- ----------------------------------------------------------------------------
+-- ADENDO (2026-06-08b) — garantir TODAS as colunas de contas no servidor.
+-- O upsert de contas envia o objeto inteiro; se QUALQUER coluna faltar, o
+-- upsert falha por completo e o saldo (saldo_inicial) nunca chega ao servidor —
+-- daí o saldo recém-digitado "volta" no reload (o merge pega o saldo-base antigo
+-- do servidor). Estas colunas evoluíram com a feature de contas e podem não
+-- existir em bases antigas. Idempotente.
+alter table public.contas add column if not exists saldo_inicial          numeric default 0;
+alter table public.contas add column if not exists saldo                  numeric default 0;
+alter table public.contas add column if not exists dia_fechamento         integer;
+alter table public.contas add column if not exists dia_vencimento         integer;
+alter table public.contas add column if not exists faturas_pagas          jsonb default '[]'::jsonb;
+alter table public.contas add column if not exists faturas_pagas_detalhe  jsonb default '{}'::jsonb;
+alter table public.contas add column if not exists meses_fechados         jsonb default '[]'::jsonb;
