@@ -101,3 +101,15 @@ create policy "receitas_fixas_delete" on public.receitas_fixas
 --   where table_schema='public' and table_name='despesas_fixas' order by 1;
 -- select to_regclass('public.receitas_fixas');  -- não deve ser null
 -- select polname, cmd from pg_policies where tablename='receitas_fixas';
+
+-- ============================================================================
+-- ADENDO (2026-06-08) — sync do "recebido/pago" das FIXAS
+-- ============================================================================
+-- O estado de pago/recebido de uma ocorrência de fixa vive no molde, em
+-- template.pagoPorMes = { "YYYY-MM": valor }. Sem coluna no servidor, o
+-- "recebido" não sincronizava (ex.: Pro Labore aparecia "a receber" no
+-- preview). Aditivo/idempotente, default '{}'. Aplicado no painel.
+alter table public.receitas_fixas
+  add column if not exists pago_por_mes jsonb default '{}'::jsonb;
+alter table public.despesas_fixas
+  add column if not exists pago_por_mes jsonb default '{}'::jsonb;

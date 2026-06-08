@@ -4148,7 +4148,8 @@ function _supaMapToRow(localKey, item, userId) {
         inicio:        item.inicio || null,
         fim:           item.fim || null,
         meses_pulados: Array.isArray(item.mesesPulados) ? item.mesesPulados : [],
-        conta_id:      item.contaId || null
+        conta_id:      item.contaId || null,
+        pago_por_mes:  (item.pagoPorMes && typeof item.pagoPorMes === 'object') ? item.pagoPorMes : {}
       });
     case 'receitas_fixas':
       return Object.assign(base, {
@@ -4161,7 +4162,8 @@ function _supaMapToRow(localKey, item, userId) {
         inicio:        item.inicio || null,
         fim:           item.fim || null,
         meses_pulados: Array.isArray(item.mesesPulados) ? item.mesesPulados : [],
-        conta_id:      item.contaId || null
+        conta_id:      item.contaId || null,
+        pago_por_mes:  (item.pagoPorMes && typeof item.pagoPorMes === 'object') ? item.pagoPorMes : {}
       });
     case 'contas':
       return Object.assign(base, {
@@ -4233,6 +4235,9 @@ function _supaMapFromRow(localKey, row) {
         fim:          row.fim || null,
         mesesPulados: Array.isArray(row.meses_pulados) ? row.meses_pulados : [],
         contaId:      row.conta_id || '',
+        /* {} do servidor = "sem pagamento" → null, pra o merge defensivo
+           preservar o pagoPorMes local em vez de zerar o recebido. */
+        pagoPorMes:   (row.pago_por_mes && typeof row.pago_por_mes === 'object' && Object.keys(row.pago_por_mes).length > 0) ? row.pago_por_mes : null,
         criadoEm:     row.created_at || ''
       };
     case 'receitas_fixas':
@@ -4249,6 +4254,9 @@ function _supaMapFromRow(localKey, row) {
         fim:          row.fim || null,
         mesesPulados: Array.isArray(row.meses_pulados) ? row.meses_pulados : [],
         contaId:      row.conta_id || '',
+        /* {} do servidor = "sem pagamento" → null, pra o merge defensivo
+           preservar o pagoPorMes local em vez de zerar o recebido. */
+        pagoPorMes:   (row.pago_por_mes && typeof row.pago_por_mes === 'object' && Object.keys(row.pago_por_mes).length > 0) ? row.pago_por_mes : null,
         criadoEm:     row.created_at || ''
       };
     case 'compromissos':
@@ -4318,8 +4326,8 @@ function _supaMapFromRow(localKey, row) {
 var SUPA_CAMPOS_LOCAIS = {
   receitas:       ['contaId', 'status'],
   despesas:       ['contaId', 'faturaMesAno', 'loteId', 'parcelaAtual', 'parcelasTotal', 'recorrencia', 'status'],
-  despesas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId'],
-  receitas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId'],
+  despesas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId', 'pagoPorMes'],
+  receitas_fixas: ['nome', 'diaDoMes', 'inicio', 'fim', 'mesesPulados', 'contaId', 'pagoPorMes'],
   compromissos:   [],
   tarefas:        [],
   notas_cerebro:  []
