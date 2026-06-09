@@ -6702,6 +6702,9 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 .one-fin-resumo-obr-head, .one-fin-resumo-obr-row {
   display: grid;
   grid-template-columns: 28px 32px 1fr 92px 104px 96px;
+  /* Gutter FIXO do lápis na coluna "A Pagar" — vale pra TODAS as linhas (com e
+     sem lápis) e pro header, pra todo valor terminar no mesmo eixo vertical. */
+  --apagar-gutter: 16px;
   align-items: center;
   gap: 6px;
   padding: 5px 4px;
@@ -6726,30 +6729,40 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
-/* Célula "A Pagar" das fixas: número (nunca quebra, não encolhe) + lápis fixo
-   ao lado, sem disputar largura com o valor. */
+/* Célula "A Pagar": número (right-align, nunca quebra) à esquerda + GUTTER FIXO do
+   lápis à direita, reservado em TODAS as linhas. Linha de fixa põe o ✏️ no gutter;
+   as demais deixam o gutter vazio. Assim o valor termina sempre no mesmo eixo, com
+   ou sem lápis. Largura do gutter vem de --apagar-gutter (herdada da linha). */
 .one-fin-resumo-apagar-cell {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 1fr var(--apagar-gutter, 16px);
   align-items: center;
-  justify-content: flex-end;
   gap: 4px;
   min-width: 0;
 }
 .one-fin-resumo-apagar-cell .one-fin-resumo-obr-apagar {
-  flex: 0 0 auto;
+  grid-column: 1;
+  text-align: right;
   white-space: nowrap;
+  min-width: 0;
 }
 .one-fin-resumo-efetivo-pencil {
-  flex: 0 0 auto;
+  grid-column: 2;
+  width: 100%;
+  text-align: center;
   background: none;
   border: none;
   cursor: pointer;
   font-size: 12px;
   line-height: 1;
-  padding: 0 2px;
+  padding: 0;
   opacity: .55;
 }
 .one-fin-resumo-efetivo-pencil:hover { opacity: 1; }
+/* Header "A Pagar" recua o mesmo gutter (+ gap) pra ficar sobre os números. */
+.one-fin-resumo-obr-head .one-fin-resumo-head-apagar {
+  padding-right: calc(var(--apagar-gutter, 16px) + 4px);
+}
 .one-fin-resumo-obr-row {
   border-bottom: 1px solid rgba(127,168,142,0.08);
 }

@@ -12427,12 +12427,13 @@ function oneFinRenderResumo(opts) {
       var ehFixa = (it.kind === 'fixa-d' || it.kind === 'fixa-r');
       var cor = ehFixa ? (it.aPagar > 0 ? '#2C2A26' : '#9CAB9C') : (it.aPagar > 0 ? '#C0392B' : '#9CAB9C');
       var span = '<span class="one-fin-resumo-obr-apagar" style="color:' + cor + ';font-weight:600">' + _oneFinResumoBrl(it.aPagar) + '</span>';
-      if (!ehFixa) return span;
-      /* Layout (flex + lápis fixo) vem do CSS .one-fin-resumo-apagar-cell. */
-      return '<span class="one-fin-resumo-apagar-cell">' +
-               span +
-               '<button class="one-fin-resumo-efetivo-pencil" title="Lançar valor efetivo deste mês" onclick="oneFinResumoEditarEfetivo(\'' + it.ref + '\', this)">✏️</button>' +
-             '</span>';
+      /* TODAS as linhas usam a célula com gutter fixo (CSS .one-fin-resumo-apagar-cell):
+         fixa põe o ✏️ no gutter; as demais deixam o gutter vazio. Assim o número
+         termina sempre no mesmo eixo, com ou sem lápis. */
+      var pencil = ehFixa
+        ? '<button class="one-fin-resumo-efetivo-pencil" title="Lançar valor efetivo deste mês" onclick="oneFinResumoEditarEfetivo(\'' + it.ref + '\', this)">✏️</button>'
+        : '';
+      return '<span class="one-fin-resumo-apagar-cell">' + span + pencil + '</span>';
     };
     /* Célula Diferença. Fixa: esperado × efetivo, com sinal e cor (despesa acima
        do previsto = vermelho; receita acima = verde; zero = cinza "—"). Demais
@@ -12503,7 +12504,7 @@ function oneFinRenderResumo(opts) {
               '<span>Dia</span>' +
               '<span>Descritivo</span>' +
               '<span class="num">Esperado</span>' +
-              '<span class="num">A Pagar</span>' +
+              '<span class="num one-fin-resumo-head-apagar">A Pagar</span>' +
               '<span class="num">Diferença</span>' +
             '</div>' +
           '</div>' +
