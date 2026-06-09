@@ -11767,7 +11767,12 @@ function oneFinFaturaPagarAbrir(cartaoId, mesAno) {
   if (!overlay) return;
   var cartao = oneFinGetConta(cartaoId);
   if (!cartao) return;
-  var totalFatura = (typeof oneFinFaturaAberta === 'function') ? oneFinFaturaAberta(cartaoId) : 0;
+  /* Valor pré-preenchido = total da fatura DAQUELE mês (a linha clicada), não a
+     "fatura aberta" do ciclo atual. Bug: usava oneFinFaturaAberta(cartaoId), que
+     ignora mesAno e somava o ciclo aberto → puxava o valor da fatura errada.
+     oneFinFaturaDoMes(cartaoId, mesAno) é exatamente o que o Resumo usa pra montar
+     a linha (esperado/aPagar), então o modal bate com a linha. */
+  var totalFatura = (typeof oneFinFaturaDoMes === 'function') ? oneFinFaturaDoMes(cartaoId, mesAno) : 0;
   document.getElementById('one-fin-fatura-pagar-cartao-id').value = cartaoId;
   document.getElementById('one-fin-fatura-pagar-mes-ano').value = mesAno;
   document.getElementById('one-fin-fatura-pagar-desc').textContent = (cartao.icone || '💳') + ' ' + cartao.nome + ' — fatura ' + mesAno;
