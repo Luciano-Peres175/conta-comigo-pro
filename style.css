@@ -2882,16 +2882,36 @@
 .one-fin-mob-fixas-resumo{display:flex;gap:8px;flex-wrap:wrap;}
 .one-fin-mob-fixas-resumo .one-fin-fixas-card{flex:1;min-width:92px;}
 
-/* ── Aperto das linhas no mobile (nome com reticências, valor sem quebrar) ──
-   As linhas vêm dos renders do desktop; no celular precisam de fonte menor,
-   colunas mais justas e valores que não embrulham. */
-.one-fin-mob-feed .one-fin-extrato-item{grid-template-columns:20px 20px 1fr auto auto;gap:5px;font-size:11.5px;}
-.one-fin-mob-feed .one-fin-extrato-item-ico{width:20px;height:20px;font-size:12px;}
-.one-fin-mob-feed .one-fin-extrato-item-nome{font-size:11.5px;}
+/* ── MOBILE — Extrato em CARTÃO estreito (mesmo conceito do desktop/Resumo) ──
+   As linhas vêm do mesmo render do desktop. No celular cada item vira um cartão:
+   cabeçalho (ico + dia + nome + selinho) e, abaixo, valor à esquerda + lápis/lixeira
+   à direita. Escopo .one-fin-mob-feed → não vaza pro desktop nem pro Resumo. */
+.one-fin-mob-feed .one-fin-extrato-item{
+  display:grid;
+  grid-template-columns:auto auto 1fr auto;
+  grid-template-areas:"ico dia nome nome" "val val val acts";
+  gap:4px 6px;
+  align-items:center;
+  min-height:0;
+  font-size:11.5px;
+  border:1px solid rgba(127,168,142,0.18);
+  border-radius:10px;
+  background:#fff;
+  padding:8px 11px;
+  margin-bottom:7px;
+}
+.one-fin-mob-feed .one-fin-extrato-item-ico{grid-area:ico;width:20px;height:20px;font-size:12px;}
+.one-fin-mob-feed .one-fin-extrato-item-dia{grid-area:dia;}
+.one-fin-mob-feed .one-fin-extrato-item-nome{grid-area:nome;font-size:11.5px;}
 .one-fin-mob-feed .one-fin-extrato-item-nome .badge-fatura,
 .one-fin-mob-feed .one-fin-extrato-item-nome .badge-fixa{font-size:8px;padding:1px 4px;margin-left:3px;}
-.one-fin-mob-feed .one-fin-extrato-item-val{font-size:11.5px;white-space:nowrap;}
-.one-fin-mob-feed .one-fin-extrato-item-actions .one-fin-item-btn{opacity:1;font-size:11px;padding:2px 3px;}
+.one-fin-mob-feed .one-fin-extrato-item-val{grid-area:val;justify-self:start;text-align:left;font-size:12.5px;white-space:nowrap;}
+.one-fin-mob-feed .one-fin-extrato-item-actions{grid-area:acts;justify-self:end;}
+.one-fin-mob-feed .one-fin-extrato-item-actions .one-fin-item-btn{opacity:1;font-size:12px;padding:2px 4px;}
+/* Valor verde (receita) / vermelho (despesa): no mobile os itens não ficam dentro
+   de .one-fin-extrato-col-rec/desp, então a cor vem do id do corpo. */
+#one-fin-mob-extrato-rec-body .one-fin-extrato-item-val{color:#1F6B52;}
+#one-fin-mob-extrato-desp-body .one-fin-extrato-item-val{color:#A02D24;}
 
 /* Visão geral — grupos e itens */
 .one-fin-mob-feed .one-fin-grupo-nome{font-size:12.5px;}
@@ -7395,6 +7415,26 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 }
 .one-fin-extrato-col-rec .one-fin-extrato-item-val { color: #1F6B52; }
 .one-fin-extrato-col-desp .one-fin-extrato-item-val { color: #A02D24; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DESKTOP — Extrato em CARTÃO largo (1 por linha), mesmo visual dos cartões do
+   Resumo (37099b3). Escopo .one-fin-extrato-col → só as colunas do Extrato (o
+   mobile usa .one-fin-mob-feed; a aba Fixas usa as mesmas colunas mas com
+   .one-fin-fixa-*, não .one-fin-extrato-item, então não é afetada). Mantém o grid
+   ico/dia/nome/valor/ações; vira cartão e FIXA o gutter das ações (56px) pra
+   valor + lápis + lixeira ficarem no mesmo eixo em TODAS as linhas — inclusive
+   faturas, que não têm ações. ═══════════════════════════════════════════════ */
+.one-fin-extrato-col .one-fin-extrato-item {
+  grid-template-columns: 26px 28px 1fr 90px 56px;
+  border: 1px solid rgba(127,168,142,0.18);
+  border-radius: 10px;
+  background: #fff;
+  padding: 7px 12px;
+  margin-bottom: 7px;
+}
+.one-fin-extrato-col .one-fin-extrato-item:last-child { margin-bottom: 2px; }
+.one-fin-extrato-col .one-fin-extrato-item-actions { justify-self: start; }
+
 .one-fin-extrato-vazio {
   text-align: center;
   color: #9CAB9C;
