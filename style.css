@@ -7227,6 +7227,20 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 .one-fin-cat-list-inline .one-rel-cat-row {
   padding: 7px 4px;
 }
+/* ═══ DASHBOARD — lista de categorias (ao lado da rosca) em CARTÃO no desktop.
+   Escopo #one-fin-cat-list-inline (id da lista inline do Dashboard) → NÃO afeta o
+   modal de Relatórios, que reusa .one-rel-cat-row noutro container. O mobile
+   (.one-fin-mob-cat-row) já é cartão. Ícone + nome à esquerda; valor + selinho de %
+   à direita, alinhados entre os cartões. ═══ */
+#one-fin-cat-list-inline .one-rel-cat-row {
+  border: 1px solid rgba(127,168,142,0.18);
+  border-radius: 10px;
+  background: #fff;
+  padding: 7px 12px;
+  margin-bottom: 6px;
+  gap: 9px;
+}
+#one-fin-cat-list-inline .one-rel-cat-row:last-child { margin-bottom: 2px; }
 
 /* Barras inline */
 .one-fin-bars-wrap {
