@@ -10032,14 +10032,23 @@ function oneFinSaldoBanco(contaId) {
   if (!conta || conta.tipo !== 'banco') return 0;
   var saldo = Number(conta.saldoInicial) || 0;
 
-  /* Âncora: data em que o "saldo atual" foi informado. saldoInicial = saldo
-     NAQUELE dia. Só conta movimentos confirmados com data DEPOIS da âncora —
-     o que veio antes/no dia já está embutido no valor informado, não reconta.
+  /* Âncora: data em que o "saldo atual" foi informado. saldoInicial = saldo real
+     NAQUELE dia, já refletindo TUDO que saiu/entrou até ali. Como é o "Saldo atual",
+     só pode mexer com movimentos que JÁ ACONTECERAM desde a âncora — data na janela
+     (âncora, hoje]:
+       - data <= âncora → já embutido no valor digitado, não reconta.
+       - data >  hoje   → ainda não aconteceu (lançamento futuro). Mesmo marcado pago
+                          (ex.: conta quitada adiantado, mas com vencimento à frente),
+                          o dinheiro já saiu e já está no saldo digitado de HOJE → NÃO
+                          pode ser abatido de novo. Era esse o bug: um pago futuro
+                          (INSS Luca) era descontado da âncora.
      Conta legada (sem saldoData) → âncora nula → soma tudo (comportamento antigo). */
   var ancora = (typeof conta.saldoData === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(conta.saldoData)) ? conta.saldoData : null;
+  var hojeISO = new Date().toISOString().slice(0, 10);
   var aposAncora = function(dataStr){
     if (!ancora) return true;            /* sem âncora → legado (conta tudo) */
-    return (typeof dataStr === 'string' && dataStr > ancora);
+    if (typeof dataStr !== 'string') return false;
+    return (dataStr > ancora && dataStr <= hojeISO);
   };
   /* Data efetiva de uma ocorrência de fixa no mês 'YYYY-MM' (mês + diaDoMes). */
   var dataFixaNoMes = function(mesAno, diaDoMes){
