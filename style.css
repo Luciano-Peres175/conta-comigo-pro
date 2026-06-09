@@ -7800,6 +7800,32 @@ button.one-fin-card:hover {
   font-size: 12px;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   VISÃO GERAL — "Lançamentos do mês" em CARTÃO (cada categoria/conta = um cartão),
+   mesmo padrão do Resumo/Extrato. Escopo pelos ids dos containers
+   (#one-fin-geral-recent = desktop, #one-fin-mob-geral-recent = mobile) → não vaza
+   pras outras abas. Ícone + nome + nº de lançamentos à esquerda; valor (total) à
+   direita, alinhado entre todos os cartões. Itens expandidos viram um drawer dentro
+   do cartão. ═══════════════════════════════════════════════════════════════════ */
+#one-fin-geral-recent .one-fin-grupo,
+#one-fin-mob-geral-recent .one-fin-grupo {
+  border: 1px solid rgba(127,168,142,0.18);
+  border-radius: 10px;
+  background: #fff;
+  margin-bottom: 7px;
+  overflow: hidden;
+}
+#one-fin-geral-recent .one-fin-grupo:last-child,
+#one-fin-mob-geral-recent .one-fin-grupo:last-child { margin-bottom: 2px; }
+#one-fin-geral-recent .one-fin-grupo-head,
+#one-fin-mob-geral-recent .one-fin-grupo-head { padding: 9px 12px; }
+#one-fin-geral-recent .one-fin-grupo-itens,
+#one-fin-mob-geral-recent .one-fin-grupo-itens {
+  padding: 2px 12px 8px 44px;
+  background: rgba(127,168,142,0.04);
+  border-top: 1px solid rgba(127,168,142,0.10);
+}
+
 /* ── View Extrato — tabs de período MINI + filtros ativos ── */
 .one-fin-extrato-controls {
   display: flex;
