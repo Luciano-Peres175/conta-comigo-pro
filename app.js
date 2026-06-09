@@ -11882,7 +11882,10 @@ window.oneFinResumoTogglePago = oneFinResumoTogglePago;
    oneFinResumoSetEfetivo. Esc cancela. Só vale pra fixas (fixa-d/fixa-r). */
 function oneFinResumoEditarEfetivo(ref, btn) {
   if (!btn || !ref) return;
-  var cell = btn.parentNode;   /* .one-fin-resumo-apagar-cell */
+  /* O lápis agora é irmão do nome (não filho da célula). Acha a célula "A pagar"
+     pela própria linha. */
+  var row = btn.closest ? btn.closest('.one-fin-resumo-obr-row') : null;
+  var cell = row ? row.querySelector('.one-fin-resumo-apagar-cell') : btn.parentNode;
   if (!cell) return;
   var p = String(ref).split(':');
   var kind = p[0], fixaId = p[1], mes = p[2];
@@ -12423,17 +12426,19 @@ function oneFinRenderResumo(opts) {
     /* Célula A Pagar. Em FIXAS, A Pagar = valor efetivo do mês e ganha um ✏️
        pra lançar/ajustar esse efetivo (grava valorPorMes; vazio/igual à base
        limpa o override). Fatura/avulso seguem como antes (vermelho = a pagar). */
+    /* Lápis de edição do efetivo (só fixas). É IRMÃO do nome (não mora mais dentro
+       da célula "A pagar"): no DESKTOP encosta no nome, no MOBILE é posicionado
+       absoluto no canto do cartão (CSS). Assim nunca empurra os números. */
+    var _pencilFixa = function(it){
+      var ehFixa = (it.kind === 'fixa-d' || it.kind === 'fixa-r');
+      if (!ehFixa) return '';
+      return '<button class="one-fin-resumo-efetivo-pencil" title="Lançar valor efetivo deste mês" onclick="oneFinResumoEditarEfetivo(\'' + it.ref + '\', this)">✏️</button>';
+    };
     var _apagarCell = function(it){
       var ehFixa = (it.kind === 'fixa-d' || it.kind === 'fixa-r');
       var cor = ehFixa ? (it.aPagar > 0 ? '#2C2A26' : '#9CAB9C') : (it.aPagar > 0 ? '#C0392B' : '#9CAB9C');
       var span = '<span class="one-fin-resumo-obr-apagar" style="color:' + cor + ';font-weight:600">' + _oneFinResumoBrl(it.aPagar) + '</span>';
-      /* TODAS as linhas usam a célula com gutter fixo (CSS .one-fin-resumo-apagar-cell):
-         fixa põe o ✏️ no gutter; as demais deixam o gutter vazio. Assim o número
-         termina sempre no mesmo eixo, com ou sem lápis. */
-      var pencil = ehFixa
-        ? '<button class="one-fin-resumo-efetivo-pencil" title="Lançar valor efetivo deste mês" onclick="oneFinResumoEditarEfetivo(\'' + it.ref + '\', this)">✏️</button>'
-        : '';
-      return '<span class="one-fin-resumo-apagar-cell">' + span + pencil + '</span>';
+      return '<span class="one-fin-resumo-apagar-cell">' + span + '</span>';
     };
     /* Célula Diferença. Fixa: esperado × efetivo, com sinal e cor (despesa acima
        do previsto = vermelho; receita acima = verde; zero = cinza "—"). Demais
@@ -12460,6 +12465,7 @@ function oneFinRenderResumo(opts) {
                '</button>' +
                '<span class="one-fin-resumo-obr-dia">' + (it.dia || '—') + '</span>' +
                '<span class="one-fin-resumo-obr-nome">' + icoPrefix + (it.nome || '').replace(/</g,'&lt;') + tipoBadge + '</span>' +
+               _pencilFixa(it) +
                '<span class="one-fin-resumo-obr-esperado">' + _oneFinResumoBrl(it.esperado) + '</span>' +
                _apagarCell(it) +
                _difCell(it, false) +
@@ -12476,6 +12482,7 @@ function oneFinRenderResumo(opts) {
                '</button>' +
                '<span class="one-fin-resumo-obr-dia">' + (it.dia || '—') + '</span>' +
                '<span class="one-fin-resumo-obr-nome">' + (it.nome || '').replace(/</g,'&lt;') + '</span>' +
+               _pencilFixa(it) +
                '<span class="one-fin-resumo-obr-esperado">' + _oneFinResumoBrl(it.esperado) + '</span>' +
                _apagarCell(it) +
                _difCell(it, true) +

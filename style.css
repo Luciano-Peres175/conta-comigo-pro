@@ -6889,6 +6889,101 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 }
 .one-fin-resumo-obr-esperado { color: #2D3D2F; }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   DESKTOP — "Acompanhamento do mês" vira CARTÃO LARGO (1 por linha), mesmo
+   conceito do mobile (1967028) num layout horizontal. Escopado em
+   .one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) → só o container
+   desktop (#one-fin-resumo-obrigacoes); o mobile (.one-fin-mob-acomp) fica
+   intocado. Cada cartão: à esquerda dot + dia + nome (+ lápis junto ao nome nas
+   fixas); à direita 3 blocos fixos rotulados (Esperado / A pagar / Diferença),
+   alinhados no mesmo eixo entre todas as linhas. Aposenta o gutter de tabela do
+   3a15ffb (a tabela sai). ═══════════════════════════════════════════════════ */
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-head { display: none; }
+
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  grid-template-columns: none;       /* anula o grid da tabela */
+  border: 1px solid rgba(127,168,142,0.18);
+  border-bottom: 1px solid rgba(127,168,142,0.18);
+  border-radius: 10px;
+  background: #fff;
+  padding: 9px 14px;
+  margin-bottom: 7px;
+  font-size: 12px;
+}
+/* cluster esquerdo */
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-check { flex: 0 0 auto; }
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-dia { flex: 0 0 auto; min-width: 18px; }
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-nome {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+/* lápis: encosta no nome, não empurra os números (grupo da direita é fixo) */
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-efetivo-pencil {
+  flex: 0 0 auto;
+  width: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 2px;
+  opacity: .55;
+}
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-efetivo-pencil:hover { opacity: 1; }
+/* grupo direito: 3 blocos fixos (etiqueta em cima, valor embaixo) */
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-esperado,
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-apagar-cell,
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-row.total > .one-fin-resumo-obr-apagar,
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-dif {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  flex: 0 0 104px;
+  width: 104px;
+  box-sizing: border-box;
+  padding: 4px 9px;
+  background: rgba(127,168,142,0.06);
+  border-radius: 8px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+}
+/* empurra o grupo de valores pra direita → mesmo eixo em todas as linhas */
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-esperado { margin-left: auto; }
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-apagar-cell .one-fin-resumo-obr-apagar {
+  text-align: left;
+  width: auto;
+}
+/* etiquetas */
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-esperado::before { content: "Esperado"; }
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-apagar-cell::before,
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-row.total > .one-fin-resumo-obr-apagar::before { content: "A pagar"; }
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-dif::before { content: "Diferença"; }
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-esperado::before,
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-apagar-cell::before,
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-row.total > .one-fin-resumo-obr-apagar::before,
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-dif::before {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  color: #6B7F6F;
+  line-height: 1;
+}
+/* SOMA: cartão-resumo destacado; some os 2 spans vazios (dot/dia). */
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-row.total {
+  background: rgba(127,168,142,0.12);
+  border-color: rgba(127,168,142,0.30);
+  margin-top: 6px;
+}
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-row.total > span:empty { display: none; }
+.one-fin-resumo-bloco-obrigacoes:not(.one-fin-mob-acomp) .one-fin-resumo-obr-row.total .one-fin-resumo-obr-nome { font-weight: 700; }
+
 /* Input inline de "A Pagar" — fica num grid cell, parece texto até hover/focus */
 .one-fin-resumo-apagar-input {
   width: 100%;
