@@ -2650,17 +2650,117 @@
   min-height:0;
   padding:10px 12px;
 }
-.one-fin-mob-acomp .one-fin-resumo-obr-head,
-.one-fin-mob-acomp .one-fin-resumo-obr-row{
-  grid-template-columns:22px 22px 1fr 58px 58px 58px;
-  gap:4px;
-  font-size:11px;
-  padding:4px 2px;
+/* ─────────────────────────────────────────────────────────────────────────
+   MOBILE — "Acompanhamento do mês" vira CARTÃO EMPILHADO (um por lançamento).
+   No desktop continua tabela: .one-fin-mob-acomp só existe no container mobile
+   (#one-fin-mob-resumo-obrig), então nada aqui afeta o desktop.
+   Cada cartão: cabeçalho (bolinha de status + dia + nome [+ lápis à direita das
+   fixas]) e, abaixo, 3 caixinhas rotuladas lado a lado: Esperado / A pagar /
+   Diferença. Cabeçalho de tabela some no mobile. Vale p/ "A receber" e "A pagar".
+   ───────────────────────────────────────────────────────────────────────── */
+.one-fin-mob-acomp .one-fin-resumo-obr-head { display: none; }
+
+.one-fin-mob-acomp .one-fin-resumo-obr-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-areas:
+    "nome nome nome"
+    "esp  apa  dif";
+  column-gap: 5px;
+  row-gap: 6px;
+  align-items: stretch;
+  font-size: 11px;
+  padding: 8px 10px 9px;
+  margin-bottom: 7px;
+  border: 1px solid rgba(127,168,142,0.18);
+  border-radius: 10px;
+  background: #fff;
 }
-.one-fin-mob-acomp .one-fin-resumo-obr-head{
-  font-size:9px;
-  letter-spacing:.2px;
+/* Cabeçalho do cartão: dot + dia ficam à esquerda (absolutos) e o nome ocupa a
+   linha com recuo pra não sobrepor. */
+.one-fin-mob-acomp .one-fin-resumo-obr-nome {
+  grid-area: nome;
+  padding-left: 54px;
+  min-height: 22px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
 }
+.one-fin-mob-acomp .one-fin-resumo-check {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+}
+.one-fin-mob-acomp .one-fin-resumo-obr-dia {
+  position: absolute;
+  top: 8px;
+  left: 36px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+/* Lápis só nas fixas, no canto direito do cabeçalho, sem empurrar nada. */
+.one-fin-mob-acomp .one-fin-resumo-efetivo-pencil {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: auto;
+  padding: 2px 4px;
+  font-size: 14px;
+}
+/* As 3 caixinhas (também valem pra SOMA, cujo "A pagar" é um span solto). */
+.one-fin-mob-acomp .one-fin-resumo-obr-esperado,
+.one-fin-mob-acomp .one-fin-resumo-apagar-cell,
+.one-fin-mob-acomp .one-fin-resumo-obr-row.total > .one-fin-resumo-obr-apagar,
+.one-fin-mob-acomp .one-fin-resumo-obr-dif {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1px;
+  padding: 4px 6px;
+  background: rgba(127,168,142,0.07);
+  border-radius: 7px;
+  text-align: left;
+  white-space: nowrap;
+  min-width: 0;
+}
+.one-fin-mob-acomp .one-fin-resumo-obr-esperado { grid-area: esp; }
+.one-fin-mob-acomp .one-fin-resumo-apagar-cell,
+.one-fin-mob-acomp .one-fin-resumo-obr-row.total > .one-fin-resumo-obr-apagar { grid-area: apa; }
+.one-fin-mob-acomp .one-fin-resumo-obr-dif { grid-area: dif; }
+/* Etiquetas pequenas em cima de cada caixinha. */
+.one-fin-mob-acomp .one-fin-resumo-obr-esperado::before { content: "Esperado"; }
+.one-fin-mob-acomp .one-fin-resumo-apagar-cell::before,
+.one-fin-mob-acomp .one-fin-resumo-obr-row.total > .one-fin-resumo-obr-apagar::before { content: "A pagar"; }
+.one-fin-mob-acomp .one-fin-resumo-obr-dif::before { content: "Diferença"; }
+.one-fin-mob-acomp .one-fin-resumo-obr-esperado::before,
+.one-fin-mob-acomp .one-fin-resumo-apagar-cell::before,
+.one-fin-mob-acomp .one-fin-resumo-obr-row.total > .one-fin-resumo-obr-apagar::before,
+.one-fin-mob-acomp .one-fin-resumo-obr-dif::before {
+  font-size: 8.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .2px;
+  color: #6B7F6F;
+  line-height: 1;
+}
+/* Dentro da caixinha "A pagar", o número não usa mais o gutter do lápis. */
+.one-fin-mob-acomp .one-fin-resumo-apagar-cell .one-fin-resumo-obr-apagar {
+  text-align: left;
+  width: auto;
+}
+/* SOMA: cartão-resumo destacado; esconde os 2 spans vazios (dot/dia). */
+.one-fin-mob-acomp .one-fin-resumo-obr-row.total {
+  background: rgba(127,168,142,0.12);
+  border-color: rgba(127,168,142,0.30);
+  padding: 8px 10px;
+}
+.one-fin-mob-acomp .one-fin-resumo-obr-row.total > span:empty { display: none; }
+.one-fin-mob-acomp .one-fin-resumo-obr-row.total .one-fin-resumo-obr-nome { padding-left: 2px; }
+
 .one-fin-mob-acomp .one-fin-resumo-titulo{
   font-size:12px;
   margin-bottom:8px;
@@ -2668,9 +2768,6 @@
 .one-fin-mob-acomp .one-fin-resumo-apagar-input{
   font-size:11px;
   padding:2px 4px;
-}
-.one-fin-mob-acomp .one-fin-resumo-obr-row.total{
-  padding:6px 2px;
 }
 .one-fin-mob-acomp .one-fin-resumo-subtit{
   font-size:10px;
