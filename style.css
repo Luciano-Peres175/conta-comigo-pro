@@ -7097,6 +7097,48 @@ body:has(.pinah-onb-overlay:not([hidden])) #btn-sync-global {
 .one-fin-resumo-inv-nome { color: #2D3D2F; }
 .one-fin-resumo-inv-val { font-weight: 600; color: #2D3D2F; }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESUMO — coluna esquerda em CARTÃO: "Caixa do mês" (cada linha = um cartão;
+   Resultado/Patrimônio destacados) e a lista de Investimentos. Escopo pelos ids
+   dos containers — desktop #one-fin-resumo-caixa / #one-fin-resumo-invest e mobile
+   #one-fin-mob-resumo-caixa / #one-fin-mob-resumo-invest — pra não tocar o bloco
+   "Acompanhamento do mês" (já feito) nem outras abas. Valor à direita, alinhado
+   entre os cartões. ═══════════════════════════════════════════════════════════ */
+#one-fin-resumo-caixa .one-fin-resumo-caixa-row,
+#one-fin-mob-resumo-caixa .one-fin-resumo-caixa-row {
+  border: 1px solid rgba(127,168,142,0.16);
+  border-bottom: 1px solid rgba(127,168,142,0.16);
+  border-radius: 9px;
+  background: #fff;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+}
+#one-fin-resumo-caixa .one-fin-resumo-caixa-row:last-child,
+#one-fin-mob-resumo-caixa .one-fin-resumo-caixa-row:last-child { margin-bottom: 0; }
+#one-fin-resumo-caixa .one-fin-resumo-caixa-row.destaque,
+#one-fin-mob-resumo-caixa .one-fin-resumo-caixa-row.destaque {
+  background: rgba(127,168,142,0.12);
+  border-color: rgba(127,168,142,0.30);
+  margin: 0 0 6px;
+  padding: 10px 12px;
+}
+#one-fin-resumo-invest .one-fin-resumo-inv-row,
+#one-fin-mob-resumo-invest .one-fin-resumo-inv-row {
+  border: 1px solid rgba(127,168,142,0.16);
+  border-radius: 9px;
+  background: #fff;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+}
+#one-fin-resumo-invest .one-fin-resumo-inv-row:last-child,
+#one-fin-mob-resumo-invest .one-fin-resumo-inv-row:last-child { margin-bottom: 0; }
+#one-fin-resumo-invest .one-fin-resumo-inv-row.total,
+#one-fin-mob-resumo-invest .one-fin-resumo-inv-row.total {
+  background: rgba(91,124,250,0.10);
+  border-color: rgba(91,124,250,0.30);
+  margin-top: 7px;
+}
+
 /* Dashboard em 2 colunas: lista à esquerda, donut à direita — área dividida 50/50 */
 .one-fin-dashboard-grid {
   display: grid;
