@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrada Pinah — COMPLETA v2 (mobile + ajustes do Mentor 09/06)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    background: #07050c;
+    color: #fff;
+    overflow: hidden;
+  }
+
+  .tela { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 60px 90px; transition: background 1.1s ease; }
+  .tela.ativa { display: flex; }
+
+  /* ===== JORNADA DE FUNDO ===== */
+  .bg-noite  { background: radial-gradient(120% 90% at 50% 6%, rgba(155,114,176,0.10) 0%, rgba(155,114,176,0.02) 40%, #07050c 70%); }
+  .bg-noite2 { background: radial-gradient(130% 100% at 50% 12%, rgba(155,114,176,0.18) 0%, rgba(155,114,176,0.05) 46%, #08060f 74%); }
+  .bg-portal { background: radial-gradient(140% 110% at 50% 26%, rgba(155,114,176,0.30) 0%, rgba(155,114,176,0.10) 52%, #0a0712 100%); }
+  .bg-aberto { background: radial-gradient(150% 120% at 50% 22%, rgba(155,114,176,0.42) 0%, rgba(155,114,176,0.18) 54%, #100a1a 100%); }
+  .bg-casa   { background: linear-gradient(180deg, #cfe8da 0%, #dcecdf 22%, #e8eddf 46%, #F1EFE6 70%, #F4F1EA 100%); }
+
+  .pular { position: fixed; top: 40px; right: 56px; color: rgba(255,255,255,0.45); font-size: 15px; letter-spacing: 1px; cursor: pointer; z-index: 20; }
+  .pular:hover { color: rgba(255,255,255,0.8); }
+  .rotulo { position: fixed; top: 40px; left: 56px; color: rgba(255,255,255,0.4); font-size: 14px; letter-spacing: 1px; z-index: 20; }
+  .continuar { position: fixed; bottom: 84px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.34); font-size: 13px; letter-spacing: 3px; cursor: pointer; z-index: 10; animation: pulse 2.6s ease-in-out infinite; }
+  .continuar:hover { color: rgba(255,255,255,0.7); }
+  @keyframes pulse { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+
+  /* recomeçar — pra testar várias entrevistas */
+  .reiniciar { position: fixed; bottom: 38px; left: 36px; z-index: 40; color: rgba(255,255,255,0.32); font-size: 13px; cursor: pointer; display: flex; gap: 6px; align-items: center; letter-spacing: .5px; }
+  .reiniciar:hover { color: rgba(255,255,255,0.7); }
+
+  /* ===== O QUADRO ===== */
+  .quadro { position: relative; border: 1px solid rgba(255,255,255,0.30); display:flex; align-items:center; justify-content:center; transition: border-radius .6s ease; }
+  .c { position: absolute; width: 34px; height: 34px; pointer-events:none; }
+  .c-tl { top:-1px; left:-1px; border-top:2px solid rgba(255,255,255,0.55); border-left:2px solid rgba(255,255,255,0.55); }
+  .c-tr { top:-1px; right:-1px; border-top:2px solid rgba(255,255,255,0.55); border-right:2px solid rgba(255,255,255,0.55); }
+  .c-bl { bottom:-1px; left:-1px; border-bottom:2px solid rgba(255,255,255,0.55); border-left:2px solid rgba(255,255,255,0.55); }
+  .c-br { bottom:-1px; right:-1px; border-bottom:2px solid rgba(255,255,255,0.55); border-right:2px solid rgba(255,255,255,0.55); }
+  .tela-copy { color: rgba(255,255,255,0.88); font-size: 16px; line-height: 1.8; text-align: center; }
+  .tela-copy p { margin: 0 0 14px; }
+  .tela-copy p:last-child { margin-bottom: 0; }
+
+  .col { width: 680px; max-width: 80vw; }
+
+  /* ===== BALÃO ===== */
+  .balao { position: relative; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.22); border-radius: 26px; }
+  .balao.morph .c { opacity: .5; }
+  .avatar { position: absolute; top: -30px; left: -20px; width: 68px; height: 68px; border-radius: 50%; background: rgba(155,114,176,0.28); border: 2px solid rgba(155,114,176,0.75); display: flex; align-items: center; justify-content: center; overflow:hidden; box-shadow: 0 0 28px rgba(155,114,176,0.45); }
+  .presenca { position: fixed; top: 0; left: 0; right: 0; height: 40%; pointer-events: none; background: radial-gradient(60% 100% at 50% 0%, rgba(155,114,176,0.12) 0%, transparent 70%); z-index: 1; }
+
+  .pill { background: rgba(155,114,176,0.18); border: 1px solid rgba(155,114,176,0.45); border-radius: 16px; padding: 10px 18px; color: rgba(255,255,255,0.74); font-size: 15px; cursor: pointer; transition: all .15s; }
+  .pill:hover { background: rgba(155,114,176,0.32); }
+  .input-box { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2); border-radius: 28px; padding: 16px 24px; }
+  .input-box span { color: rgba(255,255,255,0.32); font-size: 15px; flex: 1; }
+  .input-box i { font-size: 22px; color: rgba(255,255,255,0.45); }
+
+  /* botão de confirmação — NÃO parece pill: é botão sólido, claro, com peso */
+  .btn-confirma {
+    flex-basis: 100%; width: fit-content; margin-top: 4px;
+    background: #FDFBF6; color: #5a3f76; border: none; cursor: pointer;
+    font-size: 15.5px; font-weight: 700; letter-spacing: .3px;
+    padding: 14px 30px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 9px;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.45), 0 0 0 2px rgba(155,114,176,0.35);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-confirma:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0,0,0,0.5), 0 0 0 2px rgba(155,114,176,0.6); }
+  .btn-confirma i { font-size: 18px; color: #9B72B0; }
+
+  /* ===== CAIXA DE MEMÓRIAS ===== */
+  .caixa-mem { display: inline-flex; flex-direction: column; align-items: center; gap: 14px; padding: 22px 26px 18px; border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(155,114,176,0.35); box-shadow: 0 12px 40px rgba(0,0,0,0.35); }
+  .caixa-titulo { display:flex; align-items:center; gap:8px; color: rgba(255,255,255,0.5); font-size: 13px; letter-spacing: 1px; }
+  .caixa-titulo i { font-size: 16px; color: rgba(155,114,176,0.9); }
+  .fotos-fila { display: flex; gap: 16px; }
+  .foto-min { width: 130px; height: 130px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; transform: rotate(var(--r,0deg)); box-shadow: 0 6px 18px rgba(0,0,0,0.3); }
+  .legenda { color: rgba(255,255,255,0.45); font-size: 12px; font-style: italic; text-align: center; }
+
+  .func-icone { width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+  .func-icone img { width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 28px; filter: drop-shadow(0 14px 28px rgba(0,0,0,0.4)); }
+  .btn-entrar { background: rgba(255,255,255,0.95); color: #5a3f76; border: none; border-radius: 32px; padding: 18px 50px; font-size: 17px; letter-spacing: 1px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 12px; box-shadow: 0 12px 30px rgba(91,63,118,0.35); }
+  .btn-entrar:hover { transform: translateY(-2px); }
+
+  .seta { position: fixed; top: 50%; transform: translateY(-50%); width: 58px; height: 58px; border-radius: 50%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.6); font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 30; transition: background .2s, color .2s, border-color .2s; }
+  .seta:hover { background: rgba(255,255,255,0.14); }
+  .seta:disabled { opacity: 0.12; cursor: default; }
+  #prev { left: 34px; } #next { right: 34px; }
+  .dots { position: fixed; bottom: 40px; left: 0; right: 0; display: flex; justify-content: center; gap: 9px; z-index: 10; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.18); }
+  .dot.on { background: rgba(255,255,255,0.9); }
+  .ajuda { position: fixed; bottom: 16px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.2); font-size: 11px; z-index: 10; }
+
+  /* ===== UI escura sobre fundo claro (a casa) — setas/pontos/recomeçar visíveis ===== */
+  body.claro-ui .seta { background: rgba(90,63,118,0.10); border-color: rgba(90,63,118,0.28); color: rgba(90,63,118,0.8); }
+  body.claro-ui .seta:hover { background: rgba(90,63,118,0.2); }
+  body.claro-ui .dot { background: rgba(90,63,118,0.2); }
+  body.claro-ui .dot.on { background: rgba(90,63,118,0.85); }
+  body.claro-ui .ajuda { color: rgba(74,58,46,0.35); }
+  body.claro-ui .reiniciar { color: rgba(74,58,46,0.45); }
+  body.claro-ui .reiniciar:hover { color: rgba(74,58,46,0.85); }
+
+  /* ============================================================
+     TELA 4 — ENTREVISTA VIVA
+     ============================================================ */
+  #tela-entrevista { align-items: stretch; justify-content: center; padding: 90px 90px 70px; }
+  .ent-col { width: 720px; max-width: 84vw; margin: 0 auto; display: flex; flex-direction: column; }
+  .ent-chat { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 34px 6px 14px; scroll-behavior: smooth; min-height: 0; }
+  .ent-balao {
+    align-self: flex-start; max-width: 86%; position: relative;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 22px 22px 22px 6px; padding: 16px 22px;
+    color: rgba(255,255,255,0.88); font-size: 16px; line-height: 1.7;
+    animation: surge .35s ease both;
+  }
+  .ent-balao.sussurro { background: transparent; border-color: transparent; color: rgba(196,178,212,0.75); font-size: 13.5px; padding: 2px 22px; }
+  .ent-balao.user {
+    align-self: flex-end; background: rgba(155,114,176,0.55); border-color: rgba(155,114,176,0.8);
+    border-radius: 22px 22px 6px 22px; color: #fff;
+  }
+  .ent-balao .av-mini {
+    position: absolute; top: -22px; left: -16px; width: 46px; height: 46px; border-radius: 50%;
+    border: 2px solid rgba(155,114,176,0.75); overflow: hidden; background: rgba(155,114,176,0.28);
+    box-shadow: 0 0 20px rgba(155,114,176,0.45);
+  }
+  .ent-balao .av-mini img { width: 100%; height: 100%; object-fit: cover; }
+  @keyframes surge { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .ent-digitando { display: inline-flex; gap: 5px; padding: 18px 22px; }
+  .ent-digitando i { width: 7px; height: 7px; border-radius: 50%; background: #C9A9DE; animation: pisca 1s infinite; }
+  .ent-digitando i:nth-child(2) { animation-delay: .18s; }
+  .ent-digitando i:nth-child(3) { animation-delay: .36s; }
+  @keyframes pisca { 0%,100% { opacity: .25; } 50% { opacity: 1; } }
+
+  .ent-pills { display: flex; flex-wrap: wrap; gap: 10px; align-self: flex-start; max-width: 92%; animation: surge .4s ease both; }
+  .ent-pills .dica { flex-basis: 100%; font-size: 12.5px; color: rgba(196,178,212,0.65); padding-left: 6px; }
+  .ent-pills .pill.sel { background: rgba(155,114,176,0.75); border-color: rgba(196,156,216,0.9); color: #fff; box-shadow: 0 0 18px rgba(155,114,176,0.5); }
+
+  .ent-entrada { flex-shrink: 0; display: flex; gap: 12px; align-items: center; margin-top: 16px; }
+  .ent-entrada input {
+    flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 28px; padding: 17px 26px; color: #fff; font-size: 15px; outline: none;
+  }
+  .ent-entrada input::placeholder { color: rgba(255,255,255,0.32); }
+  .ent-entrada button {
+    width: 54px; height: 54px; border-radius: 50%; border: none; cursor: pointer; flex-shrink: 0;
+    background: linear-gradient(160deg, #9B72B0, #7d569a); color: #fff; font-size: 21px;
+    box-shadow: 0 8px 22px rgba(155,114,176,0.45);
+  }
+  .ent-entrada.travada { opacity: .35; pointer-events: none; }
+
+  .ent-biocard {
+    align-self: stretch; background: #FDFBF6; border: 1px solid #C9BFA8; border-radius: 18px;
+    padding: 20px 24px; animation: surge .4s ease both; box-shadow: 0 12px 34px rgba(0,0,0,0.4);
+  }
+  .ent-biocard h4 { font-family: Georgia, serif; font-size: 17px; color: #5B4970; margin-bottom: 12px; display: flex; gap: 8px; align-items: center; }
+  .ent-biocard ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .ent-biocard li { font-size: 14.5px; color: #4A4038; line-height: 1.5; padding-left: 18px; position: relative; }
+  .ent-biocard li::before { content: "·"; position: absolute; left: 5px; color: #9B72B0; font-weight: 700; }
+  .ent-biocard .rod { margin-top: 12px; font-size: 12.5px; color: #9A8FA8; font-style: italic; }
+
+  .cad-tab {
+    position: fixed; right: 110px; bottom: 96px; z-index: 60;
+    background: #FDFBF6; border: 1px solid #C9BFA8; border-radius: 999px;
+    padding: 11px 18px; font-size: 13.5px; color: #5B4970; cursor: pointer; font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45); display: none; align-items: center; gap: 7px;
+  }
+  .cad-tab.on { display: inline-flex; }
+  .cad-tab.pulsa { animation: cadpulsa .9s ease 2; }
+  @keyframes cadpulsa { 0%,100% { transform: scale(1); } 40% { transform: scale(1.12); box-shadow: 0 0 26px rgba(155,114,176,0.9); } }
+  .cad-painel {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 380px; max-width: 90vw; z-index: 70;
+    background: #FDFBF6; box-shadow: -14px 0 44px rgba(0,0,0,0.5);
+    transform: translateX(105%); transition: transform .35s cubic-bezier(.22,.9,.35,1);
+    padding: 30px 26px; overflow-y: auto;
+  }
+  .cad-painel.on { transform: translateX(0); }
+  .cad-painel h3 { font-family: Georgia, serif; font-size: 18px; color: #5B4970; display: flex; gap: 9px; align-items: center; }
+  .cad-painel .sub { font-size: 13px; color: #9A8FA8; margin: 6px 0 16px; }
+  .cad-linhas { display: flex; flex-direction: column; gap: 9px; }
+  .cad-linha { font-size: 14px; color: #4A4038; line-height: 1.5; background: #F6F1E6; border: 1px solid #E5DCC8; border-radius: 12px; padding: 11px 14px; animation: surge .35s ease both; }
+  .cad-linha b { color: #6B4F82; font-weight: 600; }
+  .cad-vazio { font-size: 13.5px; color: #B0A698; font-style: italic; }
+  .cad-fechar { margin-top: 18px; width: 100%; border: 1px solid #DCD2E4; background: #FFF; color: #6B4F82; font-size: 14px; padding: 12px; border-radius: 14px; cursor: pointer; }
+
+  /* ===== TELA PRINCIPAL — a casa ===== */
+  .home { width: 100%; max-width: 1180px; color: #4a3a2e; }
+  .home-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 38px; }
+  .home-hero { display: flex; gap: 48px; align-items: stretch; }
+  .home-foto { width: 400px; height: 470px; border-radius: 24px; background: #fffdf8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; flex-shrink: 0; position: relative; overflow: hidden; box-shadow: 0 26px 50px rgba(120,90,60,0.18), inset 0 2px 0 rgba(255,255,255,0.9); padding: 26px; }
+  .home-foto .moldura { width: 100%; height: 320px; border-radius: 16px; background: linear-gradient(160deg, #f6ecfa, #ead7f2); display:flex; align-items:center; justify-content:center; overflow: hidden; }
+  .home-foto .moldura img { transition: opacity .25s ease; }
+  .home-foto .thumbs { display:flex; gap:10px; }
+  .home-foto .thumbs span { width: 54px; height: 54px; border-radius: 10px; display:flex; align-items:center; justify-content:center; box-shadow: 0 6px 14px rgba(0,0,0,0.12); cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; overflow: hidden; }
+  .home-foto .thumbs span:hover { transform: translateY(-3px) scale(1.07); box-shadow: 0 10px 20px rgba(155,114,176,0.35); }
+  .home-foto .leg { color: rgba(110,85,60,0.6); font-size: 12px; font-style: italic; text-align: center; }
+  .home-dir { flex: 1; display: flex; flex-direction: column; }
+  .home-saud { color: #3a2a1f; font-size: 30px; font-weight: 600; line-height: 1.3; font-family: Georgia, "Times New Roman", serif; }
+  .home-sub { color: rgba(70,55,42,0.78); font-size: 16px; line-height: 1.7; margin-top: 14px; }
+  .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 30px; }
+  .menu-card { --cor: #9B72B0; --cord: #7d569a; background: #FBF8F0; border: 1px solid rgba(150,168,140,0.45); border-radius: 18px; padding: 20px 18px; cursor: pointer; box-shadow: 0 6px 16px rgba(90,80,60,0.10); transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+  .menu-card:hover { transform: translateY(-4px); box-shadow: 0 14px 26px rgba(var(--rgb),0.28); border-color: rgba(var(--rgb),0.55); }
+  .menu-card .ico { width: 48px; height: 48px; border-radius: 14px; display:flex; align-items:center; justify-content:center; background: linear-gradient(160deg, var(--cor), var(--cord)); box-shadow: 0 5px 12px rgba(var(--rgb),0.30); }
+  .menu-card .ico i { font-size: 25px; color: #fff; }
+  .menu-card .t { color: #3a2a1f; font-size: 16px; font-weight: 600; margin-top: 14px; font-family: Georgia, "Times New Roman", serif; }
+  .menu-card .d { color: rgba(70,55,42,0.6); font-size: 13px; line-height: 1.5; margin-top: 5px; }
+  .c-lilas  { --cor:#9B72B0; --cord:#7d569a; --rgb:155,114,176; }
+  .c-coral  { --cor:#E8806B; --cord:#cf6650; --rgb:232,128,107; }
+  .c-azul   { --cor:#5B9BD5; --cord:#427fb8; --rgb:91,155,213; }
+  .c-verde  { --cor:#5FB68C; --cord:#469873; --rgb:95,182,140; }
+  .c-laranja{ --cor:#E8A845; --cord:#cf8d2c; --rgb:232,168,69; }
+  .c-rosa   { --cor:#D873A8; --cord:#bd5a8f; --rgb:216,115,168; }
+  .home-rodape { text-align: center; margin-top: 34px; display: flex; gap: 16px; justify-content: center; align-items: center; }
+  .home-chip { display:flex; align-items:center; gap:12px; }
+  .home-chip .dogface { width:48px; height:48px; border-radius:50%; background:#fffdf8; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 18px rgba(155,114,176,0.34), inset 0 2px 0 rgba(255,255,255,0.9); }
+  .home-chip .dogface i { font-size:24px; color:#8a63ad; }
+  .home-chip .nome { font-size:22px; letter-spacing:0.5px; color:#3a2a1f; font-weight:600; font-family: Georgia, "Times New Roman", serif; }
+  .home-volta { color: rgba(70,55,42,0.55); font-size: 14px; font-style: italic; }
+  .btn-entrar.casa { background: linear-gradient(160deg,#ece1f6,#dac9ee); color:#5a3f76; border:1px solid rgba(155,114,176,0.32); box-shadow: 0 8px 18px rgba(155,114,176,0.26); }
+  .btn-entrar.acao-dor { background: linear-gradient(160deg,#9B72B0,#7d569a); color:#fff; }
+  .home-convite { color: rgba(70,55,42,0.7); font-size: 14.5px; font-style: italic; text-align: center; margin-top: 26px; }
+
+  /* ============================================================
+     MOBILE — pra Lê abrir no iPhone
+     ============================================================ */
+  @media (max-width: 740px) {
+    .tela { padding: 64px 18px 92px; }
+    .quadro { width: 100% !important; padding: 24px 18px !important; }
+    .tela-copy { font-size: 13.5px; line-height: 1.65; }
+    .col { width: 100%; max-width: 100%; }
+    .avatar { width: 50px; height: 50px; top: -22px; left: -6px; }
+    .caixa-mem { padding: 14px 14px 12px; gap: 10px; }
+    .fotos-fila { gap: 10px; }
+    .foto-min { width: 84px; height: 84px; }
+    .pular { top: 18px; right: 18px; font-size: 13px; }
+    .rotulo { top: 18px; left: 18px; font-size: 11.5px; }
+    .continuar { bottom: 58px; font-size: 11.5px; letter-spacing: 2px; }
+    .seta { display: none; }
+    .ajuda { display: none; }
+    .dots { bottom: 16px; gap: 7px; }
+    .dot { width: 7px; height: 7px; }
+    .reiniciar { bottom: 14px; left: 14px; font-size: 11.5px; }
+    .func-icone { width: 104px; height: 104px; }
+    .col h2 { font-size: 22px !important; margin-top: 18px !important; }
+    .balao { border-radius: 18px; }
+    .input-box { padding: 12px 16px; }
+    .input-box span { font-size: 13.5px; }
+    .pill { font-size: 13px; padding: 8px 13px; }
+    .btn-confirma { font-size: 14px; padding: 12px 22px; }
+
+    #tela-entrevista { padding: 58px 14px 16px; }
+    .ent-col { max-width: 100%; }
+    .ent-chat { padding: 26px 2px 10px; }
+    .ent-balao { font-size: 14px; padding: 12px 15px; max-width: 92%; }
+    .ent-balao .av-mini { width: 38px; height: 38px; top: -18px; left: -8px; }
+    .ent-entrada { margin-top: 10px; gap: 8px; }
+    .ent-entrada input { padding: 13px 18px; font-size: 14px; }
+    .ent-entrada button { width: 46px; height: 46px; font-size: 18px; }
+    .cad-tab { right: 12px; bottom: 86px; font-size: 12.5px; padding: 9px 14px; }
+    .cad-painel { width: 100vw; max-width: 100vw; }
+
+    #tela-casa { overflow-y: auto; align-items: flex-start; padding: 56px 16px 40px; }
+    .home-top { flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 18px; }
+    .home-volta { font-size: 12.5px; }
+    .home-hero { flex-direction: column; gap: 20px; }
+    .home-foto { width: 100%; height: auto; padding: 14px; gap: 10px; }
+    .home-foto .moldura { height: 230px; }
+    .home-saud { font-size: 22px; }
+    .home-sub { font-size: 14px; line-height: 1.6; margin-top: 10px; }
+    .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+    .menu-card { padding: 14px 12px; }
+    .menu-card .ico { width: 40px; height: 40px; }
+    .menu-card .ico i { font-size: 21px; }
+    .menu-card .t { font-size: 14px; margin-top: 10px; }
+    .menu-card .d { font-size: 11.5px; }
+    .home-convite { font-size: 13px; margin-top: 18px; }
+    .home-rodape { flex-direction: column; gap: 10px; margin-top: 20px; }
+    .btn-entrar { padding: 14px 30px; font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 1 — abertura: a moldura no escuro (o portal) -->
+<div class="tela ativa bg-noite">
+  <div class="presenca"></div>
+  <div class="quadro" style="width:560px;padding:50px 46px;">
+    <div class="c c-tl"></div><div class="c c-tr"></div><div class="c c-bl"></div><div class="c c-br"></div>
+    <div class="tela-copy">
+      <p>Este app não nasceu para resolver sua vida.<br>Nasceu para guardar melhor o que é seu.</p>
+      <p>Existem ótimos apps de agenda, finanças e organização — e tudo bem.</p>
+      <p>Aqui, o centro é a sua biblioteca pessoal, um segundo cérebro: notas, tarefas, contas, documentos e memórias.</p>
+      <p>Sobre esse conteúdo, só o seu, uma IA ajuda você a buscar, cruzar e lembrar. Com fonte. Sem mágica.</p>
+      <p>Lançar uma conta ou marcar um compromisso, qualquer app faz. A diferença é essa biblioteca.</p>
+    </div>
+  </div>
+  <div class="continuar" onclick="vaiSeq(1)">toque para entrar</div>
+</div>
+
+<!-- 2 — apresenta a Pinah + caixa de memórias -->
+<div class="tela bg-noite2">
+  <div class="presenca"></div>
+  <div style="text-align:center;">
+    <div class="quadro" style="width:540px;padding:46px 44px;margin:0 auto;">
+      <div class="c c-tl"></div><div class="c c-tr"></div><div class="c c-bl"></div><div class="c c-br"></div>
+      <div class="tela-copy">
+        <p>Essa é a Pinah. Minha cachorrinha de verdade: 6 anos, vira-lata, que chegou em casa em 2020 com só 45 dias.</p>
+        <p>Adora gente. Sempre que a gente chega, ela vem receber com um brinquedo na boca — alegre, do jeito dela.</p>
+        <p>Ela já era companhia antes de virar ideia.</p>
+        <p>Depois, o nome revelou uma coincidência bonita: P-IA-NAH.</p>
+        <p>A Pinah virou a assistente do app porque fazia sentido. Quem cuida da memória da gente também precisa ter um rosto de confiança.</p>
+      </div>
+    </div>
+    <div class="caixa-mem" style="margin-top:30px;">
+      <div class="caixa-titulo"><i class="ti ti-photo-heart"></i> caixa de memórias</div>
+      <div class="fotos-fila">
+        <div class="foto-min" style="--r:-4deg;"><img src="fotos-pinah/pinah-chegada-leticia.jpg" alt="Pinah no dia que chegou, com a Letícia" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"></div>
+        <div class="foto-min" style="--r:2deg;"><img src="fotos-pinah/pinah-filhote-terezo.jpg" alt="Pinah filhote com o Terezo Rato" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"></div>
+        <div class="foto-min" style="--r:-2deg;"><img src="fotos-pinah/pinah-avatar.jpg" alt="Pinah hoje" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"></div>
+      </div>
+      <div class="legenda">essas fotinhas reais ficam guardadas e reaparecem na casa</div>
+    </div>
+  </div>
+  <div class="continuar" onclick="vaiSeq(2)">toque para continuar</div>
+</div>
+
+<!-- 3 — manifesto: a moldura virou balão (chat vivo) -->
+<div class="tela bg-portal">
+  <div class="presenca"></div>
+  <div class="col">
+    <div class="balao morph" style="padding:52px 44px;min-height:300px;display:flex;align-items:center;justify-content:center;text-align:center;">
+      <div class="c c-tl"></div><div class="c c-tr"></div><div class="c c-bl"></div><div class="c c-br"></div>
+      <div class="avatar"><img src="fotos-pinah/pinah-neon.png" alt="Pinah" style="width:100%;height:100%;object-fit:cover;"></div>
+      <div style="color:rgba(255,255,255,0.92);font-size:18px;line-height:1.85;font-style:italic;max-width:560px;">
+        <p style="margin:0 0 14px;">A Pinah não quer, de forma alguma, alterar ou sugestionar o seu próprio conhecimento.</p>
+        <p style="margin:0 0 14px;">O que ela pretende é auxiliar você a encontrar aquele livro que você colocou na imensa biblioteca que você chama de cérebro — de forma rápida e organizada, poupando tempo nessa árdua tarefa de busca.</p>
+        <p style="margin:0 0 22px;">Para que você desfrute desse tempo para o que realmente importa: viver.</p>
+        <p style="margin:0;font-style:normal;font-weight:600;color:#fff;">A Pinah cuida. Você vive.</p>
+      </div>
+    </div>
+  </div>
+  <div class="continuar" onclick="vaiSeq(3)">toque para continuar</div>
+</div>
+
+<!-- 4 — ENTREVISTA VIVA -->
+<div class="tela bg-portal" id="tela-entrevista">
+  <div class="pular" onclick="pularEntrevista()">pular <i class="ti ti-chevron-right" style="font-size:14px;vertical-align:-1px;"></i></div>
+  <div class="ent-col">
+    <div class="ent-chat" id="entChat"></div>
+    <div class="ent-entrada travada" id="entEntrada">
+      <input type="text" id="entCampo" placeholder="escreve aqui o que quiser me contar..." autocomplete="off">
+      <button onclick="entEnviar()"><i class="ti ti-arrow-up"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- 5–9 funcionalidades -->
+<div class="tela bg-aberto" data-func="chat">
+  <div class="rotulo">o que eu faço · <span class="func-num"></span> de 5</div>
+  <div class="pular" onclick="vaiCasa()">pular <i class="ti ti-chevron-right" style="font-size:14px;vertical-align:-1px;"></i></div>
+  <div class="col" style="text-align:center;">
+    <div class="func-icone"><img src="icones-app/chat.png" alt="Chat" style="width:100%;height:100%;object-fit:cover;border-radius:32px;"></div>
+    <h2 style="font-weight:500;font-size:28px;margin-top:28px;">Chat</h2>
+    <p style="color:rgba(255,255,255,0.5);font-size:15px;margin-top:6px;">me pergunta o que quiser</p>
+    <div class="balao" style="padding:30px 34px;margin-top:24px;text-align:left;">
+      <div class="avatar"><img src="fotos-pinah/pinah-neon.png" alt="Pinah" style="width:100%;height:100%;object-fit:cover;"></div>
+      <span style="color:rgba(255,255,255,0.85);font-size:17px;line-height:1.8;">Pergunta em português normal e eu busco dentro do seu próprio material. Respondo com a fonte, sempre. Sem inventar, sem mágica.</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;justify-content:center;">
+      <span class="pill">o que guardei sobre isso?</span>
+      <span class="pill">resume minhas anotações</span>
+      <span class="pill">onde anotei aquilo?</span>
+    </div>
+    <div class="input-box" style="margin-top:20px;text-align:left;"><span>pergunta o que quiser...</span><i class="ti ti-arrow-up"></i></div>
+  </div>
+  <div class="continuar" onclick="proximaSeq()">toque para continuar</div>
+</div>
+
+<div class="tela bg-aberto" data-func="biblioteca">
+  <div class="rotulo">o que eu faço · <span class="func-num"></span> de 5</div>
+  <div class="pular" onclick="vaiCasa()">pular <i class="ti ti-chevron-right" style="font-size:14px;vertical-align:-1px;"></i></div>
+  <div class="col" style="text-align:center;">
+    <div class="func-icone"><img src="icones-app/biblioteca.png" alt="Biblioteca" style="width:100%;height:100%;object-fit:cover;border-radius:32px;"></div>
+    <h2 style="font-weight:500;font-size:28px;margin-top:28px;">Biblioteca</h2>
+    <p style="color:rgba(255,255,255,0.5);font-size:15px;margin-top:6px;">seu segundo cérebro</p>
+    <div class="balao" style="padding:30px 34px;margin-top:24px;text-align:left;">
+      <div class="avatar"><img src="fotos-pinah/pinah-neon.png" alt="Pinah" style="width:100%;height:100%;object-fit:cover;"></div>
+      <span style="color:rgba(255,255,255,0.85);font-size:17px;line-height:1.8;">Tudo que você me manda fica guardado aqui: notas, fotos, PDFs, áudios, recortes do WhatsApp. Eu não mexo no que é seu — só guardo, organizo e deixo fácil de achar de novo.</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;justify-content:center;">
+      <span class="pill">guarda essa nota</span>
+      <span class="pill">anexa um PDF</span>
+      <span class="pill">busca por assunto</span>
+    </div>
+    <div class="input-box" style="margin-top:20px;text-align:left;"><span>joga aqui o que quer guardar...</span><i class="ti ti-arrow-up"></i></div>
+  </div>
+  <div class="continuar" onclick="proximaSeq()">toque para continuar</div>
+</div>
+
+<div class="tela bg-aberto" data-func="agenda">
+  <div class="rotulo">o que eu faço · <span class="func-num"></span> de 5</div>
+  <div class="pular" onclick="vaiCasa()">pular <i class="ti ti-chevron-right" style="font-size:14px;vertical-align:-1px;"></i></div>
+  <div class="col" style="text-align:center;">
+    <div class="func-icone"><img src="icones-app/agenda.png" alt="Agenda" style="width:100%;height:100%;object-fit:cover;border-radius:32px;"></div>
+    <h2 style="font-weight:500;font-size:28px;margin-top:28px;">Agenda</h2>
+    <p style="color:rgba(255,255,255,0.5);font-size:15px;margin-top:6px;">seus compromissos no lugar</p>
+    <div class="balao" style="padding:30px 34px;margin-top:24px;text-align:left;">
+      <div class="avatar"><img src="fotos-pinah/pinah-neon.png" alt="Pinah" style="width:100%;height:100%;object-fit:cover;"></div>
+      <span style="color:rgba(255,255,255,0.85);font-size:17px;line-height:1.8;">Me conta o que tem marcado e eu cuido do resto: organizo, lembro na hora certa e te aviso antes pra nada passar batido.</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;justify-content:center;">
+      <span class="pill">marca um compromisso</span>
+      <span class="pill">o que tenho amanhã?</span>
+      <span class="pill">me lembra de...</span>
+    </div>
+    <div class="input-box" style="margin-top:20px;text-align:left;"><span>me conta o que marcar...</span><i class="ti ti-arrow-up"></i></div>
+  </div>
+  <div class="continuar" onclick="proximaSeq()">toque para continuar</div>
+</div>
+
+<div class="tela bg-aberto" data-func="financeiro">
+  <div class="rotulo">o que eu faço · <span class="func-num"></span> de 5</div>
+  <div class="pular" onclick="vaiCasa()">pular <i class="ti ti-chevron-right" style="font-size:14px;vertical-align:-1px;"></i></div>
+  <div class="col" style="text-align:center;">
+    <div class="func-icone"><img src="icones-app/financeiro.png" alt="Financeiro" style="width:100%;height:100%;object-fit:cover;border-radius:32px;"></div>
+    <h2 style="font-weight:500;font-size:28px;margin-top:28px;">Financeiro</h2>
+    <p style="color:rgba(255,255,255,0.5);font-size:15px;margin-top:6px;">suas contas sob controle</p>
+    <div class="balao" style="padding:30px 34px;margin-top:24px;text-align:left;">
+      <div class="avatar"><img src="fotos-pinah/pinah-neon.png" alt="Pinah" style="width:100%;height:100%;object-fit:cover;"></div>
+      <span style="color:rgba(255,255,255,0.85);font-size:17px;line-height:1.8;">Lança o que entra e o que sai e eu te ajudo a enxergar pra onde o dinheiro vai. Quem decide é você; eu só deixo claro.</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;justify-content:center;">
+      <span class="pill">lança uma despesa</span>
+      <span class="pill">quanto gastei esse mês?</span>
+      <span class="pill">minhas contas a pagar</span>
+    </div>
+    <div class="input-box" style="margin-top:20px;text-align:left;"><span>lança o que entrou ou saiu...</span><i class="ti ti-arrow-up"></i></div>
+  </div>
+  <div class="continuar" onclick="proximaSeq()">toque para continuar</div>
+</div>
+
+<div class="tela bg-aberto" data-func="tarefas">
+  <div class="rotulo">o que eu faço · <span class="func-num"></span> de 5</div>
+  <div class="pular" onclick="vaiCasa()">pular <i class="ti ti-chevron-right" style="font-size:14px;vertical-align:-1px;"></i></div>
+  <div class="col" style="text-align:center;">
+    <div class="func-icone"><img src="icones-app/tarefas.png" alt="Tarefas" style="width:100%;height:100%;object-fit:cover;border-radius:32px;"></div>
+    <h2 style="font-weight:500;font-size:28px;margin-top:28px;">Tarefas</h2>
+    <p style="color:rgba(255,255,255,0.5);font-size:15px;margin-top:6px;">o que precisa ser feito</p>
+    <div class="balao" style="padding:30px 34px;margin-top:24px;text-align:left;">
+      <div class="avatar"><img src="fotos-pinah/pinah-neon.png" alt="Pinah" style="width:100%;height:100%;object-fit:cover;"></div>
+      <span style="color:rgba(255,255,255,0.85);font-size:17px;line-height:1.8;">Joga aqui o que não pode esquecer. Eu guardo, organizo e te ajudo a tocar — do jeito que faz sentido pra sua rotina.</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;justify-content:center;">
+      <span class="pill">anota uma tarefa</span>
+      <span class="pill">o que falta fazer?</span>
+      <span class="pill">organiza minha lista</span>
+    </div>
+    <div class="input-box" style="margin-top:20px;text-align:left;"><span>o que não pode esquecer?</span><i class="ti ti-arrow-up"></i></div>
+  </div>
+  <div class="continuar" onclick="proximaSeq()">toque para continuar</div>
+</div>
+
+<!-- 10 — A CASA -->
+<div class="tela bg-casa" id="tela-casa">
+  <div class="home">
+    <div class="home-top">
+      <div class="home-chip">
+        <div class="dogface"><i class="ti ti-dog"></i></div>
+        <span class="nome">a casa da Pinah</span>
+      </div>
+      <div class="home-volta">você pode voltar aqui a qualquer momento</div>
+    </div>
+
+    <div class="home-hero">
+      <div class="home-foto">
+        <div class="moldura"><img id="fotoGrande" src="fotos-pinah/pinah-chegada-leticia.jpg" alt="Pinah no dia que chegou, com a Letícia" style="width:100%;height:100%;object-fit:cover;border-radius:16px;"></div>
+        <div class="thumbs">
+          <span><img src="fotos-pinah/pinah-formatura-2023.jpg" alt="Pinah formatura 2023" style="width:100%;height:100%;object-fit:cover;" onclick="trocaFoto(this)"></span>
+          <span><img src="fotos-pinah/pinah-filhote-janela.jpg" alt="Pinah filhote" style="width:100%;height:100%;object-fit:cover;" onclick="trocaFoto(this)"></span>
+          <span><img src="fotos-pinah/pinah-filhote-colo.jpg" alt="Pinah filhote no colo" style="width:100%;height:100%;object-fit:cover;" onclick="trocaFoto(this)"></span>
+        </div>
+        <span class="leg">toca numa fotinha pra trazer ela pro quadro</span>
+      </div>
+      <div class="home-dir">
+        <div class="home-saud" id="casaSaud">Que bom te ver por aqui 🐾</div>
+        <div class="home-sub">Essa é a nossa casa — onde mora tudo sobre a gente: quem você é pra mim, a minha história, os manuais e o controle da sua conta. Fica à vontade, toca no que quiser.</div>
+
+        <div class="menu-grid">
+          <div class="menu-card c-lilas"><div class="ico"><i class="ti ti-id-badge-2"></i></div><div class="t">Minha identificação</div><div class="d">o seu .md, o que a Pinah sabe de você</div></div>
+          <div class="menu-card c-coral"><div class="ico"><i class="ti ti-heart"></i></div><div class="t">História da Pinah</div><div class="d">quem é a Pinah, de verdade</div></div>
+          <div class="menu-card c-azul"><div class="ico"><i class="ti ti-book"></i></div><div class="t">Manuais</div><div class="d">como usar cada funcionalidade</div></div>
+          <div class="menu-card c-verde"><div class="ico"><i class="ti ti-clock"></i></div><div class="t">Tempo de uso</div><div class="d">quanto você já usou</div></div>
+          <div class="menu-card c-laranja"><div class="ico"><i class="ti ti-arrow-up-circle"></i></div><div class="t">Upgrades</div><div class="d">planos, módulos e recargas</div></div>
+          <div class="menu-card c-rosa"><div class="ico"><i class="ti ti-user-circle"></i></div><div class="t">Conta</div><div class="d">login, dados e privacidade</div></div>
+        </div>
+
+        <div class="home-convite" id="casaConvite" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="home-rodape">
+      <button class="btn-entrar acao-dor" id="casaAcaoDor" style="display:none;" onclick="alert('Fim do protótipo — aqui a pessoa entraria no app com o primeiro registro já encaminhado pela Pinah.')"></button>
+      <button class="btn-entrar casa" onclick="alert('Fim do protótipo — aqui a pessoa entraria no app.')"><i class="ti ti-arrow-right"></i> entrar no app</button>
+    </div>
+  </div>
+</div>
+
+<!-- caderninho -->
+<button class="cad-tab" id="cadTab" onclick="abrirCad()">📓 o que eu anotei</button>
+<div class="cad-painel" id="cadPainel">
+  <h3>📓 Pinah.md — suas diretrizes</h3>
+  <div class="sub">Isso é seu. Eu só organizo. Você pode mudar qualquer linha, a qualquer momento.</div>
+  <div class="cad-linhas" id="cadLinhas"><div class="cad-vazio">ainda não anotei nada…</div></div>
+  <button class="cad-fechar" onclick="fecharCad()">fechar caderninho</button>
+</div>
+
+<button class="seta" id="prev"><i class="ti ti-chevron-left"></i></button>
+<button class="seta" id="next"><i class="ti ti-chevron-right"></i></button>
+<div class="dots" id="dots"></div>
+<div class="reiniciar" onclick="location.reload()"><i class="ti ti-refresh"></i> recomeçar</div>
+<div class="ajuda">use as setas dos lados ou as setas ← → do teclado · na conversa, escreve ou toca nas pills</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   NAVEGAÇÃO POR SEQUÊNCIA
+   ════════════════════════════════════════════════════════════ */
+const telas = Array.from(document.querySelectorAll('.tela'));
+const ENTREVISTA_IDX = telas.findIndex(t => t.id === 'tela-entrevista');
+const CASA_IDX = telas.findIndex(t => t.id === 'tela-casa');
+const FUNC_IDXS = telas.map((t, k) => t.dataset.func ? k : -1).filter(k => k !== -1);
+
+let seq = telas.map((_, k) => k);
+let pos = 0;
+
+const dotsBox = document.getElementById('dots');
+telas.forEach((_, k) => { const d = document.createElement('div'); d.className = 'dot' + (k===0?' on':''); dotsBox.appendChild(d); });
+const dots = Array.from(dotsBox.children);
+
+function render() {
+  const atual = seq[pos];
+  telas.forEach((t, k) => t.classList.toggle('ativa', k === atual));
+  dots.forEach((d, k) => d.classList.toggle('on', k === pos));
+  document.getElementById('prev').disabled = (pos === 0);
+  document.getElementById('next').disabled = (pos === seq.length - 1);
+  document.body.classList.toggle('claro-ui', atual === CASA_IDX);
+  renumeraFuncs();
+  if (atual === ENTREVISTA_IDX) entComecaSePrecisa();
+  if (atual === CASA_IDX) preparaCasa();
+  cadTab.style.display = (atual === ENTREVISTA_IDX && bio.length) ? 'inline-flex' : 'none';
+}
+function vaiSeq(n) { pos = Math.max(0, Math.min(seq.length - 1, n)); render(); }
+function proximaSeq() { vaiSeq(pos + 1); }
+function vaiCasa() { vaiSeq(seq.indexOf(CASA_IDX)); }
+window.vaiSeq = vaiSeq; window.proximaSeq = proximaSeq; window.vaiCasa = vaiCasa;
+
+function renumeraFuncs() {
+  let n = 1;
+  seq.forEach(idx => {
+    const t = telas[idx];
+    if (t.dataset.func) {
+      const s = t.querySelector('.func-num');
+      if (s) s.textContent = n;
+      n++;
+    }
+  });
+}
+
+const DOR_PARA_FUNC = {
+  'Dinheiro e contas': 'financeiro',
+  'Compromissos e horários': 'agenda',
+  'Papelada e documentos': 'biblioteca',
+  'Ideias e anotações soltas': 'biblioteca'
+};
+function reordenaFuncs(dor) {
+  const alvo = DOR_PARA_FUNC[dor];
+  if (!alvo) return;
+  const funcsOrdenadas = FUNC_IDXS.slice().sort((a, b) => {
+    const fa = telas[a].dataset.func === alvo ? 0 : 1;
+    const fb = telas[b].dataset.func === alvo ? 0 : 1;
+    return fa - fb;
+  });
+  seq = [0, 1, 2, ENTREVISTA_IDX, ...funcsOrdenadas, CASA_IDX];
+}
+
+document.getElementById('prev').onclick = () => vaiSeq(pos - 1);
+document.getElementById('next').onclick = () => vaiSeq(pos + 1);
+document.addEventListener('keydown', e => {
+  if (document.activeElement && document.activeElement.id === 'entCampo') return;
+  if (e.key==='ArrowRight') vaiSeq(pos+1);
+  if (e.key==='ArrowLeft') vaiSeq(pos-1);
+});
+
+function ehInterativo(el){ return el.closest && el.closest('.pill, .input-box, .pular, .seta, .menu-card, .btn-entrar, .continuar, .ent-col, .cad-tab, .cad-painel, .reiniciar, .btn-confirma, .thumbs'); }
+document.addEventListener('click', e => {
+  if (seq[pos] === ENTREVISTA_IDX) return;
+  if (!ehInterativo(e.target)) vaiSeq(pos + 1);
+});
+let _tx = 0, _ty = 0;
+document.addEventListener('touchstart', e => { _tx = e.changedTouches[0].clientX; _ty = e.changedTouches[0].clientY; }, { passive: true });
+document.addEventListener('touchend', e => {
+  if (seq[pos] === ENTREVISTA_IDX) return;
+  const dx = e.changedTouches[0].clientX - _tx, dy = e.changedTouches[0].clientY - _ty;
+  if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) vaiSeq(dx < 0 ? pos + 1 : pos - 1);
+}, { passive: true });
+
+/* fotos da casa — tocar na fotinha traz ela pro quadro */
+function trocaFoto(thumb) {
+  const grande = document.getElementById('fotoGrande');
+  const s = grande.src, a = grande.alt;
+  grande.src = thumb.src; grande.alt = thumb.alt;
+  thumb.src = s; thumb.alt = a;
+}
+window.trocaFoto = trocaFoto;
+
+/* ════════════════════════════════════════════════════════════
+   ENTREVISTA VIVA
+   ════════════════════════════════════════════════════════════ */
+const entChat   = document.getElementById('entChat');
+const entrada   = document.getElementById('entEntrada');
+const campo     = document.getElementById('entCampo');
+const cadTab    = document.getElementById('cadTab');
+const cadPainel = document.getElementById('cadPainel');
+const cadLinhas = document.getElementById('cadLinhas');
+
+let bio = [];
+let nome = '';
+let dorEscolhida = '';
+let profAtual = null;
+let etapa = 0;
+let pillsAtuais = null;
+let entIniciada = false;
+let entConcluida = false;
+
+let luz = 0;
+function clarear() {
+  luz = Math.min(luz + 1, 6);
+  const alfa1 = 0.30 + luz * 0.045;
+  const alfa2 = 0.10 + luz * 0.030;
+  document.getElementById('tela-entrevista').style.background =
+    'radial-gradient(' + (140 + luz * 4) + '% ' + (110 + luz * 4) + '% at 50% 26%, rgba(155,114,176,' + alfa1.toFixed(3) + ') 0%, rgba(155,114,176,' + alfa2.toFixed(3) + ') 52%, #0a0712 100%)';
+}
+
+const PROFS = [
+  { k: ['advogad','advocacia','direito'], nome: 'advogado(a)',
+    rec: 'Um(a) advogado(a)! Então já sei que prazo, pra você, não é detalhe.',
+    q1: 'Que área do direito você mais atua?',
+    bag: 'seus processos, prazos e modelos de peça',
+    pos: 'A partir de agora eu falo com você como quem conhece rotina de escritório: <b>prazo é sagrado</b>, e cada processo tem nome, número e pasta.' },
+  { k: ['fono'], nome: 'fonoaudiólogo(a)',
+    rec: 'Fono! Área linda — e cheia de anotação de paciente, eu imagino.',
+    q1: 'Você atende mais crianças ou adultos?',
+    bag: 'suas anotações de pacientes, protocolos e evoluções',
+    pos: 'Vou tratar suas anotações como um <b>prontuário vivo</b>: caso a caso, com a evolução de cada paciente à mão quando você precisar.' },
+  { k: ['psicolog'], nome: 'psicólogo(a)',
+    rec: 'Psicologia! Então organização e sigilo andam juntos no seu dia.',
+    q1: 'Você atende mais crianças, adultos ou casais?',
+    bag: 'suas anotações de sessões e pacientes',
+    pos: 'Vou cuidar das suas anotações com a organização — e a discrição — que a clínica pede.' },
+  { k: ['medic','médic','doutora','doutor'], nome: 'médico(a)',
+    rec: 'Da medicina! Rotina pesada, anotação por todo lado.',
+    q1: 'Qual a sua especialidade?',
+    bag: 'seus casos, condutas e artigos',
+    pos: 'Vou manter seus casos e condutas organizados — e quando você perguntar, eu cito de onde tirei.' },
+  { k: ['veterinari'], nome: 'veterinário(a)',
+    rec: 'Veterinária?! Olha, eu sou suspeita pra falar… 🐾',
+    q1: 'Atende mais cães e gatos ou de tudo um pouco?',
+    bag: 'os históricos e exames dos seus pacientes peludos',
+    pos: 'Históricos, exames, medicações — eu guardo tudo por paciente. Sou pet, eu entendo a causa. 🐾' },
+  { k: ['professor','professora','aula','docente'], nome: 'professor(a)',
+    rec: 'Professor(a)! Materiais, provas, planejamento… sei bem o tamanho disso.',
+    q1: 'De que matéria ou nível são suas aulas?',
+    bag: 'seus materiais de aula, provas e planejamentos',
+    pos: 'Vou guardar seus materiais por turma e tema — e te ajudar a achar aquela atividade que você fez em 2023 e nunca mais encontrou.' },
+  { k: ['contador','contabil','contábil'], nome: 'contador(a)',
+    rec: 'Contabilidade! Prazos fiscais não perdoam, né?',
+    q1: 'Você atende mais empresas ou pessoas físicas?',
+    bag: 'os documentos e prazos fiscais dos seus clientes',
+    pos: 'Documento por cliente, prazo por mês — comigo nada vence em silêncio.' },
+  { k: ['estud','concurso','faculdade','enem','vestibular','mestrado'], nome: 'estudante',
+    rec: 'Estudando! Então a gente vai conversar muito sobre resumo e revisão.',
+    q1: 'Estudando pra quê? Concurso, faculdade, prova…?',
+    bag: 'suas anotações de estudo, apostilas e resumos',
+    pos: 'Apostila, resumo, dúvida — tudo vira acervo seu. E quando você me perguntar, eu respondo <b>citando a página de onde tirei</b>.' }
+];
+function detectaProf(txt) {
+  const t = txt.toLowerCase();
+  for (const p of PROFS) for (const kw of p.k) if (t.includes(kw)) return p;
+  return null;
+}
+
+function rolar() { entChat.scrollTop = entChat.scrollHeight + 400; }
+function balaoUser(txt) {
+  const b = document.createElement('div');
+  b.className = 'ent-balao user'; b.textContent = txt;
+  entChat.appendChild(b); rolar();
+}
+function pinahDiz(txt, opts) {
+  opts = opts || {};
+  return new Promise(ok => {
+    const d = document.createElement('div');
+    d.className = 'ent-balao ent-digitando';
+    d.innerHTML = '<i></i><i></i><i></i>';
+    entChat.appendChild(d); rolar();
+    setTimeout(() => {
+      d.remove();
+      const b = document.createElement('div');
+      b.className = 'ent-balao' + (opts.sussurro ? ' sussurro' : '');
+      if (opts.avatar) b.innerHTML = '<div class="av-mini"><img src="fotos-pinah/pinah-neon.png" alt="Pinah"></div>' + txt;
+      else b.innerHTML = txt;
+      entChat.appendChild(b); rolar();
+      ok();
+    }, opts.rapido ? 420 : 900);
+  });
+}
+function mostraPills(lista) {
+  removePills();
+  const box = document.createElement('div');
+  box.className = 'ent-pills';
+  lista.forEach(p => {
+    const bt = document.createElement('button');
+    if (p.acao) { bt.className = 'btn-confirma'; bt.innerHTML = '<i class="ti ti-check"></i> ' + p.t; }
+    else { bt.className = 'pill'; bt.textContent = p.t; }
+    bt.onclick = () => { box.remove(); pillsAtuais = null; p.f(p.t); };
+    box.appendChild(bt);
+  });
+  entChat.appendChild(box); pillsAtuais = box; rolar();
+}
+function mostraPillsMulti(opcoes, confirmar) {
+  removePills();
+  const box = document.createElement('div');
+  box.className = 'ent-pills';
+  const sel = [];
+  const dica = document.createElement('span');
+  dica.className = 'dica'; dica.textContent = 'pode marcar mais de uma 😉';
+  box.appendChild(dica);
+  const btOk = document.createElement('button');
+  btOk.className = 'btn-confirma';
+  btOk.innerHTML = '<i class="ti ti-check"></i> É isso';
+  btOk.style.display = 'none';
+  btOk.onclick = () => { box.remove(); pillsAtuais = null; confirmar(sel.slice()); };
+  opcoes.forEach(t => {
+    const bt = document.createElement('button');
+    bt.className = 'pill'; bt.textContent = t;
+    bt.onclick = () => {
+      const i = sel.indexOf(t);
+      if (i === -1) { sel.push(t); bt.classList.add('sel'); }
+      else { sel.splice(i, 1); bt.classList.remove('sel'); }
+      btOk.style.display = sel.length ? '' : 'none';
+      rolar();
+    };
+    box.appendChild(bt);
+  });
+  box.appendChild(btOk);
+  entChat.appendChild(box); pillsAtuais = box; rolar();
+}
+function removePills() { if (pillsAtuais) { pillsAtuais.remove(); pillsAtuais = null; } }
+function liberaCampo(ph) { campo.placeholder = ph || 'escreve aqui o que quiser me contar...'; entrada.classList.remove('travada'); }
+function travaCampo() { entrada.classList.add('travada'); campo.value = ''; }
+
+function anota(rotulo, txt) {
+  bio.push({ r: rotulo, t: txt });
+  if (bio.length === 1) { cadLinhas.innerHTML = ''; cadTab.classList.add('on'); cadTab.style.display = 'inline-flex'; }
+  const l = document.createElement('div');
+  l.className = 'cad-linha';
+  l.innerHTML = '<b>' + rotulo + ':</b> ' + txt;
+  cadLinhas.appendChild(l);
+  cadTab.classList.remove('pulsa'); void cadTab.offsetWidth; cadTab.classList.add('pulsa');
+}
+function abrirCad()  { cadPainel.classList.add('on'); }
+function fecharCad() { cadPainel.classList.remove('on'); }
+window.abrirCad = abrirCad; window.fecharCad = fecharCad;
+
+function recorte(txt) {
+  const t = txt.trim().replace(/\s+/g, ' ');
+  return t.length > 60 ? t.slice(0, 57) + '…' : t;
+}
+function juntaHumano(arr) {
+  if (arr.length === 1) return arr[0];
+  return arr.slice(0, -1).join(', ') + ' e ' + arr[arr.length - 1];
+}
+
+const PRIVACIDADE = {
+  'é privado mesmo?': 'É. O que você escreve aqui fica na sua conta e ninguém além de você lê. Nada vira propaganda, nada vai pra rede social.',
+  'onde ficam meus dados?': 'Guardados na sua conta, num servidor seguro. Você pode ver, mudar e apagar tudo quando quiser — inclusive o meu caderninho.',
+  'por que quer me conhecer?': 'Porque eu só sirvo de verdade pra quem eu conheço. E você vai ver <b>cada anotação</b> que eu fizer — nada escondido.'
+};
+function pillsPrivacidade() {
+  return Object.keys(PRIVACIDADE).map(q => ({ t: q, f: async (t) => {
+    balaoUser(t);
+    await pinahDiz(PRIVACIDADE[t], { rapido: true });
+    mostraPills(pillsPrivacidade());
+    liberaCampo('seu nome ou apelido...');
+  }}));
+}
+
+function entComecaSePrecisa() { if (!entIniciada) { entIniciada = true; entInicio(); } }
+
+async function entInicio() {
+  await pinahDiz('Pra eu te ajudar de um jeito mais <b>seu</b>, me conta um pouco sobre você: sua rotina, seu trabalho e o que você espera de mim.', { avatar: true });
+  await pinahDiz('Nossa conversa é privada — fica à vontade pra escrever o que quiser.', { sussurro: true, rapido: true });
+  await pinahDiz('Vamos por partes, sem pressa. Primeiro: <b>como você gosta de ser chamado?</b>');
+  etapa = 1;
+  liberaCampo('seu nome ou apelido...');
+  mostraPills(pillsPrivacidade());
+}
+
+async function trataResposta(txt) {
+  travaCampo(); removePills();
+  if (etapa === 1)  return respostaNome(txt);
+  if (etapa === 2)  return respostaRotinaLivre(txt);
+  if (etapa === 21) return respostaOQueFaz(txt);
+  if (etapa === 22) return respostaQ1Area(txt);
+  if (etapa === 23) return respostaOndeGuarda(txt);
+  if (etapa === 3)  return respostaCoracaoMulti([txt]);
+  if (etapa === 4)  return respostaTomMulti([txt]);
+}
+
+async function respostaNome(txt) {
+  nome = txt.replace(/[.!?]+$/, '').trim();
+  nome = nome.charAt(0).toUpperCase() + nome.slice(1);
+  balaoUser(txt);
+  anota('Gosta de ser chamado de', nome);
+  clarear();
+  await pinahDiz('<b>' + nome + '</b>! Já anotei no meu caderninho — olha ali no canto, ele vai crescendo enquanto a gente conversa. 📓');
+  await pinahDiz('Agora me conta do seu <b>dia a dia</b>: você trabalha, estuda, cuida de casa…? Pode marcar tudo que fizer parte.');
+  etapa = 2;
+  liberaCampo('ou escreve do seu jeito... ex: "sou advogado"');
+  mostraPillsMulti(
+    ['Trabalho por conta própria', 'Trabalho em empresa', 'Estudo', 'Cuido da casa e da família'],
+    respostaRotinaMulti
+  );
+}
+
+async function respostaRotinaMulti(sel) {
+  travaCampo(); removePills(); etapa = 0;
+  balaoUser(sel.join('  +  '));
+  anota('Rotina', juntaHumano(sel.map(s => s.toLowerCase())));
+  clarear();
+
+  const trabalha = sel.some(s => s.indexOf('Trabalho') === 0);
+  const estuda   = sel.includes('Estudo');
+  const casa     = sel.includes('Cuido da casa e da família');
+
+  if (sel.length > 1) {
+    await pinahDiz('Olha só — ' + juntaHumano(sel.map(s => s.toLowerCase())) + '. <b>Vida cheia!</b> Anotei tudo. ✍️', { rapido: true });
+  }
+  if (casa && !trabalha && !estuda) {
+    await pinahDiz('Cuidar de casa e de família é trabalho que ninguém anota. <b>Eu vou anotar.</b> ✍️', { rapido: true });
+    return perguntaDor();
+  }
+  if (casa) {
+    await pinahDiz('E cuidar de casa junto com o resto… isso eu não esqueço — vai pesar no quanto eu te ajudo a organizar o dia.', { sussurro: true, rapido: true });
+  }
+  if (trabalha) {
+    await pinahDiz('E me conta: <b>com o que você trabalha?</b>');
+    etapa = 21;
+    liberaCampo('ex: sou advogada, dou aulas, atendo clientes...');
+    mostraPills([
+      { t: 'Sou advogado(a)',  f: respostaOQueFaz },
+      { t: 'Atendo pacientes', f: respostaOQueFaz },
+      { t: 'Dou aulas',        f: respostaOQueFaz },
+      { t: 'Outra coisa',      f: respostaOQueFaz }
+    ]);
+    return;
+  }
+  if (estuda) return entraRamo(detectaProf('estudo'));
+  perguntaDor();
+}
+
+async function respostaRotinaLivre(txt) {
+  travaCampo(); removePills(); etapa = 0;
+  balaoUser(txt);
+  anota('Rotina', recorte(txt));
+  clarear();
+  const prof = detectaProf(txt);
+  if (prof) return entraRamo(prof);
+  await pinahDiz('Anotado! E me conta: <b>com o que você trabalha?</b>');
+  etapa = 21;
+  liberaCampo('ex: sou advogada, dou aulas, atendo clientes...');
+  mostraPills([
+    { t: 'Sou advogado(a)',  f: respostaOQueFaz },
+    { t: 'Atendo pacientes', f: respostaOQueFaz },
+    { t: 'Dou aulas',        f: respostaOQueFaz },
+    { t: 'Outra coisa',      f: respostaOQueFaz }
+  ]);
+}
+
+async function respostaOQueFaz(txt) {
+  travaCampo(); removePills(); etapa = 0;
+  balaoUser(txt);
+  let prof = detectaProf(txt);
+  if (!prof && txt === 'Atendo pacientes') prof = detectaProf('fono');
+  if (!prof && txt === 'Dou aulas') prof = detectaProf('professor');
+  if (prof) return entraRamo(prof);
+
+  if (txt !== 'Outra coisa') anota('Profissão', recorte(txt));
+  profAtual = { nome: recorte(txt), bag: 'as coisas do seu trabalho',
+    pos: 'Anotei! E a partir de agora eu vou aprendendo os detalhes do seu ofício com você, no uso — cada coisa que você me contar vira caderninho.' };
+  await pinahDiz('Legal! E hoje, <b>onde ficam as coisas do seu trabalho</b>? Caderno, planilha, aplicativo… ou na cabeça?', { rapido: true });
+  etapa = 23;
+  liberaCampo('me conta do seu jeito...');
+  mostraPillsMulti(
+    ['Na cabeça 🤯', 'Em planilhas', 'Num caderno', 'Espalhado em vários apps'],
+    sel => respostaOndeGuarda(sel.join(' + '))
+  );
+}
+
+async function entraRamo(prof) {
+  profAtual = prof;
+  anota('Profissão', prof.nome);
+  await pinahDiz(prof.rec);
+  await pinahDiz(prof.q1);
+  etapa = 22;
+  liberaCampo('responde do seu jeito...');
+}
+
+async function respostaQ1Area(txt) {
+  travaCampo(); removePills(); etapa = 0;
+  balaoUser(txt);
+  anota('Área de atuação', recorte(txt));
+  await pinahDiz('Anotei! ✍️ Última da área: hoje, <b>onde ficam ' + profAtual.bag + '</b>? Caderno, planilha, sistema… ou na cabeça?', { rapido: true });
+  etapa = 23;
+  liberaCampo('me conta do seu jeito...');
+  mostraPillsMulti(
+    ['Na cabeça 🤯', 'Em planilhas', 'Num caderno', 'Espalhado em vários apps'],
+    sel => respostaOndeGuarda(sel.join(' + '))
+  );
+}
+
+async function respostaOndeGuarda(txt) {
+  travaCampo(); removePills(); etapa = 0;
+  balaoUser(txt);
+  anota('Hoje organiza em', recorte(txt).toLowerCase());
+  clarear();
+  await pinahDiz('Perfeito — então é <b>exatamente aí</b> que eu entro. 😄', { rapido: true });
+  await pinahDiz(profAtual.pos);
+  perguntaDor();
+}
+
+async function perguntaDor() {
+  await pinahDiz('E me diz uma coisa: no geral, <b>o que mais toma seu tempo ou te preocupa hoje?</b> Pode marcar mais de um.');
+  mostraPillsMulti(
+    ['Dinheiro e contas', 'Compromissos e horários', 'Papelada e documentos', 'Ideias e anotações soltas'],
+    respostaDorMulti
+  );
+}
+
+const MAPA_DOR = {
+  'Dinheiro e contas': {
+    fala: 'Então deixa eu te contar: <b>organizar dinheiro é comigo mesma</b>. Você me diz "paguei 80 de luz" e eu registro, somo o mês e te aviso do que ainda vem. Sem planilha, sem sofrência.',
+    rotulo: 'organizar o dinheiro e as contas',
+    acaoFinal: 'registrar minha primeira conta 💸'
+  },
+  'Compromissos e horários': {
+    fala: 'Ótimo saber — <b>agenda é praia minha</b>. Você fala "consulta sexta às 15h" e eu guardo, te lembro e organizo a semana. Você nunca mais esquece nada por minha causa.',
+    rotulo: 'dar conta dos compromissos',
+    acaoFinal: 'marcar meu primeiro compromisso 📅'
+  },
+  'Papelada e documentos': {
+    fala: 'Perfeito, porque <b>guardar papel é meu talento</b>: receita, contrato, apostila, foto de documento… você me manda e eu guardo na sua biblioteca. Depois é só perguntar que eu acho — citando de onde tirei.',
+    rotulo: 'organizar documentos e arquivos',
+    acaoFinal: 'guardar meu primeiro documento 📄'
+  },
+  'Ideias e anotações soltas': {
+    fala: 'Então a gente vai se dar bem: <b>eu guardo tudo que passa pela sua cabeça</b>. Ideia no ônibus, frase de livro, lembrete… vira nota minha e nunca mais se perde. E quando precisar, eu encontro pra você.',
+    rotulo: 'guardar ideias e anotações',
+    acaoFinal: 'guardar minha primeira ideia 💡'
+  }
+};
+
+async function respostaDorMulti(sel) {
+  travaCampo(); removePills();
+  balaoUser(sel.join('  +  '));
+  const primeira = sel[0];
+  const m = MAPA_DOR[primeira] || MAPA_DOR['Ideias e anotações soltas'];
+  dorEscolhida = primeira;
+  anota(sel.length > 1 ? 'Prioridades' : 'Prioridade',
+        juntaHumano(sel.map(s => MAPA_DOR[s] ? MAPA_DOR[s].rotulo : s.toLowerCase())));
+  clarear();
+  await pinahDiz(m.fala);
+  if (sel.length > 1) {
+    const outras = sel.slice(1).map(s => s.toLowerCase());
+    await pinahDiz('E ' + juntaHumano(outras) + ' também é comigo — a gente vai por partes, começando pelo que pesa mais. 😉', { rapido: true });
+  }
+  await pinahDiz('Tá vendo o portal clareando? É o meu mundo se abrindo pra você. 💜', { sussurro: true, rapido: true });
+  await pinahDiz('Me conta mais uma: fora das obrigações, <b>o que (ou quem) ocupa seu coração?</b> Marca tudo que valer.');
+  etapa = 3;
+  liberaCampo('família, bicho de estimação, um hobby...');
+  mostraPillsMulti(
+    ['Minha família', 'Meu pet 🐾', 'Meus estudos', 'Prefiro contar depois'],
+    respostaCoracaoMulti
+  );
+}
+
+async function respostaCoracaoMulti(sel) {
+  travaCampo(); removePills(); etapa = 0;
+  balaoUser(sel.join('  +  '));
+  const soDepois = sel.length === 1 && sel[0] === 'Prefiro contar depois';
+  const validas = sel.filter(s => s !== 'Prefiro contar depois');
+  const temPet = validas.includes('Meu pet 🐾');
+  const temFam = validas.includes('Minha família');
+
+  if (soDepois) {
+    await pinahDiz('Tudo bem! O caderninho fica aberto — você me conta quando quiser.', { rapido: true });
+  } else {
+    anota('Ocupa o coração', juntaHumano(validas.map(s => s.replace(' 🐾','').toLowerCase())));
+    if (temPet && temFam) {
+      await pinahDiz('Família <b>e</b> pet — casa cheia de amor, do jeito que eu gosto. E aliás… eu TAMBÉM sou um pet, sabia? 🐾 Uma vira-lata de verdade, lá de Porto Alegre. A gente já se entende.');
+    } else if (temPet) {
+      await pinahDiz('A gente já nasceu amigo então — eu TAMBÉM sou um pet, sabia? 🐾 Uma vira-lata de verdade, lá de Porto Alegre.');
+    } else {
+      await pinahDiz('Que bom saber. Isso também vai no caderninho — porque organizar a vida é organizar <b>pra alguém</b>, né?', { rapido: true });
+    }
+  }
+  clarear();
+  await pinahDiz('Última coisa: <b>como você prefere que eu fale com você?</b> Pode marcar mais de um — eu me ajeito.');
+  etapa = 4;
+  liberaCampo('do seu jeito...');
+  mostraPillsMulti(
+    ['Direto ao ponto', 'Com calma, me explicando', 'Pode brincar comigo 😄'],
+    respostaTomMulti
+  );
+}
+
+async function respostaTomMulti(sel) {
+  travaCampo(); removePills(); etapa = 0;
+  balaoUser(sel.join('  +  '));
+  anota('Jeito de conversar', juntaHumano(sel.map(s => s.replace(' 😄', '').toLowerCase())));
+  clarear();
+  if (sel.includes('Direto ao ponto') && sel.includes('Pode brincar comigo 😄')) {
+    await pinahDiz('Direta <b>e</b> brincalhona — meu jeito favorito de existir. 🤝');
+  } else {
+    await pinahDiz('Combinado. 🤝');
+  }
+  mostraPacto();
+}
+
+async function mostraPacto() {
+  await pinahDiz('Prontinho' + (nome ? ', <b>' + nome + '</b>' : '') + '. Olha o que eu anotei sobre você:');
+  const card = document.createElement('div');
+  card.className = 'ent-biocard';
+  let lis = bio.map(l => '<li><b>' + l.r + ':</b> ' + l.t + '</li>').join('');
+  if (!lis) lis = '<li>Você preferiu não contar nada por enquanto — e tá tudo bem. Eu te conheço aos poucos.</li>';
+  card.innerHTML = '<h4>📓 Pinah.md — suas diretrizes</h4><ul>' + lis + '</ul>' +
+    '<div class="rod">Isso é seu. Fica guardado comigo, ninguém mais lê, e você pode mudar qualquer linha quando quiser.</div>';
+  entChat.appendChild(card); rolar();
+  await pinahDiz('Tá certo? É assim que eu vou te acompanhar a partir de agora.', { rapido: true });
+  mostraPills([
+    { t: 'Pode guardar 💜', acao: true, f: aprovar },
+    { t: 'Quero ajustar uma coisa',     f: ajustar }
+  ]);
+}
+
+async function ajustar() {
+  await pinahDiz('Na versão real, cada linha do caderninho vira editável aqui — você corrige e eu reaprendo na hora. <i>(No protótipo, seguimos em frente.)</i>', { rapido: true });
+  mostraPills([{ t: 'Pode guardar 💜', acao: true, f: aprovar }]);
+}
+
+async function aprovar() {
+  entConcluida = true;
+  reordenaFuncs(dorEscolhida);
+  await pinahDiz('Guardado! Agora deixa eu te mostrar <b>o que eu sei fazer</b> — começando pelo que mais pesa pra você. ✨', { rapido: true });
+  setTimeout(() => { vaiSeq(seq.indexOf(ENTREVISTA_IDX) + 1); }, 1300);
+}
+
+async function pularEntrevista() {
+  if (entConcluida) { vaiCasa(); return; }
+  travaCampo(); removePills();
+  entConcluida = true;
+  await pinahDiz('Sem problema! Eu te conheço aos poucos, no uso. O caderninho fica esperando — é só me chamar. 🐾', { rapido: true });
+  setTimeout(vaiCasa, 1200);
+}
+window.pularEntrevista = pularEntrevista;
+
+function preparaCasa() {
+  const saud = document.getElementById('casaSaud');
+  saud.textContent = nome ? ('Que bom te ver por aqui, ' + nome + ' 🐾') : 'Que bom te ver por aqui 🐾';
+  const m = MAPA_DOR[dorEscolhida];
+  if (m) {
+    const conv = document.getElementById('casaConvite');
+    conv.style.display = '';
+    conv.textContent = '“Você me disse que ' + m.rotulo + ' é o que mais pesa — quer começar por aí?”';
+    const btn = document.getElementById('casaAcaoDor');
+    btn.style.display = '';
+    btn.innerHTML = '<i class="ti ti-sparkles"></i> ' + m.acaoFinal;
+  }
+}
+
+function entEnviar() {
+  const t = campo.value.trim();
+  if (!t) return;
+  trataResposta(t);
+}
+window.entEnviar = entEnviar;
+campo.addEventListener('keydown', e => { if (e.key === 'Enter') entEnviar(); });
+
+render();
+</script>
+</body>
+</html>
