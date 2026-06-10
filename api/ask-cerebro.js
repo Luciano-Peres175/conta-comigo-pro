@@ -8,6 +8,7 @@
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-haiku-4-5-20251001';
+const { validarToken } = require('./_auth');
 
 // Cap de tokens para limitar custo por requisicao
 const MAX_OUTPUT_TOKENS = 1024;
@@ -59,7 +60,7 @@ module.exports = async (req, res) => {
   // CORS basico (mesmo dominio, mas seguro deixar liberado)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     res.status(204).end();
@@ -68,6 +69,12 @@ module.exports = async (req, res) => {
 
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Metodo nao permitido. Use POST.' });
+    return;
+  }
+
+  const usuario = await validarToken(req);
+  if (!usuario) {
+    res.status(401).json({ error: 'Não autorizado.' });
     return;
   }
 

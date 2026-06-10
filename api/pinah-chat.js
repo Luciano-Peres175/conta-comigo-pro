@@ -9,6 +9,8 @@
 // Modelo: claude-sonnet-4-6 (Sonnet — Pinah real, não Haiku)
 // NÃO mexer no /api/ask-cerebro.js — esse é a IA da Lê, mantém separado.
 
+const { validarToken } = require('./_auth');
+
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-sonnet-4-6';
 const MAX_OUTPUT_TOKENS = 2048;
@@ -270,7 +272,7 @@ function formatarContexto(ctx) {
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     res.status(204).end();
@@ -279,6 +281,12 @@ module.exports = async (req, res) => {
 
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Use POST.' });
+    return;
+  }
+
+  const usuario = await validarToken(req);
+  if (!usuario) {
+    res.status(401).json({ error: 'Não autorizado.' });
     return;
   }
 
