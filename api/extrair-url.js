@@ -68,6 +68,21 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // Detecta páginas de login / acesso restrito
+  const textoLower = textoLimpo.toLowerCase();
+  const loginPatterns = [
+    'sign in to continue', 'sign in with google', 'sign in with your account',
+    'log in to continue', 'please log in', 'login required',
+    'fazer login para continuar', 'faça login para', 'entrar na sua conta',
+    'você precisa fazer login', 'acesso restrito', 'acesso negado',
+    'authentication required', 'you must be logged in', 'access denied'
+  ];
+  const pareceLoginPage = textoLimpo.length < 4000 && loginPatterns.some(function(p) { return textoLower.includes(p); });
+  if (pareceLoginPage) {
+    res.status(400).json({ error: 'Essa página parece exigir login ou autenticação. Ela pode estar protegida — tenta colar o texto direto ou enviar como arquivo.' });
+    return;
+  }
+
   // 2. Claude Haiku estrutura o conteúdo
   try {
     const claudeResp = await fetch(ANTHROPIC_API_URL, {
