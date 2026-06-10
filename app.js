@@ -8892,8 +8892,8 @@ function oneToast(msg) {
   function importarSetTab(tab) {
     _impTabAtiva = tab;
     ['url','arquivo','imagem','csv'].forEach(function(t) {
-      var btn = document.getElementById('imp-tab-' + t);
-      var pane = document.getElementById('imp-pane-' + t);
+      var btn = document.querySelector('#modal-importar .imp-tab[data-tab="' + t + '"]');
+      var pane = document.getElementById('imp-tab-' + t);
       if (btn) btn.classList.toggle('active', t === tab);
       if (pane) pane.style.display = (t === tab) ? '' : 'none';
     });
@@ -8995,11 +8995,20 @@ function oneToast(msg) {
 
   // ── URL ───────────────────────────────────────────────────────
 
+  function _impUrlMostrarErro(msg) {
+    _impMostrarLoading(false);
+    var el = document.getElementById('imp-url-erro');
+    if (el) { el.textContent = msg; el.style.display = ''; }
+    toast(msg, 'error');
+  }
+
   async function importarProcessarURL() {
     var urlInput = document.getElementById('imp-url-input');
     var url = urlInput ? urlInput.value.trim() : '';
+    var erroEl = document.getElementById('imp-url-erro');
+    if (erroEl) erroEl.style.display = 'none';
     if (!url || !url.startsWith('http')) {
-      toast('Digite uma URL válida (começando com http).', 'error'); return;
+      _impUrlMostrarErro('Digite uma URL válida (começando com http).'); return;
     }
     _impMostrarLoading(true);
     const token = await authToken();
@@ -9010,12 +9019,11 @@ function oneToast(msg) {
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      if (data.error) { _impMostrarLoading(false); toast('Erro: ' + data.error, 'error'); return; }
+      if (data.error) { _impUrlMostrarErro(data.error); return; }
       _impMostrarPreview(data.titulo || 'Artigo importado', data.conteudo || '');
     })
     .catch(function() {
-      _impMostrarLoading(false);
-      toast('Falha ao conectar ao servidor.', 'error');
+      _impUrlMostrarErro('Falha ao conectar ao servidor. Tente novamente.');
     });
   }
   window.importarProcessarURL = importarProcessarURL;
@@ -9263,8 +9271,16 @@ function oneToast(msg) {
 
     var countEl = document.getElementById('imp-csv-count');
     if (countEl) countEl.textContent = transacoes.length + ' transações detectadas' + (transacoes.length > 50 ? ' (mostrando 50)' : '');
-    var tbodyEl = document.getElementById('imp-csv-tbody');
-    if (tbodyEl) tbodyEl.innerHTML = tbody;
+    var previewEl = document.getElementById('imp-csv-preview');
+    if (previewEl) {
+      previewEl.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px">' +
+        '<thead><tr style="border-bottom:1.5px solid #e8dff5;text-align:left">' +
+        '<th style="padding:6px 8px;color:#888;font-weight:600">Data</th>' +
+        '<th style="padding:6px 8px;color:#888;font-weight:600">Descrição</th>' +
+        '<th style="padding:6px 8px;color:#888;font-weight:600;text-align:right">Valor</th>' +
+        '<th style="padding:6px 8px;color:#888;font-weight:600">Tipo</th>' +
+        '</tr></thead><tbody>' + tbody + '</tbody></table>';
+    }
 
     _impSetStep(2);
   }
