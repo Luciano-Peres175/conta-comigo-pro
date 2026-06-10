@@ -8,6 +8,17 @@
   window.authUser = null;
   window.authProfile = null;
 
+  // Retorna o access_token da sessão Supabase ativa, ou '' se não logado.
+  // Usado para autenticar chamadas às funções serverless em /api.
+  async function authToken() {
+    if (!window.supa) return '';
+    try {
+      const { data: { session } } = await window.supa.auth.getSession();
+      return (session && session.access_token) ? session.access_token : '';
+    } catch (e) { return ''; }
+  }
+  window.authToken = authToken;
+
   /* ════════════════════════════════════════════════════════════════
      MULTI-TENANT — isola dados de cada conta no localStorage
      ════════════════════════════════════════════════════════════════
@@ -2719,9 +2730,10 @@
     document.getElementById('ia-erro-area').style.display = 'none';
 
     try {
+      const token = await authToken();
       const resp = await fetch('/api/ask-cerebro', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ question: pergunta, notes: notas })
       });
       const data = await resp.json();
@@ -4852,6 +4864,7 @@ async function pinahEnviar(texto, arquivo) {
     var textoTodosOsTurnos = '';    // soma de tudo que a Pinah disse no turno multi-step (vai pro pinahHistory no fim)
     var bubble   = emChat ? pinahAddBubble('pinah', '') : null;
     var mobBubble = null;
+    const pinahToken = await authToken();
     /* Pra suportar a Pinah operando dentro de funcionalidades:
        contextoTela é enviado pro backend pra filtrar tools, e
        algumaToolExecutada decide entre balão fugaz e fallback pro chat. */
@@ -4872,7 +4885,7 @@ async function pinahEnviar(texto, arquivo) {
     for (var turno = 0; turno < 3; turno++) {
       const resp = await fetch('/api/pinah-chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pinahToken },
         body: JSON.stringify({
           messages: currentMessages,
           context: pinahGetContext(),
@@ -8979,16 +8992,17 @@ function oneToast(msg) {
 
   // ── URL ───────────────────────────────────────────────────────
 
-  function importarProcessarURL() {
+  async function importarProcessarURL() {
     var urlInput = document.getElementById('imp-url-input');
     var url = urlInput ? urlInput.value.trim() : '';
     if (!url || !url.startsWith('http')) {
       toast('Digite uma URL válida (começando com http).', 'error'); return;
     }
     _impMostrarLoading(true);
+    const token = await authToken();
     fetch('/api/extrair-url', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ url: url })
     })
     .then(function(r) { return r.json(); })
@@ -9120,7 +9134,7 @@ function oneToast(msg) {
   }
   window.importarProcessarImagem = importarProcessarImagem;
 
-  function _impProcessarImagemFile(file) {
+  async function _impProcessarImagemFile(file) {
     var tiposOk = ['image/jpeg','image/jpg','image/png','image/gif','image/webp'];
     if (!tiposOk.includes(file.type.toLowerCase())) {
       toast('Use JPG, PNG ou WebP.', 'error'); return;
@@ -9129,13 +9143,14 @@ function oneToast(msg) {
       toast('Imagem muito grande (máx 5MB).', 'error'); return;
     }
     _impMostrarLoading(true);
+    const token = await authToken();
     var reader = new FileReader();
     reader.onload = function(e) {
       var dataUrl = e.target.result;
       var base64 = dataUrl.split(',')[1];
       fetch('/api/extrair-imagem', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ base64: base64, mimeType: file.type })
       })
       .then(function(r) { return r.json(); })
