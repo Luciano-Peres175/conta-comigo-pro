@@ -8879,13 +8879,13 @@ function oneToast(msg) {
     var urlIn = document.getElementById('imp-url-input');
     if (urlIn) urlIn.value = '';
     importarSetTab('url');
-    m.classList.add('open');
+    m.style.display = 'flex';
   }
   window.importarAbrir = importarAbrir;
 
   function importarFechar() {
     var m = document.getElementById('modal-importar');
-    if (m) m.classList.remove('open');
+    if (m) m.style.display = 'none';
   }
   window.importarFechar = importarFechar;
 
@@ -8914,9 +8914,12 @@ function oneToast(msg) {
   function _impMostrarLoading(show) {
     var el = document.getElementById('imp-loading');
     if (el) el.style.display = show ? '' : 'none';
-    var s1 = document.getElementById('imp-step1');
-    if (s1 && !show) s1.style.display = '';
-    if (s1 && show) s1.style.display = 'none';
+    // Esconde apenas os inputs/tabs — não o container imp-step1,
+    // pois imp-loading fica dentro dele e sumiria junto.
+    var inputs = document.getElementById('imp-step1-inputs');
+    if (inputs) inputs.style.display = show ? 'none' : '';
+    var tabs = document.querySelector('#modal-importar .imp-tabs');
+    if (tabs) tabs.style.display = show ? 'none' : '';
   }
 
   function _impMostrarPreview(titulo, conteudo) {
