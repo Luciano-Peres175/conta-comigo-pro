@@ -6,6 +6,7 @@
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-sonnet-4-6'; // Sonnet para melhor OCR em documentos
 const { validarToken } = require('./_auth');
+const { verificarCota, registrarConsumo } = require('./_quota');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,6 +17,10 @@ module.exports = async (req, res) => {
 
   const usuario = await validarToken(req);
   if (!usuario) { res.status(401).json({ error: 'Não autorizado.' }); return; }
+
+  const srvKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const cota = await verificarCota(usuario.id, srvKey);
+  if (!cota.permitido) { res.status(429).json({ error: cota.msg, quota_excedida: true }); return; }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) { res.status(500).json({ error: 'API não configurada.' }); return; }
@@ -94,6 +99,14 @@ Retorne APENAS um JSON válido:
     }
 
     const textoResposta = claudeData?.content?.[0]?.text || '';
+
+    // Registra consumo (fire-and-forget)
+    registrarConsumo(
+      usuario.id, 'extrair-imagem', MODEL,
+      claudeData?.usage?.input_tokens || 0,
+      claudeData?.usage?.output_tokens || 0,
+      srvKey
+    ).catch(e => console.error('[extrair-imagem] quota log err:', e));
 
     // Extrai JSON
     const jsonMatch = textoResposta.match(/\{[\s\S]*\}/);

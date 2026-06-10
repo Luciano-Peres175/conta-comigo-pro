@@ -9,6 +9,7 @@
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-haiku-4-5-20251001';
 const { validarToken } = require('./_auth');
+const { verificarCota, registrarConsumo } = require('./_quota');
 
 // Cap de tokens para limitar custo por requisicao
 const MAX_OUTPUT_TOKENS = 1024;
@@ -75,6 +76,14 @@ module.exports = async (req, res) => {
   const usuario = await validarToken(req);
   if (!usuario) {
     res.status(401).json({ error: 'Não autorizado.' });
+    return;
+  }
+
+  // Verifica cota diária
+  const srvKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const cota = await verificarCota(usuario.id, srvKey);
+  if (!cota.permitido) {
+    res.status(429).json({ error: cota.msg, quota_excedida: true });
     return;
   }
 
@@ -154,13 +163,18 @@ ${question.trim()}`;
       return;
     }
 
-    // Log basico para acompanhamento (Vercel logs)
+    const inputTok  = (data.usage && data.usage.input_tokens)  || 0;
+    const outputTok = (data.usage && data.usage.output_tokens) || 0;
+
     console.log('[ask-cerebro] OK', {
-      tokensInput: data.usage && data.usage.input_tokens,
-      tokensOutput: data.usage && data.usage.output_tokens,
+      tokensInput: inputTok, tokensOutput: outputTok,
       notasCount: Array.isArray(notes) ? notes.length : 0,
       perguntaLen: question.length
     });
+
+    // Registra consumo (fire-and-forget)
+    registrarConsumo(usuario.id, 'ask-cerebro', MODEL, inputTok, outputTok, srvKey)
+      .catch(e => console.error('[ask-cerebro] quota log err:', e));
 
     res.status(200).json({
       answer: content,

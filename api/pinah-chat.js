@@ -10,6 +10,7 @@
 // NÃO mexer no /api/ask-cerebro.js — esse é a IA da Lê, mantém separado.
 
 const { validarToken } = require('./_auth');
+const { verificarCota, registrarConsumo } = require('./_quota');
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-sonnet-4-6';
@@ -109,6 +110,18 @@ const TOOLS = [
     }
   }
 ];
+
+/* ─── Detecção de continuação por tool_result ───────────────────────
+   Quando o frontend faz multi-turn (turno 1+), a última mensagem do
+   array é { role:'user', content:[{type:'tool_result',...}] }.
+   Nesses turnos NÃO decrementamos cota — conta como 1 por mensagem. */
+function isContinuacaoTool(messages) {
+  if (!Array.isArray(messages) || !messages.length) return false;
+  const ultima = messages[messages.length - 1];
+  if (!ultima || ultima.role !== 'user') return false;
+  const content = ultima.content;
+  return Array.isArray(content) && content.some(function(c) { return c && c.type === 'tool_result'; });
+}
 
 /* ─── Filtro de tools por contexto de tela ─────────────────────────
    Quando o usuário fala com a Pinah de dentro de uma funcionalidade
@@ -308,6 +321,18 @@ module.exports = async (req, res) => {
 
   const { messages, context, profile, contextoTela } = body || {};
 
+  // Quota: turno 0 = mensagem do usuário (conta 1 unidade)
+  //        turno 1+ = continuação por tool_result (não conta)
+  const srvKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const ehContinuacao = isContinuacaoTool(messages);
+  if (!ehContinuacao) {
+    const cota = await verificarCota(usuario.id, srvKey);
+    if (!cota.permitido) {
+      res.status(429).json({ error: cota.msg, quota_excedida: true });
+      return;
+    }
+  }
+
   if (!Array.isArray(messages) || messages.length === 0) {
     res.status(400).json({ error: 'messages vazio.' });
     return;
@@ -378,6 +403,8 @@ module.exports = async (req, res) => {
     const decoder = new TextDecoder();
     let buffer = '';
     let currentBlock = null; // { type, name, id, inputBuffer }
+    let inputTokens = 0;     // capturado do message_start
+    let outputTokens = 0;    // capturado do message_delta
 
     while (true) {
       const { done, value } = await reader.read();
@@ -394,6 +421,14 @@ module.exports = async (req, res) => {
 
         try {
           const event = JSON.parse(data);
+
+          // Captura tokens de entrada/saída para registro de consumo
+          if (event.type === 'message_start') {
+            inputTokens = (event.message && event.message.usage && event.message.usage.input_tokens) || 0;
+          }
+          if (event.type === 'message_delta') {
+            outputTokens = (event.usage && event.usage.output_tokens) || 0;
+          }
 
           // Início de um bloco de conteúdo (text ou tool_use)
           if (event.type === 'content_block_start') {
@@ -437,7 +472,13 @@ module.exports = async (req, res) => {
     }
 
     res.end();
-    console.log('[pinah-chat] OK — stream concluído');
+    console.log('[pinah-chat] OK — stream concluído', { inputTokens, outputTokens });
+
+    // Registra consumo apenas no turno 0 (mensagem do usuário, não continuação de tool)
+    if (!ehContinuacao) {
+      registrarConsumo(usuario.id, 'pinah-chat', MODEL, inputTokens, outputTokens, srvKey)
+        .catch(e => console.error('[pinah-chat] quota log err:', e));
+    }
 
   } catch (err) {
     console.error('[pinah-chat] Erro inesperado:', err);
