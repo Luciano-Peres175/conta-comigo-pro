@@ -281,44 +281,40 @@
     if (typeof go === 'function') go('one');
   }
 
+  function _iniciaisEmail(email) {
+    var local = (email || '').split('@')[0];
+    var partes = local.split(/[.\-_]/).filter(Boolean);
+    if (partes.length >= 2) return (partes[0][0] + partes[1][0]).toUpperCase();
+    return (local[0] || '?').toUpperCase();
+  }
+
   function customizarCardSidebar() {
     const avatar = document.getElementById('sidebar-avatar');
     const nomeEl = document.getElementById('sidebar-nome');
     const tagEl  = document.getElementById('sidebar-tag');
-    if (!avatar || !nomeEl || !tagEl || !window.authProfile) return;
+    if (!avatar || !nomeEl || !tagEl) return;
 
-    const grupo = window.authProfile.grupo;
-    const nome  = window.authProfile.nome || '';
+    const email    = (window.authUser && window.authUser.email) || '';
+    const iniciais = _iniciaisEmail(email);
 
-    let iniciais, nomeCompleto, tag;
-    if (grupo === 'familia') {
-      // Familia: card fixo Leticia Kurtz / Fonoaudiologa (e o Luciano/Catia/Le sabem que e o app dela)
-      iniciais = 'LK';
-      nomeCompleto = 'Letícia Kurtz';
-      tag = 'Fonoaudióloga';
-    } else {
-      // Amigas: nome da pessoa + tag "Beta Próxima"
-      iniciais = nome.split(' ').filter(Boolean).slice(0,2).map(s => s[0]).join('').toUpperCase() || '??';
-      nomeCompleto = nome || 'Beta';
-      tag = 'Beta Próxima';
-    }
     avatar.textContent = iniciais;
-    nomeEl.textContent = nomeCompleto;
-    tagEl.textContent  = tag;
+    nomeEl.textContent = email || '—';
+    tagEl.textContent  = '';
 
-    // Card de identidade na sidebar esquerda (tela base): avatar + nome + profissão
+    // Card de identidade na sidebar esquerda (tela base)
     const contaAvatar = document.getElementById('one-desk-conta-avatar');
     const contaNome   = document.getElementById('one-desk-conta-nome');
     const contaTag    = document.getElementById('one-desk-conta-tag');
     if (contaAvatar) contaAvatar.textContent = iniciais;
-    if (contaNome)   contaNome.textContent   = nomeCompleto;
-    if (contaTag)    contaTag.textContent    = tag;
+    if (contaNome)   contaNome.textContent   = email || '—';
+    if (contaTag)    contaTag.textContent    = '';
 
-    // Badge das iniciais sobre o avatar central da Pinah no topbar mobile (tela base)
+    // Badge das iniciais no topbar mobile
     const mobBadge = document.getElementById('one-mob-pinah-badge');
     if (mobBadge) mobBadge.textContent = iniciais;
 
-    // Esconde funcoes de demo da Le pra quem nao e Familia
+    // Visibilidade de funções por grupo (demo, admin) continua funcionando
+    const grupo = (window.authProfile && window.authProfile.grupo) || '';
     aplicarVisibilidadePorGrupo(grupo);
   }
 
