@@ -4897,7 +4897,11 @@ async function pinahEnviar(texto, arquivo) {
         })
       });
 
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      if (!resp.ok) {
+        let errMsg = null;
+        try { const d = await resp.json(); if (d && d.error) errMsg = d.error; } catch(e) {}
+        throw new Error(errMsg || 'HTTP ' + resp.status);
+      }
 
       var fullText = '';
       var toolsLeitura = []; // { id, name, input, result }
@@ -5063,11 +5067,16 @@ async function pinahEnviar(texto, arquivo) {
     }
 
   } catch (err) {
+    const errMsg = (err && err.message) || '';
+    const ehGenerico = !errMsg || errMsg.startsWith('HTTP') || errMsg.toLowerCase().includes('fetch') || errMsg.toLowerCase().includes('network');
     if (emChat) {
       pinahTypingHide();
-      pinahAddBubble('pinah', '⚠️ Não consegui conectar com a Pinah. Verifique a conexão e tente de novo.');
+      pinahAddBubble('pinah', ehGenerico
+        ? '⚠️ Não consegui conectar com a Pinah. Verifique a conexão e tente de novo.'
+        : errMsg
+      );
     } else {
-      if (window.toast) window.toast('⚠️ Erro ao conectar com a Pinah.', 'error');
+      if (window.toast) window.toast(ehGenerico ? '⚠️ Erro ao conectar com a Pinah.' : errMsg, 'error');
     }
     console.error('[pinahEnviar]', err);
     /* Erro de rede vira sinal global — banner aparece pro usuário entender que é conectividade. */
@@ -9166,7 +9175,7 @@ function oneToast(msg) {
       })
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        if (data.error) { _impMostrarLoading(false); toast('Erro: ' + data.error, 'error'); return; }
+        if (data.error) { _impMostrarLoading(false); toast(data.error, 'error'); return; }
         _impMostrarPreview(data.titulo || 'Imagem importada', data.conteudo || '');
       })
       .catch(function() {
