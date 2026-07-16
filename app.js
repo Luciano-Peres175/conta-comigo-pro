@@ -12326,7 +12326,7 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
       nome: d.nome || d.descricao || 'Despesa fixa',
       contaIcone: conta ? (conta.icone || '🏦') : '',
       esperado: esperado,
-      aPagar: efetivo,
+      aPagar: Math.max(efetivo - pago, 0),
       diferenca: efetivo - esperado,
       pago: quitada,
       ref: 'fixa-d:' + fixaId + ':' + mesAno
@@ -12393,7 +12393,7 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
       dia: r.diaDoMes || (r.data ? parseInt(r.data.split('-')[2],10) : 1),
       nome: r.nome || r.descricao || 'Receita fixa',
       esperado: esperado,
-      aPagar: efetivo,
+      aPagar: Math.max(efetivo - pago, 0),
       diferenca: efetivo - esperado,
       pago: recebida,
       ref: 'fixa-r:' + fixaId + ':' + mesAno
