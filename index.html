@@ -1333,6 +1333,15 @@
       </div>
     </div>
 
+    <!-- Ferramentas de teste da entrada — só conta teste/admin vê.
+         aplicarVisibilidadePorGrupo() cuida do display; começam escondidas. -->
+    <div id="entrada-teste-box" style="display:none;gap:6px;padding:0 14px 10px;flex-wrap:wrap">
+      <button id="btn-entrada-reset" onclick="oneEntradaReset()" title="Apaga o Pinah.md e refaz a entrevista do zero"
+              style="flex:1;font-size:11px;padding:4px 8px;background:none;border:1px solid #9B72B0;color:#9B72B0;border-radius:6px;cursor:pointer">↺ Refazer entrevista</button>
+      <button id="btn-entrada-export" onclick="oneEntradaExportar()" title="Baixa respostas + Pinah.md + trocas com a Pinah"
+              style="flex:1;font-size:11px;padding:4px 8px;background:none;border:1px solid #27856A;color:#27856A;border-radius:6px;cursor:pointer">⭳ Exportar teste</button>
+    </div>
+
     <div class="sidebar-mesa-aux">
       <nav class="sidebar-nav">
         <button class="nav-item" id="nav-pinah" onclick="goOnePanel('chat')">

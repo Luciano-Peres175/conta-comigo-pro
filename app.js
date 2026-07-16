@@ -337,6 +337,9 @@
     // Botao de zerar financeiro — so admin ve
     const btnZerar = document.getElementById('btn-zerar-financeiro');
     if (btnZerar) btnZerar.style.display = ehAdmin ? '' : 'none';
+    // Ferramentas de teste da entrada (refazer entrevista / exportar) — so admin ve
+    const boxEntrada = document.getElementById('entrada-teste-box');
+    if (boxEntrada) boxEntrada.style.display = ehAdmin ? 'flex' : 'none';
   }
 
   // Bloqueio de seguranca: mesmo que alguem chame as funcoes pelo console, nao executa pra Amigas
@@ -9662,8 +9665,112 @@ function oneToast(msg) {
     }
   });
 
+  /* ── PASSO 5: refazer a entrevista do zero (só teste/admin) ──────
+     Apaga o Pinah.md do perfil e destrava o onboarding, pra dar pra criar e
+     testar personas diferentes sem precisar de conta nova. */
+  async function oneEntradaReset() {
+    if (!ehContaTeste()) { console.warn('[entrada] reset é só pra conta de teste'); return; }
+    if (!confirm('Refazer a entrevista?\n\nIsso apaga o Pinah.md do seu perfil e recomeça do zero. Seus lançamentos, tarefas e notas NÃO são tocados.')) return;
+
+    if (window.supa && window.authUser && window.authUser.id) {
+      try {
+        var res = await window.supa.from('profiles')
+          .update({ bio_pinah: null, onboarded: false })
+          .eq('id', window.authUser.id);
+        if (res && res.error) {
+          console.error('[entrada] reset falhou:', res.error);
+          if (typeof oneToast === 'function') oneToast('Não consegui limpar o caderninho no servidor.', 'error');
+          return;
+        }
+      } catch (e) {
+        console.error('[entrada] reset exceção:', e);
+        if (typeof oneToast === 'function') oneToast('Não consegui limpar o caderninho.', 'error');
+        return;
+      }
+    }
+    if (window.authProfile) {
+      window.authProfile.bio_pinah = null;
+      window.authProfile.onboarded = false;
+    }
+    try { localStorage.removeItem(oneU('entrada_teste')); } catch (e) {}
+    if (typeof oneToast === 'function') oneToast('✓ Caderninho apagado — bora de novo.');
+    oneEntradaAbrir();
+  }
+
+  /* ── PASSO 6: exportar o material do teste (só teste/admin) ──────
+     Junta o que a persona respondeu, o .md que o Sonnet escreveu em cima disso,
+     e as primeiras trocas com a Pinah — pra dar pra comparar, numa leitura só,
+     se o retrato bateu com o jeito que ela conversa. */
+  function oneEntradaExportar() {
+    if (!ehContaTeste()) { console.warn('[entrada] exportar é só pra conta de teste'); return; }
+
+    var mat = {};
+    try { mat = JSON.parse(localStorage.getItem(oneU('entrada_teste')) || '{}'); } catch (e) {}
+    var md = mat.md || (window.authProfile && window.authProfile.bio_pinah) || '';
+
+    var L = [];
+    L.push('# Teste da entrada — Conta Comigo One');
+    L.push('');
+    L.push('- Conta: ' + ((window.authUser && window.authUser.email) || '—'));
+    L.push('- Entrevista feita em: ' + (mat.em ? new Date(mat.em).toLocaleString('pt-BR') : '—'));
+    L.push('- Exportado em: ' + new Date().toLocaleString('pt-BR'));
+    L.push('');
+
+    L.push('## 1. O que a pessoa respondeu na entrevista');
+    L.push('');
+    if (Array.isArray(mat.respostas) && mat.respostas.length) {
+      mat.respostas.forEach(function (r) { L.push('- **' + (r.r || '?') + ':** ' + (r.t || '')); });
+    } else {
+      L.push('_(sem respostas guardadas nesta sessão — refaça a entrevista pra capturar)_');
+    }
+    if (mat.livre) {
+      L.push('');
+      L.push('**Pergunta aberta do fim — "tem algo mais que você quer que eu saiba sobre você?"**');
+      L.push('');
+      L.push('> ' + String(mat.livre).replace(/\n/g, '\n> '));
+    }
+    L.push('');
+
+    L.push('## 2. O Pinah.md que o Sonnet formou');
+    L.push('');
+    L.push(md ? md : '_(nenhum .md formado — o endpoint /api/formar-md falhou ou ainda não rodou)_');
+    L.push('');
+
+    L.push('## 3. Primeiras trocas com a Pinah nesta sessão');
+    L.push('');
+    var hist = (typeof pinahHistory !== 'undefined' && Array.isArray(pinahHistory)) ? pinahHistory : [];
+    if (!hist.length) {
+      L.push('_(nenhuma conversa com a Pinah nesta sessão — fale com ela antes de exportar, é isso que mostra se o .md pegou)_');
+    } else {
+      hist.slice(0, 10).forEach(function (m) {
+        var quem = m.role === 'user' ? 'Você' : 'Pinah';
+        var txt = typeof m.content === 'string'
+          ? m.content
+          : (Array.isArray(m.content)
+              ? m.content.filter(function (b) { return b && b.type === 'text'; }).map(function (b) { return b.text; }).join(' ')
+              : '[conteúdo não textual]');
+        L.push('**' + quem + ':** ' + txt);
+        L.push('');
+      });
+      if (hist.length > 10) L.push('_(+' + (hist.length - 10) + ' mensagens depois destas)_');
+    }
+
+    var blob = new Blob([L.join('\n')], { type: 'text/markdown;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'teste-entrada-pinah-' + new Date().toISOString().slice(0, 10) + '.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    if (typeof oneToast === 'function') oneToast('✓ Arquivo do teste baixado.');
+  }
+
   window.oneEntradaAbrir  = oneEntradaAbrir;
   window.oneEntradaFechar = oneEntradaFechar;
+  window.oneEntradaReset  = oneEntradaReset;
+  window.oneEntradaExportar = oneEntradaExportar;
   window.oneEntradaEhContaTeste = ehContaTeste;
 })();
 
