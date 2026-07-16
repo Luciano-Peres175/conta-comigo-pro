@@ -5799,8 +5799,7 @@ function oneFinSalvar() {
   supaUpsert(key, novoFin);
   oneFinLimpar();
   if (typeof oneToast==='function') oneToast('✓ ' + (oneFinTipoAtivo==='receita'?'Receita':'Despesa') + ' salva!');
-  if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
-  if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
+  if (typeof oneFinRenderTudo==='function') oneFinRenderTudo();
 }
 
 function oneFinPromptPinah() {
@@ -6292,9 +6291,8 @@ function zerarFinanceiro() {
   localStorage.setItem(oneU('receitas'), JSON.stringify([]));
   localStorage.setItem(oneU('despesas'), JSON.stringify([]));
   if (typeof oneToast==='function') oneToast('✓ Financeiro zerado.');
-  if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
   if (typeof renderCardFinanceiro==='function') renderCardFinanceiro();
-  if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
+  if (typeof oneFinRenderTudo==='function') oneFinRenderTudo();
 }
 
 /* ── Navegação de mês na Visão Geral (remendo Sessão C) ── */
@@ -6582,9 +6580,7 @@ function oneFinExcluir(key, id, dataInstancia) {
         if (typeof supaDelete === 'function') supaDelete(key, id);
         if (typeof oneToast === 'function') oneToast('✓ Fixa excluída por completo.');
       }
-      if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
-      if (typeof oneFinRenderFixas==='function') oneFinRenderFixas();
-      if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
+      if (typeof oneFinRenderTudo==='function') oneFinRenderTudo();
     });
     return;
   }
@@ -6615,8 +6611,7 @@ function oneFinExcluir(key, id, dataInstancia) {
           var n2 = oneFinLoteExcluirTodos(key, it.loteId);
           if (typeof oneToast === 'function') oneToast('✓ ' + n2 + ' parcelas excluídas (lote inteiro).');
         }
-        if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
-        if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
+        if (typeof oneFinRenderTudo==='function') oneFinRenderTudo();
       });
       return;
     }
@@ -6629,8 +6624,7 @@ function oneFinExcluir(key, id, dataInstancia) {
   localStorage.setItem(oneU(key), JSON.stringify(lista0));
   supaDelete(key, id);
   if (typeof oneToast==='function') oneToast('✓ Lançamento excluído.');
-  if (typeof renderOneFinanceiroPainel==='function') renderOneFinanceiroPainel();
-  if (typeof renderDesktopSidebar==='function') renderDesktopSidebar();
+  if (typeof oneFinRenderTudo==='function') oneFinRenderTudo();
 }
 
 /* Agora abre o modal de lançamento (em vez do form inline removido).
@@ -7511,7 +7505,12 @@ function oneFinMobPillAtiva() {
    geral usam os renders do desktop, que espelham o resultado pros containers
    mobile (ver final de renderOneFinanceiroPainel / oneFinRenderFixas /
    oneFinRenderGeral). */
-function oneFinMobRenderPane(pill) {
+/* preservarNav=true: só re-renderiza, sem mexer na navegação. Usado pelo
+   refresh (oneFinMobRefresh), que roda a cada mutação via oneFinRenderTudo —
+   sem isso, marcar algo pago com uma conta aberta no detalhe jogaria o Mentor
+   de volta pra lista. A entrada de fato na aba (oneFinMobSetPill) segue
+   resetando pro modo lista, como sempre. */
+function oneFinMobRenderPane(pill, preservarNav) {
   if (pill === 'resumo') {
     if (typeof oneFinRenderResumo === 'function') {
       oneFinRenderResumo({ caixaId: 'one-fin-mob-resumo-caixa', obrigId: 'one-fin-mob-resumo-obrig', investId: 'one-fin-mob-resumo-invest' });
@@ -7525,11 +7524,13 @@ function oneFinMobRenderPane(pill) {
   } else if (pill === 'contas') {
     /* Ao entrar na aba Contas, sempre começa no modo lista (não fica preso
        num detalhe aberto antes). Toca só os containers mobile. */
-    var _ml = document.getElementById('one-fin-mob-contas-modo-lista');
-    var _md = document.getElementById('one-fin-mob-contas-modo-detalhe');
-    if (_ml) _ml.hidden = false;
-    if (_md) _md.hidden = true;
-    window.oneFinContaAberta = null;
+    if (!preservarNav) {
+      var _ml = document.getElementById('one-fin-mob-contas-modo-lista');
+      var _md = document.getElementById('one-fin-mob-contas-modo-detalhe');
+      if (_ml) _ml.hidden = false;
+      if (_md) _md.hidden = true;
+      window.oneFinContaAberta = null;
+    }
     if (typeof oneFinRenderContas === 'function') oneFinRenderContas();
   } else {
     if (typeof renderOneFinanceiro === 'function') renderOneFinanceiro();
@@ -7540,7 +7541,7 @@ function oneFinMobRenderPane(pill) {
    do mês sempre, mesmo quando a pill ativa não é a Início. */
 function oneFinMobRefresh() {
   oneFinMobAtualizaMesLabel();
-  oneFinMobRenderPane(oneFinMobPillAtiva());
+  oneFinMobRenderPane(oneFinMobPillAtiva(), true);
 }
 window.oneFinMobRefresh = oneFinMobRefresh;
 
@@ -10857,9 +10858,8 @@ function oneFinContaModalSalvar() {
   window.oneFinContaModalCor   = null;
 
   oneFinContaModalFechar();
-  oneFinRenderContas();
   /* Garante que outras vistas que dependem do saldo (Resumo, Visão Geral) recarreguem */
-  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  if (typeof oneFinRenderTudo === 'function') oneFinRenderTudo();
 }
 window.oneFinContaModalSalvar = oneFinContaModalSalvar;
 
@@ -10880,7 +10880,7 @@ function oneFinContaModalExcluir() {
   if (!confirm(msg)) return;
   oneFinDeleteConta(id);
   oneFinContaModalFechar();
-  oneFinRenderContas();
+  if (typeof oneFinRenderTudo === 'function') oneFinRenderTudo();
   if (typeof oneToast === 'function') oneToast('Conta excluída.');
 }
 window.oneFinContaModalExcluir = oneFinContaModalExcluir;
@@ -11298,10 +11298,7 @@ function oneFinModalSalvar() {
     }
     oneFinModalFechar();
     if (typeof oneToast === 'function') oneToast('✓ Valor de ' + ovrMes.mesAno + ' ajustado (só este mês).');
-    if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
-    if (typeof renderDesktopSidebar === 'function') renderDesktopSidebar();
-    if (typeof oneFinRenderContas === 'function') oneFinRenderContas();
-    if (typeof oneFinRenderFixas === 'function') oneFinRenderFixas();
+    if (typeof oneFinRenderTudo === 'function') oneFinRenderTudo();
     return;
   }
 
@@ -11484,9 +11481,7 @@ function oneFinModalSalvar() {
 
   oneFinModalFechar();
   if (typeof oneToast === 'function') oneToast('✓ Lançamento salvo!');
-  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
-  if (typeof renderDesktopSidebar === 'function') renderDesktopSidebar();
-  if (typeof oneFinRenderContas === 'function') oneFinRenderContas();
+  if (typeof oneFinRenderTudo === 'function') oneFinRenderTudo();
 }
 window.oneFinModalSalvar = oneFinModalSalvar;
 
@@ -11726,6 +11721,7 @@ function oneFinBancoFecharMes(contaId, mesAno, marcar) {
   contas[idx] = c;
   localStorage.setItem(oneU('contas'), JSON.stringify(contas));
   if (typeof supaUpsert === 'function') supaUpsert('contas', c);
+  if (typeof oneFinRenderTudo === 'function') oneFinRenderTudo();
   return true;
 }
 window.oneFinBancoFecharMes = oneFinBancoFecharMes;
@@ -11794,6 +11790,12 @@ function oneFinCartaoMarcarFaturaPaga(contaId, mesAno, marcar, contaOrigemId, va
       });
     }
   }
+  /* Re-render aqui também porque esta função é chamada direto (toggle da bolinha,
+     desfazer pagamento) e não pode depender do chamador pra atualizar a tela.
+     Quando o chamador também chama oneFinRenderTudo, renderiza duas vezes no
+     mesmo tick — desperdício aceitável, sem efeito visual (os renders são
+     idempotentes e os gráficos dão destroy antes de recriar). */
+  if (typeof oneFinRenderTudo === 'function') oneFinRenderTudo();
   return true;
 }
 window.oneFinCartaoMarcarFaturaPaga = oneFinCartaoMarcarFaturaPaga;
@@ -11861,7 +11863,7 @@ function oneFinFaturaPagarConfirmar() {
   }
   oneFinCartaoMarcarFaturaPaga(cartaoId, mesAno, true, contaId, valor);
   oneFinFaturaPagarFechar();
-  if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
+  if (typeof oneFinRenderTudo === 'function') oneFinRenderTudo();
   if (typeof oneToast === 'function') oneToast('✓ Fatura paga — abatido do saldo');
 }
 window.oneFinFaturaPagarConfirmar = oneFinFaturaPagarConfirmar;
@@ -11917,7 +11919,7 @@ function oneFinResumoTogglePago(ref) {
     localStorage.setItem(oneU(keyE), JSON.stringify(listaE));
     if (typeof supaUpsert === 'function') supaUpsert(keyE, listaE[idx]);
   }
-  if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
+  if (typeof oneFinRenderTudo === 'function') oneFinRenderTudo();
 }
 window.oneFinResumoTogglePago = oneFinResumoTogglePago;
 
@@ -11963,9 +11965,7 @@ function oneFinResumoSetEfetivo(ref, valorEfetivo) {
   var raw = String(valorEfetivo == null ? '' : valorEfetivo).trim().replace(',', '.');
   var v = (raw === '') ? 0 : (parseFloat(raw) || 0);
   if (typeof oneFinFixaSetValorNoMes === 'function') oneFinFixaSetValorNoMes(key, fixaId, mes, v);
-  if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
-  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
-  if (typeof renderDesktopSidebar === 'function') renderDesktopSidebar();
+  if (typeof oneFinRenderTudo === 'function') oneFinRenderTudo();
 }
 window.oneFinResumoSetEfetivo = oneFinResumoSetEfetivo;
 
@@ -12000,7 +12000,7 @@ function oneFinResumoSetAPagar(ref, novoAPagar) {
   } else {
     return;
   }
-  if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
+  if (typeof oneFinRenderTudo === 'function') oneFinRenderTudo();
 }
 window.oneFinResumoSetAPagar = oneFinResumoSetAPagar;
 
@@ -12402,6 +12402,36 @@ function _oneFinResumoColetarObrigacoes(mes, ano) {
 
   return out;
 }
+
+/* Render central do Financeiro. Toda mutação (marcar pago, pagar fatura, editar
+   efetivo, excluir, salvar, fechar mês) chama SÓ esta função, em vez de escolher
+   a dedo quais pedaços re-renderizar. Antes cada ação atualizava um pedaço e o
+   resto (card grande SALDO EM CONTAS, aba Contas, aba Fixas, lateral) ficava com
+   valor velho até dar reload — não era conta errada, era render parcial.
+   Cada chamada é guardada por typeof porque o mesmo app.js roda no desktop e no
+   mobile, onde nem toda vista existe. Não otimiza (debounce/dirty-check): pro
+   volume de dados da família, re-renderizar tudo a cada ação é barato. */
+function oneFinRenderTudo() {
+  /* card grande + vista ativa + extrato */
+  if (typeof renderOneFinanceiroPainel === 'function') renderOneFinanceiroPainel();
+  /* bloco Caixa + Acompanhamento */
+  if (typeof oneFinRenderResumo === 'function') oneFinRenderResumo();
+  /* aba Contas */
+  if (typeof oneFinRenderContas === 'function') oneFinRenderContas();
+  /* aba Fixas */
+  if (typeof oneFinRenderFixas === 'function') oneFinRenderFixas();
+  /* cards da lateral direita */
+  if (typeof renderOneDesktop === 'function') renderOneDesktop();
+  /* painel mobile */
+  if (typeof oneFinMobRefresh === 'function') oneFinMobRefresh();
+  /* Detalhe da conta só se tiver uma aberta: sem conta aberta a função cai no
+     próprio guard e dispara oneFinVoltarContas(), que navegaria o Mentor pra
+     lista de contas do nada. */
+  if (window.oneFinContaAberta && typeof oneFinRenderContaDetalhe === 'function') {
+    oneFinRenderContaDetalhe();
+  }
+}
+window.oneFinRenderTudo = oneFinRenderTudo;
 
 function oneFinRenderResumo(opts) {
   /* opts opcional: { caixaId, obrigId, investId } pra renderizar em outro
