@@ -2275,6 +2275,21 @@
 </button>
 
 <!-- ═══════════════════════════════════════════════════════════════
+     ENTRADA PINAH — entrevista de boas-vindas (conta de teste/admin)
+     ═══════════════════════════════════════════════════════════════
+     A entrevista vive em entrada-preview.html e entra aqui por <iframe>.
+     É iframe de propósito: aquela tela tem `* { margin:0 }`, fundo #07050c e
+     fonte/ícones próprios (Tabler via CDN). Injetar esse CSS aqui pintaria o
+     app de preto e zeraria a margem de tudo. O iframe isola 100% — nenhuma
+     regra vaza pro app e nenhum card muda de tamanho.
+     Fica escondido até oneEntradaAbrir() chamar. -->
+<div id="ent-pinah-overlay" hidden
+     style="position:fixed;inset:0;z-index:11000;background:#07050c">
+  <iframe id="ent-pinah-frame" title="Entrada Pinah"
+          style="width:100%;height:100%;border:0;display:block"></iframe>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
      ONBOARDING — Primeira vez do usuário (Pinah se apresenta + tour)
 ═══════════════════════════════════════════════════════════════ -->
 <div id="pinah-onb-overlay" class="pinah-onb-overlay" hidden>

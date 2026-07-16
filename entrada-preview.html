@@ -504,8 +504,8 @@
     </div>
 
     <div class="home-rodape">
-      <button class="btn-entrar acao-dor" id="casaAcaoDor" style="display:none;" onclick="alert('Fim do protótipo — aqui a pessoa entraria no app com o primeiro registro já encaminhado pela Pinah.')"></button>
-      <button class="btn-entrar casa" onclick="alert('Fim do protótipo — aqui a pessoa entraria no app.')"><i class="ti ti-arrow-right"></i> entrar no app</button>
+      <button class="btn-entrar acao-dor" id="casaAcaoDor" style="display:none;" onclick="entrarNoApp('dor')"></button>
+      <button class="btn-entrar casa" onclick="entrarNoApp()"><i class="ti ti-arrow-right"></i> entrar no app</button>
     </div>
   </div>
 </div>
@@ -526,6 +526,31 @@
 <div class="ajuda">use as setas dos lados ou as setas ← → do teclado · na conversa, escreve ou toca nas pills</div>
 
 <script>
+/* ════════════════════════════════════════════════════════════
+   MODO APP — esta tela roda em dois contextos
+   ════════════════════════════════════════════════════════════
+   1) Aberta direto no navegador  → protótipo, como sempre foi.
+      Os botões finais dão alert, as respostas não vão pra lugar nenhum.
+   2) Embutida num <iframe> pelo app (onboarding real) → MODO_APP.
+      Aí: captura a resposta INTEIRA (sem o corte de ~57 chars do recorte()),
+      faz uma pergunta aberta a mais no fim, e devolve tudo pro app por
+      postMessage em vez de alert.
+
+   O iframe é de propósito: esta tela tem `* { margin:0 }`, `body{background:#07050c}`
+   e fonte/ícones próprios (Tabler via CDN). Injetar esse CSS no index.html
+   pintaria o app de preto e zeraria a margem de tudo. Dentro do iframe o
+   escopo é total — nada vaza, e nenhum dos 11 cards muda de tamanho. */
+const MODO_APP = (function () {
+  try { return window.parent && window.parent !== window; }
+  catch (e) { return false; }
+})();
+
+function appAvisa(tipo, dados) {
+  if (!MODO_APP) return;
+  try { window.parent.postMessage(Object.assign({ fonte: 'entrada-pinah', tipo: tipo }, dados || {}), '*'); }
+  catch (e) { console.warn('[entrada] postMessage falhou:', e); }
+}
+
 /* ════════════════════════════════════════════════════════════
    NAVEGAÇÃO POR SEQUÊNCIA
    ════════════════════════════════════════════════════════════ */
@@ -629,6 +654,7 @@ const cadLinhas = document.getElementById('cadLinhas');
 
 let bio = [];
 let nome = '';
+let livreTexto = '';   /* resposta da pergunta aberta do fim (vai separada pro Sonnet) */
 let dorEscolhida = '';
 let profAtual = null;
 let etapa = 0;
@@ -775,8 +801,13 @@ function abrirCad()  { cadPainel.classList.add('on'); }
 function fecharCad() { cadPainel.classList.remove('on'); }
 window.abrirCad = abrirCad; window.fecharCad = fecharCad;
 
+/* No protótipo corta em ~57 chars pra caber bonito no caderninho.
+   No app o texto vai INTEIRO: é isso que alimenta o Pinah.md — cortar aqui
+   jogaria fora justamente o detalhe que faz o retrato ser rico. E a pessoa
+   vê cada anotação, então mostrar o que ela escreveu de verdade é o combinado. */
 function recorte(txt) {
   const t = txt.trim().replace(/\s+/g, ' ');
+  if (MODO_APP) return t;
   return t.length > 60 ? t.slice(0, 57) + '…' : t;
 }
 function juntaHumano(arr) {
@@ -818,6 +849,7 @@ async function trataResposta(txt) {
   if (etapa === 23) return respostaOndeGuarda(txt);
   if (etapa === 3)  return respostaCoracaoMulti([txt]);
   if (etapa === 4)  return respostaTomMulti([txt]);
+  if (etapa === 5)  return respostaLivre(txt);
 }
 
 async function respostaNome(txt) {
@@ -1037,6 +1069,35 @@ async function respostaTomMulti(sel) {
   } else {
     await pinahDiz('Combinado. 🤝');
   }
+  perguntaLivre();
+}
+
+/* Pergunta aberta do fim. As anteriores são guiadas (pills, ramos, mapas) —
+   esta é a única em que a pessoa escolhe SOZINHA o que é importante contar.
+   Por isso vai separada pro endpoint, com peso alto no prompt do Sonnet. */
+async function perguntaLivre() {
+  await pinahDiz('Antes de eu guardar tudo: <b>tem algo mais que você quer que eu saiba sobre você?</b>');
+  await pinahDiz('Qualquer coisa — o que te irrita, o que você quer que eu nunca esqueça, como é o seu dia quando dá errado. Escreve à vontade, sem limite.', { sussurro: true, rapido: true });
+  etapa = 5;
+  liberaCampo('escreve o quanto quiser... ou pula');
+  mostraPills([
+    { t: 'Por enquanto é isso', f: () => respostaLivre('') }
+  ]);
+}
+
+async function respostaLivre(txt) {
+  travaCampo(); removePills(); etapa = 0;
+  const t = (txt || '').trim();
+  if (!t) {
+    balaoUser('Por enquanto é isso');
+    await pinahDiz('Fechado. O caderninho fica aberto — o resto eu aprendo no uso. 🐾', { rapido: true });
+  } else {
+    balaoUser(t);
+    livreTexto = t;
+    anota('Quis que eu soubesse', recorte(t));
+    await pinahDiz('Obrigada por isso. É o tipo de coisa que muda o jeito que eu falo com você. 💜', { rapido: true });
+  }
+  clarear();
   mostraPacto();
 }
 
@@ -1064,6 +1125,11 @@ async function ajustar() {
 async function aprovar() {
   entConcluida = true;
   reordenaFuncs(dorEscolhida);
+  /* Manda as respostas pro app formar o Pinah.md com o Sonnet. Dispara AQUI e
+     não no botão final de propósito: o .md leva alguns segundos pra ficar pronto
+     e a pessoa passa esse tempo vendo o tour dos cards. Quando ela clicar em
+     "entrar no app", já está salvo — sem spinner, sem espera. */
+  appAvisa('concluida', { respostas: bio.slice(), livre: livreTexto, nome: nome });
   await pinahDiz('Guardado! Agora deixa eu te mostrar <b>o que eu sei fazer</b> — começando pelo que mais pesa pra você. ✨', { rapido: true });
   setTimeout(() => { vaiSeq(seq.indexOf(ENTREVISTA_IDX) + 1); }, 1300);
 }
@@ -1090,6 +1156,18 @@ function preparaCasa() {
     btn.innerHTML = '<i class="ti ti-sparkles"></i> ' + m.acaoFinal;
   }
 }
+
+/* Botões finais da casa. No protótipo continuam explicando que é protótipo;
+   no app, avisam o pai pra fechar a entrada e liberar a tela. */
+function entrarNoApp(destino) {
+  if (!MODO_APP) {
+    alert('Fim do protótipo — aqui a pessoa entraria no app'
+      + (destino === 'dor' ? ' com o primeiro registro já encaminhado pela Pinah.' : '.'));
+    return;
+  }
+  appAvisa('entrar', { destino: destino || 'casa', dor: dorEscolhida || null });
+}
+window.entrarNoApp = entrarNoApp;
 
 function entEnviar() {
   const t = campo.value.trim();

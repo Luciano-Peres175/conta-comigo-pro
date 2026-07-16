@@ -157,8 +157,30 @@ function montarSystemPrompt(profile) {
   const primeiroNome = String(nome).split(' ')[0];
   const bio = (profile && profile.bio_pinah) ? String(profile.bio_pinah).trim() : '';
 
+  // bio_pinah tem dois formatos vivos hoje:
+  //  - o Pinah.md rico que o /api/formar-md escreve na entrada (retrato em texto
+  //    corrido, com seção "Como falar com ela") — detectado pelo cabeçalho '#';
+  //  - as 4 linhas rotuladas do onboarding antigo ("Nome preferido: ...").
+  // O .md merece instrução mais forte: ele TEM diretrizes de tom pra seguir,
+  // não é só pano de fundo pra calibrar.
+  const ehMd = /(^|\n)#{1,3}\s/.test(bio);
+
   const bloqueBio = bio
-    ? `\nO QUE ${primeiroNome.toUpperCase()} TE CONTOU SOBRE ELE(A) (use pra calibrar tom, exemplos e referências naturais — não cite literalmente):\n${bio}\n`
+    ? (ehMd
+        ? `\n═══ CADERNINHO DE ${primeiroNome.toUpperCase()} (Pinah.md) ═══
+Isto é o que você anotou sobre ${primeiroNome} quando se conheceram. É a SUA fonte
+sobre quem ${primeiroNome} é. Trate como verdade e aja de acordo:
+— siga as orientações de tom/tratamento que estiverem aqui; elas ganham da sua
+  preferência padrão de estilo, mas NUNCA das regras de segurança abaixo;
+— use o que está aqui pra escolher exemplos, prioridades e o que oferecer primeiro;
+— NÃO recite o caderninho de volta pra ${primeiroNome} nem diga "segundo suas
+  diretrizes". Ela sabe o que contou. Só aja como quem se lembra;
+— se algo aqui conflitar com o que ${primeiroNome} disser AGORA na conversa, o
+  agora vence — pessoas mudam, e o caderninho está desatualizado, não ela.
+
+${bio}
+═══ fim do caderninho ═══\n`
+        : `\nO QUE ${primeiroNome.toUpperCase()} TE CONTOU SOBRE ELE(A) (use pra calibrar tom, exemplos e referências naturais — não cite literalmente):\n${bio}\n`)
     : '';
 
   return `Você é a Pinah, assistente pessoal de ${nome} no app Conta Comigo One.

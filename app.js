@@ -238,6 +238,14 @@
        Tolerância: se a coluna `onboarded` ainda não existir no Supabase (não criada),
        authProfile.onboarded vem undefined — nesse caso seguimos o fluxo normal. */
     if (window.authProfile && window.authProfile.onboarded === false) {
+      /* Conta de teste/admin: entra pela entrevista nova (entrada-preview.html
+         em iframe), que forma o Pinah.md com o Sonnet no fim. Todo mundo mais
+         segue no onboarding das 4 perguntas, intocado. */
+      if (typeof window.oneEntradaEhContaTeste === 'function' && window.oneEntradaEhContaTeste()
+          && typeof window.oneEntradaAbrir === 'function') {
+        window.oneEntradaAbrir();
+        return;
+      }
       if (typeof window.oneOnboardingStart === 'function') {
         window.oneOnboardingStart();
         return;
@@ -9523,6 +9531,140 @@ function oneToast(msg) {
   window.oneOnboardingProximaFase  = oneOnboardingProximaFase;
   window.oneOnboardingResponder    = oneOnboardingResponder;
   window.oneOnboardingFinalizar    = oneOnboardingFinalizar;
+})();
+
+/* ════════════════════════════════════════════════════════════════
+   ENTRADA PINAH — entrevista de boas-vindas (conta de teste/admin)
+   ════════════════════════════════════════════════════════════════
+   Substitui o onboarding das 4 perguntas SÓ pra conta de teste/admin. As
+   outras contas seguem no oneOnboardingStart() de sempre, intocado.
+
+   A entrevista roda dentro de um iframe (entrada-preview.html) e conversa com
+   o app por postMessage:
+     'concluida' → a pessoa aprovou o caderninho. Chamamos /api/formar-md pra o
+                   Sonnet escrever o Pinah.md e salvar no perfil. Roda enquanto
+                   ela vê o tour dos cards, então não tem espera na tela.
+     'entrar'    → clicou "entrar no app". Fecha o iframe e libera o app.
+*/
+(function () {
+
+  /* Mesma checagem que o botão "Zerar" do financeiro usa (aplicarVisibilidadePorGrupo).
+     grupo 'admin' = luciano.peres@assessoriacap.com, semeado no mapa de emails do login. */
+  function ehContaTeste() {
+    return !!(window.authProfile && window.authProfile.grupo === 'admin');
+  }
+
+  function oneEntradaAbrir() {
+    var ov = document.getElementById('ent-pinah-overlay');
+    var fr = document.getElementById('ent-pinah-frame');
+    if (!ov || !fr) {
+      console.warn('[entrada] overlay não existe — caindo no onboarding antigo');
+      if (typeof window.oneOnboardingStart === 'function') window.oneOnboardingStart();
+      return;
+    }
+    /* cache-bust: o iframe não pode servir uma entrada velha depois de deploy */
+    fr.src = 'entrada-preview.html?app=1&t=' + Date.now();
+    ov.hidden = false;
+  }
+
+  function oneEntradaFechar() {
+    var ov = document.getElementById('ent-pinah-overlay');
+    var fr = document.getElementById('ent-pinah-frame');
+    if (ov) ov.hidden = true;
+    if (fr) fr.src = 'about:blank';   /* mata timers/áudio do protótipo */
+  }
+
+  /* Guarda o material do teste pra exportar depois (Passo 6).
+     localStorage e não Supabase: é material de teste, some com o navegador,
+     e não exige migração de schema. */
+  function guardarMaterial(patch) {
+    var atual = {};
+    try { atual = JSON.parse(localStorage.getItem(oneU('entrada_teste')) || '{}'); } catch (e) {}
+    var novo = Object.assign(atual, patch);
+    try { localStorage.setItem(oneU('entrada_teste'), JSON.stringify(novo)); } catch (e) {}
+    return novo;
+  }
+
+  async function formarMd(respostas, livre) {
+    guardarMaterial({ respostas: respostas, livre: livre, em: new Date().toISOString() });
+
+    if (!window.supa) { console.warn('[entrada] sem supa — .md não formado'); return; }
+    var sess = null;
+    try {
+      var s = await window.supa.auth.getSession();
+      sess = s && s.data && s.data.session;
+    } catch (e) {}
+    if (!sess || !sess.access_token) { console.warn('[entrada] sem sessão — .md não formado'); return; }
+
+    try {
+      var resp = await fetch('/api/formar-md', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sess.access_token },
+        body: JSON.stringify({ respostas: respostas, livre: livre })
+      });
+      if (!resp.ok) {
+        var msg = 'HTTP ' + resp.status;
+        try { var d = await resp.json(); if (d && d.error) msg = d.error; } catch (e) {}
+        throw new Error(msg);
+      }
+      var data = await resp.json();
+      if (data && data.md) {
+        /* Reflete local pra Pinah usar já nesta sessão, sem precisar recarregar */
+        if (window.authProfile) {
+          window.authProfile.bio_pinah = data.md;
+          window.authProfile.onboarded = true;
+        }
+        guardarMaterial({ md: data.md });
+        console.log('[entrada] Pinah.md formado e salvo (' + data.md.length + ' chars)');
+      }
+    } catch (e) {
+      /* Não trava a entrada: a pessoa entra no app mesmo se o .md falhar.
+         O onboarded já foi marcado no fim; ela não fica presa na entrevista. */
+      console.error('[entrada] falha ao formar o .md:', e.message);
+      if (typeof oneToast === 'function') oneToast('Entrei, mas não consegui montar seu caderninho agora. Dá pra refazer no Reset da entrevista.', 'error');
+    }
+  }
+
+  /* Rede: garante onboarded:true mesmo se /api/formar-md falhar — senão a
+     entrevista reabriria no próximo login e a pessoa ficaria em loop. */
+  async function marcarOnboarded() {
+    if (!(window.supa && window.authUser && window.authUser.id)) return;
+    try {
+      await window.supa.from('profiles').update({ onboarded: true }).eq('id', window.authUser.id);
+      if (window.authProfile) window.authProfile.onboarded = true;
+    } catch (e) { console.warn('[entrada] não consegui marcar onboarded:', e); }
+  }
+
+  window.addEventListener('message', function (ev) {
+    var d = ev.data;
+    if (!d || d.fonte !== 'entrada-pinah') return;
+
+    if (d.tipo === 'concluida') {
+      formarMd(d.respostas || [], d.livre || '');
+      return;
+    }
+
+    if (d.tipo === 'entrar') {
+      oneEntradaFechar();
+      marcarOnboarded();
+      /* Mesmo boot do fim do onboarding antigo */
+      if (typeof window.activateOne === 'function') window.activateOne();
+      if (typeof supaSync === 'function') { try { supaSync(); } catch (e) {} }
+      if (typeof oneFinRenderTudo === 'function') oneFinRenderTudo();
+      if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
+      if (typeof renderOneTarefasPainel === 'function') renderOneTarefasPainel();
+      if (typeof go === 'function') go('one');
+      /* Se ela escolheu uma dor, abre direto o painel que resolve ela */
+      var MAPA = { 'Dinheiro e contas': 'financeiro', 'Compromissos e horários': 'agenda',
+                   'Papelada e documentos': 'biblioteca', 'Ideias e anotações soltas': 'biblioteca' };
+      var painel = (d.destino === 'dor' && d.dor) ? MAPA[d.dor] : null;
+      if (painel && typeof goOnePanel === 'function') goOnePanel(painel);
+    }
+  });
+
+  window.oneEntradaAbrir  = oneEntradaAbrir;
+  window.oneEntradaFechar = oneEntradaFechar;
+  window.oneEntradaEhContaTeste = ehContaTeste;
 })();
 
 /* ════════════════════════════════════════════════════════════════
