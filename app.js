@@ -9794,10 +9794,239 @@ function oneToast(msg) {
     if (typeof oneToast === 'function') oneToast('✓ Arquivo do teste baixado.');
   }
 
+  /* ══════════════════════════════════════════════════════════════
+     MASSA DE DADOS FICTÍCIOS (só CONTAS_TESTE)
+     ══════════════════════════════════════════════════════════════
+     Seeder novo em vez de reusar o "Carregar demo" da família: aquele é do app
+     antigo — grava direto no localStorage sem supaUpsert (não sincroniza), não
+     conhece contas/cartões/fixas (o modelo do ONE financeiro) e é gated a
+     família. Não servia.
+
+     Aqui os objetos são montados na MESMA forma que oneFinModalSalvar/
+     oneFinAddConta/oneTarSalvar montam e vão pelo supaUpsert — a camada normal
+     do app —, então sincronizam e persistem igual dado de verdade.
+
+     IDs fixos com prefixo 'tst-' (em vez de uid() aleatório) pra ser repetível:
+     rodar de novo faz upsert por cima dos mesmos ids e recria a massa no estado
+     original, em vez de duplicar tudo. O prefixo também deixa a massa
+     identificável e limpável depois. */
+  var TST = 'tst-';
+
+  function _tstHoje() { return new Date(); }
+  function _tstISO(d) { return d.toISOString().slice(0, 10); }
+  function _tstDiasDeHoje(n) {
+    var d = _tstHoje(); d.setDate(d.getDate() + n); return _tstISO(d);
+  }
+  function _tstMesAtual() { return _tstISO(_tstHoje()).slice(0, 7); }
+  /* Dia D do mês corrente, respeitando meses curtos (dia 31 em fevereiro etc.) */
+  function _tstDiaDesteMes(dia) {
+    var h = _tstHoje();
+    var ultimo = new Date(h.getFullYear(), h.getMonth() + 1, 0).getDate();
+    return _tstISO(new Date(h.getFullYear(), h.getMonth(), Math.min(dia, ultimo)));
+  }
+
+  function _tstContas() {
+    var ancora = _tstDiaDesteMes(1);   /* saldo informado no 1º do mês */
+    return [
+      { id: TST + 'conta-nubank', nome: 'Nubank', tipo: 'banco', icone: '🏦', cor: '#9B72B0',
+        diaFechamento: null, diaVencimento: null, saldoInicial: 4820.5, saldoData: ancora, saldo: null },
+      { id: TST + 'conta-itau', nome: 'Itaú Corrente', tipo: 'banco', icone: '🏦', cor: '#E07A6B',
+        diaFechamento: null, diaVencimento: null, saldoInicial: 12350, saldoData: ancora, saldo: null },
+      { id: TST + 'conta-caixa', nome: 'Caixa Poupança', tipo: 'banco', icone: '🏦', cor: '#5B7CFA',
+        diaFechamento: null, diaVencimento: null, saldoInicial: 780.25, saldoData: ancora, saldo: null },
+      { id: TST + 'cartao-visa', nome: 'Visa Infinite', tipo: 'cartao', icone: '💳', cor: '#7B5CF0',
+        diaFechamento: 28, diaVencimento: 5, saldoInicial: null, saldoData: null, saldo: null },
+      { id: TST + 'cartao-master', nome: 'Mastercard Gold', tipo: 'cartao', icone: '💳', cor: '#D4A655',
+        diaFechamento: 20, diaVencimento: 28, saldoInicial: null, saldoData: null, saldo: null }
+    ].map(function (c) { return Object.assign(c, { criado: new Date().toISOString() }); });
+  }
+
+  /* Despesa avulsa na forma exata do oneFinModalSalvar.
+     faturaMesAno só existe pra cartão, e sai do oneFinCalcularFatura — é ele que
+     joga a compra pra fatura certa conforme o dia de fechamento. */
+  function _tstDespesa(id, nome, valor, data, cat, contaId, status, diaFech) {
+    return {
+      id: TST + id, nome: nome, descricao: nome, valor: valor, data: data, categoria: cat,
+      tipo: 'despesa', recorrencia: 'esporadica', status: status, contaId: contaId,
+      faturaMesAno: diaFech ? oneFinCalcularFatura(data, diaFech) : null,
+      criado: new Date().toISOString()
+    };
+  }
+  function _tstReceita(id, nome, valor, data, cat, contaId, status) {
+    return {
+      id: TST + id, nome: nome, descricao: nome, valor: valor, data: data, categoria: cat,
+      tipo: 'receita', recorrencia: 'esporadica', status: status, contaId: contaId,
+      faturaMesAno: null, criado: new Date().toISOString()
+    };
+  }
+
+  function _tstDespesas() {
+    var VISA = TST + 'cartao-visa', MASTER = TST + 'cartao-master';
+    return [
+      /* No cartão Visa (fecha dia 28) → caem na fatura em aberto */
+      _tstDespesa('d-mercado', 'Mercado do mês', 642.9, _tstDiasDeHoje(-6), 'Alimentação', VISA, 'pendente', 28),
+      _tstDespesa('d-farmacia', 'Farmácia', 128.4, _tstDiasDeHoje(-4), 'Saúde', VISA, 'pendente', 28),
+      _tstDespesa('d-posto', 'Posto Ipiranga', 250, _tstDiasDeHoje(-2), 'Transporte', VISA, 'pendente', 28),
+      _tstDespesa('d-restaurante', 'Almoço de domingo', 187.3, _tstDiasDeHoje(-1), 'Alimentação', VISA, 'pendente', 28),
+      /* No Mastercard (fecha dia 20) */
+      _tstDespesa('d-livraria', 'Livraria Cultura', 96.5, _tstDiasDeHoje(-8), 'Lazer', MASTER, 'pendente', 20),
+      _tstDespesa('d-streaming', 'Assinatura anual streaming', 214.9, _tstDiasDeHoje(-3), 'Lazer', MASTER, 'pendente', 20),
+      /* Direto do banco — pagas */
+      _tstDespesa('d-mecanico', 'Revisão do carro', 890, _tstDiasDeHoje(-12), 'Transporte', TST + 'conta-itau', 'pago'),
+      _tstDespesa('d-presente', 'Presente aniversário', 150, _tstDiasDeHoje(-9), 'Outros', TST + 'conta-nubank', 'pago'),
+      /* Direto do banco — a pagar */
+      _tstDespesa('d-dentista', 'Dentista (2ª sessão)', 380, _tstDiasDeHoje(3), 'Saúde', TST + 'conta-nubank', 'pendente'),
+      _tstDespesa('d-ipva', 'IPVA parcela 3/4', 412.75, _tstDiasDeHoje(6), 'Impostos', TST + 'conta-itau', 'pendente')
+    ];
+  }
+
+  function _tstReceitas() {
+    return [
+      _tstReceita('r-freela', 'Freela — landing page', 2500, _tstDiasDeHoje(-10), 'Freelance', TST + 'conta-nubank', 'pago'),
+      _tstReceita('r-consultoria', 'Consultoria mensal', 1800, _tstDiasDeHoje(-5), 'Serviços', TST + 'conta-itau', 'pago'),
+      _tstReceita('r-reembolso', 'Reembolso convênio', 320, _tstDiasDeHoje(4), 'Reembolso', TST + 'conta-nubank', 'pendente')
+    ];
+  }
+
+  function _tstDespesasFixas() {
+    var ini = _tstMesAtual();
+    var mk = function (id, nome, valor, dia, cat, contaId) {
+      return {
+        id: TST + id, nome: nome, descricao: nome, valor: valor, categoria: cat,
+        tipo: 'despesa', recorrencia: 'fixa', diaDoMes: dia, inicio: ini,
+        contaId: contaId, criado: new Date().toISOString()
+      };
+    };
+    return [
+      mk('f-aluguel',   'Aluguel',        2200, 5,  'Moradia',   TST + 'conta-itau'),
+      mk('f-luz',       'Luz (CEEE)',      180, 10, 'Moradia',   TST + 'conta-nubank'),
+      mk('f-agua',      'Água (DMAE)',      95, 12, 'Moradia',   TST + 'conta-nubank'),
+      mk('f-internet',  'Internet fibra',  129, 15, 'Moradia',   TST + 'conta-nubank'),
+      mk('f-academia',  'Academia',        149, 8,  'Saúde',     TST + 'conta-nubank'),
+      mk('f-celular',   'Celular',          70, 20, 'Outros',    TST + 'conta-itau')
+    ];
+  }
+
+  function _tstReceitasFixas() {
+    return [{
+      id: TST + 'rf-salario', nome: 'Salário', descricao: 'Salário', valor: 7800,
+      categoria: 'Salário', tipo: 'receita', recorrencia: 'fixa', diaDoMes: 5,
+      inicio: _tstMesAtual(), contaId: TST + 'conta-itau', criado: new Date().toISOString()
+    }];
+  }
+
+  function _tstCompromissos() {
+    var mk = function (id, dias, hora, nome, tipo, valor, realizado, dur) {
+      return {
+        id: TST + id, data: _tstDiasDeHoje(dias), hora: hora, nome: nome, tipo: tipo,
+        valor: valor, status: realizado ? 'Confirmado' : 'Pendente',
+        realizado: !!realizado, duracao: dur || 60
+      };
+    };
+    return [
+      mk('c-1', -7, '09:00', 'Reunião de alinhamento — cliente A', 'Reunião', 0, true, 60),
+      mk('c-2', -5, '14:30', 'Consulta médica de rotina', 'Pessoal', 250, true, 45),
+      mk('c-3', -2, '10:00', 'Call de projeto — cliente B', 'Reunião', 0, true, 30),
+      mk('c-4', 0, '11:00', 'Almoço com a equipe', 'Pessoal', 0, false, 90),
+      mk('c-5', 0, '16:00', 'Apresentação da proposta', 'Reunião', 0, false, 60),
+      mk('c-6', 1, '09:30', 'Dentista — 2ª sessão', 'Pessoal', 380, false, 60),
+      mk('c-7', 3, '15:00', 'Reunião com contador', 'Reunião', 0, false, 60),
+      mk('c-8', 8, '19:00', 'Aniversário da Ana', 'Pessoal', 0, false, 180)
+    ];
+  }
+
+  function _tstTarefas() {
+    var mk = function (id, titulo, area, prio, dias, concluida) {
+      var prazo = (dias === null) ? '' : _tstDiasDeHoje(dias);
+      return {
+        id: TST + id, titulo: titulo, nome: titulo, area: area, prioridade: prio,
+        prazo: prazo, data: prazo, concluida: !!concluida,
+        status: concluida ? 'concluida' : 'aberta', criado: new Date().toISOString()
+      };
+    };
+    return [
+      mk('t-1', 'Enviar proposta pro cliente B',        'Trabalho', 'alta',   1,    false),
+      mk('t-2', 'Pagar o IPVA (parcela 3)',             'Casa',     'alta',   6,    false),
+      mk('t-3', 'Revisar contrato de aluguel',          'Casa',     'normal', 12,   false),
+      mk('t-4', 'Marcar revisão do carro',              'Casa',     'baixa',  null, false),
+      mk('t-5', 'Estudar 30min de inglês',              'Pessoal',  'normal', null, false),
+      mk('t-6', 'Fechar o mês no financeiro',           'Trabalho', 'alta',   -1,   false),
+      mk('t-7', 'Comprar presente da Ana',              'Pessoal',  'normal', 7,    false),
+      mk('t-8', 'Atualizar currículo',                  'Pessoal',  'baixa',  null, true),
+      mk('t-9', 'Enviar nota fiscal do freela',         'Trabalho', 'alta',   -3,   true)
+    ];
+  }
+
+  /* Escreve uma lista no localStorage substituindo só os itens 'tst-' e
+     preservando o que a pessoa tiver criado à mão no teste. Depois sobe cada um
+     pelo supaUpsert. */
+  async function _tstGravar(localKey, itens) {
+    var atual = [];
+    try { atual = JSON.parse(localStorage.getItem(oneU(localKey)) || '[]'); } catch (e) {}
+    var doUsuario = atual.filter(function (i) {
+      return !(i && typeof i.id === 'string' && i.id.indexOf(TST) === 0);
+    });
+    localStorage.setItem(oneU(localKey), JSON.stringify(doUsuario.concat(itens)));
+    for (var i = 0; i < itens.length; i++) {
+      if (typeof supaUpsert === 'function') {
+        try { await supaUpsert(localKey, itens[i]); } catch (e) {
+          console.warn('[teste] supaUpsert falhou em', localKey, itens[i].id, e);
+        }
+      }
+    }
+  }
+
+  async function oneEntradaPopular() {
+    if (!ehContaTeste()) { console.warn('[teste] popular é só pra conta de teste'); return; }
+    var quem = (window.authUser && window.authUser.email) || '(conta atual)';
+    if (!confirm(
+      'POPULAR DADOS DE TESTE\n\n' +
+      'Conta: ' + quem + '\n\n' +
+      'Cria uma massa fictícia: 3 bancos, 2 cartões com fatura em aberto, ' +
+      '10 despesas, 3 receitas, 6 contas fixas, 1 salário, 8 compromissos e 9 tarefas.\n\n' +
+      'Rodar de novo recria tudo no estado original (o que você tiver marcado como pago volta atrás). ' +
+      'Itens que você criar à mão não são tocados.\n\n' +
+      'Continuar?'
+    )) return;
+
+    var btn = document.getElementById('btn-entrada-popular');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ populando...'; }
+
+    try {
+      await _tstGravar('contas',        _tstContas());
+      await _tstGravar('despesas',      _tstDespesas());
+      await _tstGravar('receitas',      _tstReceitas());
+      await _tstGravar('despesasFixas', _tstDespesasFixas());
+      await _tstGravar('receitasFixas', _tstReceitasFixas());
+      await _tstGravar('compromissos',  _tstCompromissos());
+
+      var tarefas = _tstTarefas();
+      await _tstGravar('tarefas', tarefas);
+      /* O kanban só desenha as colunas que estiverem em tarefas_areas — sem isso
+         as tarefas entram mas ficam invisíveis. Mescla com as áreas que já existem. */
+      var areas = [];
+      try { areas = JSON.parse(localStorage.getItem(oneU('tarefas_areas')) || '[]'); } catch (e) {}
+      tarefas.forEach(function (t) { if (t.area && areas.indexOf(t.area) === -1) areas.push(t.area); });
+      localStorage.setItem(oneU('tarefas_areas'), JSON.stringify(areas));
+
+      if (typeof oneFinRenderTudo === 'function') oneFinRenderTudo();
+      if (typeof renderOneAgendaPainel === 'function') renderOneAgendaPainel();
+      if (typeof renderOneTarefasPainel === 'function') renderOneTarefasPainel();
+      if (typeof renderOneDesktop === 'function') renderOneDesktop();
+      if (typeof oneToast === 'function') oneToast('✓ Dados de teste populados — confere Financeiro, Agenda e Tarefas.');
+    } catch (e) {
+      console.error('[teste] popular falhou:', e);
+      if (typeof oneToast === 'function') oneToast('Deu ruim ao popular: ' + (e.message || e), 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '⊕ Popular dados de teste'; }
+    }
+  }
+
   window.oneEntradaAbrir  = oneEntradaAbrir;
   window.oneEntradaFechar = oneEntradaFechar;
   window.oneEntradaReset  = oneEntradaReset;
   window.oneEntradaExportar = oneEntradaExportar;
+  window.oneEntradaPopular  = oneEntradaPopular;
   window.oneEntradaEhContaTeste = ehContaTeste;
 })();
 
