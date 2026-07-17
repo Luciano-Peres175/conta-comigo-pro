@@ -337,9 +337,15 @@
     // Botao de zerar financeiro — so admin ve
     const btnZerar = document.getElementById('btn-zerar-financeiro');
     if (btnZerar) btnZerar.style.display = ehAdmin ? '' : 'none';
-    // Ferramentas de teste da entrada (refazer entrevista / exportar) — so admin ve
+    // Ferramentas de teste da entrada — allowlist por EMAIL (CONTAS_TESTE), nao
+    // por grupo: o grupo das contas reais nao e 'admin', entao o gate por grupo
+    // escondia esses botoes de todo mundo. Ver oneEntradaEhContaTeste.
     const boxEntrada = document.getElementById('entrada-teste-box');
-    if (boxEntrada) boxEntrada.style.display = ehAdmin ? 'flex' : 'none';
+    if (boxEntrada) {
+      const ehTeste = (typeof window.oneEntradaEhContaTeste === 'function')
+        && window.oneEntradaEhContaTeste();
+      boxEntrada.style.display = ehTeste ? 'flex' : 'none';
+    }
   }
 
   // Bloqueio de seguranca: mesmo que alguem chame as funcoes pelo console, nao executa pra Amigas
@@ -9551,10 +9557,23 @@ function oneToast(msg) {
 */
 (function () {
 
-  /* Mesma checagem que o botão "Zerar" do financeiro usa (aplicarVisibilidadePorGrupo).
-     grupo 'admin' = luciano.peres@assessoriacap.com, semeado no mapa de emails do login. */
+  /* Allowlist explícita de contas de teste, por EMAIL.
+     Era por grupo==='admin' e não funcionava: o grupo gravado no perfil das
+     contas reais não é 'admin' (a luciano.peres é lida como 'familia' — tanto
+     que o botão "Resetar demo", que é gated a família, aparece pra ela). Com o
+     gate por grupo, estes botões nunca apareciam pra ninguém.
+
+     Por email é explícito e não depende do que está gravado no perfil. A conta
+     real do Luciano fica FORA de propósito: "Refazer entrevista" apaga o
+     Pinah.md e "Popular dados de teste" recria a massa de dados — nada disso
+     pode encostar num perfil real.
+
+     Pra liberar outra conta, é só acrescentar o email aqui. */
+  var CONTAS_TESTE = ['cap.admfinanceiro@gmail.com'];
+
   function ehContaTeste() {
-    return !!(window.authProfile && window.authProfile.grupo === 'admin');
+    var email = (window.authUser && window.authUser.email) || '';
+    return CONTAS_TESTE.indexOf(String(email).trim().toLowerCase()) !== -1;
   }
 
   function oneEntradaAbrir() {
@@ -9670,7 +9689,15 @@ function oneToast(msg) {
      testar personas diferentes sem precisar de conta nova. */
   async function oneEntradaReset() {
     if (!ehContaTeste()) { console.warn('[entrada] reset é só pra conta de teste'); return; }
-    if (!confirm('Refazer a entrevista?\n\nIsso apaga o Pinah.md do seu perfil e recomeça do zero. Seus lançamentos, tarefas e notas NÃO são tocados.')) return;
+    var quem = (window.authUser && window.authUser.email) || '(conta atual)';
+    if (!confirm(
+      'REFAZER A ENTREVISTA\n\n' +
+      'Isto APAGA o Pinah.md da conta:\n' + quem + '\n\n' +
+      'A Pinah esquece tudo que aprendeu sobre essa pessoa e a entrevista recomeça do zero. ' +
+      'Não dá pra desfazer — o retrato antigo se perde.\n\n' +
+      'Lançamentos, compromissos, tarefas e notas NÃO são tocados.\n\n' +
+      'Continuar?'
+    )) return;
 
     if (window.supa && window.authUser && window.authUser.id) {
       try {
