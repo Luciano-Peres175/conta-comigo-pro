@@ -337,15 +337,9 @@
     // Botao de zerar financeiro — so admin ve
     const btnZerar = document.getElementById('btn-zerar-financeiro');
     if (btnZerar) btnZerar.style.display = ehAdmin ? '' : 'none';
-    // Ferramentas de teste da entrada — allowlist por EMAIL (CONTAS_TESTE), nao
-    // por grupo: o grupo das contas reais nao e 'admin', entao o gate por grupo
-    // escondia esses botoes de todo mundo. Ver oneEntradaEhContaTeste.
-    const boxEntrada = document.getElementById('entrada-teste-box');
-    if (boxEntrada) {
-      const ehTeste = (typeof window.oneEntradaEhContaTeste === 'function')
-        && window.oneEntradaEhContaTeste();
-      boxEntrada.style.display = ehTeste ? 'flex' : 'none';
-    }
+    // (As ferramentas de teste da entrada saíram da sidebar — agora vivem dentro
+    //  do modal de Configurações e a visibilidade é decidida em abrirConfig,
+    //  pra não empurrar o layout da sidebar. Ver oneEntradaEhContaTeste.)
   }
 
   // Bloqueio de seguranca: mesmo que alguem chame as funcoes pelo console, nao executa pra Amigas
@@ -1395,6 +1389,14 @@
     if (!m) return;
     document.getElementById('cfg-imposto').value = String(getImpostoPct()).replace('.', ',');
     document.getElementById('cfg-forma').value = getFormaPagamentoDefault();
+    // Seção "Ferramentas de teste" — só pra CONTAS_TESTE (gate por email).
+    // Decidido na abertura do modal, não no login, pra manter fora da sidebar.
+    const boxTeste = document.getElementById('entrada-teste-box');
+    if (boxTeste) {
+      const ehTeste = (typeof window.oneEntradaEhContaTeste === 'function')
+        && window.oneEntradaEhContaTeste();
+      boxTeste.style.display = ehTeste ? 'block' : 'none';
+    }
     m.style.display = 'flex';
     renderIcons();
   }
@@ -9990,7 +9992,11 @@ function oneToast(msg) {
     )) return;
 
     var btn = document.getElementById('btn-entrada-popular');
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ populando...'; }
+    /* Só o título muda (não o botão inteiro): o botão é um card com ícone +
+       título + descrição; usar textContent nele apagaria essa estrutura. */
+    var btnLbl = btn ? btn.querySelector('div > div') : null;
+    if (btn) btn.disabled = true;
+    if (btnLbl) btnLbl.textContent = 'Populando...';
 
     try {
       await _tstGravar('contas',        _tstContas());
@@ -10018,7 +10024,8 @@ function oneToast(msg) {
       console.error('[teste] popular falhou:', e);
       if (typeof oneToast === 'function') oneToast('Deu ruim ao popular: ' + (e.message || e), 'error');
     } finally {
-      if (btn) { btn.disabled = false; btn.textContent = '⊕ Popular dados de teste'; }
+      if (btn) btn.disabled = false;
+      if (btnLbl) btnLbl.textContent = 'Popular dados de teste';
     }
   }
 

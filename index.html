@@ -1333,17 +1333,6 @@
       </div>
     </div>
 
-    <!-- Ferramentas de teste da entrada — só conta teste/admin vê.
-         aplicarVisibilidadePorGrupo() cuida do display; começam escondidas. -->
-    <div id="entrada-teste-box" style="display:none;gap:6px;padding:0 14px 10px;flex-wrap:wrap">
-      <button id="btn-entrada-reset" onclick="oneEntradaReset()" title="Apaga o Pinah.md e refaz a entrevista do zero"
-              style="flex:1;font-size:11px;padding:4px 8px;background:none;border:1px solid #9B72B0;color:#9B72B0;border-radius:6px;cursor:pointer">↺ Refazer entrevista</button>
-      <button id="btn-entrada-export" onclick="oneEntradaExportar()" title="Baixa respostas + Pinah.md + trocas com a Pinah"
-              style="flex:1;font-size:11px;padding:4px 8px;background:none;border:1px solid #27856A;color:#27856A;border-radius:6px;cursor:pointer">⭳ Exportar teste</button>
-      <button id="btn-entrada-popular" onclick="oneEntradaPopular()" title="Cria massa fictícia de Financeiro, Agenda e Tarefas (repetível)"
-              style="flex:1 0 100%;font-size:11px;padding:4px 8px;background:none;border:1px solid #5B7CFA;color:#5B7CFA;border-radius:6px;cursor:pointer">⊕ Popular dados de teste</button>
-    </div>
-
     <div class="sidebar-mesa-aux">
       <nav class="sidebar-nav">
         <button class="nav-item" id="nav-pinah" onclick="goOnePanel('chat')">
@@ -2144,6 +2133,35 @@
           <div style="flex:1">
             <div>Limpar todos os dados</div>
             <div style="font-size:11px;font-weight:400;color:#C62828;opacity:.85;margin-top:2px">Apaga notas, receitas, despesas e agenda. Fixas e configuracoes mantidas.</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Ferramentas de teste da entrada — só CONTAS_TESTE vê (gate por email).
+         Fica escondido; abrirConfig() decide o display via oneEntradaEhContaTeste(). -->
+    <div id="entrada-teste-box" style="display:none;border-top:1px solid #eee;padding-top:18px;margin-top:18px">
+      <div style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Ferramentas de teste</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button id="btn-entrada-popular" onclick="oneEntradaPopular()" style="background:#E8EEF7;color:#2C4F6B;border:1px solid #BFD0E0;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px">
+          <i data-lucide="database" style="width:16px;height:16px;flex-shrink:0"></i>
+          <div style="flex:1">
+            <div>Popular dados de teste</div>
+            <div style="font-size:11px;font-weight:400;color:#2C4F6B;opacity:.80;margin-top:2px">Cria massa fictícia de Financeiro, Agenda e Tarefas. Repetível — rodar de novo recria.</div>
+          </div>
+        </button>
+        <button id="btn-entrada-reset" onclick="oneEntradaReset()" style="background:#F0E8F8;color:#6B3F8A;border:1px solid #D6BFE5;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px">
+          <i data-lucide="rotate-ccw" style="width:16px;height:16px;flex-shrink:0"></i>
+          <div style="flex:1">
+            <div>Refazer entrevista</div>
+            <div style="font-size:11px;font-weight:400;color:#6B3F8A;opacity:.75;margin-top:2px">Apaga o Pinah.md desta conta e recomeça a entrevista do zero.</div>
+          </div>
+        </button>
+        <button id="btn-entrada-export" onclick="oneEntradaExportar()" style="background:#E8F2EC;color:#2C6B4F;border:1px solid #BFE0CF;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px">
+          <i data-lucide="file-down" style="width:16px;height:16px;flex-shrink:0"></i>
+          <div style="flex:1">
+            <div>Exportar teste</div>
+            <div style="font-size:11px;font-weight:400;color:#2C6B4F;opacity:.80;margin-top:2px">Baixa um .md com as respostas, o Pinah.md do Sonnet e as trocas com a Pinah.</div>
           </div>
         </button>
       </div>
